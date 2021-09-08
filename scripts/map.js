@@ -118,4 +118,13 @@ sidebar.addPanel({
     pane: document.getElementById("componentInfo").innerHTML,
     title: 'Component Info'
 });
+
+/*sidebar.addPanel({
+  id: 'discordLogin',
+  tab: '<i class="fab fa-discord"></i>',
+  pane: document.getElementById("discordLogin").innerHTML,
+  title: 'Discord Login',
+  position: 'bottom'
+});*/
+
 sidebar.open('welcome');

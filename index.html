@@ -24,11 +24,16 @@
   </head>
   <body>
     <div id="map"></div>
-    <div id="welcome">
+    <!-- Sidebar stuff -->
+    <div hidden id="welcome">
       <p>View the <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">guide</a> on how to use Stencil.</p>
 
       <p>Import node and PLA files here: <i class="fas fa-file-import"></i> (Export using <i class="fas fa-file-export"></i>)</p>
     </div>
-    <div id="componentInfo">hihii</div>
+    <div hidden id="componentInfo">hihii</div>
+    <!--<div hidden id="discordLogin">
+      <p>Logged in as <b id="discordName">-</b></p>
+      <button id="login" onclick="window.location.href = `https://discord.com/api/oauth2/authorize?client_id=885173387180277830&redirect_uri=${encodeURIComponent(window.location.href)}&response_type=token&scope=identify`">Log in</button>
+    </div>-->
   </body>
 </html>
