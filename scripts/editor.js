@@ -42,7 +42,7 @@ map.on("pm:create", e => {
           e.target.parentElement.innerHTML = "";
         }
         element.querySelector(".c_attr-delete").querySelector("i").onclick = e => {
-          delete selector.mapInfo.attrs[e.target.parentElement.parentElement.getAttr("name")]
+          delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")]
           e.target.parentElement.parentElement.remove()
           e.target.parentElement.parentElement.innerHTML = "";
         }
