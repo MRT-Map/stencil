@@ -33,36 +33,51 @@
           element.style.height = (element.scrollHeight-4)+"px";
         })
       }, 100)
+
+      function filter(element, regex) {
+        ;
+      }
     </script>
   </head>
   <body>
-    <div id="map"></div>
+    <div id="map" oncontextmenu="return false;"></div>
     <!-- Sidebar stuff -->
     <div hidden id="welcome"><div>
-      <p>View the <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">guide</a> on how to use Stencil.</p>
+      <p>View the <a href="https://mrt-map.github.io/map/guide.html#s5" target="_blank">guide</a> on how to use Stencil.</p>
 
       <p>Import node and PLA files here: <i class="fas fa-file-import"></i> (Export using <i class="fas fa-file-export"></i>)</p>
     </div></div>
     <div hidden id="componentInfo"><div>
-      <h1><span contenteditable id="c_id" placeholder="ID"></span>  <i class="fas fa-pen"></i></h1>
-      <h3><span style="color: #555555">Displayed as:</span> <span contenteditable id="c_displayname" placeholder="Displayname"></span>  <i class="fas fa-pen"></i></h3>
-      <h3><span style="color: #555555">Description:</span> <span contenteditable id="c_description" placeholder="Description"></span>  <i class="fas fa-pen"></i></h3><hr>
-      <label for="c_type">Component type:</label>
+      <h1>
+        <span contenteditable id="c_id" placeholder="ID"></span>
+        <i class="fas fa-pen"></i>
+      </h1>
+      <h3>
+        <span style="color: #555555">Displayed as:</span>
+        <span contenteditable id="c_displayname" placeholder="Displayname"></span>
+        <i class="fas fa-pen"></i>
+      </h3>
+      <h3>
+        <span style="color: #555555">Description:</span>
+        <span contenteditable id="c_description" placeholder="Description"></span>
+        <i class="fas fa-pen"></i>
+      </h3><hr>
+      <label for="c_type" style="color: #555555; font-weight: bold;">Component type:</label>
       <select name="c_type" id="c_type">
         <option value="TODO">TODO</option>
       </select><br>
-      <span><span style="color: #555555">Layer:</span> <span contenteditable id="c_layer" placeholder="0"></span>  <i class="fas fa-pen"></i></span>
+      <span><b style="color: #555555;">Layer:</b> <span contenteditable id="c_layer" placeholder="0"></span>  <i class="fas fa-pen"></i></span>
       
-      <table border="0">
+      <table>
         <thead>
           <colgroup>
              <col span="1" style="width: 35%;">
-             <col span="1" style="width: 50%;">
-             <col span="1" style="width: 15%;">
+             <col span="1" style="width: 60%;">
+             <col span="1" style="width: 5%;">
           </colgroup>
           <tr><th>Attribute name</th><th>Attribute value</th><th>Delete</th></tr>
           <tr hidden id="c_attr-row">
-            <td><b><textarea class="dynamic-resize c_attr-name"></textarea></b></td>
+            <td><textarea class="dynamic-resize c_attr-name" style="font-weight: bold;"></textarea></td>
             <td><textarea class="dynamic-resize c_attr-value"></textarea></td>
             <td class="c_attr-delete"><i class="fas fa-times"></i></td>
           </tr>
