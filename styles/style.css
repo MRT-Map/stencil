@@ -17,6 +17,11 @@ html, body {
 
 [contenteditable]:hover {
   text-decoration: underline;
+  cursor: text;
+}
+
+[contenteditable]:focus {
+  text-decoration: underline;
 }
 
 [contenteditable]:hover + .fas {
@@ -27,6 +32,50 @@ html, body {
   visibility: hidden;
 }
 
-[contenteditable] {
-  min-inline-size: 4em;
+[contenteditable]:empty::before {
+  content: attr(placeholder);
+  color: grey;
+}
+
+.c_attr-delete {
+  color: red;
+  text-align: center;
+  border-radius: 5px; 
+}
+
+.c_attr-delete:hover {
+  background-color: rgb(255, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.c_attr-delete:active {
+  background-color: red;
+  opacity: 1;
+}
+
+#c_add-attr {
+  background-color: #aaa;
+  text-align: center;
+  border-radius: 5px; 
+}
+
+#c_add-attr:hover {
+  background-color: #888;
+  cursor: pointer;
+}
+
+#c_add-attr:active {
+  background-color: #666;
+}
+
+textarea {
+  font-family: sans-serif;
+  display: flex;
+  resize: none;
+  width: 95%
+}
+
+tr, th, td {
+  margin: 0px;
+  padding: 0px;
 }
