@@ -14,3 +14,19 @@ html, body {
 .fa, .fas, .fab {
   line-height: unset;
 }
+
+[contenteditable]:hover {
+  text-decoration: underline;
+}
+
+[contenteditable]:hover + .fas {
+  visibility: visible;
+}
+
+[contenteditable] + .fas {
+  visibility: hidden;
+}
+
+[contenteditable] {
+  min-inline-size: 4em;
+}

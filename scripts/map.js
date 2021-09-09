@@ -1,4 +1,4 @@
-VERSION = "v0.0"
+const VERSION = "v0.0"
 
 var map = L.map('map', {
   crs: L.CRS.Simple
@@ -87,44 +87,8 @@ function worldcoord([x, y]) {
     return [NewX, NewY];
 }
 
-map.pm.addControls({  
-  position: 'bottomleft',
-  drawCircleMarker: false,
-  drawCircle: false
-}); 
-
-map.on("pm:vertexadded pm:centerplaced", e => {
-    e.lat = Math.round(e.lat);
-    e.lng = Math.round(e.lng);
-});
-
-var sidebar = L.control.sidebar({
-  autopan: false, 
-  closeButton: true, 
-  container: 'sidebar',
-  position: 'left',
-}).addTo(map);
-
-sidebar.addPanel({
-    id: 'welcome',
-    tab: '<i class="fas fa-door-open"></i>',
-    pane: document.getElementById("welcome").innerHTML,
-    title: 'Welcome to Stencil ' + VERSION
-});
-
-sidebar.addPanel({
-    id: 'componentInfo',
-    tab: '<i class="fas fa-draw-polygon"></i>',
-    pane: document.getElementById("componentInfo").innerHTML,
-    title: 'Component Info'
-});
-
-/*sidebar.addPanel({
-  id: 'discordLogin',
-  tab: '<i class="fab fa-discord"></i>',
-  pane: document.getElementById("discordLogin").innerHTML,
-  title: 'Discord Login',
-  position: 'bottom'
-});*/
-
-sidebar.open('welcome');
+setInterval(() => {
+  document.querySelectorAll("[contenteditable]").forEach((element) => {
+    if (element.innerHTML == "") element.innerHTML = "&nbsp;";
+  });
+}, 100)

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Stencil</title>
@@ -19,8 +20,11 @@
     <script defer src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
     <script defer src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script defer src="https://unpkg.com/leaflet-sidebar-v2@3.2.3/js/leaflet-sidebar.min.js"></script>
+    <script defer src="https://unpkg.com/leaflet-textpath@1.2.3/leaflet.textpath.js"></script>
 
     <script defer src="scripts/map.js"></script>
+    <script defer src="scripts/sidebar.js"></script>
+    <script defer src="scripts/editor.js"></script>
   </head>
   <body>
     <div id="map"></div>
@@ -30,7 +34,13 @@
 
       <p>Import node and PLA files here: <i class="fas fa-file-import"></i> (Export using <i class="fas fa-file-export"></i>)</p>
     </div>
-    <div hidden id="componentInfo">hihii</div>
+    <div hidden id="componentInfo">
+      <h1><span contenteditable id="componentName">Name</span>  <i class="fas fa-pen"></i></h1>
+      <h3><span style="color: grey;">Displayed as:</span> <span contenteditable id="componentDisplayname">Displayname</span>  <i class="fas fa-pen"></i></h3>
+      <h3><span style="color: grey;">Description:</span> <span contenteditable id="componentDisplayname">Description</span>  <i class="fas fa-pen"></i></h3>
+
+      
+    </div>
     <!--<div hidden id="discordLogin">
       <p>Logged in as <b id="discordName">-</b></p>
       <button id="login" onclick="window.location.href = `https://discord.com/api/oauth2/authorize?client_id=885173387180277830&redirect_uri=${encodeURIComponent(window.location.href)}&response_type=token&scope=identify`">Log in</button>
