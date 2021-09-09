@@ -1,15 +1,15 @@
+document.querySelectorAll("[contenteditable]").forEach((element) => {
+  element.parentElement.onclick = (e) => {
+    e.target.focus();
+  }
+})
+
 var sidebar = L.control.sidebar({
   autopan: false, 
   closeButton: true, 
   container: 'sidebar',
   position: 'left',
 }).addTo(map);
-
-document.querySelectorAll("[contenteditable]").forEach((element) => {
-  element.parentElement.onclick = (e) => {
-    e.target.focus();
-  }
-})
 
 sidebar.addPanel({
   id: 'pane_welcome',
@@ -34,3 +34,4 @@ sidebar.addPanel({
 });*/
 
 sidebar.open('pane_welcome');
+sidebar.disablePanel('pane_componentInfo');
