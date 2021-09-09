@@ -17,25 +17,44 @@ map.on("pm:vertexadded pm:centerplaced", e => {
 
 map.on("pm:create", e => {
     e.layer.mapInfo = {
-        id: "",
-        type: e.shape == "Line" ? "simpleLine" : e.shape == "Marker" ? "simplePoint" : "simpleArea",
-        displayname: "",
-        description: "",
-        layer: 0,
-        nodes: [],
-        attrs: {}
+      id: "",
+      type: e.shape == "Line" ? "simpleLine" : e.shape == "Marker" ? "simplePoint" : "simpleArea",
+      displayname: "",
+      description: "",
+      layer: 0,
+      nodes: [],
+      attrs: {}
     }
 
     e.layer.on("click", e => {
-        document.getElementById("componentInfo").innerHTML = "asdfasdfasdf";
+        document.getElementById("pane_componentInfo").querySelector("div").innerHTML = "";
+        document.getElementById("c_id").innerHTML = e.target.mapInfo.id;
+        document.getElementById("c_displayname").innerHTML = e.target.mapInfo.displayname;
+        document.getElementById("c_description").innerHTML = e.target.mapInfo.description;
 
-        sidebar.removePanel('pane_componentInfo');
+        document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
+
+        document.getElementById("c_add-attr").onclick = () => {
+          let element = document.createElement('tr');
+          element.innerHTML = document.getElementById("c_attr-row").innerHTML;
+          element.querySelector(".c_attr-delete").onclick = e => {
+            e.target.parentElement.remove()
+            e.target.parentElement.innerHTML = "";
+          }
+          element.querySelector(".c_attr-delete").querySelector("i").onclick = e => {
+            e.target.parentElement.parentElement.remove()
+            e.target.parentElement.parentElement.innerHTML = "";
+          }
+          document.getElementById("c_attr").appendChild(element)
+        };
+
+        /*sidebar.removePanel('pane_componentInfo');
         sidebar.addPanel({
-            id: 'pane_componentInfo',
-            tab: '<i class="fas fa-draw-polygon"></i>',
-            pane: document.getElementById("componentInfo").innerHTML,
-            title: 'Component Info'
-          });
-          sidebar.open('pane_componentInfo');
+          id: 'pane_componentInfo',
+          tab: '<i class="fas fa-draw-polygon"></i>',
+          pane: document.getElementById("componentInfo").innerHTML,
+          title: 'Component Info'
+        });*/
+        sidebar.open('pane_componentInfo');
     });
 });

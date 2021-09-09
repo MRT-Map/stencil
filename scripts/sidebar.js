@@ -5,6 +5,12 @@ var sidebar = L.control.sidebar({
   position: 'left',
 }).addTo(map);
 
+document.querySelectorAll("[contenteditable]").forEach((element) => {
+  element.parentElement.onclick = (e) => {
+    e.target.focus();
+  }
+})
+
 sidebar.addPanel({
   id: 'pane_welcome',
   tab: '<i class="fas fa-door-open"></i>',

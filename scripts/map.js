@@ -86,9 +86,3 @@ function worldcoord([x, y]) {
     NewY = (x + 0.5) * -64
     return [NewX, NewY];
 }
-
-setInterval(() => {
-  document.querySelectorAll("[contenteditable]").forEach((element) => {
-    if (element.innerHTML == "") element.innerHTML = "&nbsp;";
-  });
-}, 100)
