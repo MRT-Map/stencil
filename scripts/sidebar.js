@@ -21,6 +21,13 @@ sidebar.addPanel({
   title: 'Component Info'
 });
 
+sidebar.addPanel({
+  id: 'pane_typePicker',
+  tab: '<i class="fas fa-palette"></i>',
+  pane: document.getElementById("typePicker").innerHTML,
+  title: 'Pick Type'
+});
+
 /*sidebar.addPanel({
   id: 'discordLogin',
   tab: '<i class="fab fa-discord"></i>',
