@@ -1,4 +1,6 @@
-var selected = null
+var selected = null;
+var selectShadowGroup = L.layerGroup([]);
+map.addLayer(selectShadowGroup);
 var layers = L.layerGroup([]);
 map.addLayer(layers);
 map.pm.setGlobalOptions({
@@ -70,17 +72,41 @@ map.on("pm:create", e => {
         document.getElementById("c_description").innerHTML = selected.mapInfo.description;
         document.getElementById("c_layer").innerHTML = selected.mapInfo.layer;
 
-        // check for same IDs
-        ids = layers.getLayers().map(layer => layer.mapInfo.id)
-        if (selected.mapInfo.id.trim() == "" || ids.filter(id => id == selected.mapInfo.id).length > 1) {
-          document.getElementById("c_id").classList.add("warning")
+        // creates selector shadow
+        if (selected instanceof L.Polygon) {
+          L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
+        }
+        else if (selected instanceof L.Marker) {
+          L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
         }
         else {
-          document.getElementById("c_id").classList.remove("warning")
+          L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
         }
 
         // adds content to pane
         document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
+
+        // check for same IDs
+        let ids = layers.getLayers().map(layer => layer.mapInfo.id)
+        var hasError = false;
+        if (selected.mapInfo.id.trim() == "") {
+          document.getElementById("c_emptyIdMsg").hidden = false;
+          hasError = true;
+        } else document.getElementById("c_emptyIdMsg").hidden = true;
+        if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
+          document.getElementById("c_duplicateIdMsg").hidden = false;
+          document.getElementById("c_duplicateIdMsg").onclick = () => {
+            console.log("c")
+            let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id   == selected.mapInfo.id && layer != selected)[0];
+            otherLayer.fire('click');
+          };
+          hasError = true;
+        } else document.getElementById("c_duplicateIdMsg").hidden = true;
+        if (hasError) {
+          document.getElementById("c_id").classList.add("warning");
+        } else {
+          document.getElementById("c_id").classList.remove("warning");
+        }
 
         document.getElementById("c_add-attr").onclick = () => { //adds add attribute button functionality
           element = genTr()
@@ -98,21 +124,30 @@ map.on("pm:create", e => {
 
         Array.from(["id", "displayname", "description"]).forEach(property => { //adds saving and filter for id, displayname, description
           document.getElementById("c_"+property).onblur = () => {
-            document.getElementById("c_"+property).innerHTML = document.getElementById("c_"+property).innerHTML.replace(/<br>/gm, "");
+            document.getElementById("c_"+property).innerHTML = document.getElementById("c_"+property).innerHTML.replace(/<br>/gm, "").trim();
             selected.mapInfo[property] = document.getElementById("c_"+property).innerHTML;
           };
         });
 
         document.getElementById("c_id").onkeyup = () => { // warns if ids have the same name
-          ids = layers.getLayers().map(layer => layer.mapInfo.id)
-          if (document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim() == "" 
-             || ids.filter(id => id == document.getElementById("c_id").innerHTML.replace(/<br>/gm, "")).length 
-             > (document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim() == selected.mapInfo.id ? 1 : 0)) {
-            document.getElementById("c_id").classList.add("warning")
-          }
-          else {
-            document.getElementById("c_id").classList.remove("warning")
-          }
+          let ids = layers.getLayers().map(layer => layer.mapInfo.id)
+          let filteredId = document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim()
+          var hasError = false;
+          if (filteredId == "") {
+            document.getElementById("c_emptyIdMsg").hidden = false;
+            hasError = true;
+          } else document.getElementById("c_emptyIdMsg").hidden = true;
+          if (ids.filter(id => id == filteredId).length > (filteredId == selected.mapInfo.id ? 1 : 0)) {
+            document.getElementById("c_duplicateIdMsg").hidden = false;
+            document.getElementById("c_duplicateIdMsg").onclick = () => {
+              console.log("b")
+              let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
+              otherLayer.fire('click');
+            };
+            hasError = true;
+          } else document.getElementById("c_duplicateIdMsg").hidden = true;
+          if (hasError) document.getElementById("c_id").classList.add("warning")
+          else document.getElementById("c_id").classList.remove("warning")
         }
 
         document.getElementById("c_layer").onblur = () => { //adds saving and filter for layer
@@ -125,8 +160,11 @@ map.on("pm:create", e => {
       }, 10, e);
     });
 
-    map.on("click", e => {
+    e.layer.fire("click");
+});
+
+map.on("click", e => {
+      selectShadowGroup.clearLayers();
       selected = null;
       document.getElementById('pane_componentInfo').querySelector('div').innerHTML = '<h1>Select a component...</h1>'
     })
-});

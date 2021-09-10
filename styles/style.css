@@ -69,11 +69,34 @@ html, body {
 }
 
 #c_id.warning {
-  color: red
+  color: red;
 }
 
 #c_id.warning::before {
   color: lightcoral;
+}
+
+#c_duplicateIdMsg, #c_emptyIdMsg {
+  color: white;
+  border: 1px solid red;
+  background-color: red;
+  font-size: 10px;
+  border-radius: 5px;
+
+  -webkit-user-select: none;       
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#c_duplicateIdMsg:hover {
+  background-color: lightcoral;
+  border-color: lightcoral;
+  cursor: pointer;
+}
+
+#c_duplicateIdMsg:active {
+  background-color: white;
 }
 
 textarea {

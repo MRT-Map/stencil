@@ -43,17 +43,20 @@
       })
     </script>
   </head>
-  <body><div id="map" oncontextmenu="return false;"></div>
+  <body>
+    <div id="map" oncontextmenu="return false;"></div>
     <!-- Sidebar stuff -->
     <div hidden id="welcome"><div>
       <p>View the <a href="https://mrt-map.github.io/map/guide.html#s5" target="_blank">guide</a> on how to use Stencil.</p>
 
-      <p>Import node and PLA files here: <i class="fas fa-file-import"></i> (Export using <i class="fas fa-file-export"></i>)</p>
+      <b>Note: Stencil is still under development, expect bugs lurking everywhere.</b>
     </div></div>
     <div hidden id="componentInfo"><div>
       <h1>
         <span contenteditable id="c_id" placeholder="ID"></span>
         <i class="fas fa-pen"></i>
+        <b hidden id="c_duplicateIdMsg">Other component with same ID</b>
+        <b hidden id="c_emptyIdMsg">Empty ID</b>
       </h1>
       <h3>
         <span style="color: #555555">Displayed as:</span>
