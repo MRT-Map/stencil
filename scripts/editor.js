@@ -18,6 +18,21 @@ map.on("pm:vertexadded pm:centerplaced", e => {
     e.lng = Math.round(e.lng);
 });
 
+map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
+  if (e.shape == selected) {
+    selectShadowGroup.clearLayers();
+    if (selected instanceof L.Polygon) {
+      L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+    }
+    else if (selected instanceof L.Marker) {
+      L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+    }
+    else {
+      L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+    }
+  }
+})
+
 map.on("pm:create", e => {
     e.layer.mapInfo = {
       id: "",
@@ -73,14 +88,15 @@ map.on("pm:create", e => {
         document.getElementById("c_layer").innerHTML = selected.mapInfo.layer;
 
         // creates selector shadow
+        selectShadowGroup.clearLayers();
         if (selected instanceof L.Polygon) {
-          L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
+          L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
         else if (selected instanceof L.Marker) {
-          L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
+          L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
         else {
-          L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5}).addTo(selectShadowGroup);
+          L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
 
         // adds content to pane
@@ -98,6 +114,7 @@ map.on("pm:create", e => {
           document.getElementById("c_duplicateIdMsg").onclick = () => {
             console.log("c")
             let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id   == selected.mapInfo.id && layer != selected)[0];
+            map.setView(otherLayer.getCenter(), map.getZoom())
             otherLayer.fire('click');
           };
           hasError = true;
@@ -142,6 +159,7 @@ map.on("pm:create", e => {
             document.getElementById("c_duplicateIdMsg").onclick = () => {
               console.log("b")
               let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
+              map.setView(otherLayer.getCenter(), map.getZoom())
               otherLayer.fire('click');
             };
             hasError = true;
