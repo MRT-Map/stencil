@@ -3,6 +3,7 @@ document.querySelectorAll("[contenteditable]").forEach((element) => {
     e.target.focus();
   }
 })
+console.log(Skin)
 
 var sidebar = L.control.sidebar({
   autopan: false, 
@@ -21,7 +22,7 @@ sidebar.addPanel({
 sidebar.addPanel({
   id: 'pane_componentInfo',
   tab: '<i class="fas fa-draw-polygon"></i>',
-  pane: document.getElementById("componentInfo").innerHTML,
+  pane: '<div><h1>Select a component...</h1></div>',
   title: 'Component Info'
 });
 
@@ -34,4 +35,3 @@ sidebar.addPanel({
 });*/
 
 sidebar.open('pane_welcome');
-sidebar.disablePanel('pane_componentInfo');
