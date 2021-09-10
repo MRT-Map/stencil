@@ -36,9 +36,11 @@
         })
       }, 100)
 
-      function filter(element, regex) {
-        ;
-      }
+      document.querySelectorAll("[contenteditable]").forEach((element) => {
+        element.parentElement.onclick = (e) => {
+          e.target.focus();
+        }
+      })
     </script>
   </head>
   <body><div id="map" oncontextmenu="return false;"></div>

@@ -1,8 +1,3 @@
-document.querySelectorAll("[contenteditable]").forEach((element) => {
-  element.parentElement.onclick = (e) => {
-    e.target.focus();
-  }
-})
 console.log(Skin)
 
 var sidebar = L.control.sidebar({
