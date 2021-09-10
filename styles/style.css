@@ -68,6 +68,14 @@ html, body {
   background-color: #666;
 }
 
+#c_id.warning {
+  color: red
+}
+
+#c_id.warning::before {
+  color: lightcoral;
+}
+
 textarea {
   font-family: sans-serif;
   display: flex;
