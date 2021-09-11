@@ -235,7 +235,7 @@ map.on("pm:drawstart", e => {
     })
   }
   if (drawingType[shape] != null) {
-    document.getElementById("tp_table").querySelectorAll("tr").filter(tr => tr.querySelector(".tp_typeName") == drawingType[shape])[0].classList.add("tp_selected")
+    Array.from(document.getElementById("tp_table").querySelectorAll("tr")).filter(tr => tr.querySelector(".tp_typeName") == drawingType[shape])[0].classList.add("tp_selected")
   }
 
   sidebar.open('pane_typePicker');
