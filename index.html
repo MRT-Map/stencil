@@ -100,24 +100,13 @@
       <button id="login" onclick="window.location.href = `https://discord.com/api/oauth2/authorize?client_id=885173387180277830&redirect_uri=${encodeURIComponent(window.location.href)}&response_type=token&scope=identify`">Log in</button>
     </div>-->
 
-    <div hidden id="typePicker"><div><br>
-    <h1>Type for: <span id="tp_shape"></span></h1>
-    Coming soon!
-    <table>
-      <thead>
-        <colgroup>
-             <col span="1" style="width: 20%;">
-             <col span="1" style="width: 80%;">
-          </colgroup>
-        <tr hidden id="tp_template">
-          <td style="background-color: red;height: 5vw;width: 5vw;display: table;" class="tp_colour"></td>
-          <td>&nbsp;&nbsp;<b class="tp_name">aaa</b></td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="tp_typeOption">
-          <td style="background-color: red;height: 5vw;width: 5vw;display: table;"></td>
-          <td>&nbsp;&nbsp;<b>aaa</b></td>
+    <div hidden id="typePicker"><div>
+    <h1>Type for: <span id="tp_shape">-</span></h1>
+    <table style="table-layout: fixed; width: 100%">
+      <tbody id="tp_table">
+        <tr hidden class="tp_typeOption" id="tp_template">
+          <td class="tp_typeColor" style="width: 15%; height: 50%; background-color: red;"><div style="width: 100%; height: 100%;"></div></td>
+          <td class="tp_typeName" style="word-wrap: break-word; font-weight: bold; padding-left: 0.5em"></td>
         </tr>
       </tbody>
     </table>
