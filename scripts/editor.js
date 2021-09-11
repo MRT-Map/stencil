@@ -1,4 +1,9 @@
 var selected = null;
+var drawingType = {
+  line: null,
+  point: null,
+  area: null
+};
 var selectShadowGroup = L.layerGroup([]);
 map.addLayer(selectShadowGroup);
 var layers = L.layerGroup([]);
@@ -36,7 +41,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 map.on("pm:create", e => {
     e.layer.mapInfo = {
       id: "",
-      type: e.shape == "Line" ? "simpleLine" : e.shape == "Marker" ? "simplePoint" : "simpleArea",
+      type: drawingType[e.shape == "Line" ? "line" : e.shape == "Marker" ? "point" : "area"],
       displayname: "",
       description: "",
       layer: 0,
@@ -112,7 +117,6 @@ map.on("pm:create", e => {
         if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
           document.getElementById("c_duplicateIdMsg").hidden = false;
           document.getElementById("c_duplicateIdMsg").onclick = () => {
-            console.log("c")
             let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id   == selected.mapInfo.id && layer != selected)[0];
             map.setView(otherLayer.getCenter(), map.getZoom())
             otherLayer.fire('click');
@@ -157,7 +161,6 @@ map.on("pm:create", e => {
           if (ids.filter(id => id == filteredId).length > (filteredId == selected.mapInfo.id ? 1 : 0)) {
             document.getElementById("c_duplicateIdMsg").hidden = false;
             document.getElementById("c_duplicateIdMsg").onclick = () => {
-              console.log("b")
               let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
               map.setView(otherLayer.getCenter(), map.getZoom())
               otherLayer.fire('click');
@@ -186,3 +189,57 @@ map.on("click", e => {
       selected = null;
       document.getElementById('pane_componentInfo').querySelector('div').innerHTML = '<h1>Select a component...</h1>'
     })
+
+map.on("pm:drawstart", e => {
+  var types;
+  var shape;
+  switch (e.shape) {
+    case "Line":
+      types = ComponentTypes.line;
+      shape = "line";
+      break;
+    case "Marker":
+      types = ComponentTypes.point;
+      shape = "point";
+      break;
+    case "Polygon":
+    case "Rectangle":
+      types = ComponentTypes.area;
+      shape = "area";
+      break;
+    default:
+      break;
+  }
+  if (types) {
+    document.getElementById("pane_typePicker").querySelector("div").innerHTML = document.getElementById("typePicker").querySelector("div").innerHTML;
+    document.getElementById("tp_table").innerHTML = "";
+    document.getElementById('tp_shape').innerHTML = shape;
+
+    types.forEach(type => {
+      let element = document.createElement('tr');
+      element.innerHTML = document.getElementById("tp_template").innerHTML;
+      
+      element.classList.add("tp_typeOption")
+      element.querySelector(".tp_typeColor").style.background = getFrontColor(type);
+      element.querySelector(".tp_typeColor").style.border = "2px solid "+getBackColor(type);
+      element.querySelector(".tp_typeName").innerHTML = type;
+
+      element.onclick = e => {
+        drawingType[shape] = e.target.parentElement.querySelector(".tp_typeName").innerHTML;
+        document.getElementById("tp_table").querySelectorAll("tr").forEach(tr => tr.classList.remove("tp_selected"));
+        e.target.parentElement.classList.add("tp_selected")
+      }
+
+      document.getElementById("tp_table").appendChild(element);
+    })
+  }
+  if (drawingType[shape] != null) {
+    document.getElementById("tp_table").querySelectorAll("tr").filter(tr => tr.querySelector(".tp_typeName") == drawingType[shape])[0].classList.add("tp_selected")
+  }
+
+  sidebar.open('pane_typePicker');
+})
+
+map.on("pm:drawend", e => {
+  document.getElementById("pane_typePicker").querySelector("div").innerHTML = document.getElementById("typePicker").querySelector("div").innerHTML;
+})
