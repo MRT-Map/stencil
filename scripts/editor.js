@@ -117,8 +117,9 @@ map.on("pm:create", e => {
         if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
           document.getElementById("c_duplicateIdMsg").hidden = false;
           document.getElementById("c_duplicateIdMsg").onclick = () => {
-            let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id   == selected.mapInfo.id && layer != selected)[0];
-            map.setView(otherLayer.getCenter(), map.getZoom())
+            let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == selected.mapInfo.id && layer != selected)[0];
+            try {map.setView(otherLayer.getCenter(), map.getZoom())}
+            catch {map.setView(otherLayer.getLatLng(), map.getZoom())}
             otherLayer.fire('click');
           };
           hasError = true;
