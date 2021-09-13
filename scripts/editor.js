@@ -94,7 +94,7 @@ map.on("pm:create", e => {
 
         // add type dropdown
         document.getElementById("c_type").innerHTML = "";
-        ComponentTypes[e.shape == "Line" ? "line" : e.shape == "Marker" ? "point" : "area"].forEach(type => {
+        ComponentTypes[Skin.types[selected.mapInfo.type].type].forEach(type => {
           let option = document.createElement("option");
           option.setAttribute("value", type);
           option.innerHTML = type;
@@ -241,11 +241,18 @@ map.on("pm:drawstart", e => {
         e.target.parentElement.classList.add("tp_selected")
       }
 
+      if (type == "simple"+shape.charAt(0).toUpperCase() + shape.slice(1)) {
+        element.classList.add("tp_selected")
+      }
+
       document.getElementById("tp_table").appendChild(element);
     })
   }
   if (drawingType[shape] != null) {
     Array.from(document.getElementById("tp_table").querySelectorAll("tr")).filter(tr => tr.querySelector(".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected")
+  }
+  else {
+    drawingType[shape] = "simple"+shape.charAt(0).toUpperCase() + shape.slice(1);
   }
 
   sidebar.open('pane_typePicker');
