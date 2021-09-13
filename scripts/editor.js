@@ -92,6 +92,16 @@ map.on("pm:create", e => {
         document.getElementById("c_description").innerHTML = selected.mapInfo.description;
         document.getElementById("c_layer").innerHTML = selected.mapInfo.layer;
 
+        // add type dropdown
+        document.getElementById("c_type").innerHTML = "";
+        ComponentTypes[e.shape == "Line" ? "line" : e.shape == "Marker" ? "point" : "area"].forEach(type => {
+          let option = document.createElement("option");
+          option.setAttribute("value", type);
+          option.innerHTML = type;
+          document.getElementById("c_type").appendChild(option);
+        })
+        document.querySelector(`#c_type [value=${selected.mapInfo.type}]`).selected = true;
+
         // creates selector shadow
         selectShadowGroup.clearLayers();
         if (selected instanceof L.Polygon) {
