@@ -101,6 +101,7 @@ map.on("pm:create", e => {
           document.getElementById("c_type").appendChild(option);
         })
         document.querySelector(`#c_type [value=${selected.mapInfo.type}]`).selected = true;
+        document.getElementById("c_type").value = Skin.types[selected.mapInfo.type].type;
 
         // creates selector shadow
         selectShadowGroup.clearLayers();
