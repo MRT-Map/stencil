@@ -38,9 +38,15 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
   }
 })
 
-function typeChange() {
+function typeChange(type) {
+  if (Skin.types[selected.mapInfo.type].type == "point") return;
+  if (type) selected.mapInfo.type = type;
+  else selected.mapInfo.type = document.getElementById("c_type").value;
+  console.log(selected.mapInfo.type)
   selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
+  if (selectShadowGroup.getLayers().length != 0) selectShadowGroup.getLayers()[0].setStyle({weight: getWeight(selected.mapInfo.type)})
 }
+map.on("zoomend", e => {if (selected) typeChange();});
 
 map.on("pm:create", e => {
     e.layer.mapInfo = {
@@ -96,6 +102,9 @@ map.on("pm:create", e => {
         document.getElementById("c_description").innerHTML = selected.mapInfo.description;
         document.getElementById("c_layer").innerHTML = selected.mapInfo.layer;
 
+        // adds content to pane
+        document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
+        
         // add type dropdown
         document.getElementById("c_type").innerHTML = "";
         ComponentTypes[Skin.types[selected.mapInfo.type].type].forEach(type => {
@@ -104,25 +113,25 @@ map.on("pm:create", e => {
           option.innerHTML = type;
           document.getElementById("c_type").appendChild(option);
         })
-        document.querySelector(`#c_type [value=${selected.mapInfo.type}]`).selected = true;
-        document.getElementById("c_type").value = Skin.types[selected.mapInfo.type].type;
-        typeChange();
+        let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
+        selectedOption.selected = true;
+        document.getElementById("c_type").value = selected.mapInfo.type;
+        document.getElementById("c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
+        typeChange(selected.mapInfo.type);
 
         // creates selector shadow
         selectShadowGroup.clearLayers();
         if (selected instanceof L.Polygon) {
-          L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+          L.polygon(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
         else if (selected instanceof L.Marker) {
-          L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+          L.circleMarker(selected.getLatLng(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
         else {
-          L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+          L.polyline(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
 
-        // adds content to pane
-        document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
-
+        
         // check for same IDs
         let ids = layers.getLayers().map(layer => layer.mapInfo.id)
         var hasError = false;
@@ -164,7 +173,7 @@ map.on("pm:create", e => {
           document.getElementById("c_"+property).onblur = () => {
             document.getElementById("c_"+property).innerHTML = document.getElementById("c_"+property).innerHTML.replace(/<br>/gm, "").trim();
             selected.mapInfo[property] = document.getElementById("c_"+property).innerHTML;
-            if (ComponentTypes.line.includes(selected.mapInfo.type)) selected.setText("     "+selected.mapInfo.id+"     ", {repeat: true, offset: -0.05, attributes: {fill: 'black', fontWeight: 'bold'}});
+            if (ComponentTypes.line.includes(selected.mapInfo.type)) selected.setText("     "+selected.mapInfo.id+"     ", {repeat: true, offset: -0.0001, attributes: {fill: 'black', fontWeight: 'bold'}});
           };
         });
 
