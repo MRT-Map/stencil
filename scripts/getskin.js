@@ -57,3 +57,25 @@ function getBackColor(type) {
       return undefined;
   }
 }
+
+function getWeight(type) {
+  let typeLayers = Object.values(Skin.types[type].style)[0];
+  let filteredLayers;
+  switch (Skin.types[type].type) {
+    case "point":
+      return null;
+      break;
+    case "line":
+      filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fore");
+      if (filteredLayers.length != 0) return filteredLayers[filteredLayers.length-1].width;
+      else return null;
+      break;
+    case "area":
+      /*filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fill");
+      return filteredLayers[filteredLayers.length-1].outline;*/
+      return 2;
+      break;
+    default:
+      return undefined;
+  }
+}

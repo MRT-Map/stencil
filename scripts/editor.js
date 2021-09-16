@@ -38,6 +38,10 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
   }
 })
 
+function typeChange() {
+  selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
+}
+
 map.on("pm:create", e => {
     e.layer.mapInfo = {
       id: "",
@@ -102,6 +106,7 @@ map.on("pm:create", e => {
         })
         document.querySelector(`#c_type [value=${selected.mapInfo.type}]`).selected = true;
         document.getElementById("c_type").value = Skin.types[selected.mapInfo.type].type;
+        typeChange();
 
         // creates selector shadow
         selectShadowGroup.clearLayers();
@@ -159,6 +164,7 @@ map.on("pm:create", e => {
           document.getElementById("c_"+property).onblur = () => {
             document.getElementById("c_"+property).innerHTML = document.getElementById("c_"+property).innerHTML.replace(/<br>/gm, "").trim();
             selected.mapInfo[property] = document.getElementById("c_"+property).innerHTML;
+            if (ComponentTypes.line.includes(selected.mapInfo.type)) selected.setText("     "+selected.mapInfo.id+"     ", {repeat: true, offset: -0.05, attributes: {fill: 'black', fontWeight: 'bold'}});
           };
         });
 
