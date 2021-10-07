@@ -86,3 +86,16 @@ function worldcoord([x, y]) {
     NewY = (x + 0.5) * -64
     return [NewX, NewY];
 }
+
+var MyControl = L.Control.extend({
+  options: {position: 'bottomright'},
+  onAdd: function (map) {
+    let container = L.DomUtil.create('div');
+    container.innerHTML = "<img src='media/stencilicon_lighttext.png' style='height: 50px;' title='Logo by Cortesi'>"
+    return container;
+  },
+  onRemove: function(map) {}
+});
+
+var logo = new MyControl();
+map.addControl(logo);
