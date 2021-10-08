@@ -1,4 +1,4 @@
-console.log(Skin)
+console.log(Skin);
 
 var sidebar = L.control.sidebar({
   autopan: false, 

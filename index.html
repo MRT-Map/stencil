@@ -33,14 +33,14 @@
         document.querySelectorAll(".dynamic-resize").forEach(element => {
           element.style.height = "1px";
           element.style.height = (element.scrollHeight-4)+"px";
-        })
+        });
       }, 100)
 
-      document.querySelectorAll("[contenteditable]").forEach((element) => {
+      document.querySelectorAll("[contenteditable]").forEach(element => {
         element.parentElement.onclick = (e) => {
           e.target.focus();
-        }
-      })
+        };
+      });
     </script>
   </head>
   <body>

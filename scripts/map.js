@@ -1,5 +1,5 @@
-const VERSION = "v0.0"
-console.log(Skin)
+const VERSION = "v0.0";
+console.log(Skin);
 var map = L.map('map', {
   crs: L.CRS.Simple
 }).setView([0, 0], 8);
@@ -16,18 +16,18 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
     let group = {
       x: Math.floor(Xcoord * Zcoord / 32),
       y: Math.floor(Ycoord * Zcoord / 32),
-    }
+    };
 
     let numberInGroup = {
       x: Math.floor(Xcoord * Zcoord),
       y: Math.floor(Ycoord * Zcoord)
-    }
+    };
 
     /* console.log(coords);
      console.log(group);
      console.log(numberInGroup);*/
 
-    let zzz = ""
+    let zzz = "";
 
     for (var i = 8; i > coords.z; i--) {
       zzz += "z";
@@ -35,7 +35,7 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
 
     if (zzz.length != "") zzz += "_";
 
-    let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`
+    let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
     //console.log(url)
     return url;
 
@@ -46,7 +46,7 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
 // static factory as recommended by http://leafletjs.com/reference-1.0.3.html#class
 L.tileLayer.customTileLayer = function(templateUrl, options) {
   return new L.TileLayer.customTileLayer(templateUrl, options);
-}
+};
 
 function f(t, n) {
   return t.replace(d, function(t, i) {
@@ -54,8 +54,8 @@ function f(t, n) {
     if (void 0 === e)
       throw new Error("No value provided for variable " + t);
     return "function" == typeof e && (e = e(n)),
-      e
-  })
+      e;
+  });
 }
 
 L.tileLayer.customTileLayer("unused url; check custom function", {
@@ -83,7 +83,7 @@ function mapcoord([x, y]) {
 }
 function worldcoord([x, y]) {
     NewX = y * 64;
-    NewY = (x + 0.5) * -64
+    NewY = (x + 0.5) * -64;
     return [NewX, NewY];
 }
 
@@ -91,7 +91,7 @@ var MyControl = L.Control.extend({
   options: {position: 'bottomright'},
   onAdd: function (map) {
     let container = L.DomUtil.create('div');
-    container.innerHTML = "<img src='media/stencilicon_lighttext.png' style='height: 50px;' title='Logo by Cortesi'>"
+    container.innerHTML = "<img src='media/stencilicon_lighttext.png' style='height: 50px;' title='Logo by Cortesi'>";
     return container;
   },
   onRemove: function(map) {}
