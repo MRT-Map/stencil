@@ -1,3 +1,4 @@
+/* jshint esversion: 10 */
 var selected = null;
 var drawingType = {
   line: null,
@@ -36,17 +37,36 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
       L.polyline(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
     }
   }
-})
+});
 
+// changes the component type of a component
 function typeChange(type) {
   if (Skin.types[selected.mapInfo.type].type == "point") return;
   if (type) selected.mapInfo.type = type;
   else selected.mapInfo.type = document.getElementById("c_type").value;
-  console.log(selected.mapInfo.type)
+  console.log(selected.mapInfo.type);
   selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
-  if (selectShadowGroup.getLayers().length != 0) selectShadowGroup.getLayers()[0].setStyle({weight: getWeight(selected.mapInfo.type)})
+  if (selectShadowGroup.getLayers().length != 0) selectShadowGroup.getLayers()[0].setStyle({weight: getWeight(selected.mapInfo.type)});
+  displayText();
 }
 map.on("zoomend", e => {if (selected) typeChange();});
+
+// adds text to components
+function displayText() {
+  if (ComponentTypes.line.includes(selected.mapInfo.type)) {
+    selected.setText(null);
+    selected.setText("     "+selected.mapInfo.id+"     ", {
+      repeat: true,
+      offset: getWeight(selected.mapInfo.type)/2,
+      attributes: {
+        fill: 'black',
+        style: `font-size: ${Math.max(12, getWeight(selected.mapInfo.type))}px; font-weight: bold;  text-shadow: -1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff;`
+      }
+    });
+  } /*else if (ComponentTypes.area.includes(selected.mapInfo.type)) {
+    
+  }*/
+}
 
 map.on("pm:create", e => {
     e.layer.mapInfo = {
@@ -57,7 +77,7 @@ map.on("pm:create", e => {
       layer: 0,
       nodes: [],
       attrs: {}
-    }
+    };
 
     e.layer.on("click", e => {
       setTimeout(e => {
@@ -69,15 +89,15 @@ map.on("pm:create", e => {
           element.querySelector(".c_attr-name").innerHTML = name ? name : "";
           element.querySelector(".c_attr-value").innerHTML = value ? value : "";
           element.querySelector(".c_attr-delete").onclick = e => { // adds deleting button functionality
-            delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")]
-            e.target.parentElement.remove()
+            delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
+            e.target.parentElement.remove();
             e.target.parentElement.innerHTML = "";
-          }
+          };
           element.querySelector(".c_attr-delete").querySelector("i").onclick = e => {
-            delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")]
-            e.target.parentElement.parentElement.remove()
+            delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")];
+            e.target.parentElement.parentElement.remove();
             e.target.parentElement.parentElement.innerHTML = "";
-          }
+          };
           element.querySelectorAll(".c_attr-name, .c_attr-value").forEach(element => { //adds saving for attrs
             element.onblur = () => {
               rowElements = document.getElementById("c_attr").querySelectorAll("tr");
@@ -92,7 +112,7 @@ map.on("pm:create", e => {
               }
             };
           });
-          return element
+          return element;
         }
 
         selected = e.target;
@@ -112,7 +132,7 @@ map.on("pm:create", e => {
           option.setAttribute("value", type);
           option.innerHTML = type;
           document.getElementById("c_type").appendChild(option);
-        })
+        });
         let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
         selectedOption.selected = true;
         document.getElementById("c_type").value = selected.mapInfo.type;
@@ -133,7 +153,7 @@ map.on("pm:create", e => {
 
         
         // check for same IDs
-        let ids = layers.getLayers().map(layer => layer.mapInfo.id)
+        let ids = layers.getLayers().map(layer => layer.mapInfo.id);
         var hasError = false;
         if (selected.mapInfo.id.trim() == "") {
           document.getElementById("c_emptyIdMsg").hidden = false;
@@ -143,8 +163,8 @@ map.on("pm:create", e => {
           document.getElementById("c_duplicateIdMsg").hidden = false;
           document.getElementById("c_duplicateIdMsg").onclick = () => {
             let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == selected.mapInfo.id && layer != selected)[0];
-            try {map.setView(otherLayer.getCenter(), map.getZoom())}
-            catch {map.setView(otherLayer.getLatLng(), map.getZoom())}
+            try {map.setView(otherLayer.getCenter(), map.getZoom());}
+            catch {map.setView(otherLayer.getLatLng(), map.getZoom());}
             otherLayer.fire('click');
           };
           hasError = true;
@@ -156,30 +176,28 @@ map.on("pm:create", e => {
         }
 
         document.getElementById("c_add-attr").onclick = () => { //adds add attribute button functionality
-          element = genTr()
-          document.getElementById("c_attr").appendChild(element)
+          element = genTr();
+          document.getElementById("c_attr").appendChild(element);
         };
 
         document.getElementById("c_attr").innerHTML = ""; //sets attrs
-        let attrs = selected.mapInfo.attrs
+        let attrs = selected.mapInfo.attrs;
         Object.keys(attrs).map(key => [key, attrs[key]]).forEach(([timestamp, info]) => {
           element = genTr(timestamp, info.name, info.value);
           document.getElementById("c_attr").appendChild(element);
-        })
-
-        // TODO c_type
+        });
 
         Array.from(["id", "displayname", "description"]).forEach(property => { //adds saving and filter for id, displayname, description
           document.getElementById("c_"+property).onblur = () => {
             document.getElementById("c_"+property).innerHTML = document.getElementById("c_"+property).innerHTML.replace(/<br>/gm, "").trim();
             selected.mapInfo[property] = document.getElementById("c_"+property).innerHTML;
-            if (ComponentTypes.line.includes(selected.mapInfo.type)) selected.setText("     "+selected.mapInfo.id+"     ", {repeat: true, offset: -0.0001, attributes: {fill: 'black', fontWeight: 'bold'}});
+            displayText();
           };
         });
 
         document.getElementById("c_id").onkeyup = () => { // warns if ids have the same name
-          let ids = layers.getLayers().map(layer => layer.mapInfo.id)
-          let filteredId = document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim()
+          let ids = layers.getLayers().map(layer => layer.mapInfo.id);
+          let filteredId = document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim();
           var hasError = false;
           if (filteredId == "") {
             document.getElementById("c_emptyIdMsg").hidden = false;
@@ -189,19 +207,19 @@ map.on("pm:create", e => {
             document.getElementById("c_duplicateIdMsg").hidden = false;
             document.getElementById("c_duplicateIdMsg").onclick = () => {
               let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
-              map.setView(otherLayer.getCenter(), map.getZoom())
+              map.setView(otherLayer.getCenter(), map.getZoom());
               otherLayer.fire('click');
             };
             hasError = true;
           } else document.getElementById("c_duplicateIdMsg").hidden = true;
-          if (hasError) document.getElementById("c_id").classList.add("warning")
-          else document.getElementById("c_id").classList.remove("warning")
-        }
+          if (hasError) document.getElementById("c_id").classList.add("warning");
+          else document.getElementById("c_id").classList.remove("warning");
+        };
 
         document.getElementById("c_layer").onblur = () => { //adds saving and filter for layer
           document.getElementById("c_layer").innerHTML = parseFloat(document.getElementById("c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
           selected.mapInfo.layer = parseFloat(document.getElementById("c_layer").innerHTML);
-        }
+        };
 
         sidebar.enablePanel('pane_componentInfo');
         sidebar.open('pane_componentInfo'); // opens the pane
@@ -214,8 +232,8 @@ map.on("pm:create", e => {
 map.on("click", e => {
       selectShadowGroup.clearLayers();
       selected = null;
-      document.getElementById('pane_componentInfo').querySelector('div').innerHTML = '<h1>Select a component...</h1>'
-    })
+      document.getElementById('pane_componentInfo').querySelector('div').innerHTML = '<h1>Select a component...</h1>';
+});
 
 map.on("pm:drawstart", e => {
   var types;
@@ -246,7 +264,7 @@ map.on("pm:drawstart", e => {
       let element = document.createElement('tr');
       element.innerHTML = document.getElementById("tp_template").innerHTML;
       
-      element.classList.add("tp_typeOption")
+      element.classList.add("tp_typeOption");
       element.querySelector(".tp_typeColor").style.background = getFrontColor(type);
       element.querySelector(".tp_typeColor").style.border = "2px solid "+getBackColor(type);
       element.querySelector(".tp_typeName").innerHTML = type;
@@ -254,26 +272,26 @@ map.on("pm:drawstart", e => {
       element.onclick = e => {
         drawingType[shape] = e.target.parentElement.querySelector(".tp_typeName").innerHTML;
         document.getElementById("tp_table").querySelectorAll("tr").forEach(tr => tr.classList.remove("tp_selected"));
-        e.target.parentElement.classList.add("tp_selected")
-      }
+        e.target.parentElement.classList.add("tp_selected");
+      };
 
       if (type == "simple"+shape.charAt(0).toUpperCase() + shape.slice(1)) {
-        element.classList.add("tp_selected")
+        element.classList.add("tp_selected");
       }
 
       document.getElementById("tp_table").appendChild(element);
-    })
+    });
   }
   if (drawingType[shape] != null) {
-    Array.from(document.getElementById("tp_table").querySelectorAll("tr")).filter(tr => tr.querySelector(".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected")
+    Array.from(document.getElementById("tp_table").querySelectorAll("tr")).filter(tr => tr.querySelector(".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected");
   }
   else {
     drawingType[shape] = "simple"+shape.charAt(0).toUpperCase() + shape.slice(1);
   }
 
   sidebar.open('pane_typePicker');
-})
+});
 
 map.on("pm:drawend", e => {
   document.getElementById("pane_typePicker").querySelector("div").innerHTML = document.getElementById("typePicker").querySelector("div").innerHTML;
-})
+});
