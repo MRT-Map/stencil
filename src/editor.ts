@@ -43,8 +43,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 // changes the component type of a component
 function typeChange(type?) {
   if (Skin.types[selected.mapInfo.type].type == "point") return;
-  if (type) selected.mapInfo.type = type;
-  else selected.mapInfo.type = document.getElementById("c_type").value;
+  selected.mapInfo.type = type ?? (<HTMLInputElement>document.getElementById("c_type")).value;
   console.log(selected.mapInfo.type);
   selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
   if (selectShadowGroup.getLayers().length != 0) selectShadowGroup.getLayers()[0].setStyle({weight: getWeight(selected.mapInfo.type)});
@@ -86,9 +85,9 @@ map.on("pm:create", e => {
         function genTr(timestamp?, name?, value?) {
           let element = document.createElement('tr');
           element.innerHTML = document.getElementById("c_attr-row").innerHTML;
-          element.setAttribute("name", timestamp ? timestamp : new Date().getTime());
-          element.querySelector(".c_attr-name").innerHTML = name ? name : "";
-          element.querySelector(".c_attr-value").innerHTML = value ? value : "";
+          element.setAttribute("name", timestamp ?? new Date().getTime());
+          element.querySelector(".c_attr-name").innerHTML = name ?? "";
+          element.querySelector(".c_attr-value").innerHTML = value ?? "";
           element.querySelector(".c_attr-delete").addEventListener("click", e => { // adds deleting button functionality
             delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
             e.target.parentElement.remove();
@@ -102,8 +101,8 @@ map.on("pm:create", e => {
           element.querySelectorAll(".c_attr-name, .c_attr-value").forEach(element => { //adds saving for attrs
             element.addEventListener("blur", () => {
               let rowElements = document.getElementById("c_attr").querySelectorAll("tr");
-              let nameElements = document.getElementById("c_attr").querySelectorAll(".c_attr-name");
-              let valueElements = document.getElementById("c_attr").querySelectorAll(".c_attr-value");
+              let nameElements: NodeListOf<HTMLInputElement> = document.getElementById("c_attr").querySelectorAll(".c_attr-name");
+              let valueElements: NodeListOf<HTMLInputElement> = document.getElementById("c_attr").querySelectorAll(".c_attr-value");
 
               for (let i=0; i < rowElements.length; i++) {
                 selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
@@ -136,7 +135,7 @@ map.on("pm:create", e => {
         });
         let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
         selectedOption.selected = true;
-        document.getElementById("c_type").value = selected.mapInfo.type;
+        (<HTMLInputElement>document.getElementById("c_type")).value = selected.mapInfo.type;
         document.getElementById("c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
         typeChange(selected.mapInfo.type);
 
@@ -266,8 +265,8 @@ map.on("pm:drawstart", e => {
       element.innerHTML = document.getElementById("tp_template").innerHTML;
       
       element.classList.add("tp_typeOption");
-      element.querySelector(".tp_typeColor").style.background = getFrontColor(type);
-      element.querySelector(".tp_typeColor").style.border = "2px solid "+getBackColor(type);
+      (<HTMLElement>element.querySelector(".tp_typeColor")).style.background = getFrontColor(type);
+      (<HTMLElement>element.querySelector(".tp_typeColor")).style.border = "2px solid "+getBackColor(type);
       element.querySelector(".tp_typeName").innerHTML = type;
 
       element.onclick = e => {

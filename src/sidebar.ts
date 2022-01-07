@@ -1,5 +1,4 @@
 /// <reference path="references.ts" />
-let L;
 console.log(Skin);
 
 var sidebar = L.control.sidebar({
