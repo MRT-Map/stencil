@@ -9,18 +9,21 @@ var selectShadowGroup = L.layerGroup([]);
 map.addLayer(selectShadowGroup);
 var layers = L.layerGroup([]);
 map.addLayer(layers);
-map.pm.setGlobalOptions({
-    layerGroup: layers
-});
 map.pm.addControls({
     position: 'bottomleft',
     drawCircleMarker: false,
     drawCircle: false
 });
-map.on("pm:vertexadded pm:centerplaced", e => {
-    e.lat = Math.round(e.lat);
-    e.lng = Math.round(e.lng);
+/*
+map.on("pm:drawstart", ({workingLayer}) => {
+  workingLayer.on("pm:vertexadded pm:centerplaced", e => {
+    let newLatlng = {lat: Math.round(e.latlng.lat*64)/64, lng: Math.round(e.latlng.lng*64)/64}
+    e.layer._latlngs[e.layer._latlngs.length-1] = newLatlng;
+    e.layer._latlngInfo[e.layer._latlngInfo.length-1].latlng = newLatlng;
+    e.latlng = newLatlng
+  });
 });
+*/
 map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
     if (e.shape == selected) {
         selectShadowGroup.clearLayers();
