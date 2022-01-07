@@ -1,7 +1,6 @@
 /// <reference path="references.ts" />
 let Skin = null;
 let ComponentTypes = null;
-let $;
 $.ajax({
     async: false,
     url: "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json",

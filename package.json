@@ -1,5 +1,12 @@
 {
   "dependencies": {
     "typescript": "^4.5.4"
+  },
+  "devDependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.11.4",
+    "@types/jquery": "^3.5.11",
+    "@types/leaflet": "^1.7.8",
+    "@types/leaflet-textpath": "^1.2.1",
+    "leaflet": "^1.7.1"
   }
 }

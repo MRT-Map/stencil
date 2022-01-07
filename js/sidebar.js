@@ -1,11 +1,10 @@
 /// <reference path="references.ts" />
-var L;
 console.log(Skin);
 var sidebar = L.control.sidebar({
     autopan: false,
     closeButton: true,
     container: 'sidebar',
-    position: 'left'
+    position: 'left',
 }).addTo(map);
 sidebar.addPanel({
     id: 'pane_welcome',

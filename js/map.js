@@ -1,5 +1,5 @@
 /// <reference path="references.ts" />
-var VERSION = "v0.0";
+const VERSION = "v0.0";
 console.log(Skin);
 var map = L.map('map', {
     crs: L.CRS.Simple
@@ -7,27 +7,27 @@ var map = L.map('map', {
 //override the default
 L.TileLayer.customTileLayer = L.TileLayer.extend({
     getTileUrl: function (coords) {
-        var Zcoord = Math.pow(2, (8 - coords.z));
-        var Xcoord = (coords.x * 1);
-        var Ycoord = coords.y * -1;
-        var group = {
+        let Zcoord = Math.pow(2, (8 - coords.z));
+        let Xcoord = (coords.x * 1);
+        let Ycoord = coords.y * -1;
+        let group = {
             x: Math.floor(Xcoord * Zcoord / 32),
-            y: Math.floor(Ycoord * Zcoord / 32)
+            y: Math.floor(Ycoord * Zcoord / 32),
         };
-        var numberInGroup = {
+        let numberInGroup = {
             x: Math.floor(Xcoord * Zcoord),
             y: Math.floor(Ycoord * Zcoord)
         };
         /* console.log(coords);
          console.log(group);
          console.log(numberInGroup);*/
-        var zzz = "";
+        let zzz = "";
         for (var i = 8; i > coords.z; i--) {
             zzz += "z";
         }
         if (zzz.length != 0)
             zzz += "_";
-        var url = "https://dynmap.minecartrapidtransit.net/tiles/new/flat/".concat(group.x, "_").concat(group.y, "/").concat(zzz).concat(numberInGroup.x, "_").concat(numberInGroup.y, ".png");
+        let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
         //console.log(url)
         return url;
         // return L.TileLayer.prototype.getTileUrl.call(this, coords);
@@ -62,22 +62,20 @@ L.tileLayer.customTileLayer("unused url; check custom function", {
 /*L.control.zoom({
   position: 'topright'
 }).addTo(map);*/
-function mapcoord(_a) {
-    var x = _a[0], y = _a[1];
-    var NewX = (y / -64) - 0.5;
-    var NewY = x / 64;
+function mapcoord([x, y]) {
+    let NewX = (y / -64) - 0.5;
+    let NewY = x / 64;
     return [NewX, NewY];
 }
-function worldcoord(_a) {
-    var x = _a[0], y = _a[1];
-    var NewX = y * 64;
-    var NewY = (x + 0.5) * -64;
+function worldcoord([x, y]) {
+    let NewX = y * 64;
+    let NewY = (x + 0.5) * -64;
     return [NewX, NewY];
 }
 var MyControl = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd: function (map) {
-        var container = L.DomUtil.create('div');
+        let container = L.DomUtil.create('div');
         container.innerHTML = "<img src='media/stencilicon_lighttext.png' style='height: 50px;' title='Logo by Cortesi'>";
         return container;
     },
