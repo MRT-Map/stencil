@@ -1,5 +1,4 @@
 /// <reference path="references.ts" />
-/* jshint esversion: 10 */
 var selected = null;
 var drawingType = {
   line: null,

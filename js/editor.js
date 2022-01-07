@@ -1,5 +1,4 @@
 /// <reference path="references.ts" />
-/* jshint esversion: 10 */
 var selected = null;
 var drawingType = {
     line: null,
@@ -40,10 +39,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 function typeChange(type) {
     if (Skin.types[selected.mapInfo.type].type == "point")
         return;
-    if (type)
-        selected.mapInfo.type = type;
-    else
-        selected.mapInfo.type = document.getElementById("c_type").value;
+    selected.mapInfo.type = type !== null && type !== void 0 ? type : document.getElementById("c_type").value;
     console.log(selected.mapInfo.type);
     selected.setStyle({ weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type) });
     if (selectShadowGroup.getLayers().length != 0)
@@ -84,9 +80,9 @@ map.on("pm:create", e => {
             function genTr(timestamp, name, value) {
                 let element = document.createElement('tr');
                 element.innerHTML = document.getElementById("c_attr-row").innerHTML;
-                element.setAttribute("name", timestamp ? timestamp : new Date().getTime());
-                element.querySelector(".c_attr-name").innerHTML = name ? name : "";
-                element.querySelector(".c_attr-value").innerHTML = value ? value : "";
+                element.setAttribute("name", timestamp !== null && timestamp !== void 0 ? timestamp : new Date().getTime());
+                element.querySelector(".c_attr-name").innerHTML = name !== null && name !== void 0 ? name : "";
+                element.querySelector(".c_attr-value").innerHTML = value !== null && value !== void 0 ? value : "";
                 element.querySelector(".c_attr-delete").addEventListener("click", e => {
                     delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
                     e.target.parentElement.remove();

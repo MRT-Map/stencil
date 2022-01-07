@@ -3,6 +3,7 @@
     "target": "ES2015",
     "module": "ES2015",
     "lib": ["ES2017", "dom"],
-    "outDir": "js/"
+    "outDir": "js/",
+    "typeRoots": ["./node_modules/@types/", "./node_modules/@geoman-io"],
   }
 }
