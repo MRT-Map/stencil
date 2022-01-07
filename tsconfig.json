@@ -4,6 +4,10 @@
     "module": "ES2015",
     "lib": ["ES2017", "dom"],
     "outDir": "js/",
-    "typeRoots": ["./node_modules/@types/", "./node_modules/@geoman-io"],
+    "typeRoots": [
+      "./node_modules/@types/",
+      "./node_modules/@geoman-io",
+      "./node_modules/"
+    ],
   }
 }
