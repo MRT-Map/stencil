@@ -1,5 +1,10 @@
 /// <reference path="references.ts" />
-var selected = null;
+
+interface Selected extends L.Path {
+  mapInfo: any
+}
+
+var selected: Selected = null;
 var drawingType = {
   line: null,
   point: null,
@@ -44,7 +49,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 // changes the component type of a component
 function typeChange(type?) {
   if (Skin.types[selected.mapInfo.type].type == "point") return;
-  selected.mapInfo.type = type ?? (<HTMLInputElement>document.getElementById("c_type")).value;
+  selected.mapInfo.type = type ?? (document.getElementById("c_type") as HTMLInputElement).value;
   console.log(selected.mapInfo.type);
   selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
   if (selectShadowGroup.getLayers().length != 0) selectShadowGroup.getLayers()[0].setStyle({weight: getWeight(selected.mapInfo.type)});
@@ -81,7 +86,7 @@ map.on("pm:create", e => {
     };
 
     e.layer.on("click", e => {
-      setTimeout(e => {
+      setTimeout(() => {
         // generates a row of attrs
         function genTr(timestamp?, name?, value?) {
           let element = document.createElement('tr');
@@ -90,14 +95,14 @@ map.on("pm:create", e => {
           element.querySelector(".c_attr-name").innerHTML = name ?? "";
           element.querySelector(".c_attr-value").innerHTML = value ?? "";
           element.querySelector(".c_attr-delete").addEventListener("click", e => { // adds deleting button functionality
-            delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
-            e.target.parentElement.remove();
-            e.target.parentElement.innerHTML = "";
+            delete selected.mapInfo.attrs[(e.target as HTMLElement).parentElement.getAttribute("name")];
+            (e.target as HTMLElement).parentElement.remove();
+            (e.target as HTMLElement).parentElement.innerHTML = "";
           });
           element.querySelector(".c_attr-delete").querySelector("i").addEventListener("click", e => {
-            delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")];
-            e.target.parentElement.parentElement.remove();
-            e.target.parentElement.parentElement.innerHTML = "";
+            delete selected.mapInfo.attrs[(e.target as HTMLElement).parentElement.parentElement.getAttribute("name")];
+            (e.target as HTMLElement).parentElement.parentElement.remove();
+            (e.target as HTMLElement).parentElement.parentElement.innerHTML = "";
           });
           element.querySelectorAll(".c_attr-name, .c_attr-value").forEach(element => { //adds saving for attrs
             element.addEventListener("blur", () => {
@@ -134,10 +139,10 @@ map.on("pm:create", e => {
           option.innerHTML = type;
           document.getElementById("c_type").appendChild(option);
         });
-        let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
+        let selectedOption: HTMLOptionElement = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
         selectedOption.selected = true;
-        (<HTMLInputElement>document.getElementById("c_type")).value = selected.mapInfo.type;
-        document.getElementById("c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
+        (document.getElementById("c_type") as HTMLSelectElement).value = selected.mapInfo.type;
+        (document.getElementById("c_type") as HTMLSelectElement).selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
         typeChange(selected.mapInfo.type);
 
         // creates selector shadow
@@ -148,8 +153,8 @@ map.on("pm:create", e => {
         else if (selected instanceof L.Marker) {
           L.circleMarker(selected.getLatLng(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
-        else {
-          L.polyline(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+        else if (selected instanceof L.Polyline) {
+          L.polyline(selected.getLatLngs() as L.LatLng[], {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
         }
 
         
@@ -208,7 +213,7 @@ map.on("pm:create", e => {
             document.getElementById("c_duplicateIdMsg").hidden = false;
             document.getElementById("c_duplicateIdMsg").onclick = () => {
               let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
-              map.setView(otherLayer.getCenter(), map.getZoom());
+              map.setView((otherLayer as L.Polyline).getCenter(), map.getZoom());
               otherLayer.fire('click');
             };
             hasError = true;
@@ -217,14 +222,14 @@ map.on("pm:create", e => {
           else document.getElementById("c_id").classList.remove("warning");
         };
 
-        document.getElementById("c_layer").onblur = () => { //adds saving and filter for layer
+        document.getElementById("c_layer").addEventListener('blur', () => { //adds saving and filter for layer
           document.getElementById("c_layer").innerHTML = parseFloat(document.getElementById("c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
           selected.mapInfo.layer = parseFloat(document.getElementById("c_layer").innerHTML);
-        };
+        });
 
         sidebar.enablePanel('pane_componentInfo');
         sidebar.open('pane_componentInfo'); // opens the pane
-      }, 10, e);
+      }, 10);
     });
 
     e.layer.fire("click");
@@ -271,9 +276,9 @@ map.on("pm:drawstart", e => {
       element.querySelector(".tp_typeName").innerHTML = type;
 
       element.onclick = e => {
-        drawingType[shape] = e.target.parentElement.querySelector(".tp_typeName").innerHTML;
+        drawingType[shape] = (e.target as HTMLElement).parentElement.querySelector(".tp_typeName").innerHTML;
         document.getElementById("tp_table").querySelectorAll("tr").forEach(tr => tr.classList.remove("tp_selected"));
-        e.target.parentElement.classList.add("tp_selected");
+        (e.target as HTMLElement).parentElement.classList.add("tp_selected");
       };
 
       if (type == "simple"+shape.charAt(0).toUpperCase() + shape.slice(1)) {

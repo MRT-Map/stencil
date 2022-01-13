@@ -8,6 +8,7 @@
     "@types/leaflet": "^1.7.8",
     "@types/leaflet-textpath": "^1.2.1",
     "leaflet": "^1.7.1",
-    "leaflet-sidebar-v2": "^3.2.3"
+    "leaflet-sidebar-v2": "^3.2.3",
+    "leaflet-textpath": "^1.2.3"
   }
 }
