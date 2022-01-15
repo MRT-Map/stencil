@@ -35,7 +35,9 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
     }
 });
 // static factory as recommended by http://leafletjs.com/reference-1.0.3.html#class
+// @ts-ignore
 L.tileLayer.customTileLayer = function (templateUrl, options) {
+    // @ts-ignore
     return new L.TileLayer.customTileLayer(templateUrl, options);
 };
 function f(t, n) {
@@ -47,6 +49,7 @@ function f(t, n) {
             e;
     });
 }
+// @ts-ignore
 L.tileLayer.customTileLayer("unused url; check custom function", {
     maxZoom: 8,
     zoomControl: false,
