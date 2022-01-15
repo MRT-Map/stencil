@@ -14,6 +14,10 @@ map.pm.addControls({
     drawCircleMarker: false,
     drawCircle: false
 });
+// @ts-ignore
+map.pm.setGlobalOptions({
+    layerGroup: layers
+});
 /*
 map.on("pm:drawstart", ({workingLayer}) => {
   workingLayer.on("pm:vertexadded pm:centerplaced", e => {
@@ -25,6 +29,7 @@ map.on("pm:drawstart", ({workingLayer}) => {
 });
 */
 map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
+    // @ts-ignore
     if (e.shape == selected) {
         selectShadowGroup.clearLayers();
         if (selected instanceof L.Polygon) {
@@ -116,7 +121,7 @@ map.on("pm:create", e => {
             document.getElementById("c_id").innerHTML = selected.mapInfo.id; // sets id, displayname, description, layer
             document.getElementById("c_displayname").innerHTML = selected.mapInfo.displayname;
             document.getElementById("c_description").innerHTML = selected.mapInfo.description;
-            document.getElementById("c_layer").innerHTML = selected.mapInfo.layer;
+            document.getElementById("c_layer").innerHTML = selected.mapInfo.layer.toString();
             // adds content to pane
             document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
             // add type dropdown
