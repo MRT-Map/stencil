@@ -28,6 +28,8 @@ map.on("pm:drawstart", ({workingLayer}) => {
   });
 });
 */
+const qs = (ele, query) => ele.querySelector(query);
+const qsa = (ele, query) => ele.querySelectorAll(query);
 map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
     // @ts-ignore
     if (e.shape == selected) {
@@ -47,7 +49,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 function typeChange(type) {
     if (Skin.types[selected.mapInfo.type].type == "point")
         return;
-    selected.mapInfo.type = type !== null && type !== void 0 ? type : document.getElementById("c_type").value;
+    selected.mapInfo.type = type !== null && type !== void 0 ? type : qs(document, "#c_type").value;
     console.log(selected.mapInfo.type);
     selected.setStyle({ weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type) });
     if (selectShadowGroup.getLayers().length != 0)
@@ -87,25 +89,25 @@ map.on("pm:create", e => {
             // generates a row of attrs
             function genTr(timestamp, name, value) {
                 let element = document.createElement('tr');
-                element.innerHTML = document.getElementById("c_attr-row").innerHTML;
+                element.innerHTML = qs(document, "#c_attr-row").innerHTML;
                 element.setAttribute("name", timestamp !== null && timestamp !== void 0 ? timestamp : new Date().getTime());
-                element.querySelector(".c_attr-name").innerHTML = name !== null && name !== void 0 ? name : "";
-                element.querySelector(".c_attr-value").innerHTML = value !== null && value !== void 0 ? value : "";
-                element.querySelector(".c_attr-delete").addEventListener("click", e => {
+                qs(element, ".c_attr-name").innerHTML = name !== null && name !== void 0 ? name : "";
+                qs(element, ".c_attr-value").innerHTML = value !== null && value !== void 0 ? value : "";
+                qs(element, ".c_attr-delete").addEventListener("click", e => {
                     delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
                     e.target.parentElement.remove();
                     e.target.parentElement.innerHTML = "";
                 });
-                element.querySelector(".c_attr-delete").querySelector("i").addEventListener("click", e => {
+                qs(element, ".c_attr-delete i").addEventListener("click", e => {
                     delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")];
                     e.target.parentElement.parentElement.remove();
                     e.target.parentElement.parentElement.innerHTML = "";
                 });
-                element.querySelectorAll(".c_attr-name, .c_attr-value").forEach(element => {
+                qsa(element, ".c_attr-name, .c_attr-value").forEach(element => {
                     element.addEventListener("blur", () => {
-                        let rowElements = document.getElementById("c_attr").querySelectorAll("tr");
-                        let nameElements = document.getElementById("c_attr").querySelectorAll(".c_attr-name");
-                        let valueElements = document.getElementById("c_attr").querySelectorAll(".c_attr-value");
+                        let rowElements = qsa(document, "#c_attr tr");
+                        let nameElements = qsa(document, "#c_attr .c_attr-name");
+                        let valueElements = qsa(document, "#c_attr .c_attr-value");
                         for (let i = 0; i < rowElements.length; i++) {
                             selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
                                 name: nameElements[i].value,
@@ -117,25 +119,25 @@ map.on("pm:create", e => {
                 return element;
             }
             selected = e.target;
-            document.getElementById("pane_componentInfo").querySelector("div").innerHTML = ""; // clear the pane
-            document.getElementById("c_id").innerHTML = selected.mapInfo.id; // sets id, displayname, description, layer
-            document.getElementById("c_displayname").innerHTML = selected.mapInfo.displayname;
-            document.getElementById("c_description").innerHTML = selected.mapInfo.description;
-            document.getElementById("c_layer").innerHTML = selected.mapInfo.layer.toString();
+            qs(document, "#pane_componentInfo div").innerHTML = ""; // clear the pane
+            qs(document, "#c_id").innerHTML = selected.mapInfo.id; // sets id, displayname, description, layer
+            qs(document, "#c_displayname").innerHTML = selected.mapInfo.displayname;
+            qs(document, "#c_description").innerHTML = selected.mapInfo.description;
+            qs(document, "#c_layer").innerHTML = selected.mapInfo.layer.toString();
             // adds content to pane
-            document.getElementById("pane_componentInfo").querySelector("div").innerHTML = document.getElementById("componentInfo").querySelector("div").innerHTML;
+            qs(document, "#pane_componentInfo div").innerHTML = qs(document, "#componentInfo div").innerHTML;
             // add type dropdown
-            document.getElementById("c_type").innerHTML = "";
+            qs(document, "#c_type").innerHTML = "";
             ComponentTypes[Skin.types[selected.mapInfo.type].type].forEach(type => {
                 let option = document.createElement("option");
                 option.setAttribute("value", type);
                 option.innerHTML = type;
-                document.getElementById("c_type").appendChild(option);
+                qs(document, "#c_type").appendChild(option);
             });
-            let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
+            let selectedOption = qs(document, `#c_type [value=${selected.mapInfo.type}]`);
             selectedOption.selected = true;
-            document.getElementById("c_type").value = selected.mapInfo.type;
-            document.getElementById("c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
+            qs(document, "#c_type").value = selected.mapInfo.type;
+            qs(document, "#c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
             typeChange(selected.mapInfo.type);
             // creates selector shadow
             selectShadowGroup.clearLayers();
@@ -152,14 +154,14 @@ map.on("pm:create", e => {
             let ids = layers.getLayers().map(layer => layer.mapInfo.id);
             var hasError = false;
             if (selected.mapInfo.id.trim() == "") {
-                document.getElementById("c_emptyIdMsg").hidden = false;
+                qs(document, "#c_emptyIdMsg").hidden = false;
                 hasError = true;
             }
             else
-                document.getElementById("c_emptyIdMsg").hidden = true;
+                qs(document, "#c_emptyIdMsg").hidden = true;
             if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
-                document.getElementById("c_duplicateIdMsg").hidden = false;
-                document.getElementById("c_duplicateIdMsg").addEventListener("click", () => {
+                qs(document, "#c_duplicateIdMsg").hidden = false;
+                qs(document, "#c_duplicateIdMsg").addEventListener("click", () => {
                     let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == selected.mapInfo.id && layer != selected)[0];
                     try {
                         map.setView(otherLayer.getCenter(), map.getZoom());
@@ -172,43 +174,43 @@ map.on("pm:create", e => {
                 hasError = true;
             }
             else
-                document.getElementById("c_duplicateIdMsg").hidden = true;
+                qs(document, "#c_duplicateIdMsg").hidden = true;
             if (hasError) {
-                document.getElementById("c_id").classList.add("warning");
+                qs(document, "#c_id").classList.add("warning");
             }
             else {
-                document.getElementById("c_id").classList.remove("warning");
+                qs(document, "#c_id").classList.remove("warning");
             }
-            document.getElementById("c_add-attr").addEventListener("click", () => {
+            qs(document, "#c_add-attr").addEventListener("click", () => {
                 let element = genTr();
-                document.getElementById("c_attr").appendChild(element);
+                qs(document, "#c_attr").appendChild(element);
             });
-            document.getElementById("c_attr").innerHTML = ""; //sets attrs
+            qs(document, "#c_attr").innerHTML = ""; //sets attrs
             let attrs = selected.mapInfo.attrs;
             Object.keys(attrs).map(key => [key, attrs[key]]).forEach(([timestamp, info]) => {
                 let element = genTr(timestamp, info.name, info.value);
-                document.getElementById("c_attr").appendChild(element);
+                qs(document, "#c_attr").appendChild(element);
             });
             Array.from(["id", "displayname", "description"]).forEach(property => {
-                document.getElementById("c_" + property).addEventListener("blur", () => {
-                    document.getElementById("c_" + property).innerHTML = document.getElementById("c_" + property).innerHTML.replace(/<br>/gm, "").trim();
-                    selected.mapInfo[property] = document.getElementById("c_" + property).innerHTML;
+                qs(document, "#c_" + property).addEventListener("blur", () => {
+                    qs(document, "#c_" + property).innerHTML = qs(document, "#c_" + property).innerHTML.replace(/<br>/gm, "").trim();
+                    selected.mapInfo[property] = qs(document, "#c_" + property).innerHTML;
                     displayText();
                 });
             });
-            document.getElementById("c_id").addEventListener("keyup", () => {
+            qs(document, "#c_id").addEventListener("keyup", () => {
                 let ids = layers.getLayers().map(layer => layer.mapInfo.id);
-                let filteredId = document.getElementById("c_id").innerHTML.replace(/<br>/gm, "").trim();
+                let filteredId = qs(document, "#c_id").innerHTML.replace(/<br>/gm, "").trim();
                 var hasError = false;
                 if (filteredId == "") {
-                    document.getElementById("c_emptyIdMsg").hidden = false;
+                    qs(document, "#c_emptyIdMsg").hidden = false;
                     hasError = true;
                 }
                 else
-                    document.getElementById("c_emptyIdMsg").hidden = true;
+                    qs(document, "#c_emptyIdMsg").hidden = true;
                 if (ids.filter(id => id == filteredId).length > (filteredId == selected.mapInfo.id ? 1 : 0)) {
-                    document.getElementById("c_duplicateIdMsg").hidden = false;
-                    document.getElementById("c_duplicateIdMsg").addEventListener("click", () => {
+                    qs(document, "#c_duplicateIdMsg").hidden = false;
+                    qs(document, "#c_duplicateIdMsg").addEventListener("click", () => {
                         let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
                         map.setView(otherLayer.getCenter(), map.getZoom());
                         otherLayer.fire('click');
@@ -216,15 +218,15 @@ map.on("pm:create", e => {
                     hasError = true;
                 }
                 else
-                    document.getElementById("c_duplicateIdMsg").hidden = true;
+                    qs(document, "#c_duplicateIdMsg").hidden = true;
                 if (hasError)
-                    document.getElementById("c_id").classList.add("warning");
+                    qs(document, "#c_id").classList.add("warning");
                 else
-                    document.getElementById("c_id").classList.remove("warning");
+                    qs(document, "#c_id").classList.remove("warning");
             });
-            document.getElementById("c_layer").addEventListener('blur', () => {
-                document.getElementById("c_layer").innerHTML = parseFloat(document.getElementById("c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
-                selected.mapInfo.layer = parseFloat(document.getElementById("c_layer").innerHTML);
+            qs(document, "#c_layer").addEventListener('blur', () => {
+                qs(document, "#c_layer").innerHTML = parseFloat(qs(document, "#c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
+                selected.mapInfo.layer = parseFloat(qs(document, "#c_layer").innerHTML);
             });
             sidebar.enablePanel('pane_componentInfo');
             sidebar.open('pane_componentInfo'); // opens the pane
@@ -235,7 +237,7 @@ map.on("pm:create", e => {
 map.on("click", e => {
     selectShadowGroup.clearLayers();
     selected = null;
-    document.getElementById('pane_componentInfo').querySelector('div').innerHTML = '<h1>Select a component...</h1>';
+    qs(document, '#pane_componentInfo div').innerHTML = '<h1>Select a component...</h1>';
 });
 map.on("pm:drawstart", e => {
     var types;
@@ -258,29 +260,29 @@ map.on("pm:drawstart", e => {
             break;
     }
     if (types) {
-        document.getElementById("pane_typePicker").querySelector("div").innerHTML = document.getElementById("typePicker").querySelector("div").innerHTML;
-        document.getElementById("tp_table").innerHTML = "";
-        document.getElementById('tp_shape').innerHTML = shape;
+        qs(document, "#pane_typePicker div").innerHTML = qs(document, "#typePicker div").innerHTML;
+        qs(document, "#tp_table").innerHTML = "";
+        qs(document, '#tp_shape').innerHTML = shape;
         types.forEach(type => {
             let element = document.createElement('tr');
-            element.innerHTML = document.getElementById("tp_template").innerHTML;
+            element.innerHTML = qs(document, "#tp_template").innerHTML;
             element.classList.add("tp_typeOption");
-            element.querySelector(".tp_typeColor").style.background = getFrontColor(type);
-            element.querySelector(".tp_typeColor").style.border = "2px solid " + getBackColor(type);
-            element.querySelector(".tp_typeName").innerHTML = type;
+            qs(element, ".tp_typeColor").style.background = getFrontColor(type);
+            qs(element, ".tp_typeColor").style.border = "2px solid " + getBackColor(type);
+            qs(element, ".tp_typeName").innerHTML = type;
             element.addEventListener("click", e => {
-                drawingType[shape] = e.target.parentElement.querySelector(".tp_typeName").innerHTML;
-                document.getElementById("tp_table").querySelectorAll("tr").forEach(tr => tr.classList.remove("tp_selected"));
+                drawingType[shape] = e.target.parentqs(element, ".tp_typeName").innerHTML;
+                qsa(document, "#tp_table tr").forEach(tr => tr.classList.remove("tp_selected"));
                 e.target.parentElement.classList.add("tp_selected");
             });
             if (type == "simple" + shape.charAt(0).toUpperCase() + shape.slice(1)) {
                 element.classList.add("tp_selected");
             }
-            document.getElementById("tp_table").appendChild(element);
+            qs(document, "#tp_table").appendChild(element);
         });
     }
     if (drawingType[shape] != null) {
-        Array.from(document.getElementById("tp_table").querySelectorAll("tr")).filter(tr => tr.querySelector(".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected");
+        Array.from(qsa(document, "#tp_table tr")).filter(tr => qs(tr, ".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected");
     }
     else {
         drawingType[shape] = "simple" + shape.charAt(0).toUpperCase() + shape.slice(1);
@@ -288,5 +290,5 @@ map.on("pm:drawstart", e => {
     sidebar.open('pane_typePicker');
 });
 map.on("pm:drawend", e => {
-    document.getElementById("pane_typePicker").querySelector("div").innerHTML = document.getElementById("typePicker").querySelector("div").innerHTML;
+    qs(document, "#pane_typePicker div").innerHTML = qs(document, "#typePicker div").innerHTML;
 });
