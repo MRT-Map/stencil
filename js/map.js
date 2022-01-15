@@ -5,6 +5,7 @@ var map = L.map('map', {
     crs: L.CRS.Simple
 }).setView([0, 0], 8);
 //override the default
+//@ts-ignore
 L.TileLayer.customTileLayer = L.TileLayer.extend({
     getTileUrl: function (coords) {
         let Zcoord = Math.pow(2, (8 - coords.z));
@@ -27,7 +28,6 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
         }
         if (zzz.length != 0)
             zzz += "_";
-        return "";
         let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
         //console.log(url)
         return url;

@@ -51,8 +51,8 @@ map.on("pm:drawstart", ({workingLayer}) => {
 });
 */
 
-const qs = (ele, query) => ele.querySelector(query);
-const qsa = (ele, query) => ele.querySelectorAll(query);
+const qs = (ele: HTMLElement | Document, query: string): HTMLElement => ele.querySelector(query);
+const qsa = (ele: HTMLElement | Document, query: string): NodeListOf<HTMLElement> => ele.querySelectorAll(query);
 
 map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
   // @ts-ignore
@@ -71,7 +71,7 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
 });
 
 // changes the component type of a component
-function typeChange(type?) {
+function typeChange(type?: string) {
   if (Skin.types[selected.mapInfo.type].type == "point") return;
   selected.mapInfo.type = type ?? (qs(document, "#c_type") as HTMLInputElement).value;
   console.log(selected.mapInfo.type);
@@ -112,7 +112,7 @@ map.on("pm:create", e => {
     e.layer.on("click", e => {
       setTimeout(() => {
         // generates a row of attrs
-        function genTr(timestamp?, name?, value?) {
+        function genTr(timestamp?, name?: string, value?: string) {
           let element = document.createElement('tr');
           element.innerHTML = qs(document, "#c_attr-row").innerHTML;
           element.setAttribute("name", timestamp ?? new Date().getTime());
@@ -131,8 +131,8 @@ map.on("pm:create", e => {
           qsa(element, ".c_attr-name, .c_attr-value").forEach(element => { //adds saving for attrs
             element.addEventListener("blur", () => {
               let rowElements = qsa(document, "#c_attr tr");
-              let nameElements: NodeListOf<HTMLInputElement> = qsa(document, "#c_attr .c_attr-name");
-              let valueElements: NodeListOf<HTMLInputElement> = qsa(document, "#c_attr .c_attr-value");
+              let nameElements: NodeListOf<HTMLInputElement> = document.querySelectorAll("#c_attr .c_attr-name");
+              let valueElements: NodeListOf<HTMLInputElement> = document.querySelectorAll("#c_attr .c_attr-value");
 
               for (let i=0; i < rowElements.length; i++) {
                 selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
@@ -163,7 +163,7 @@ map.on("pm:create", e => {
           option.innerHTML = type;
           qs(document, "#c_type").appendChild(option);
         });
-        let selectedOption: HTMLOptionElement = qs(document, `#c_type [value=${selected.mapInfo.type}]`);
+        let selectedOption: HTMLOptionElement = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
         selectedOption.selected = true;
         (qs(document, "#c_type") as HTMLSelectElement).value = selected.mapInfo.type;
         (qs(document, "#c_type") as HTMLSelectElement).selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
@@ -196,6 +196,7 @@ map.on("pm:create", e => {
             try {map.setView((otherLayer as L.Polyline).getCenter(), map.getZoom());}
             catch {map.setView((otherLayer as L.Marker).getLatLng(), map.getZoom());}
             otherLayer.fire('click');
+            // -3824 -29096
           });
           hasError = true;
         } else qs(document, "#c_duplicateIdMsg").hidden = true;

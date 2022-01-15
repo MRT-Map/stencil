@@ -106,8 +106,8 @@ map.on("pm:create", e => {
                 qsa(element, ".c_attr-name, .c_attr-value").forEach(element => {
                     element.addEventListener("blur", () => {
                         let rowElements = qsa(document, "#c_attr tr");
-                        let nameElements = qsa(document, "#c_attr .c_attr-name");
-                        let valueElements = qsa(document, "#c_attr .c_attr-value");
+                        let nameElements = document.querySelectorAll("#c_attr .c_attr-name");
+                        let valueElements = document.querySelectorAll("#c_attr .c_attr-value");
                         for (let i = 0; i < rowElements.length; i++) {
                             selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
                                 name: nameElements[i].value,
@@ -134,7 +134,7 @@ map.on("pm:create", e => {
                 option.innerHTML = type;
                 qs(document, "#c_type").appendChild(option);
             });
-            let selectedOption = qs(document, `#c_type [value=${selected.mapInfo.type}]`);
+            let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
             selectedOption.selected = true;
             qs(document, "#c_type").value = selected.mapInfo.type;
             qs(document, "#c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
