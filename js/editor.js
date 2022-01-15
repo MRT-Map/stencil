@@ -271,7 +271,7 @@ map.on("pm:drawstart", e => {
             qs(element, ".tp_typeColor").style.border = "2px solid " + getBackColor(type);
             qs(element, ".tp_typeName").innerHTML = type;
             element.addEventListener("click", e => {
-                drawingType[shape] = e.target.parentqs(element, ".tp_typeName").innerHTML;
+                drawingType[shape] = qs(e.target.parentElement, ".tp_typeName").innerHTML;
                 qsa(document, "#tp_table tr").forEach(tr => tr.classList.remove("tp_selected"));
                 e.target.parentElement.classList.add("tp_selected");
             });
