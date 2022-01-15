@@ -22,21 +22,41 @@ function layersToPla(layers) {
     layers.forEach(layer => {
         let newComps = JSON.parse(JSON.stringify(layer.mapInfo));
         delete newComps.id;
-        layer.getLatLngs()[0].forEach(latlng => {
+        //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
+        function resolve_nodes(latlng, hollowIndex) {
+            let id;
             let possibleNodes = Object.entries(nodes)
                 .filter(([id, node]) => node.x == Math.round(latlng.lng * 64) && node.y == Math.round(latlng.lat * 64));
             if (possibleNodes.length > 0) {
-                newComps.nodes.push(possibleNodes[0][0]);
-                var index = unused_nodes.indexOf(possibleNodes[0][0]);
+                id = possibleNodes[0][0];
+                var index = unused_nodes.indexOf(id);
                 if (index !== -1)
                     unused_nodes.splice(index, 1);
             }
             else {
-                let id = genId();
+                id = genId();
                 nodes[id] = { x: Math.round(latlng.lng * 64), y: Math.round(latlng.lat * 64), connections: [] };
-                newComps.nodes.push(id);
             }
-        });
+            if (hollowIndex) {
+                if (newComps.hollows === undefined)
+                    newComps.hollows = [];
+                if (newComps.hollows.length <= hollowIndex)
+                    newComps.hollows.push([]);
+                newComps.hollows[hollowIndex].push(id);
+            }
+            else
+                newComps.nodes.push(id);
+        }
+        if (layer instanceof L.Polygon) {
+            layer.getLatLngs()[0].forEach(layer => resolve_nodes(layer));
+            if (layer.getLatLngs().length > 1)
+                layer.getLatLngs().slice(1)
+                    .forEach((layer, i) => resolve_nodes(layer, i - 1));
+        }
+        else if (layer instanceof L.Marker)
+            resolve_nodes(layer.getLatLng());
+        else
+            layer.getLatLngs().forEach(layer => resolve_nodes(layer));
         comps[layer.mapInfo.id] = newComps;
     });
     unused_nodes.forEach(node => {
