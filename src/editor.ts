@@ -12,7 +12,8 @@ interface PLAComponent {
   id?: string,
   layer: number,
   nodes: string[],
-  type: string
+  type: string,
+  hollow?: string[][]
 }
 
 interface Selected extends L.Polyline {
