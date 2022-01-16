@@ -1,5 +1,8 @@
 /// <reference path="references.ts" />
 
+var setName = "city";
+(qs(document, "#nameField") as HTMLInputElement).value = setName;
+
 function genId(): string {
     function b10_b64(n: number) {
         const BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -14,6 +17,30 @@ function genId(): string {
     }
     let decimalId = Math.round(new Date().getTime() * 10000000)
     return b10_b64(decimalId) + "-" + b10_b64(Math.floor(Math.random() * 64**5 + 1));
+}
+
+function exportData() {
+  try {checkLayerIds(layers.getLayers() as Selected[]);}
+  catch (err) {qs(document, "#pane_export #err").innerHTML = err;}
+  let comps, nodes = layersToPla(layers.getLayers() as Selected[]);
+  let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
+  let dlAnchorElem: HTMLAnchorElement = document.querySelector('#pane_export #downloader');
+  dlAnchorElem.href = dataStr;
+  dlAnchorElem.download = setName+".comps.pla";
+  dlAnchorElem.click();
+  dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(nodes, null, 2));
+  dlAnchorElem.href = dataStr;
+  dlAnchorElem.download = setName+".nodes.pla";
+  dlAnchorElem.click();
+}
+
+function checkLayerIds(layers: Selected[]) {
+  let ids = []
+  layers.forEach(layer => {
+    if (ids.includes(layer.mapInfo.id)) throw "Duplicate ID: "+layer.mapInfo.id;
+    else if (layer.mapInfo.id.trim() == "") throw "Empty ID";
+    ids.push(layer.mapInfo.id)
+  });
 }
 
 function layersToPla(layers: Selected[]): [{ [id: string] : PLAComponent; }, { [id: string] : PLANode; }] {

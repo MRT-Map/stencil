@@ -60,6 +60,7 @@ map.on("zoomend", e => { if (selected)
     typeChange(); });
 // adds text to components
 function displayText() {
+    return;
     if (ComponentTypes.line.includes(selected.mapInfo.type)) {
         selected.setText(null);
         selected.setText("     " + selected.mapInfo.id + "     ", {
@@ -170,6 +171,7 @@ map.on("pm:create", e => {
                         map.setView(otherLayer.getLatLng(), map.getZoom());
                     }
                     otherLayer.fire('click');
+                    // -3824 -29096
                 });
                 hasError = true;
             }

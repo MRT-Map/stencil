@@ -83,6 +83,7 @@ map.on("zoomend", e => {if (selected) typeChange();});
 
 // adds text to components
 function displayText() {
+  return;
   if (ComponentTypes.line.includes(selected.mapInfo.type)) {
     (selected as L.Polyline).setText(null);
     (selected as L.Polyline).setText("     "+selected.mapInfo.id+"     ", {
