@@ -21,7 +21,7 @@ function genId(): string {
 
 function exportData() {
   try {checkLayerIds(layers.getLayers() as Selected[]);}
-  catch (err) {qs(document, "#pane_export #err").innerHTML = err;}
+  catch (err) {qs(document, "#pane_export #err").innerHTML = err; return;}
   let comps, nodes = layersToPla(layers.getLayers() as Selected[]);
   let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
   let dlAnchorElem: HTMLAnchorElement = document.querySelector('#pane_export #downloader');
