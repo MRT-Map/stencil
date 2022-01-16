@@ -45,6 +45,10 @@ map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
         }
     }
 });
+map.on("pm:remove", e => {
+    if (e.layer == selected)
+        selectShadowGroup.clearLayers();
+});
 // changes the component type of a component
 function typeChange(type) {
     if (Skin.types[selected.mapInfo.type].type == "point")

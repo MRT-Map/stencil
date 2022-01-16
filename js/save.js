@@ -23,6 +23,7 @@ function exportData() {
     }
     catch (err) {
         qs(document, "#pane_export #err").innerHTML = err;
+        return;
     }
     let comps, nodes = layersToPla(layers.getLayers());
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
