@@ -28,6 +28,7 @@
     <script defer src="js/sidebar.js"></script>
     <script defer src="js/editor.js"></script>
     <script defer src="js/save.js"></script>
+    <script defer src="js/load.js"></script>
 
     <script>
       setInterval(() => {
@@ -112,6 +113,21 @@
         </tr>
       </tbody>
     </table>
+    </div></div>
+
+    <div hidden id="export"><div><br>
+      <input type="text" id="nameField" placeholder="Set name"
+        onkeyup="setName = qs(document, '#pane_export #nameField').value">
+      <button onclick="exportData()">Export data</button><br>
+      <span id="err"></span>
+      <a id="downloader" style="display:none"></a>
+    </div></div>
+
+    <div hidden id="import"><div><br>
+      <button onclick="triggerImportData()">Import data</button><br>
+      <span id="err"></span>
+      <input type="file" name="importerComps" id="importerComps" accept=".comps.pla" style="display:none" oninput="importData('importerComps')">
+      <input type="file" name="importerNodes" id="importerNodes" accept=".nodes.pla" style="display:none" oninput="importData('importerNodes')">
     </div></div>
   </body>
 </html>

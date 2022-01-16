@@ -65,15 +65,15 @@ function getWeight(type) {
         case "line":
             filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fore");
             if (filteredLayers.length != 0)
-                return filteredLayers[filteredLayers.length - 1].width * Math.pow(2, (8 - map.getZoom()));
+                return filteredLayers[filteredLayers.length - 1].width;
             else
                 return null;
-            break;
         case "area":
             /*filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fill");
             return filteredLayers[filteredLayers.length-1].outline;*/
-            return 2 * Math.pow(2, (8 - map.getZoom()));
+            return 4;
         default:
             return undefined;
     }
 }
+// *2**(8-map.getZoom())

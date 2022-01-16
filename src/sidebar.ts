@@ -29,6 +29,20 @@ sidebar.addPanel({
   title: 'Pick Type'
 });
 
+sidebar.addPanel({
+  id: 'pane_export',
+  tab: '<i class="fas fa-file-export"></i>',
+  pane: document.getElementById("export").innerHTML,
+  title: 'Export Data'
+});
+
+sidebar.addPanel({
+  id: 'pane_import',
+  tab: '<i class="fas fa-file-import"></i>',
+  pane: document.getElementById("import").innerHTML,
+  title: 'Import Data'
+});
+
 /*sidebar.addPanel({
   id: 'discordLogin',
   tab: '<i class="fab fa-discord"></i>',

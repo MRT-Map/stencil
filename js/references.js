@@ -5,3 +5,4 @@
 /// <reference path="sidebar.ts" />
 /// <reference path="editor.ts" />
 /// <reference path="save.ts" />
+/// <reference path="load.ts" />
