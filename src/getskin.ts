@@ -63,13 +63,14 @@ function getWeight(type) {
       return null;
     case "line":
       filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fore");
-      if (filteredLayers.length != 0) return filteredLayers[filteredLayers.length-1].width*2**(8-map.getZoom());
+      if (filteredLayers.length != 0) return filteredLayers[filteredLayers.length-1].width;
       else return null;
     case "area":
       /*filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fill");
       return filteredLayers[filteredLayers.length-1].outline;*/
-      return 8*2**(8-map.getZoom());
+      return 4;
     default:
       return undefined;
   }
 }
+// *2**(8-map.getZoom())
