@@ -63,7 +63,7 @@ function getWeight(type) {
       return null;
     case "line":
       filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fore");
-      if (filteredLayers.length != 0) return filteredLayers[filteredLayers.length-1].width;
+      if (filteredLayers.length != 0) return filteredLayers[filteredLayers.length-1].width/2;
       else return null;
     case "area":
       /*filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fill");
