@@ -16,7 +16,7 @@ function genId(): string {
         return o.split("").reverse().join("");
     }
     let decimalId = Math.round(new Date().getTime() * 10000000)
-    return b10_b64(decimalId) + "-" + b10_b64(Math.floor(Math.random() * 64**5 + 1));
+    return b10_b64(decimalId) + "-" + b10_b64(Math.floor(Math.random() * 64**15 + 1));
 }
 
 function exportData() {
