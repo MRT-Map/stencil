@@ -21,11 +21,20 @@ function exportData() {
     try {
         checkLayerIds(layers.getLayers());
     }
-    catch (err) {
-        qs(document, "#pane_export #err").innerHTML = err;
+    catch ([err, where]) {
+        qs(document, "#pane_export #err").innerHTML = `<span style="color: red;">${err}</span>`;
+        if (where) {
+            try {
+                map.setView(where.getCenter(), map.getZoom());
+            }
+            catch (_a) {
+                map.setView(where.getLatLng(), map.getZoom());
+            }
+            where.fire('click');
+        }
         return;
     }
-    let comps, nodes = layersToPla(layers.getLayers());
+    let [comps, nodes] = layersToPla(layers.getLayers());
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
     let dlAnchorElem = document.querySelector('#pane_export #downloader');
     dlAnchorElem.href = dataStr;
@@ -40,9 +49,9 @@ function checkLayerIds(layers) {
     let ids = [];
     layers.forEach(layer => {
         if (ids.includes(layer.mapInfo.id))
-            throw "Duplicate ID: " + layer.mapInfo.id;
+            throw ["Duplicate ID: " + layer.mapInfo.id, layer];
         else if (layer.mapInfo.id.trim() == "")
-            throw "Empty ID";
+            throw ["Empty ID", layer];
         ids.push(layer.mapInfo.id);
     });
 }

@@ -21,8 +21,16 @@ function genId(): string {
 
 function exportData() {
   try {checkLayerIds(layers.getLayers() as Selected[]);}
-  catch (err) {qs(document, "#pane_export #err").innerHTML = err; return;}
-  let comps, nodes = layersToPla(layers.getLayers() as Selected[]);
+  catch ([err, where]) {
+    qs(document, "#pane_export #err").innerHTML = `<span style="color: red;">${err}</span>`;
+    if (where) {
+      try {map.setView((where as L.Polyline).getCenter(), map.getZoom());}
+      catch {map.setView((where as L.Marker).getLatLng(), map.getZoom());}
+      where.fire('click');
+    }
+    return;
+  }
+  let [comps, nodes] = layersToPla(layers.getLayers() as Selected[]);
   let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
   let dlAnchorElem: HTMLAnchorElement = document.querySelector('#pane_export #downloader');
   dlAnchorElem.href = dataStr;
@@ -37,8 +45,8 @@ function exportData() {
 function checkLayerIds(layers: Selected[]) {
   let ids = []
   layers.forEach(layer => {
-    if (ids.includes(layer.mapInfo.id)) throw "Duplicate ID: "+layer.mapInfo.id;
-    else if (layer.mapInfo.id.trim() == "") throw "Empty ID";
+    if (ids.includes(layer.mapInfo.id)) throw ["Duplicate ID: "+layer.mapInfo.id, layer];
+    else if (layer.mapInfo.id.trim() == "") throw ["Empty ID", layer];
     ids.push(layer.mapInfo.id)
   });
 }

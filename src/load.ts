@@ -3,23 +3,27 @@
 var allNodes = {};
 
 function triggerImportData() {
-    qs(document, "#importerNodes").click();
-    qs(document, "#importerComps").click();
+    try {
+        qs(document, "#importerNodes").click();
+        qs(document, "#importerComps").click();
+    } catch (err) {
+        qs(document, "#pane_import #err").innerHTML = `<span style="color: red;">${err}</span>`;
+    }
 }
 
-function importData(id: string) {
+function importData(id: string) { try {
     var importedFile = (qs(document, '#'+id) as HTMLInputElement).files[0];
 
     var reader = new FileReader();
     reader.onload = function() {
         var fileContent = JSON.parse(reader.result as string);
-        (document.getElementById('importer') as HTMLInputElement).value = "";
+        (document.getElementById(id) as HTMLInputElement).value = "";
         //console.log(fileContent);
         if (id == "importerComps") {
-            if (allNodes === undefined) {qs(document, "#pane_import #err").innerHTML = `No nodes`; return;}
+            if (allNodes === undefined) {throw `No nodes`;}
             Object.entries(fileContent).forEach(([id, value]: [string, PLAComponent]) => {
-                if (value.nodes === undefined) {qs(document, "#pane_import #err").innerHTML = `Component ${id} has no 'nodes' field`; return;}
-                if (value.type === undefined) {qs(document, "#pane_import #err").innerHTML = `Component ${id} has no 'type' field`; return;}
+                if (value.nodes === undefined) throw `Component ${id} has no 'nodes' field`;
+                if (value.type === undefined) throw `Component ${id} has no 'type' field`;
                 let mapInfo: PLAComponent = {
                     attrs: value.attrs ?? {},
                     description: value.description ?? "",
@@ -30,26 +34,39 @@ function importData(id: string) {
                 }
                 let comp: L.Layer;
                 let coords: L.LatLngExpression[] = value.nodes.map(node => {
-                    if (Object.keys(allNodes).includes(node)) {qs(document, "#pane_import #err").innerHTML = `Node ${node} of component ${id} not found in node list`; return;}
-                    return allNodes[node].x, allNodes[node].y;
-                })
-                if (ComponentTypes.area.contains(value.type)) {
+                    if (!Object.keys(allNodes).includes(node)) throw `Node ${node} of component ${id} not found in node list`;
+                    return [allNodes[node].y/64, allNodes[node].x/64];
+                });
+                console.log(coords);
+                if (ComponentTypes.area.includes(value.type)) {
                     comp = L.polygon(coords, {color: getFrontColor(value.type), weight: getWeight(value.type)});
                 }
-                else if (ComponentTypes.point.contains(value.type)) {
-                    comp = L.circleMarker(coords[0], {color: getFrontColor(value.type), weight: getWeight(value.type)});
+                else if (ComponentTypes.point.includes(value.type)) {
+                    comp = L.marker(coords[0], {});
                 }
-                else if (ComponentTypes.line.contains(value.type)) {
+                else if (ComponentTypes.line.includes(value.type)) {
                     comp = L.polyline(coords, {color: getFrontColor(value.type), weight: getWeight(value.type)});
                 } else {
-                    qs(document, "#pane_import #err").innerHTML = `Component ${id} has no 'type' field`;
-                    return;
+                    throw `Component ${id} has no 'type' field`;
                 }
+                (comp as Selected).mapInfo = mapInfo;
+                console.log(comp);
                 comp.addTo(layers);
             })
         } else if (id == "importerNodes") {
-
+            Object.entries(fileContent).forEach(([id, value]: [string, PLANode]) => {
+                if (value.x === undefined) throw `Node ${id} has no field 'x'`;
+                if (value.y === undefined) throw `Node ${id} has no field 'y'`;
+                allNodes[id] = {
+                    x: value.x,
+                    y: value.y,
+                    connections: value.connections ?? []
+                };
+            })
         }
     };
-    reader.readAsText(importedFile); 
+    reader.readAsText(importedFile);
+    } catch (err) {
+        qs(document, "#pane_import #err").innerHTML = `<span style="color: red;">${err}</span>`;
+    }
 }
