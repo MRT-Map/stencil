@@ -69,7 +69,7 @@ function layersToPla(layers) {
         function resolve_nodes(latlng, hollowIndex) {
             let id;
             let possibleNodes = Object.entries(nodes)
-                .filter(([id, node]) => node.x == Math.round(latlng.lng * 64) && node.y == Math.round(latlng.lat * 64));
+                .filter(([id, node]) => node.x == Math.round(latlng.lng * 64) && node.y == -Math.round(latlng.lat * 64));
             if (possibleNodes.length > 0) {
                 id = possibleNodes[0][0];
                 var index = unused_nodes.indexOf(id);
@@ -78,7 +78,7 @@ function layersToPla(layers) {
             }
             else {
                 id = genId();
-                nodes[id] = { x: Math.round(latlng.lng * 64), y: Math.round(latlng.lat * 64), connections: [] };
+                nodes[id] = { x: Math.round(latlng.lng * 64), y: -Math.round(latlng.lat * 64), connections: [] };
             }
             if (hollowIndex) {
                 if (newComps.hollows === undefined)

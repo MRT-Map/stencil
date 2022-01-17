@@ -47,7 +47,7 @@ function importData(id) {
                     let coords = value.nodes.map(node => {
                         if (!Object.keys(allNodes).includes(node))
                             throw `Node '${node}' of component '${id}' not found in node list`;
-                        return [allNodes[node].y / 64, allNodes[node].x / 64];
+                        return [-allNodes[node].y / 64, allNodes[node].x / 64];
                     });
                     //console.log(coords);
                     if (ComponentTypes.area.includes(value.type)) {
