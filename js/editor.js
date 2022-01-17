@@ -49,12 +49,13 @@ map.on("pm:remove", e => {
     if (e.layer == selected)
         selectShadowGroup.clearLayers();
 });
+var removing = false;
 // changes the component type of a component
 function typeChange(type) {
     if (Skin.types[selected.mapInfo.type].type == "point")
         return;
     selected.mapInfo.type = type !== null && type !== void 0 ? type : qs(document, "#c_type").value;
-    console.log(selected.mapInfo.type);
+    //console.log(selected.mapInfo.type);
     selected.setStyle({ weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type) });
     if (selectShadowGroup.getLayers().length != 0)
         selectShadowGroup.getLayers()[0].setStyle({ weight: getWeight(selected.mapInfo.type) });
@@ -87,159 +88,166 @@ map.on("pm:create", e => {
         description: "",
         layer: 0,
         nodes: [],
-        attrs: {}
+        attrs: {},
+        tags: ""
     };
-    e.layer.on("click", e => {
-        setTimeout(() => {
-            // generates a row of attrs
-            function genTr(timestamp, name, value) {
-                let element = document.createElement('tr');
-                element.innerHTML = qs(document, "#c_attr-row").innerHTML;
-                element.setAttribute("name", timestamp !== null && timestamp !== void 0 ? timestamp : new Date().getTime());
-                qs(element, ".c_attr-name").innerHTML = name !== null && name !== void 0 ? name : "";
-                qs(element, ".c_attr-value").innerHTML = value !== null && value !== void 0 ? value : "";
-                qs(element, ".c_attr-delete").addEventListener("click", e => {
-                    delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
-                    e.target.parentElement.remove();
-                    e.target.parentElement.innerHTML = "";
-                });
-                qs(element, ".c_attr-delete i").addEventListener("click", e => {
-                    delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")];
-                    e.target.parentElement.parentElement.remove();
-                    e.target.parentElement.parentElement.innerHTML = "";
-                });
-                qsa(element, ".c_attr-name, .c_attr-value").forEach(element => {
-                    element.addEventListener("blur", () => {
-                        let rowElements = qsa(document, "#c_attr tr");
-                        let nameElements = document.querySelectorAll("#c_attr .c_attr-name");
-                        let valueElements = document.querySelectorAll("#c_attr .c_attr-value");
-                        for (let i = 0; i < rowElements.length; i++) {
-                            selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
-                                name: nameElements[i].value,
-                                value: valueElements[i].value
-                            };
-                        }
-                    });
-                });
-                return element;
-            }
-            selected = e.target;
-            qs(document, "#pane_componentInfo div").innerHTML = ""; // clear the pane
-            qs(document, "#c_id").innerHTML = selected.mapInfo.id; // sets id, displayname, description, layer
-            qs(document, "#c_displayname").innerHTML = selected.mapInfo.displayname;
-            qs(document, "#c_description").innerHTML = selected.mapInfo.description;
-            qs(document, "#c_layer").innerHTML = selected.mapInfo.layer.toString();
-            // adds content to pane
-            qs(document, "#pane_componentInfo div").innerHTML = qs(document, "#componentInfo div").innerHTML;
-            // add type dropdown
-            qs(document, "#c_type").innerHTML = "";
-            ComponentTypes[Skin.types[selected.mapInfo.type].type].forEach(type => {
-                let option = document.createElement("option");
-                option.setAttribute("value", type);
-                option.innerHTML = type;
-                qs(document, "#c_type").appendChild(option);
+    e.layer.on("click", layerClickEvent);
+    e.layer.fire("click");
+});
+var layerClickEvent = (e) => {
+    if (map.pm.globalRemovalModeEnabled())
+        return;
+    setTimeout(() => {
+        // generates a row of attrs
+        function genTr(timestamp, name, value) {
+            let element = document.createElement('tr');
+            element.innerHTML = qs(document, "#c_attr-row").innerHTML;
+            element.setAttribute("name", timestamp !== null && timestamp !== void 0 ? timestamp : new Date().getTime());
+            qs(element, ".c_attr-name").innerHTML = name !== null && name !== void 0 ? name : "";
+            qs(element, ".c_attr-value").innerHTML = value !== null && value !== void 0 ? value : "";
+            qs(element, ".c_attr-delete").addEventListener("click", e => {
+                delete selected.mapInfo.attrs[e.target.parentElement.getAttribute("name")];
+                e.target.parentElement.remove();
+                e.target.parentElement.innerHTML = "";
             });
-            let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
-            selectedOption.selected = true;
-            qs(document, "#c_type").value = selected.mapInfo.type;
-            qs(document, "#c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
-            typeChange(selected.mapInfo.type);
-            // creates selector shadow
-            selectShadowGroup.clearLayers();
-            if (selected instanceof L.Polygon) {
-                L.polygon(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-            }
-            else if (selected instanceof L.Marker) {
-                L.circleMarker(selected.getLatLng(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-            }
-            else if (selected instanceof L.Polyline) {
-                L.polyline(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-            }
-            // check for same IDs
+            qs(element, ".c_attr-delete i").addEventListener("click", e => {
+                delete selected.mapInfo.attrs[e.target.parentElement.parentElement.getAttribute("name")];
+                e.target.parentElement.parentElement.remove();
+                e.target.parentElement.parentElement.innerHTML = "";
+            });
+            qsa(element, ".c_attr-name, .c_attr-value").forEach(element => {
+                element.addEventListener("blur", () => {
+                    let rowElements = qsa(document, "#c_attr tr");
+                    let nameElements = document.querySelectorAll("#c_attr .c_attr-name");
+                    let valueElements = document.querySelectorAll("#c_attr .c_attr-value");
+                    for (let i = 0; i < rowElements.length; i++) {
+                        selected.mapInfo.attrs[rowElements[i].getAttribute("name")] = {
+                            name: nameElements[i].value,
+                            value: valueElements[i].value
+                        };
+                    }
+                });
+            });
+            return element;
+        }
+        selected = e.target;
+        qs(document, "#pane_componentInfo div").innerHTML = ""; // clear the pane
+        qs(document, "#c_id").innerHTML = selected.mapInfo.id; // sets id, displayname, description, layer
+        qs(document, "#c_displayname").innerHTML = selected.mapInfo.displayname;
+        qs(document, "#c_description").innerHTML = selected.mapInfo.description;
+        qs(document, "#c_layer").innerHTML = selected.mapInfo.layer.toString();
+        qs(document, "#c_tags").innerHTML = selected.mapInfo.tags;
+        // adds content to pane
+        qs(document, "#pane_componentInfo div").innerHTML = qs(document, "#componentInfo div").innerHTML;
+        // add type dropdown
+        qs(document, "#c_type").innerHTML = "";
+        ComponentTypes[Skin.types[selected.mapInfo.type].type].forEach(type => {
+            let option = document.createElement("option");
+            option.setAttribute("value", type);
+            option.innerHTML = type;
+            qs(document, "#c_type").appendChild(option);
+        });
+        let selectedOption = document.querySelector(`#c_type [value=${selected.mapInfo.type}]`);
+        selectedOption.selected = true;
+        qs(document, "#c_type").value = selected.mapInfo.type;
+        qs(document, "#c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
+        typeChange(selected.mapInfo.type);
+        // creates selector shadow
+        selectShadowGroup.clearLayers();
+        if (selected instanceof L.Polygon) {
+            L.polygon(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
+        }
+        else if (selected instanceof L.Marker) {
+            L.circleMarker(selected.getLatLng(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
+        }
+        else if (selected instanceof L.Polyline) {
+            L.polyline(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
+        }
+        // check for same IDs
+        let ids = layers.getLayers().map(layer => layer.mapInfo.id);
+        var hasError = false;
+        if (selected.mapInfo.id.trim() == "") {
+            qs(document, "#c_emptyIdMsg").hidden = false;
+            hasError = true;
+        }
+        else
+            qs(document, "#c_emptyIdMsg").hidden = true;
+        if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
+            qs(document, "#c_duplicateIdMsg").hidden = false;
+            qs(document, "#c_duplicateIdMsg").addEventListener("click", () => {
+                let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == selected.mapInfo.id && layer != selected)[0];
+                try {
+                    map.setView(otherLayer.getCenter(), map.getZoom());
+                }
+                catch (_a) {
+                    map.setView(otherLayer.getLatLng(), map.getZoom());
+                }
+                otherLayer.fire('click');
+                // -3824 -29096
+            });
+            hasError = true;
+        }
+        else
+            qs(document, "#c_duplicateIdMsg").hidden = true;
+        if (hasError) {
+            qs(document, "#c_id").classList.add("warning");
+        }
+        else {
+            qs(document, "#c_id").classList.remove("warning");
+        }
+        qs(document, "#c_add-attr").addEventListener("click", () => {
+            let element = genTr();
+            qs(document, "#c_attr").appendChild(element);
+        });
+        qs(document, "#c_attr").innerHTML = ""; //sets attrs
+        let attrs = selected.mapInfo.attrs;
+        Object.keys(attrs).map(key => [key, attrs[key]]).forEach(([timestamp, info]) => {
+            let element = genTr(timestamp, info.name, info.value);
+            qs(document, "#c_attr").appendChild(element);
+        });
+        Array.from(["id", "displayname", "description", "tags"]).forEach(property => {
+            qs(document, "#c_" + property).addEventListener("blur", () => {
+                qs(document, "#c_" + property).innerHTML = qs(document, "#c_" + property).innerHTML.replace(/<br>/gm, "").trim();
+                selected.mapInfo[property] = qs(document, "#c_" + property).innerHTML;
+                displayText();
+            });
+        });
+        qs(document, "#c_id").addEventListener("keyup", () => {
             let ids = layers.getLayers().map(layer => layer.mapInfo.id);
+            let filteredId = qs(document, "#c_id").innerHTML.replace(/<br>/gm, "").trim();
             var hasError = false;
-            if (selected.mapInfo.id.trim() == "") {
+            if (filteredId == "") {
                 qs(document, "#c_emptyIdMsg").hidden = false;
                 hasError = true;
             }
             else
                 qs(document, "#c_emptyIdMsg").hidden = true;
-            if (ids.filter(id => id == selected.mapInfo.id).length > 1) {
+            if (ids.filter(id => id == filteredId).length > (filteredId == selected.mapInfo.id ? 1 : 0)) {
                 qs(document, "#c_duplicateIdMsg").hidden = false;
                 qs(document, "#c_duplicateIdMsg").addEventListener("click", () => {
-                    let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == selected.mapInfo.id && layer != selected)[0];
-                    try {
-                        map.setView(otherLayer.getCenter(), map.getZoom());
-                    }
-                    catch (_a) {
-                        map.setView(otherLayer.getLatLng(), map.getZoom());
-                    }
+                    let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
+                    map.setView(otherLayer.getCenter(), map.getZoom());
                     otherLayer.fire('click');
-                    // -3824 -29096
                 });
                 hasError = true;
             }
             else
                 qs(document, "#c_duplicateIdMsg").hidden = true;
-            if (hasError) {
+            if (hasError)
                 qs(document, "#c_id").classList.add("warning");
-            }
-            else {
+            else
                 qs(document, "#c_id").classList.remove("warning");
-            }
-            qs(document, "#c_add-attr").addEventListener("click", () => {
-                let element = genTr();
-                qs(document, "#c_attr").appendChild(element);
-            });
-            qs(document, "#c_attr").innerHTML = ""; //sets attrs
-            let attrs = selected.mapInfo.attrs;
-            Object.keys(attrs).map(key => [key, attrs[key]]).forEach(([timestamp, info]) => {
-                let element = genTr(timestamp, info.name, info.value);
-                qs(document, "#c_attr").appendChild(element);
-            });
-            Array.from(["id", "displayname", "description"]).forEach(property => {
-                qs(document, "#c_" + property).addEventListener("blur", () => {
-                    qs(document, "#c_" + property).innerHTML = qs(document, "#c_" + property).innerHTML.replace(/<br>/gm, "").trim();
-                    selected.mapInfo[property] = qs(document, "#c_" + property).innerHTML;
-                    displayText();
-                });
-            });
-            qs(document, "#c_id").addEventListener("keyup", () => {
-                let ids = layers.getLayers().map(layer => layer.mapInfo.id);
-                let filteredId = qs(document, "#c_id").innerHTML.replace(/<br>/gm, "").trim();
-                var hasError = false;
-                if (filteredId == "") {
-                    qs(document, "#c_emptyIdMsg").hidden = false;
-                    hasError = true;
-                }
-                else
-                    qs(document, "#c_emptyIdMsg").hidden = true;
-                if (ids.filter(id => id == filteredId).length > (filteredId == selected.mapInfo.id ? 1 : 0)) {
-                    qs(document, "#c_duplicateIdMsg").hidden = false;
-                    qs(document, "#c_duplicateIdMsg").addEventListener("click", () => {
-                        let otherLayer = layers.getLayers().filter(layer => layer.mapInfo.id == filteredId && layer != selected)[0];
-                        map.setView(otherLayer.getCenter(), map.getZoom());
-                        otherLayer.fire('click');
-                    });
-                    hasError = true;
-                }
-                else
-                    qs(document, "#c_duplicateIdMsg").hidden = true;
-                if (hasError)
-                    qs(document, "#c_id").classList.add("warning");
-                else
-                    qs(document, "#c_id").classList.remove("warning");
-            });
-            qs(document, "#c_layer").addEventListener('blur', () => {
-                qs(document, "#c_layer").innerHTML = parseFloat(qs(document, "#c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
-                selected.mapInfo.layer = parseFloat(qs(document, "#c_layer").innerHTML);
-            });
-            sidebar.enablePanel('pane_componentInfo');
-            sidebar.open('pane_componentInfo'); // opens the pane
-        }, 10);
-    });
-    e.layer.fire("click");
-});
+        });
+        qs(document, "#c_layer").addEventListener('blur', () => {
+            qs(document, "#c_layer").innerHTML = parseFloat(qs(document, "#c_layer").innerHTML.replace(/(?:(?<=^.+)-|[^\d-\.])/gm, "")).toString();
+            if (qs(document, "#c_layer").innerHTML === "NaN")
+                qs(document, "#c_layer").innerHTML = "0";
+            selected.mapInfo.layer = parseFloat(qs(document, "#c_layer").innerHTML);
+        });
+        sidebar.enablePanel('pane_componentInfo');
+        sidebar.open('pane_componentInfo'); // opens the pane
+    }, 10);
+};
 map.on("click", e => {
     selectShadowGroup.clearLayers();
     selected = null;

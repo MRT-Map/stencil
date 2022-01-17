@@ -1,5 +1,5 @@
 /// <reference path="references.ts" />
-console.log(Skin);
+//console.log(Skin);
 
 var sidebar = L.control.sidebar({
   autopan: false, 
@@ -50,5 +50,21 @@ sidebar.addPanel({
   title: 'Discord Login',
   position: 'bottom'
 });*/
+
+sidebar.addPanel({
+  id: 'pane_about',
+  tab: '<i class="fas fa-info"></i>',
+  pane: document.getElementById("about").innerHTML,
+  title: 'About Stencil',
+  position: "bottom"
+});
+
+sidebar.addPanel({
+  id: 'pane_manual',
+  tab: '<i class="fas fa-book"></i>',
+  pane: document.getElementById("manual").innerHTML,
+  title: 'Manual',
+  position: "bottom"
+});
 
 sidebar.open('pane_welcome');

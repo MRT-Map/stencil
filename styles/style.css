@@ -11,6 +11,17 @@ html, body {
   height: 100%;
 }
 
+#guideLink {
+  color: #0078a8;
+  text-decoration: underline;
+}
+#guideLink:hover {
+  cursor: pointer;
+}
+#guideLink:active {
+  color: #005588;
+}
+
 .fa, .fas, .fab {
   line-height: unset;
 }

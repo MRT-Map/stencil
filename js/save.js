@@ -18,11 +18,12 @@ function genId() {
     return b10_b64(decimalId) + "-" + b10_b64(Math.floor(Math.random() * Math.pow(64, 5) + 1));
 }
 function exportData() {
+    qs(document, "#pane_export #err").innerHTML = "";
     try {
         checkLayerIds(layers.getLayers());
     }
     catch ([err, where]) {
-        qs(document, "#pane_export #err").innerHTML = `<span style="color: red;">${err}</span>`;
+        qs(document, "#pane_export #err").innerHTML = err;
         if (where) {
             try {
                 map.setView(where.getCenter(), map.getZoom());
@@ -36,7 +37,7 @@ function exportData() {
     }
     let [comps, nodes] = layersToPla(layers.getLayers());
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
-    let dlAnchorElem = document.querySelector('#pane_export #downloader');
+    let dlAnchorElem = document.querySelector('#downloader');
     dlAnchorElem.href = dataStr;
     dlAnchorElem.download = setName + ".comps.pla";
     dlAnchorElem.click();
@@ -49,7 +50,7 @@ function checkLayerIds(layers) {
     let ids = [];
     layers.forEach(layer => {
         if (ids.includes(layer.mapInfo.id))
-            throw ["Duplicate ID: " + layer.mapInfo.id, layer];
+            throw ["Duplicate ID: '" + layer.mapInfo.id + "'", layer];
         else if (layer.mapInfo.id.trim() == "")
             throw ["Empty ID", layer];
         ids.push(layer.mapInfo.id);
@@ -62,6 +63,8 @@ function layersToPla(layers) {
     layers.forEach(layer => {
         let newComps = JSON.parse(JSON.stringify(layer.mapInfo));
         delete newComps.id;
+        newComps.type = (newComps.type + " " + newComps.tags.trim()).trim();
+        delete newComps.tags;
         //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
         function resolve_nodes(latlng, hollowIndex) {
             let id;

@@ -50,9 +50,9 @@
     <!-- Sidebar stuff -->
     <div hidden id="welcome"><div>
       <img src="media/stencilicon_darktext.png" style="width: 100%;" title="Logo by Cortesi">
-      <p>View the <a href="https://mrt-map.github.io/map/guide.html#s5" target="_blank">guide</a> on how to use Stencil.</p>
+      <b id="guideLink" onclick="sidebar.open('pane_manual')">New to Stencil? Click here for the manual</b><br><br> 
 
-      <b>Note: Stencil is still under development, expect bugs lurking everywhere.</b>
+      <b>Found a bug? Notify __7d via Discord, or submit an issue on our <a href="https://github.com/MRT-Map/stencil">GitHub</a>.</b>
     </div></div>
 
     <div hidden id="componentInfo"><div>
@@ -73,9 +73,10 @@
         <i class="fas fa-pen"></i>
       </h3><hr>
       <label for="c_type" style="color: #555555; font-weight: bold;">Component type:</label>
-      <select name="c_type" id="c_type" onchange="typeChange()">
-        <option value="TODO">TODO</option>
-      </select><br>
+      <select name="c_type" id="c_type" onchange="typeChange()"></select><br>
+      <span style="color: #555555">Tags:</span>
+      <span contenteditable id="c_tags" placeholder="Tags"></span>
+      <i class="fas fa-pen"></i><br>
       <span><b style="color: #555555;">Layer:</b> <span contenteditable id="c_layer" placeholder="0"></span>  <i class="fas fa-pen"></i></span>
       
       <table>
@@ -119,15 +120,55 @@
       Set name:&nbsp;&nbsp;<input type="text" id="nameField" placeholder="Set name"
         onkeyup="setName = qs(document, '#pane_export #nameField').value">
       <button onclick="exportData()">Export data</button><br>
-      <span id="err"></span>
+      <b style="color: red;" id="err"></span>
       <a id="downloader" style="display:none"></a>
     </div></div>
 
     <div hidden id="import"><div><br>
       <button onclick="triggerImportData()">Import data</button><br>
-      <span id="err"></span>
+      <b style="color: red;" id="err"></span>
       <input type="file" name="importerComps" id="importerComps" accept=".comps.pla" style="display:none" oninput="importData('importerComps')">
       <input type="file" name="importerNodes" id="importerNodes" accept=".nodes.pla" style="display:none" oninput="importData('importerNodes')">
+    </div></div>
+
+    <div hidden id="about"><div><br>
+      <b>Stencil is a map editor for the OpenMRTMap, made by __7d.</b><br>
+      <h2>Changelog</h2>
+      <ul>
+        <li>v1.0 (17/1/22)</li>
+        <ul>
+          <li>Basic component creation</li>
+          <li>Basic component data editing</li>
+          <li>Exporting & importing</li>
+        </ul>
+      </ul>
+    </div></div>
+    <div hidden id="manual"><div><br>
+      This is a manual on how to use Stencil.
+      <h2>1. Creating the components</h2>
+      On the bottom-left, click one of the four icons. The top is for points, the second is for lines, and the bottom two are for areas.<br>
+      A panel of component types should appear. Select the type you want.<br>
+      Place the vertices by left-clicking. Use the alt or option key to prevent snapping. <br>
+      For polygons, clicking the first vertex completes the component. For lines, click any vertex. For markers, click 'cancel'.<br>
+      
+      <h2>2. Editing component info</h2>
+      Another panel should appear. Enter the ID of the component. Make sure to follow naming guidelines.<br>
+      Feel free to edit the description, layer and displayname as well. You can also add attributes.<br>
+      If you selected the type wrongly you can also change it in the panel.<br>
+      Click away to deselect. Click again to select.<br>
+
+      <h2>3. Manipulating components</h2>
+      There are also five icons above the aforementioned four icons.<br>
+      The first from the top is used to edit the vertices of components. For example, if you want to reroute a component, or add new vertices.<br>
+      The second is used to move components around.<br>
+      The third is used to cut out hollows from polygons.<br>
+      The fourth is used to erase components.<br>
+      The fifth is used to rotate components.<br>
+
+      <h2>4. Exporting & Importing</h2>
+      To export, go to the Export tab. Enter the name of the set that you are editing, and then export. Two files will be downloaded.<br>
+      To import, go to the Import tab. Import your node file, then your components file, and it should be imported automatically.<br>
+      Note that importing will wipe out all other components for now.
     </div></div>
   </body>
 </html>

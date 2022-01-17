@@ -1,6 +1,6 @@
 /// <reference path="references.ts" />
-const VERSION = "v0.0";
-console.log(Skin);
+const VERSION = "v1.0";
+
 var map = L.map('map', {
   crs: L.CRS.Simple
 }).setView([0, 0], 8);
@@ -79,7 +79,7 @@ L.tileLayer.customTileLayer("unused url; check custom function", {
 /*L.control.zoom({
   position: 'topright'
 }).addTo(map);*/
-
+console.log("%cme when the when the the", 'color: orange; font-size: 25px');
 function mapcoord([x, y]) {
   let NewX = (y / -64) - 0.5;
   let NewY = x / 64;
