@@ -98,3 +98,8 @@ function layersToPla(layers: Selected[]): [{ [id: string] : PLAComponent; }, { [
   });
   return [comps, nodes];
 }
+
+/*setInterval(() => {
+  if (!("comps" in localStorage)) localStorage.financebook = LZString.compress("{}");
+  localStorage.financebook = LZString.compress(JSON.stringify(json));
+}, 5000);*/
