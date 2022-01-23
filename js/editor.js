@@ -12,12 +12,16 @@ map.addLayer(layers);
 map.pm.addControls({
     position: 'bottomleft',
     drawCircleMarker: false,
-    drawCircle: false
+    drawCircle: false,
+    cutPolygon: false
 });
 // @ts-ignore
 map.pm.setGlobalOptions({
-    layerGroup: layers
+    layerGroup: layers,
+    limitMarkersToCount: 50
 });
+// @ts-ignore
+pmOrtho = new L.PMOrtho(map, { snapAngle: 15, showAngleTooltip: false });
 /*
 map.on("pm:drawstart", ({workingLayer}) => {
   workingLayer.on("pm:vertexadded pm:centerplaced", e => {
@@ -30,21 +34,27 @@ map.on("pm:drawstart", ({workingLayer}) => {
 */
 const qs = (ele, query) => ele.querySelector(query);
 const qsa = (ele, query) => ele.querySelectorAll(query);
-map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
-    // @ts-ignore
-    if (e.shape == selected) {
-        selectShadowGroup.clearLayers();
-        if (selected instanceof L.Polygon) {
-            L.polygon(selected.getLatLngs(), { color: "yellow", weight: 5, pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
-        else if (selected instanceof L.Marker) {
-            L.circleMarker(selected.getLatLng(), { color: "yellow", weight: 5, pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
-        else {
-            L.polyline(selected.getLatLngs(), { color: "yellow", weight: 5, pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
+function select() {
+    selectShadowGroup.clearLayers();
+    if (selected instanceof L.Polygon) {
+        L.polygon(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
     }
-});
+    else if (selected instanceof L.Marker) {
+        L.circleMarker(selected.getLatLng(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
+    }
+    else if (selected instanceof L.Polyline) {
+        let select = L.polyline(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false });
+        select.addTo(selectShadowGroup);
+        select.setText("     ➤     ", {
+            repeat: true,
+            offset: getWeight(selected.mapInfo.type) / 4,
+            attributes: {
+                fill: 'black',
+                style: `font-size: ${Math.max(12, getWeight(selected.mapInfo.type))}px; font-weight: bold;  text-shadow: -1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff;`
+            }
+        });
+    }
+}
 map.on("pm:remove", e => {
     if (e.layer == selected)
         selectShadowGroup.clearLayers();
@@ -59,7 +69,7 @@ function typeChange(type) {
     selected.setStyle({ weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type) });
     if (selectShadowGroup.getLayers().length != 0)
         selectShadowGroup.getLayers()[0].setStyle({ weight: getWeight(selected.mapInfo.type) });
-    displayText();
+    select();
 }
 map.on("zoomend", e => { if (selected)
     typeChange(); });
@@ -70,7 +80,7 @@ function displayText() {
         selected.setText(null);
         selected.setText("     " + selected.mapInfo.id + "     ", {
             repeat: true,
-            offset: getWeight(selected.mapInfo.type) / 2,
+            offset: getWeight(selected.mapInfo.type) / 4,
             attributes: {
                 fill: 'black',
                 style: `font-size: ${Math.max(12, getWeight(selected.mapInfo.type))}px; font-weight: bold;  text-shadow: -1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff;`
@@ -91,6 +101,15 @@ map.on("pm:create", e => {
         attrs: {},
         tags: ""
     };
+    var a = (e) => {
+        console.log("a");
+        if (e.layer == selected)
+            select();
+    };
+    e.layer.on("pm:drag", a);
+    e.layer.on("pm:markerdrag", a);
+    e.layer.on("pm:vertexadded", a);
+    e.layer.on("pm:rotate", a);
     e.layer.on("click", layerClickEvent);
     e.layer.fire("click");
 });
@@ -153,16 +172,7 @@ var layerClickEvent = (e) => {
         qs(document, "#c_type").selectedIndex = ComponentTypes[Skin.types[selected.mapInfo.type].type].indexOf(selected.mapInfo.type);
         typeChange(selected.mapInfo.type);
         // creates selector shadow
-        selectShadowGroup.clearLayers();
-        if (selected instanceof L.Polygon) {
-            L.polygon(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
-        else if (selected instanceof L.Marker) {
-            L.circleMarker(selected.getLatLng(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
-        else if (selected instanceof L.Polyline) {
-            L.polyline(selected.getLatLngs(), { color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false }).addTo(selectShadowGroup);
-        }
+        select();
         // check for same IDs
         let ids = layers.getLayers().map(layer => layer.mapInfo.id);
         var hasError = false;
@@ -298,7 +308,7 @@ map.on("pm:drawstart", e => {
     if (drawingType[shape] != null) {
         Array.from(qsa(document, "#tp_table tr")).filter(tr => qs(tr, ".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected");
     }
-    else {
+    else if (shape !== undefined) {
         drawingType[shape] = "simple" + shape.charAt(0).toUpperCase() + shape.slice(1);
     }
     sidebar.open('pane_typePicker');

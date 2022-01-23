@@ -7,10 +7,10 @@
 
     <link rel="icon" type="image/png" href="./media/favicon.png">
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-sidebar-v2/css/leaflet-sidebar.min.css" />
     
     <link rel="stylesheet" href="styles/style.css">
     
@@ -19,11 +19,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="js/getskin.js"></script>
 
-    <script defer src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script defer src="https://unpkg.com/lodash/lodash.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script defer src="https://unpkg.com/lz-string/libs/lz-string.min.js"></script>
+    <script defer src="https://unpkg.com/leaflet/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
     <script defer src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
-    <script defer src="https://unpkg.com/leaflet-sidebar-v2@3.2.3/js/leaflet-sidebar.min.js"></script>
-    <!--<script defer src="https://unpkg.com/leaflet-textpath@1.2.3/leaflet.textpath.js"></script>-->
+    <script defer src="https://unpkg.com/leaflet-sidebar-v2/js/leaflet-sidebar.min.js"></script>
+    <script defer src="https://unpkg.com/leaflet-textpath/leaflet.textpath.js"></script>
 
+    <script defer src="js/pmortho.js"></script>
     <script defer src="js/map.js"></script>
     <script defer src="js/sidebar.js"></script>
     <script defer src="js/editor.js"></script>
@@ -135,6 +139,14 @@
       <b>Stencil is a map editor for the OpenMRTMap, made by __7d.</b><br>
       <h2>Changelog</h2>
       <ul>
+        <li>v1.1[b1] (23/1/22)</li>
+        <ul>
+          <li>Direction viewer for lines</li>
+          <li>Angle-snapping</li>
+          <li>Removed cutting feature as it's too buggy, will come back in a later update, probably</li>
+          <li>Selections when rotating, dragging or moving components are now fixed</li>
+          <li>Node-editing markers will now only show if close to the mouse, boosting peformance</li>
+        </ul>
         <li>v1.0 (17/1/22)</li>
         <ul>
           <li>Basic component creation</li>
@@ -161,9 +173,8 @@
       There are also five icons above the aforementioned four icons.<br>
       The first from the top is used to edit the vertices of components. For example, if you want to reroute a component, or add new vertices.<br>
       The second is used to move components around.<br>
-      The third is used to cut out hollows from polygons.<br>
-      The fourth is used to erase components.<br>
-      The fifth is used to rotate components.<br>
+      The third is used to erase components.<br>
+      The fourth is used to rotate components.<br>
 
       <h2>4. Exporting & Importing</h2>
       To export, go to the Export tab. Enter the name of the set that you are editing, and then export. Two files will be downloaded.<br>
