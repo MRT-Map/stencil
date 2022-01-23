@@ -27,7 +27,6 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
         }
         if (zzz.length != 0)
             zzz += "_";
-        return "";
         let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
         //console.log(url)
         return url;
