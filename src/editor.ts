@@ -35,7 +35,8 @@ map.addLayer(layers);
 map.pm.addControls({  
   position: 'bottomleft',
   drawCircleMarker: false,
-  drawCircle: false
+  drawCircle: false,
+  cutPolygon: false
 });
 // @ts-ignore
 map.pm.setGlobalOptions({
@@ -43,7 +44,7 @@ map.pm.setGlobalOptions({
   limitMarkersToCount: 50
 });
 // @ts-ignore
-pmOrtho = new L.PMOrtho(map, {snapAngle: 15});
+pmOrtho = new L.PMOrtho(map, {snapAngle: 15, showAngleTooltip: false});
 /*
 map.on("pm:drawstart", ({workingLayer}) => {
   workingLayer.on("pm:vertexadded pm:centerplaced", e => {
@@ -80,10 +81,6 @@ function select() {
     }
 }
 
-map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
-  // @ts-ignore
-  if (e.shape == selected) select();
-});
 
 map.on("pm:remove", e => {
   if (e.layer == selected) selectShadowGroup.clearLayers();
@@ -130,6 +127,14 @@ map.on("pm:create", e => {
       attrs: {},
       tags: ""
     };
+    var a = (e: L.LeafletEvent) => {
+      if (e.layer == selected) select();
+    }
+    e.layer.on("pm:drag", a);
+    e.layer.on("pm:markerdrag", a);
+    e.layer.on("pm:vertexadded", a);
+    e.layer.on("pm:vertexremoved", a);
+    e.layer.on("pm:rotate", a);
 
     e.layer.on("click", layerClickEvent);
 
@@ -323,7 +328,6 @@ map.on("pm:drawstart", e => {
         qsa(document, "#tp_table tr").forEach(tr => tr.classList.remove("tp_selected"));
         (e.target as HTMLElement).parentElement.classList.add("tp_selected");
       });
-
       if (type == "simple"+shape.charAt(0).toUpperCase() + shape.slice(1)) {
         element.classList.add("tp_selected");
       }
@@ -334,7 +338,7 @@ map.on("pm:drawstart", e => {
   if (drawingType[shape] != null) {
     Array.from(qsa(document, "#tp_table tr")).filter(tr => qs(tr, ".tp_typeName").innerHTML == drawingType[shape])[0].classList.add("tp_selected");
   }
-  else {
+  else if (shape !== undefined) {
     drawingType[shape] = "simple"+shape.charAt(0).toUpperCase() + shape.slice(1);
   }
 
