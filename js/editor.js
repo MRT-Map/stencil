@@ -102,13 +102,13 @@ map.on("pm:create", e => {
         tags: ""
     };
     var a = (e) => {
-        console.log("a");
         if (e.layer == selected)
             select();
     };
     e.layer.on("pm:drag", a);
     e.layer.on("pm:markerdrag", a);
     e.layer.on("pm:vertexadded", a);
+    e.layer.on("pm:vertexremoved", a);
     e.layer.on("pm:rotate", a);
     e.layer.on("click", layerClickEvent);
     e.layer.fire("click");
