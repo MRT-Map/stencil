@@ -39,8 +39,11 @@ map.pm.addControls({
 });
 // @ts-ignore
 map.pm.setGlobalOptions({
-  layerGroup: layers
+  layerGroup: layers,
+  limitMarkersToCount: 50
 });
+// @ts-ignore
+pmOrtho = new L.PMOrtho(map, {snapAngle: 15});
 /*
 map.on("pm:drawstart", ({workingLayer}) => {
   workingLayer.on("pm:vertexadded pm:centerplaced", e => {
@@ -55,20 +58,31 @@ map.on("pm:drawstart", ({workingLayer}) => {
 const qs = (ele: HTMLElement | Document, query: string): HTMLElement => ele.querySelector(query);
 const qsa = (ele: HTMLElement | Document, query: string): NodeListOf<HTMLElement> => ele.querySelectorAll(query);
 
-map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
-  // @ts-ignore
-  if (e.shape == selected) {
-    selectShadowGroup.clearLayers();
+function select() {
+  selectShadowGroup.clearLayers();
     if (selected instanceof L.Polygon) {
-      L.polygon(selected.getLatLngs(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+      L.polygon(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
     }
     else if (selected instanceof L.Marker) {
-      L.circleMarker(selected.getLatLng(), {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+      L.circleMarker(selected.getLatLng(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
     }
-    else {
-      L.polyline(selected.getLatLngs() as L.LatLngExpression[], {color: "yellow", weight: 5, pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
+    else if (selected instanceof L.Polyline) {
+      let select = L.polyline(selected.getLatLngs() as L.LatLngExpression[], {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false})
+      select.addTo(selectShadowGroup);
+      select.setText("     ➤     ", {
+        repeat: true,
+        offset: getWeight(selected.mapInfo.type)/4,
+        attributes: {
+          fill: 'black',
+          style: `font-size: ${Math.max(12, getWeight(selected.mapInfo.type))}px; font-weight: bold;  text-shadow: -1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff;`
+        }
+      });
     }
-  }
+}
+
+map.on("pm:drag pm:edit pm:cut pm:rotate", e => {
+  // @ts-ignore
+  if (e.shape == selected) select();
 });
 
 map.on("pm:remove", e => {
@@ -83,7 +97,7 @@ function typeChange(type?: string) {
   //console.log(selected.mapInfo.type);
   selected.setStyle({weight: getWeight(selected.mapInfo.type), color: getFrontColor(selected.mapInfo.type)});
   if (selectShadowGroup.getLayers().length != 0) (selectShadowGroup.getLayers()[0] as L.Polyline).setStyle({weight: getWeight(selected.mapInfo.type)});
-  displayText();
+  select();
 }
 map.on("zoomend", e => {if (selected) typeChange();});
 
@@ -94,7 +108,7 @@ function displayText() {
     (selected as L.Polyline).setText(null);
     (selected as L.Polyline).setText("     "+selected.mapInfo.id+"     ", {
       repeat: true,
-      offset: getWeight(selected.mapInfo.type)/2,
+      offset: getWeight(selected.mapInfo.type)/4,
       attributes: {
         fill: 'black',
         style: `font-size: ${Math.max(12, getWeight(selected.mapInfo.type))}px; font-weight: bold;  text-shadow: -1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff;`
@@ -185,16 +199,7 @@ var layerClickEvent = (e: L.LeafletEvent) => {
     typeChange(selected.mapInfo.type);
 
     // creates selector shadow
-    selectShadowGroup.clearLayers();
-    if (selected instanceof L.Polygon) {
-      L.polygon(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
-    }
-    else if (selected instanceof L.Marker) {
-      L.circleMarker(selected.getLatLng(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
-    }
-    else if (selected instanceof L.Polyline) {
-      L.polyline(selected.getLatLngs() as L.LatLng[], {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
-    }
+    select();
 
     
     // check for same IDs

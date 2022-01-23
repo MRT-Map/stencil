@@ -4,6 +4,7 @@
     "module": "ES2015",
     "lib": ["ES2017", "dom"],
     "outDir": "js/",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowJs": true
   }
 }
