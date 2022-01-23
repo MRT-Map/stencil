@@ -1,5 +1,5 @@
 /// <reference path="references.ts" />
-const VERSION = "v1.0";
+const VERSION = "v1.1b1";
 var map = L.map('map', {
     crs: L.CRS.Simple
 }).setView([0, 0], 8);
