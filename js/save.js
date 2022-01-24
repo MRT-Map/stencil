@@ -58,18 +58,19 @@ function checkLayerIds(layers) {
 }
 function layersToPla(layers) {
     let comps = {};
-    let nodes = {};
-    let unused_nodes = [];
+    let nodes = allNodes;
+    let unused_nodes = Object.keys(allNodes).slice(0);
     layers.forEach(layer => {
         let newComps = JSON.parse(JSON.stringify(layer.mapInfo));
         delete newComps.id;
+        newComps.nodes = [];
         newComps.type = (newComps.type + " " + newComps.tags.trim()).trim();
         delete newComps.tags;
         //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
         function resolve_nodes(latlng, hollowIndex) {
             let id;
             let possibleNodes = Object.entries(nodes)
-                .filter(([id, node]) => node.x == Math.round(latlng.lng * 64) && node.y == -Math.round(latlng.lat * 64));
+                .filter(([id, node]) => [node.x, node.y] == worldcoord([latlng.lat, latlng.lng]));
             if (possibleNodes.length > 0) {
                 id = possibleNodes[0][0];
                 var index = unused_nodes.indexOf(id);
@@ -77,7 +78,8 @@ function layersToPla(layers) {
                     unused_nodes.splice(index, 1);
             }
             else {
-                let coords = worldcoord([latlng.lng, latlng.lat]);
+                let coords = worldcoord([latlng.lat, latlng.lng]);
+                id = genId();
                 nodes[id] = { x: coords[0], y: coords[1], connections: [] };
             }
             if (hollowIndex) {
