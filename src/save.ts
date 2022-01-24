@@ -74,8 +74,8 @@ function layersToPla(layers: Selected[]): [{ [id: string] : PLAComponent; }, { [
         if (index !== -1) unused_nodes.splice(index, 1);
       }
       else {
-        id = genId()
-        nodes[id] = {x: Math.round(latlng.lng*64), y: -Math.round(latlng.lat*64), connections: []};
+        let coords = worldcoord([latlng.lng, latlng.lat]);
+        nodes[id] = {x: coords[0], y: coords[1], connections: []};
       }
       if (hollowIndex) {
         if (newComps.hollows === undefined) newComps.hollows = [];
