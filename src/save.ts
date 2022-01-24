@@ -66,9 +66,10 @@ function layersToPla(layers: Selected[]): [{ [id: string] : PLAComponent; }, { [
     //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
     function resolve_nodes(latlng: L.LatLng, hollowIndex?: number) {
       let id;
+      let wc = worldcoord([latlng.lat, latlng.lng]);
       let possibleNodes = Object.entries(nodes)
         .filter(([id, node]) =>
-          [node.x, node.y] == worldcoord([latlng.lat, latlng.lng]));
+            node.x == wc[0] && node.y == wc[1]);
       if (possibleNodes.length > 0) {
         id = possibleNodes[0][0];
         var index = unused_nodes.indexOf(id);
