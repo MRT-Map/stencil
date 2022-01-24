@@ -65,6 +65,15 @@ function importData(id) {
                     comp.mapInfo = mapInfo;
                     // @ts-ignore
                     comp._drawnByGeoman = true;
+                    var a = (e) => {
+                        if (e.layer == selected)
+                            select();
+                    };
+                    comp.on("pm:drag", a);
+                    comp.on("pm:markerdrag", a);
+                    comp.on("pm:vertexadded", a);
+                    comp.on("pm:vertexremoved", a);
+                    comp.on("pm:rotate", a);
                     comp.on("click", layerClickEvent);
                     //console.log(comp);
                     comp.addTo(layers);

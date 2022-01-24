@@ -69,8 +69,9 @@ function layersToPla(layers) {
         //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
         function resolve_nodes(latlng, hollowIndex) {
             let id;
+            let wc = worldcoord([latlng.lat, latlng.lng]);
             let possibleNodes = Object.entries(nodes)
-                .filter(([id, node]) => [node.x, node.y] == worldcoord([latlng.lat, latlng.lng]));
+                .filter(([id, node]) => node.x == wc[0] && node.y == wc[1]);
             if (possibleNodes.length > 0) {
                 id = possibleNodes[0][0];
                 var index = unused_nodes.indexOf(id);

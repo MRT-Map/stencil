@@ -72,8 +72,8 @@ function mapcoord([x, y]) {
     return [NewX, NewY];
 }
 function worldcoord([x, y]) {
-    let NewX = y * 64;
-    let NewY = (x + 0.5) * -64;
+    let NewX = Math.round(y * 64);
+    let NewY = Math.round((x + 0.5) * -64);
     return [NewX, NewY];
 }
 var MyControl = L.Control.extend({
