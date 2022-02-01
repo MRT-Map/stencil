@@ -41,7 +41,8 @@ map.pm.addControls({
 // @ts-ignore
 map.pm.setGlobalOptions({
   layerGroup: layers,
-  limitMarkersToCount: 50
+  limitMarkersToCount: 50,
+  finishOn: 'contextmenu'
 });
 // @ts-ignore
 pmOrtho = new L.PMOrtho(map, {snapAngle: 15, showAngleTooltip: false});
@@ -278,15 +279,19 @@ var layerClickEvent = (e: L.LeafletEvent) => {
       selected.mapInfo.layer = parseFloat(qs(document, "#c_layer").innerHTML);
     });
 
+    qs(document, "#c_sendToBack").addEventListener('click', () => { // adds functionality for sending component to back
+      selected.bringToBack();
+    })
+
     sidebar.enablePanel('pane_componentInfo');
     sidebar.open('pane_componentInfo'); // opens the pane
   }, 10);
 };
 
 map.on("click", e => {
-      selectShadowGroup.clearLayers();
-      selected = null;
-      qs(document, '#pane_componentInfo div').innerHTML = '<h1>Select a component...</h1>';
+  selectShadowGroup.clearLayers();
+  selected = null;
+  qs(document, '#pane_componentInfo div').innerHTML = '<h1>Select a component...</h1>';
 });
 
 map.on("pm:drawstart", e => {
