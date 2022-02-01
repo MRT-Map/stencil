@@ -42,7 +42,7 @@ function importData(id: string) { try {
                 let comp: L.Layer;
                 let coords: L.LatLngExpression[] = value.nodes.map(node => {
                     if (!Object.keys(allNodes).includes(node)) throw `Node '${node}' of component '${id}' not found in node list`;
-                    return [-allNodes[node].y/64, allNodes[node].x/64];
+                    return mapcoord([allNodes[node].x, allNodes[node].y]) as L.LatLngExpression;
                 });
                 //console.log(coords);
                 if (ComponentTypes.area.includes(value.type)) {
@@ -59,6 +59,14 @@ function importData(id: string) { try {
                 (comp as Selected).mapInfo = mapInfo;
                 // @ts-ignore
                 comp._drawnByGeoman = true;
+                var a = (e: L.LeafletEvent) => {
+                    if (e.layer == selected) select();
+                  }
+                comp.on("pm:drag", a);
+                comp.on("pm:markerdrag", a);
+                comp.on("pm:vertexadded", a);
+                comp.on("pm:vertexremoved", a);
+                comp.on("pm:rotate", a);
                 comp.on("click", layerClickEvent);
                 //console.log(comp);
                 comp.addTo(layers);

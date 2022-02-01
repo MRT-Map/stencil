@@ -1,5 +1,5 @@
 /// <reference path="references.ts" />
-const VERSION = "v1.0";
+const VERSION = "v1.1b2";
 var map = L.map('map', {
     crs: L.CRS.Simple
 }).setView([0, 0], 8);
@@ -72,8 +72,8 @@ function mapcoord([x, y]) {
     return [NewX, NewY];
 }
 function worldcoord([x, y]) {
-    let NewX = y * 64;
-    let NewY = (x + 0.5) * -64;
+    let NewX = Math.round(y * 64);
+    let NewY = Math.round((x + 0.5) * -64);
     return [NewX, NewY];
 }
 var MyControl = L.Control.extend({
