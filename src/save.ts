@@ -54,28 +54,31 @@ function checkLayerIds(layers: Selected[]) {
 
 function layersToPla(layers: Selected[]): [{ [id: string] : PLAComponent; }, { [id: string] : PLANode; }] {
   let comps:  { [id: string] : PLAComponent; } = {};
-  let nodes: { [id: string] : PLANode; } = {};
-  let unused_nodes: string[] = [];
+  let nodes: { [id: string] : PLANode; } = allNodes;
+  let unused_nodes: string[] = Object.keys(allNodes).slice(0);
   layers.forEach(layer => {
     let newComps = JSON.parse(JSON.stringify(layer.mapInfo));
     delete newComps.id;
+    newComps.nodes = [];
     newComps.type = (newComps.type+" "+newComps.tags.trim()).trim();
     delete newComps.tags;
     
     //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
     function resolve_nodes(latlng: L.LatLng, hollowIndex?: number) {
       let id;
+      let wc = worldcoord([latlng.lat, latlng.lng]);
       let possibleNodes = Object.entries(nodes)
         .filter(([id, node]) =>
-          node.x == Math.round(latlng.lng*64) && node.y == -Math.round(latlng.lat*64));
+            node.x == wc[0] && node.y == wc[1]);
       if (possibleNodes.length > 0) {
         id = possibleNodes[0][0];
         var index = unused_nodes.indexOf(id);
         if (index !== -1) unused_nodes.splice(index, 1);
       }
       else {
-        id = genId()
-        nodes[id] = {x: Math.round(latlng.lng*64), y: -Math.round(latlng.lat*64), connections: []};
+        let coords = worldcoord([latlng.lat, latlng.lng]);
+        id = genId();
+        nodes[id] = {x: coords[0], y: coords[1], connections: []};
       }
       if (hollowIndex) {
         if (newComps.hollows === undefined) newComps.hollows = [];
