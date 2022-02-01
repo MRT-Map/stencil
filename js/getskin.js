@@ -25,7 +25,6 @@ function getFrontColor(type) {
                 return "#808080";
             else
                 return filteredLayers[filteredLayers.length - 1].colour;
-            break;
         case "line":
             filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fore");
             return filteredLayers[filteredLayers.length - 1].colour;
@@ -48,7 +47,6 @@ function getBackColor(type) {
                 return filteredLayers[filteredLayers.length - 1].colour;
             else
                 return null;
-            break;
         case "area":
             filteredLayers = typeLayers.filter(typeLayer => typeLayer.layer == "fill");
             return filteredLayers[filteredLayers.length - 1].outline;

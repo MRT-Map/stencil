@@ -33,6 +33,7 @@
     <script defer src="js/editor.js"></script>
     <script defer src="js/save.js"></script>
     <script defer src="js/load.js"></script>
+    <script defer src="js/hotkeys.js"></script>
 
     <script>
       setInterval(() => {
@@ -101,7 +102,8 @@
         <tfoot>
           <tr><td colspan="3" id="c_add-attr"><i class="fas fa-plus"></i> Add new attribute</td></tr>
         </tfoot>
-        </table>
+      </table>
+      <button id="c_sendToBack">Send to back</button>
     </div></div>
     <!--<div hidden id="discordLogin">
       <p>Logged in as <b id="discordName">-</b></p>
@@ -139,15 +141,17 @@
       <b>Stencil is a map editor for the OpenMRTMap, made by __7d.</b><br>
       <h2>Changelog</h2>
       <ul>
-        <li>v1.1[b2] (24/1/22)</li>
+        <li>v1.1[b3] ()</li>
         <ul>
           <li>Direction viewer for lines</li>
           <li>Angle-snapping</li>
           <li>Removed cutting feature as it's too buggy, will come back in a later update, probably</li>
           <li>Selections when rotating, dragging or moving components are now fixed</li>
-          <li>Node-editing markers will now only show if close to the mouse, boosting peformance</li>
+          <li>Node-editing markers will now only show if close to the mouse, boosting performance</li>
           <li>Fix bug where imported data appears offset by 32 blocks</li>
           <li>Fix bug where saving data creates undefined nodes / null node references</li>
+          <li>Added 'send to back' button that sends components to the back to access inaccessible smaller components</li>
+          <li>Added hotkeys (1-8 and esc)</li>
         </ul>
         <li>v1.0 (17/1/22)</li>
         <ul>
