@@ -182,7 +182,7 @@ L.PMOrtho = L.Class.extend({
                             return;
                         }
                         // the dragged markers neighbors
-                        const markerArr = indexPath.length > 1 ? get(this._markers, parentPath) : this._markers;
+                        const markerArr = indexPath.length > 1 ? _.get(this._markers, parentPath) : this._markers;
                         // find the indizes of next and previous markers
                         const prevMarkerIndex = (index + (markerArr.length - 1)) % markerArr.length;
                         const nextMarkerIndex = (index + (markerArr.length + 1)) % markerArr.length;
@@ -698,9 +698,9 @@ L.PMOrtho = L.Class.extend({
             // the index path to the marker inside the multidimensional marker array
             const { indexPath, index, parentPath } = L.PM.Utils.findDeepMarkerIndex(this._markers, leftM);
             // define the coordsRing that is edited
-            const coordsRing = indexPath.length > 1 ? get(coords, parentPath) : coords;
+            const coordsRing = indexPath.length > 1 ? _.get(coords, parentPath) : coords;
             // define the markers array that is edited
-            const markerArr = indexPath.length > 1 ? get(this._markers, parentPath) : this._markers;
+            const markerArr = indexPath.length > 1 ? _.get(this._markers, parentPath) : this._markers;
             // add coordinate to coordinate array
             coordsRing.splice(index + 1, 0, latlng);
             // add marker to marker array
