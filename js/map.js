@@ -76,6 +76,10 @@ function worldcoord([x, y]) {
     let NewY = Math.round((x + 0.5) * -64);
     return [NewX, NewY];
 }
+function roundLatlng({ lat, lng }) {
+    const c = 64;
+    return { lat: Math.round(lat * c) / c, lng: Math.round(lng * c) / c };
+}
 var MyControl = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd: function (map) {

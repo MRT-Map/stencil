@@ -118,6 +118,7 @@ let Utils = {
 };
 
 
+
 L.PMOrtho = L.Class.extend({
     includes: [Utils],
     options: {
@@ -146,7 +147,11 @@ L.PMOrtho = L.Class.extend({
             L.PM.PMOrthoFunctionAdded = true;
             this._extendedEnable();
             this._extendedDisable();
-            L.PM.Draw.Line.prototype._syncHintMarker = this._syncHintMarker(this);
+            L.PM.Draw.Line.prototype._syncHintMarker = this._syncHintMarkerLine(this);
+
+            L.PM.Draw.Rectangle.prototype._syncHintMarker = this._syncHintMarkerRectangle(this);
+            L.PM.Draw.Rectangle.prototype._placeStartingMarkers = this._placeStartingMarkers(this);
+            L.PM.Draw.Rectangle.prototype._finishShape = this._finishShape(this);
 
             L.PM.Draw.Rectangle.prototype._finishShapeOrg = L.PM.Draw.Rectangle.prototype._finishShape;
             L.PM.Draw.Rectangle.prototype._finishShape = function (e) {
@@ -167,6 +172,7 @@ L.PMOrtho = L.Class.extend({
                             movedMarker.setLatLng(newlatlng);
                         }
                         layer.pm._adjustRectangleForMarkerMoveOrg(movedMarker);
+                        movedMarker.setLatlng(roundLatlng(movedMarker.getLatlng()));
                     }
                 } else if (layer instanceof L.Polyline) {
                     layer.pm._onMarkerDragOrg = layer.pm._onMarkerDrag;
@@ -203,7 +209,7 @@ L.PMOrtho = L.Class.extend({
                             }
 
                             let newlatlng = this._map.pm.pmOrtho._getPointofAngle(prevMarkerLatLng, marker.getLatLng(), startAngle);
-                            e.target._latlng = newlatlng;
+                            e.target._latlng = roundLatlng(newlatlng);
                             e.target.update();
                         }
 
@@ -380,7 +386,20 @@ L.PMOrtho = L.Class.extend({
             this.map.pm.pmOrtho._disableKeyListener();
         }
     },
-    _syncHintMarker() {
+    _syncHintMarkerRectangle() {
+        return function(e) {
+            this._hintMarker.setLatLng(e.latlng);
+            
+            // if snapping is enabled, do it
+            if (this.options.snappable) {
+                const fakeDragEvent = e;
+                fakeDragEvent.target = this._hintMarker;
+                this._handleSnapping(fakeDragEvent);
+            }
+            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+        }
+    },
+    _syncHintMarkerLine() {
         return function (e){
             const polyPoints = this._layer.getLatLngs();
             if (polyPoints.length > 0 && this._map.pm.pmOrtho._shiftpressed && this._map.pm.pmOrtho.options.allowOrtho) {
@@ -417,6 +436,8 @@ L.PMOrtho = L.Class.extend({
             if (!this.options.allowSelfIntersection) {
                 this._handleSelfIntersection(true, this._hintMarker.getLatLng());
             }
+
+            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng())); // modification, nearest block
 
             if(polyPoints.length > 1) {
                 if (!this._map.pm.pmOrtho._angleLine) {
@@ -499,20 +520,25 @@ L.PMOrtho = L.Class.extend({
             let pt = this._map.pm.pmOrtho._getPointofAngle(lastPolygonLatLng,latlng_mouse,startAngle);
             e.latlng = pt; //Because of intersection
         }
+        e.latlng = roundLatlng(e.latlng); // modification, nearest block
         this._createVertex(e);
     },
     _syncRectangleSize() {
         // Create a box using corners A & B (A = Starting Position, B = Current Mouse Position)
-        const A = this._startMarker.getLatLng();
-        const B = this._hintMarker.getLatLng();
+        const A = roundLatlng(this._startMarker.getLatLng());
+        const B = roundLatlng(this._hintMarker.getLatLng());
 
         this._layer.setBounds([A, B]);
 
         if(this._map.pm.pmOrtho.options.allowOrtho && this._map.pm.pmOrtho._shiftpressed) {
-            this._cornerPoint = this._map.pm.pmOrtho._getRectanglePoint(A,B);
+            this._cornerPoint = roundLatlng(this._map.pm.pmOrtho._getRectanglePoint(A,B));
             this._layer.setBounds([A, this._cornerPoint]);
         }else{
             this._cornerPoint = null;
+            this._layer.setBounds([
+                roundLatlng(this._layer.getBounds()._southWest),
+                roundLatlng(this._layer.getBounds()._northEast)
+            ])
         }
 
         // Add matching style markers, if cursor marker is shown
@@ -520,8 +546,94 @@ L.PMOrtho = L.Class.extend({
             const corners = this._findCorners();
             // Reposition style markers
             corners.forEach((unmarkedCorner, index) => {
-                this._styleMarkers[index].setLatLng(unmarkedCorner);
+                this._styleMarkers[index].setLatLng(roundLatlng(unmarkedCorner));
             });
+        }
+    },
+    _placeStartingMarkers(e) {
+        return function(e) {
+            // assign the coordinate of the click to the hintMarker, that's necessary for
+            // mobile where the marker can't follow a cursor
+            if (!this._hintMarker._snapped) {
+                this._hintMarker.setLatLng(roundLatlng(e.latlng));
+            }
+
+            // get coordinate for new vertex by hintMarker (cursor marker)
+            const latlng = this._hintMarker.getLatLng();
+
+            // show and place start marker
+            L.DomUtil.addClass(this._startMarker._icon, 'visible');
+            this._startMarker.setLatLng(roundLatlng(latlng));
+
+            // if we have the other two visibilty markers, show and place them now
+            if (this.options.cursorMarker && this._styleMarkers) {
+                this._styleMarkers.forEach((styleMarker) => {
+                L.DomUtil.addClass(styleMarker._icon, 'visible');
+                styleMarker.setLatLng(roundLatlng(latlng));
+                });
+            }
+
+            this._map.off('click', this._placeStartingMarkers, this);
+            this._map.on('click', this._finishShape, this);
+
+            // change tooltip text
+            this._hintMarker.setTooltipContent(L.PM.Utils.getTranslation('tooltips.finishRect'));
+
+            this._setRectangleOrigin();
+        }
+    },
+    _finishShape() {
+        return function(e) {
+            // assign the coordinate of the click to the hintMarker, that's necessary for
+            // mobile where the marker can't follow a cursor
+            if (!this._hintMarker._snapped) {
+            this._hintMarker.setLatLng(e.latlng);
+            }
+            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+        
+            // get coordinate for new vertex by hintMarker (cursor marker)
+            const B = this._hintMarker.getLatLng();
+            // get already placed corner from the startmarker
+            const A = this._startMarker.getLatLng();
+        
+            // If snap finish is required but the last marker wasn't snapped, do not finish the shape!
+            if (
+            this.options.requireSnapToFinish &&
+            !this._hintMarker._snapped &&
+            !this._isFirstLayer()
+            ) {
+            return;
+            }
+        
+            // create the final rectangle layer, based on opposite corners A & B
+            const rectangleLayer = L.rectangle([A, B], this.options.pathOptions);
+        
+            // rectangle can only initialized with bounds (not working with rotation) so we update the latlngs
+            if (this.options.rectangleAngle) {
+            const corners = L.PM.Utils._getRotatedRectangle(
+                A,
+                B,
+                this.options.rectangleAngle || 0,
+                this._map
+            );
+            rectangleLayer.setLatLngs(corners);
+            if (rectangleLayer.pm) {
+                rectangleLayer.pm._setAngle(this.options.rectangleAngle || 0);
+            }
+            }
+        
+            this._setPane(rectangleLayer, 'layerPane');
+            this._finishLayer(rectangleLayer);
+            rectangleLayer.addTo(this._map.pm._getContainingLayer());
+        
+            // fire the pm:create event and pass shape and layer
+            this._fireCreate(rectangleLayer);
+        
+            // disable drawing
+            this.disable();
+            if (this.options.continueDrawing) {
+            this.enable();
+            }
         }
     },
     _addAngleLine(p1,center,p2){
