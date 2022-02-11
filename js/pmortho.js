@@ -153,6 +153,7 @@ L.PMOrtho = L.Class.extend({
             L.PM.Edit.Rectangle.prototype._onMarkerDragEnd = this._onMarkerDragEndRectangle(this);
             L.PM.Edit.Rectangle.prototype._adjustRectangleForMarkerMove = this._adjustRectangleForMarkerMove(this);
             L.PM.Edit.prototype._onLayerDrag = this._onLayerDrag(this);
+            L.PM.Edit.prototype._onRotateEnd = this._onRotateEnd(this);
             L.PM.Draw.Rectangle.prototype._finishShapeOrg = L.PM.Draw.Rectangle.prototype._finishShape;
             L.PM.Draw.Rectangle.prototype._finishShape = function (e) {
                 e.latlng = this._cornerPoint || e.latlng;
@@ -800,7 +801,7 @@ L.PMOrtho = L.Class.extend({
             // latLng of mouse event
             const latlng = roundLatLng(e.latlng);
             // delta coords (how far was dragged)
-            const deltaLatLng = floorLatLng({
+            const deltaLatLng = roundLatLng({
                 lat: latlng.lat - this._tempDragCoord.lat,
                 lng: latlng.lng - this._tempDragCoord.lng,
             });
@@ -859,4 +860,33 @@ L.PMOrtho = L.Class.extend({
             this._fireDrag(e);
         };
     },
+    _onRotateEnd() {
+        return function () {
+            function copyLatLngs(layer, latlngs = layer.getLatLngs()) {
+                if (layer instanceof L.Polygon) {
+                    return L.polygon(latlngs).getLatLngs();
+                }
+                return L.polyline(latlngs).getLatLngs();
+            }
+            const startAngle = this._startAngle;
+            delete this._rotationOriginLatLng;
+            delete this._rotationOriginPoint;
+            delete this._rotationStartPoint;
+            delete this._initialRotateLatLng;
+            delete this._startAngle;
+            if (this._rotationLayer instanceof L.Polygon)
+                this._rotationLayer.setLatLngs(this._rotationLayer.getLatLngs().map(cs => cs.map(c => roundLatLng(c))));
+            else
+                this._rotationLayer.setLatLngs(this._rotationLayer.getLatLngs().map(c => roundLatLng(c)));
+            console.log(this._markers);
+            this._markers.forEach(markerSet => markerSet.forEach(marker => marker.setLatLng(roundLatLng(marker.getLatLng()))));
+            const originLatLngs = copyLatLngs(this._rotationLayer, this._rotationLayer.pm._rotateOrgLatLng);
+            // store the new latlngs
+            this._rotationLayer.pm._rotateOrgLatLng = copyLatLngs(this._rotationLayer);
+            this._fireRotationEnd(this._rotationLayer, startAngle, originLatLngs);
+            this._fireRotationEnd(this._map, startAngle, originLatLngs);
+            this._rotationLayer.pm._fireEdit(this._rotationLayer, 'Rotation');
+            this._preventRenderingMarkers(false);
+        };
+    }
 });
