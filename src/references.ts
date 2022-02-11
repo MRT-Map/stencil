@@ -9,7 +9,7 @@
 /// <reference path="editor.ts" />
 /// <reference path="save.ts" />
 /// <reference path="load.ts" />
-
+/// <reference path="hotkeys.ts" />
 var sector;
 
 var bearing;
