@@ -76,7 +76,7 @@ function worldcoord([x, y]) {
     let NewY = Math.round((x + 0.5) * -64);
     return [NewX, NewY];
 }
-function roundLatlng({ lat, lng }) {
+function roundLatLng({ lat, lng }) {
     const c = 1;
     return { lat: Math.round(lat * c) / c, lng: Math.round(lng * c) / c };
 }

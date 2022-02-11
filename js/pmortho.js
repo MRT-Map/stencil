@@ -1,5 +1,5 @@
 // original: https://github.com/Falke-Design/PMOrtho
-// this one's slightly modified
+// this one's slightly modified for whole number snapping
 // that guy's a legend
 let Utils = {
     _enableKeyListener() {
@@ -148,6 +148,10 @@ L.PMOrtho = L.Class.extend({
             L.PM.Draw.Rectangle.prototype._finishShape = this._finishShape(this);
             L.PM.Draw.Marker.prototype._syncHintMarker = this._syncHintMarkerMarker(this);
             L.PM.Draw.Marker.prototype._createMarker = this._createMarker(this);
+            L.PM.Edit.Line.prototype._addMarker = this._addMarker(this);
+            L.PM.Edit.Line.prototype._onMarkerDragEnd = this._onMarkerDragEnd(this);
+            L.PM.Edit.Rectangle.prototype._onMarkerDragEnd = this._onMarkerDragEndRectangle(this);
+            L.PM.Edit.Rectangle.prototype._adjustRectangleForMarkerMove = this._adjustRectangleForMarkerMove(this);
             L.PM.Draw.Rectangle.prototype._finishShapeOrg = L.PM.Draw.Rectangle.prototype._finishShape;
             L.PM.Draw.Rectangle.prototype._finishShape = function (e) {
                 e.latlng = this._cornerPoint || e.latlng;
@@ -165,7 +169,7 @@ L.PMOrtho = L.Class.extend({
                             movedMarker.setLatLng(newlatlng);
                         }
                         layer.pm._adjustRectangleForMarkerMoveOrg(movedMarker);
-                        movedMarker.setLatlng(roundLatlng(movedMarker.getLatlng()));
+                        movedMarker.setLatLng(roundLatLng(movedMarker.getLatLng()));
                     };
                 }
                 else if (layer instanceof L.Polyline) {
@@ -196,7 +200,7 @@ L.PMOrtho = L.Class.extend({
                                 startAngle = startAngle > 180 ? startAngle - 180 : startAngle;
                             }
                             let newlatlng = this._map.pm.pmOrtho._getPointofAngle(prevMarkerLatLng, marker.getLatLng(), startAngle);
-                            e.target._latlng = roundLatlng(newlatlng);
+                            e.target._latlng = roundLatLng(newlatlng);
                             e.target.update();
                         }
                         if (markerArr.length > 1) {
@@ -370,7 +374,7 @@ L.PMOrtho = L.Class.extend({
                 fakeDragEvent.target = this._hintMarker;
                 this._handleSnapping(fakeDragEvent);
             }
-            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+            this._hintMarker.setLatLng(roundLatLng(this._hintMarker.getLatLng()));
         };
     },
     _syncHintMarkerLine() {
@@ -404,7 +408,7 @@ L.PMOrtho = L.Class.extend({
             if (!this.options.allowSelfIntersection) {
                 this._handleSelfIntersection(true, this._hintMarker.getLatLng());
             }
-            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng())); // modification, nearest block
+            this._hintMarker.setLatLng(roundLatLng(this._hintMarker.getLatLng())); // modification, nearest block
             if (polyPoints.length > 1) {
                 if (!this._map.pm.pmOrtho._angleLine) {
                     this._map.pm.pmOrtho._angleLine = L.polyline([], { smoothFactor: 0 }).addTo(this._map);
@@ -477,23 +481,23 @@ L.PMOrtho = L.Class.extend({
             let pt = this._map.pm.pmOrtho._getPointofAngle(lastPolygonLatLng, latlng_mouse, startAngle);
             e.latlng = pt; //Because of intersection
         }
-        e.latlng = roundLatlng(e.latlng); // modification, nearest block
+        e.latlng = roundLatLng(e.latlng); // modification, nearest block
         this._createVertex(e);
     },
     _syncRectangleSize() {
         // Create a box using corners A & B (A = Starting Position, B = Current Mouse Position)
-        const A = roundLatlng(this._startMarker.getLatLng());
-        const B = roundLatlng(this._hintMarker.getLatLng());
+        const A = roundLatLng(this._startMarker.getLatLng());
+        const B = roundLatLng(this._hintMarker.getLatLng());
         this._layer.setBounds([A, B]);
         if (this._map.pm.pmOrtho.options.allowOrtho && this._map.pm.pmOrtho._shiftpressed) {
-            this._cornerPoint = roundLatlng(this._map.pm.pmOrtho._getRectanglePoint(A, B));
+            this._cornerPoint = roundLatLng(this._map.pm.pmOrtho._getRectanglePoint(A, B));
             this._layer.setBounds([A, this._cornerPoint]);
         }
         else {
             this._cornerPoint = null;
             this._layer.setBounds([
-                roundLatlng(this._layer.getBounds()._southWest),
-                roundLatlng(this._layer.getBounds()._northEast)
+                roundLatLng(this._layer.getBounds()._southWest),
+                roundLatLng(this._layer.getBounds()._northEast)
             ]);
         }
         // Add matching style markers, if cursor marker is shown
@@ -501,7 +505,7 @@ L.PMOrtho = L.Class.extend({
             const corners = this._findCorners();
             // Reposition style markers
             corners.forEach((unmarkedCorner, index) => {
-                this._styleMarkers[index].setLatLng(roundLatlng(unmarkedCorner));
+                this._styleMarkers[index].setLatLng(roundLatLng(unmarkedCorner));
             });
         }
     },
@@ -510,18 +514,18 @@ L.PMOrtho = L.Class.extend({
             // assign the coordinate of the click to the hintMarker, that's necessary for
             // mobile where the marker can't follow a cursor
             if (!this._hintMarker._snapped) {
-                this._hintMarker.setLatLng(roundLatlng(e.latlng));
+                this._hintMarker.setLatLng(roundLatLng(e.latlng));
             }
             // get coordinate for new vertex by hintMarker (cursor marker)
             const latlng = this._hintMarker.getLatLng();
             // show and place start marker
             L.DomUtil.addClass(this._startMarker._icon, 'visible');
-            this._startMarker.setLatLng(roundLatlng(latlng));
+            this._startMarker.setLatLng(roundLatLng(latlng));
             // if we have the other two visibilty markers, show and place them now
             if (this.options.cursorMarker && this._styleMarkers) {
                 this._styleMarkers.forEach((styleMarker) => {
                     L.DomUtil.addClass(styleMarker._icon, 'visible');
-                    styleMarker.setLatLng(roundLatlng(latlng));
+                    styleMarker.setLatLng(roundLatLng(latlng));
                 });
             }
             this._map.off('click', this._placeStartingMarkers, this);
@@ -538,7 +542,7 @@ L.PMOrtho = L.Class.extend({
             if (!this._hintMarker._snapped) {
                 this._hintMarker.setLatLng(e.latlng);
             }
-            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+            this._hintMarker.setLatLng(roundLatLng(this._hintMarker.getLatLng()));
             // get coordinate for new vertex by hintMarker (cursor marker)
             const B = this._hintMarker.getLatLng();
             // get already placed corner from the startmarker
@@ -581,7 +585,7 @@ L.PMOrtho = L.Class.extend({
                 fakeDragEvent.target = this._hintMarker;
                 this._handleSnapping(fakeDragEvent);
             }
-            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+            this._hintMarker.setLatLng(roundLatLng(this._hintMarker.getLatLng()));
         };
     },
     _createMarker() {
@@ -601,7 +605,7 @@ L.PMOrtho = L.Class.extend({
                 this._hintMarker.setLatLng(e.latlng);
             }
             // get coordinate for new vertex by hintMarker (cursor marker)
-            const latlng = roundLatlng(this._hintMarker.getLatLng());
+            const latlng = roundLatLng(this._hintMarker.getLatLng());
             // create marker
             const marker = new L.Marker(latlng, this.options.markerStyle);
             this._setPane(marker, 'markerPane');
@@ -676,5 +680,118 @@ L.PMOrtho = L.Class.extend({
             }
         }
         return angle.toFixed(2);
-    }
+    },
+    _addMarker() {
+        return function (newM, leftM, rightM) {
+            // first, make this middlemarker a regular marker
+            newM.off('movestart', this._onMiddleMarkerMoveStart, this);
+            newM.off(this.options.addVertexOn, this._onMiddleMarkerClick, this);
+            // now, create the polygon coordinate point for that marker
+            // and push into marker array
+            // and associate polygon coordinate with marker coordinate
+            newM.setLatLng(roundLatLng(newM.getLatLng()));
+            const latlng = newM.getLatLng();
+            const coords = this._layer._latlngs;
+            // remove linked markers
+            delete newM.leftM;
+            delete newM.rightM;
+            // the index path to the marker inside the multidimensional marker array
+            const { indexPath, index, parentPath } = L.PM.Utils.findDeepMarkerIndex(this._markers, leftM);
+            // define the coordsRing that is edited
+            const coordsRing = indexPath.length > 1 ? get(coords, parentPath) : coords;
+            // define the markers array that is edited
+            const markerArr = indexPath.length > 1 ? get(this._markers, parentPath) : this._markers;
+            // add coordinate to coordinate array
+            coordsRing.splice(index + 1, 0, latlng);
+            // add marker to marker array
+            markerArr.splice(index + 1, 0, newM);
+            // set new latlngs to update polygon
+            this._layer.setLatLngs(coords);
+            // create the new middlemarkers
+            if (this.options.hideMiddleMarkers !== true) {
+                this._createMiddleMarker(leftM, newM);
+                this._createMiddleMarker(newM, rightM);
+            }
+            // fire edit event
+            this._fireEdit();
+            this._layerEdited = true;
+            this._fireVertexAdded(newM, L.PM.Utils.findDeepMarkerIndex(this._markers, newM).indexPath, latlng);
+            if (this.options.snappable) {
+                this._initSnappableMarkers();
+            }
+        };
+    },
+    _onMarkerDragEnd() {
+        return function (e) {
+            const marker = e.target;
+            marker.setLatLng(roundLatLng(marker.getLatLng()));
+            if (!this._vertexValidationDragEnd(marker)) {
+                return;
+            }
+            const { indexPath } = L.PM.Utils.findDeepMarkerIndex(this._markers, marker);
+            // if self intersection is not allowed but this edit caused a self intersection,
+            // reset and cancel; do not fire events
+            let intersection = this.hasSelfIntersection();
+            if (intersection &&
+                this.options.allowSelfIntersectionEdit &&
+                this._markerAllowedToDrag) {
+                intersection = false;
+            }
+            const intersectionReset = !this.options.allowSelfIntersection && intersection;
+            this._fireMarkerDragEnd(e, indexPath, intersectionReset);
+            if (intersectionReset) {
+                // reset coordinates
+                this._layer.setLatLngs(this._coordsBeforeEdit);
+                this._coordsBeforeEdit = null;
+                // re-enable markers for the new coords
+                this._initMarkers();
+                if (this.options.snappable) {
+                    this._initSnappableMarkers();
+                }
+                // check for selfintersection again (mainly to reset the style)
+                this._handleLayerStyle();
+                this._fireLayerReset(e, indexPath);
+                return;
+            }
+            if (!this.options.allowSelfIntersection &&
+                this.options.allowSelfIntersectionEdit) {
+                this._handleLayerStyle();
+            }
+            // fire edit event
+            this._fireEdit();
+            this._layerEdited = true;
+        };
+    },
+    _onMarkerDragEndRectangle() {
+        return function (e) {
+            // dragged marker
+            const draggedMarker = e.target;
+            draggedMarker.setLatLng(roundLatLng(draggedMarker.getLatLng()));
+            if (!this._vertexValidationDragEnd(draggedMarker)) {
+                return;
+            }
+            // Clean-up data attributes
+            this._cornerMarkers.forEach((m) => {
+                delete m._oppositeCornerLatLng;
+            });
+            this._fireMarkerDragEnd(e);
+            // fire edit event
+            this._fireEdit();
+            this._layerEdited = true;
+        };
+    },
+    _adjustRectangleForMarkerMove() {
+        return function (movedMarker) {
+            // update moved marker coordinates
+            movedMarker.setLatLng(roundLatLng(movedMarker.getLatLng()));
+            L.extend(movedMarker._origLatLng, movedMarker._latlng);
+            // update rectangle boundaries, based on moved marker's new LatLng and cached opposite corner's LatLng
+            const corners = L.PM.Utils._getRotatedRectangle(movedMarker.getLatLng(), movedMarker._oppositeCornerLatLng, this._angle || 0, this._map);
+            this._layer.setLatLngs(corners.map(c => roundLatLng(c)));
+            // Reposition the markers at each corner
+            this._adjustAllMarkers();
+            // Redraw the shape (to update altered rectangle)
+            this._layer.redraw();
+        };
+    },
 });

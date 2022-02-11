@@ -90,8 +90,8 @@ function worldcoord([x, y]) {
     return [NewX, NewY];
 }
 
-function roundLatlng({lat, lng}: {lat: number, lng: number}) {
-  const c = 64;
+function roundLatLng({lat, lng}: {lat: number, lng: number}) {
+  const c = 1;
   return {lat: Math.round(lat*c)/c, lng: Math.round(lng*c)/c};
 }
 
