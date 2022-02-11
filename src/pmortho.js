@@ -160,6 +160,8 @@ L.PMOrtho = L.Class.extend({
             L.PM.Edit.Rectangle.prototype._onMarkerDragEnd = this._onMarkerDragEndRectangle(this);
             L.PM.Edit.Rectangle.prototype._adjustRectangleForMarkerMove = this._adjustRectangleForMarkerMove(this);
 
+            L.PM.Edit.prototype._onLayerDrag = this._onLayerDrag(this)
+
             L.PM.Draw.Rectangle.prototype._finishShapeOrg = L.PM.Draw.Rectangle.prototype._finishShape;
             L.PM.Draw.Rectangle.prototype._finishShape = function (e) {
                 e.latlng = this._cornerPoint || e.latlng;
@@ -918,6 +920,78 @@ L.PMOrtho = L.Class.extend({
         
             // Redraw the shape (to update altered rectangle)
             this._layer.redraw();
+        }
+    },
+    _onLayerDrag() {
+        return function(e) {
+            // latLng of mouse event
+            const latlng = roundLatLng(e.latlng)
+
+            // delta coords (how far was dragged)
+            const deltaLatLng = roundLatLng({
+                lat: latlng.lat - this._tempDragCoord.lat,
+                lng: latlng.lng - this._tempDragCoord.lng,
+            });
+
+            // move the coordinates by the delta
+            const moveCoords = (coords) =>
+                // alter the coordinates
+                coords.map((currentLatLng) => {
+                if (Array.isArray(currentLatLng)) {
+                    // do this recursively as coords might be nested
+                    return moveCoords(currentLatLng);
+                }
+
+                // move the coord and return it
+                return {
+                    lat: currentLatLng.lat + deltaLatLng.lat,
+                    lng: currentLatLng.lng + deltaLatLng.lng,
+                };
+                });
+
+            if (
+                this._layer instanceof L.Circle ||
+                (this._layer instanceof L.CircleMarker && this._layer.options.editable)
+            ) {
+                // create the new coordinates array
+                const newCoords = moveCoords([this._layer.getLatLng()]);
+                // set new coordinates and redraw
+                this._layer.setLatLng(newCoords[0]);
+            } else if (
+                this._layer instanceof L.CircleMarker ||
+                this._layer instanceof L.Marker
+            ) {
+                let coordsRefernce = this._layer.getLatLng();
+                if (this._layer._snapped) {
+                // if layer is snapped we use the original latlng for re-calculation, else the layer will not be "unsnappable" anymore
+                coordsRefernce = this._layer._orgLatLng;
+                }
+                // create the new coordinates array
+                const newCoords = moveCoords([coordsRefernce]);
+                // set new coordinates and redraw
+                this._layer.setLatLng(newCoords[0]);
+            } else if (this._layer instanceof L.ImageOverlay) {
+                // create the new coordinates array
+                const newCoords = moveCoords([
+                this._layer.getBounds().getNorthWest(),
+                this._layer.getBounds().getSouthEast(),
+                ]);
+                // set new coordinates and redraw
+                this._layer.setBounds(newCoords);
+            } else {
+                // create the new coordinates array
+                const newCoords = moveCoords(this._layer.getLatLngs());
+
+                // set new coordinates and redraw
+                this._layer.setLatLngs(newCoords);
+            }
+
+            // save current latlng for next delta calculation
+            this._tempDragCoord = latlng;
+
+            e.layer = this._layer;
+            // fire pm:dragstart event
+            this._fireDrag(e);
         }
     },
 });
