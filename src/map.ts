@@ -91,7 +91,7 @@ function worldcoord([x, y]) {
 }
 
 function roundLatLng({lat, lng}: {lat: number, lng: number}) {
-  const c = 1;
+  const c = 64;
   return {lat: Math.round(lat*c)/c, lng: Math.round(lng*c)/c};
 }
 
