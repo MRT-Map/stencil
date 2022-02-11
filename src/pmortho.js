@@ -153,6 +153,9 @@ L.PMOrtho = L.Class.extend({
             L.PM.Draw.Rectangle.prototype._placeStartingMarkers = this._placeStartingMarkers(this);
             L.PM.Draw.Rectangle.prototype._finishShape = this._finishShape(this);
 
+            L.PM.Draw.Marker.prototype._syncHintMarker = this._syncHintMarkerMarker(this);
+            L.PM.Draw.Marker.prototype._createMarker = this._createMarker(this);
+
             L.PM.Draw.Rectangle.prototype._finishShapeOrg = L.PM.Draw.Rectangle.prototype._finishShape;
             L.PM.Draw.Rectangle.prototype._finishShape = function (e) {
                 e.latlng = this._cornerPoint || e.latlng;
@@ -633,6 +636,73 @@ L.PMOrtho = L.Class.extend({
             this.disable();
             if (this.options.continueDrawing) {
             this.enable();
+            }
+        }
+    },
+    _syncHintMarkerMarker() {
+        return function(e) {
+            // move the cursor marker
+            this._hintMarker.setLatLng(e.latlng);
+        
+            // if snapping is enabled, do it
+            if (this.options.snappable) {
+            const fakeDragEvent = e;
+            fakeDragEvent.target = this._hintMarker;
+            this._handleSnapping(fakeDragEvent);
+            }
+            this._hintMarker.setLatLng(roundLatlng(this._hintMarker.getLatLng()));
+        }
+    },
+    _createMarker() {
+        return function(e) {
+            if (!e.latlng) {
+            return;
+            }
+        
+            // If snap finish is required but the last marker wasn't snapped, do not finish the shape!
+            if (
+            this.options.requireSnapToFinish &&
+            !this._hintMarker._snapped &&
+            !this._isFirstLayer()
+            ) {
+            return;
+            }
+        
+            // assign the coordinate of the click to the hintMarker, that's necessary for
+            // mobile where the marker can't follow a cursor
+            if (!this._hintMarker._snapped) {
+            this._hintMarker.setLatLng(e.latlng);
+            }
+        
+            // get coordinate for new vertex by hintMarker (cursor marker)
+            const latlng = roundLatlng(this._hintMarker.getLatLng());
+        
+            // create marker
+            const marker = new L.Marker(latlng, this.options.markerStyle);
+            this._setPane(marker, 'markerPane');
+            this._finishLayer(marker);
+        
+            if (!marker.pm) {
+            // if pm is not create we don't apply dragging to the marker (draggable is applied to the marker, when it is added to the map )
+            marker.options.draggable = false;
+            }
+            // add marker to the map
+            marker.addTo(this._map.pm._getContainingLayer());
+        
+            if (marker.pm && this.options.markerEditable) {
+            // enable editing for the marker
+            marker.pm.enable();
+            } else if (marker.dragging) {
+            marker.dragging.disable();
+            }
+        
+            // fire the pm:create event and pass shape and marker
+            this._fireCreate(marker);
+        
+            this._cleanupSnapping();
+        
+            if (!this.options.continueDrawing) {
+            this.disable();
             }
         }
     },
