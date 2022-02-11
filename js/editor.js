@@ -18,7 +18,8 @@ map.pm.addControls({
 // @ts-ignore
 map.pm.setGlobalOptions({
     layerGroup: layers,
-    limitMarkersToCount: 50
+    limitMarkersToCount: 50,
+    finishOn: 'contextmenu'
 });
 // @ts-ignore
 pmOrtho = new L.PMOrtho(map, { snapAngle: 15, showAngleTooltip: false });
@@ -253,6 +254,9 @@ var layerClickEvent = (e) => {
             if (qs(document, "#c_layer").innerHTML === "NaN")
                 qs(document, "#c_layer").innerHTML = "0";
             selected.mapInfo.layer = parseFloat(qs(document, "#c_layer").innerHTML);
+        });
+        qs(document, "#c_sendToBack").addEventListener('click', () => {
+            selected.bringToBack();
         });
         sidebar.enablePanel('pane_componentInfo');
         sidebar.open('pane_componentInfo'); // opens the pane
