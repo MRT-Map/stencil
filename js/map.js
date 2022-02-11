@@ -77,8 +77,12 @@ function worldcoord([x, y]) {
     return [NewX, NewY];
 }
 function roundLatLng({ lat, lng }) {
-    const c = 64;
+    const c = 1;
     return { lat: Math.round(lat * c) / c, lng: Math.round(lng * c) / c };
+}
+function floorLatLng({ lat, lng }) {
+    const c = 1;
+    return { lat: Math.floor(lat * c) / c, lng: Math.floor(lng * c) / c };
 }
 var MyControl = L.Control.extend({
     options: { position: 'bottomright' },
