@@ -11,11 +11,18 @@ function getComponentState() {
 setInterval(() => {
     if (!("stencil" in localStorage))
         localStorage.stencil = LZString.compress("[]");
+    if (!("stencilview" in localStorage))
+        localStorage.stencilview = LZString.compress(JSON.stringify({ lat: 0, lng: 0, zoom: 8 }));
     localStorage.stencil = LZString.compress(JSON.stringify(getComponentState()));
+    localStorage.stencilview = LZString.compress(JSON.stringify(Object.assign(Object.assign({}, map.getBounds().getCenter()), { zoom: map.getZoom() })));
 }, 1000);
 setTimeout(() => {
     if (!("stencil" in localStorage))
         localStorage.stencil = LZString.compress("[]");
+    if (!("stencilview" in localStorage))
+        localStorage.stencilview = LZString.compress(JSON.stringify({ lat: 0, lng: 0, zoom: 8 }));
+    let { lat, lng, zoom } = JSON.parse(LZString.decompress(localStorage.stencilview));
+    map.setView({ lat: lat, lng: lng }, zoom);
     JSON.parse(LZString.decompress(localStorage.stencil)).forEach(({ mapInfo, shape, latlngs }) => {
         let layer = shape == "point" ? L.marker(latlngs, { pmIgnore: false })
             : shape == "line" ? L.polyline(latlngs, {
@@ -29,6 +36,18 @@ setTimeout(() => {
                     pmIgnore: false
                 });
         layer.mapInfo = mapInfo;
+        // @ts-ignore
+        layer._drawnByGeoman = true;
+        var a = (e) => {
+            if (e.layer == selected)
+                select();
+        };
+        layer.on("pm:drag", a);
+        layer.on("pm:markerdrag", a);
+        layer.on("pm:vertexadded", a);
+        layer.on("pm:vertexremoved", a);
+        layer.on("pm:rotate", a);
+        layer.on("click", layerClickEvent);
         layer.addTo(layers);
     });
 }, 100);
