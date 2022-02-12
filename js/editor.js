@@ -258,6 +258,15 @@ var layerClickEvent = (e) => {
         qs(document, "#c_sendToBack").addEventListener('click', () => {
             selected.bringToBack();
         });
+        if (Skin.types[selected.mapInfo.type].type != "line")
+            qs(document, "#c_reverseCoords").hidden = true; // adds functionality for reversing direction, lines only
+        qs(document, "#c_reverseCoords").addEventListener('click', () => {
+            qs(document, "#c_reverseCoords").hidden = false;
+            if (Skin.types[selected.mapInfo.type].type == "line")
+                selected.setLatLngs(selected.getLatLngs().reverse());
+            //else selected.setLatLngs(selected.getLatLngs().map(latlngs => latlngs.reverse()));
+            select();
+        });
         sidebar.enablePanel('pane_componentInfo');
         sidebar.open('pane_componentInfo'); // opens the pane
     }, 10);
