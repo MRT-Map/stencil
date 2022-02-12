@@ -7,8 +7,9 @@
 /// <reference path="map.ts" />
 /// <reference path="sidebar.ts" />
 /// <reference path="editor.ts" />
-/// <reference path="save.ts" />
-/// <reference path="load.ts" />
+/// <reference path="export.ts" />
+/// <reference path="import.ts" />
 /// <reference path="hotkeys.ts" />
+/// <reference path="save.ts" />
 var sector;
 var bearing;

@@ -1,118 +1,53 @@
 /// <reference path="references.ts" />
-var setName = "city";
-qs(document, "#nameField").value = setName;
-function genId() {
-    function b10_b64(n) {
-        const BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        let q = n;
-        let o = "";
-        while (true) {
-            o += BASE64[q % 64];
-            q = Math.floor(q / 64);
-            if (q == 0)
-                break;
-        }
-        return o.split("").reverse().join("");
-    }
-    let decimalId = Math.round(new Date().getTime() * 10000000);
-    return b10_b64(decimalId) + "-" + b10_b64(Math.floor(Math.random() * Math.pow(64, 15) + 1));
-}
-function exportData() {
-    qs(document, "#pane_export #err").innerHTML = "";
-    try {
-        checkLayerIds(layers.getLayers());
-    }
-    catch ([err, where]) {
-        qs(document, "#pane_export #err").innerHTML = err;
-        if (where) {
-            try {
-                map.setView(where.getCenter(), map.getZoom());
-            }
-            catch (_a) {
-                map.setView(where.getLatLng(), map.getZoom());
-            }
-            where.fire('click');
-        }
-        return;
-    }
-    let [comps, nodes] = layersToPla(layers.getLayers());
-    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comps, null, 2));
-    let dlAnchorElem = document.querySelector('#downloader');
-    dlAnchorElem.href = dataStr;
-    dlAnchorElem.download = setName + ".comps.pla";
-    dlAnchorElem.click();
-    dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(nodes, null, 2));
-    dlAnchorElem.href = dataStr;
-    dlAnchorElem.download = setName + ".nodes.pla";
-    dlAnchorElem.click();
-}
-function checkLayerIds(layers) {
-    let ids = [];
-    layers.forEach(layer => {
-        if (ids.includes(layer.mapInfo.id))
-            throw ["Duplicate ID: '" + layer.mapInfo.id + "'", layer];
-        else if (layer.mapInfo.id.trim() == "")
-            throw ["Empty ID", layer];
-        ids.push(layer.mapInfo.id);
+function getComponentState() {
+    return layers.getLayers().map((layer) => {
+        return {
+            mapInfo: layer.mapInfo,
+            shape: layer instanceof L.Marker ? "point" : layer instanceof L.Polygon ? "area" : "line",
+            latlngs: layer instanceof L.Marker ? layer.getLatLng() : layer.getLatLngs()
+        };
     });
 }
-function layersToPla(layers) {
-    let comps = {};
-    let nodes = allNodes;
-    let unused_nodes = Object.keys(allNodes).slice(0);
-    layers.forEach(layer => {
-        let newComps = JSON.parse(JSON.stringify(layer.mapInfo));
-        delete newComps.id;
-        newComps.nodes = [];
-        newComps.type = (newComps.type + " " + newComps.tags.trim()).trim();
-        delete newComps.tags;
-        //(layer.getLatLngs()[0] as L.LatLng[]).forEach(latlng => {
-        function resolve_nodes(latlng, hollowIndex) {
-            let id;
-            let wc = worldcoord([latlng.lat, latlng.lng]);
-            let possibleNodes = Object.entries(nodes)
-                .filter(([id, node]) => node.x == wc[0] && node.y == wc[1]);
-            if (possibleNodes.length > 0) {
-                id = possibleNodes[0][0];
-                var index = unused_nodes.indexOf(id);
-                if (index !== -1)
-                    unused_nodes.splice(index, 1);
-            }
-            else {
-                let coords = worldcoord([latlng.lat, latlng.lng]);
-                id = genId();
-                nodes[id] = { x: coords[0], y: coords[1], connections: [] };
-            }
-            if (hollowIndex) {
-                if (newComps.hollows === undefined)
-                    newComps.hollows = [];
-                if (newComps.hollows.length <= hollowIndex)
-                    newComps.hollows.push([]);
-                newComps.hollows[hollowIndex].push(id);
-            }
-            else
-                newComps.nodes.push(id);
-        }
-        if (layer instanceof L.Polygon) {
-            layer.getLatLngs()[0].forEach(layer => resolve_nodes(layer));
-            if (layer.getLatLngs().length > 1)
-                layer.getLatLngs().slice(1)
-                    .forEach((layer, i) => resolve_nodes(layer, i - 1));
-        }
-        else if (layer instanceof L.Marker)
-            resolve_nodes(layer.getLatLng());
-        else
-            layer.getLatLngs().forEach(layer => resolve_nodes(layer));
-        comps[layer.mapInfo.id] = newComps;
+setInterval(() => {
+    if (!("stencil" in localStorage))
+        localStorage.stencil = LZString.compress("[]");
+    if (!("stencilview" in localStorage))
+        localStorage.stencilview = LZString.compress(JSON.stringify({ lat: 0, lng: 0, zoom: 8 }));
+    localStorage.stencil = LZString.compress(JSON.stringify(getComponentState()));
+    localStorage.stencilview = LZString.compress(JSON.stringify(Object.assign(Object.assign({}, map.getBounds().getCenter()), { zoom: map.getZoom() })));
+}, 1000);
+setTimeout(() => {
+    if (!("stencil" in localStorage))
+        localStorage.stencil = LZString.compress("[]");
+    if (!("stencilview" in localStorage))
+        localStorage.stencilview = LZString.compress(JSON.stringify({ lat: 0, lng: 0, zoom: 8 }));
+    let { lat, lng, zoom } = JSON.parse(LZString.decompress(localStorage.stencilview));
+    map.setView({ lat: lat, lng: lng }, zoom);
+    JSON.parse(LZString.decompress(localStorage.stencil)).forEach(({ mapInfo, shape, latlngs }) => {
+        let layer = shape == "point" ? L.marker(latlngs, { pmIgnore: false })
+            : shape == "line" ? L.polyline(latlngs, {
+                color: getFrontColor(mapInfo.type),
+                weight: getWeight(mapInfo.type),
+                pmIgnore: false
+            })
+                : L.polygon(latlngs, {
+                    color: getFrontColor(mapInfo.type),
+                    weight: getWeight(mapInfo.type),
+                    pmIgnore: false
+                });
+        layer.mapInfo = mapInfo;
+        // @ts-ignore
+        layer._drawnByGeoman = true;
+        var a = (e) => {
+            if (e.layer == selected)
+                select();
+        };
+        layer.on("pm:drag", a);
+        layer.on("pm:markerdrag", a);
+        layer.on("pm:vertexadded", a);
+        layer.on("pm:vertexremoved", a);
+        layer.on("pm:rotate", a);
+        layer.on("click", layerClickEvent);
+        layer.addTo(layers);
     });
-    unused_nodes.forEach(node => {
-        if (nodes[node].connections.length > 1)
-            return;
-        delete nodes[node];
-    });
-    return [comps, nodes];
-}
-/*setInterval(() => {
-  if (!("comps" in localStorage)) localStorage.financebook = LZString.compress("{}");
-  localStorage.financebook = LZString.compress(JSON.stringify(json));
-}, 5000);*/ 
+}, 100);
