@@ -259,7 +259,7 @@ var layerClickEvent = (e) => {
             selected.bringToBack();
         });
         if (Skin.types[selected.mapInfo.type].type != "line")
-            qs(document, "#c_reverseCoords").hidden = true;
+            qs(document, "#c_reverseCoords").hidden = true; // adds functionality for reversing direction, lines only
         qs(document, "#c_reverseCoords").addEventListener('click', () => {
             qs(document, "#c_reverseCoords").hidden = false;
             if (Skin.types[selected.mapInfo.type].type == "line")
