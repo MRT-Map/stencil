@@ -15,13 +15,17 @@ setInterval(() => {
   if (!("stencilview" in localStorage)) localStorage.stencilview = LZString.compress(JSON.stringify({lat: 0, lng: 0, zoom: 8}));
   localStorage.stencil = LZString.compress(JSON.stringify(getComponentState()));
   localStorage.stencilview = LZString.compress(JSON.stringify({...map.getBounds().getCenter(), zoom: map.getZoom()}))
+  if (!("stencilallnodes" in localStorage)) localStorage.stencilallnodes = LZString.compress("{}");
+  localStorage.stencilallnodes = LZString.compress(JSON.stringify(allNodes));
 }, 1000);
 
 setTimeout(() => {
   if (!("stencil" in localStorage)) localStorage.stencil = LZString.compress("[]");
   if (!("stencilview" in localStorage)) localStorage.stencilview = LZString.compress(JSON.stringify({lat: 0, lng: 0, zoom: 8}));
+  if (!("stencilallnodes" in localStorage)) localStorage.stencilallnodes = LZString.compress("{}");
   let {lat, lng, zoom} = JSON.parse(LZString.decompress(localStorage.stencilview));
   map.setView({lat: lat, lng: lng}, zoom);
+  allNodes = JSON.parse(LZString.decompress(localStorage.stencilallnodes))
   JSON.parse(LZString.decompress(localStorage.stencil)).forEach(({mapInfo, shape, latlngs}) => {
     let layer = shape == "point" ? L.marker(latlngs, {pmIgnore: false})
               : shape == "line" ? L.polyline(latlngs, {
