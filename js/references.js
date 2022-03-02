@@ -11,5 +11,6 @@
 /// <reference path="import.ts" />
 /// <reference path="hotkeys.ts" />
 /// <reference path="save.ts" />
+/// <reference path="undoredo.ts" />
 var sector;
 var bearing;
