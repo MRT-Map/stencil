@@ -61,7 +61,7 @@ const qs = (ele: HTMLElement | Document, query: string): HTMLElement => ele.quer
 const qsa = (ele: HTMLElement | Document, query: string): NodeListOf<HTMLElement> => ele.querySelectorAll(query);
 
 function select() {
-  selectShadowGroup.clearLayers();
+    selectShadowGroup.clearLayers();
     if (selected instanceof L.Polygon) {
       L.polygon(selected.getLatLngs(), {color: "yellow", weight: getWeight(selected.mapInfo.type), pmIgnore: true, interactive: false}).addTo(selectShadowGroup);
     }
@@ -144,6 +144,7 @@ map.on("pm:create", e => {
 
 var layerClickEvent = (e: L.LeafletEvent) => {
   if (map.pm.globalRemovalModeEnabled()) return;
+  if (map.pm.globalDrawModeEnabled()) return;
   setTimeout(() => {
     // generates a row of attrs
     function genTr(timestamp?, name?: string, value?: string) {
