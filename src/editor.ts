@@ -144,8 +144,8 @@ map.on("pm:create", e => {
 
 var layerClickEvent = (e: L.LeafletEvent) => {
   if (map.pm.globalRemovalModeEnabled()) return;
-  if (map.pm.globalDrawModeEnabled()) return;
   setTimeout(() => {
+    if (map.pm.globalDrawModeEnabled()) return;
     // generates a row of attrs
     function genTr(timestamp?, name?: string, value?: string) {
       let element = document.createElement('tr');
