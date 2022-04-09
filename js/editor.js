@@ -117,6 +117,8 @@ map.on("pm:create", e => {
 var layerClickEvent = (e) => {
     if (map.pm.globalRemovalModeEnabled())
         return;
+    if (map.pm.globalDrawModeEnabled())
+        return;
     setTimeout(() => {
         // generates a row of attrs
         function genTr(timestamp, name, value) {
