@@ -2,6 +2,8 @@
 map.on("pm:keyevent", ({ event, eventType }) => {
     if (eventType == "keydown")
         return;
+    if (document.activeElement.hasAttribute("contenteditable") || document.activeElement.tagName == "INPUT")
+        return;
     switch (event.key) {
         case "Escape":
             map.pm.disableDraw();
