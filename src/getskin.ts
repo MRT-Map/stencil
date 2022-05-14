@@ -3,7 +3,7 @@ let Skin = null;
 let ComponentTypes = null;
 $.ajax({
     async: false,
-    url: "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json",
+    url: "https://raw.githubusercontent.com/MRT-Map/tile-renderer/beta/renderer/skins/default.json",
     success: data => {
       let json = JSON.parse(data);
       Skin = json;
