@@ -41,7 +41,7 @@ map.pm.addControls({
 // @ts-ignore
 map.pm.setGlobalOptions({
   layerGroup: layers,
-  limitMarkersToCount: 50,
+  limitMarkersToCount: 5,
   finishOn: 'contextmenu'
 });
 // @ts-ignore
