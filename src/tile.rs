@@ -1,8 +1,10 @@
+use crate::utils::{
+    get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height, get_window_width_height,
+};
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
-use crate::utils::{get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height, get_window_width_height};
 
 pub struct Zoom(pub f32);
 impl Zoom {
@@ -25,7 +27,7 @@ impl TileCoord {
         Self {
             x: (x / Zoom(z as f32).world_size() as f64) as i32,
             y: (y / Zoom(z as f32).world_size() as f64) as i32,
-            z
+            z,
         }
     }
 
@@ -56,7 +58,9 @@ impl TileCoord {
             i -= 1;
         }
 
-        if !zzz.is_empty() {zzz += "_"};
+        if !zzz.is_empty() {
+            zzz += "_"
+        };
         format!("http://api.allorigins.win/raw?url=https%3A//dynmap.minecartrapidtransit.net/tiles/new/flat/{}_{}/{}{}_{}.png",
             group_x, group_y, zzz, num_in_group_x, num_in_group_y)
     }
@@ -71,13 +75,13 @@ pub struct TileBundle {
     pub coord: TileCoord,
 
     #[bundle]
-    pub sprite: SpriteBundle
+    pub sprite: SpriteBundle,
 }
 impl TileBundle {
     pub fn from_tile_coord(coord: TileCoord, server: &Res<AssetServer>) -> Self {
         let custom_size = Vec2::new(
             Zoom(coord.z as f32).map_size() as f32,
-            Zoom(coord.z as f32).map_size() as f32
+            Zoom(coord.z as f32).map_size() as f32,
         );
         Self {
             _t: Tile,
@@ -92,32 +96,38 @@ impl TileBundle {
                 transform: Transform::from_translation(Vec3::new(
                     coord.x as f32 * Zoom(coord.z as f32).map_size() as f32,
                     coord.y as f32 * Zoom(coord.z as f32).map_size() as f32 + 32f32,
-                    coord.z as f32
+                    coord.z as f32,
                 )),
                 ..default()
-            }
+            },
         }
     }
 }
 
 pub fn get_shown_tiles(
     q_camera: &Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    zoom: i8
+    zoom: i8,
 ) -> Vec<TileCoord> {
     let (camera, transform) = q_camera.single();
     let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, transform);
-    let TileCoord {x: t_left, y: t_top, ..} =
-        TileCoord::from_world_coords(c_left as f64, c_top as f64, zoom);
-    let TileCoord {x: t_right, y: t_bottom, ..} =
-        TileCoord::from_world_coords(c_right as f64, c_bottom as f64, zoom);
+    let TileCoord {
+        x: t_left,
+        y: t_top,
+        ..
+    } = TileCoord::from_world_coords(c_left as f64, c_top as f64, zoom);
+    let TileCoord {
+        x: t_right,
+        y: t_bottom,
+        ..
+    } = TileCoord::from_world_coords(c_right as f64, c_bottom as f64, zoom);
 
-    (t_left-1..=t_right+1)
-        .flat_map(|ref x|
-            (t_top-1..=t_bottom+1)
-                .map(|y| TileCoord {x: *x, y, z: zoom})
-                .collect::<Vec<_>>())
+    (t_left - 1..=t_right + 1)
+        .flat_map(|ref x| {
+            (t_top - 1..=t_bottom + 1)
+                .map(|y| TileCoord { x: *x, y, z: zoom })
+                .collect::<Vec<_>>()
+        })
         .collect()
-
 }
 
 pub fn show_tiles(
@@ -125,21 +135,22 @@ pub fn show_tiles(
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut query: Query<(&mut Visibility, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
-    server: Res<AssetServer>
+    server: Res<AssetServer>,
 ) {
     //if !zoom.is_changed() {return}
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8);
 
-    let (camera, transform) = q_camera.single();
+    let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
     let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
     for (mut visibility, tile_coord) in query.iter_mut() {
-        if ( zoom.0 <= 8f32 && tile_coord.z > zoom.0.round() as i8)
+        if (zoom.0 <= 8f32 && tile_coord.z > zoom.0.round() as i8)
             || (zoom.0 > 8f32 && tile_coord.z != 8)
             || (zoom.0 > 8f32 && {
                 let (tl, tt, tr, tb) = tile_coord.get_edges();
                 tr < ml || tl > mr || tb < mt || tt > mb
             })
-            || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord)) {
+            || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord))
+        {
             visibility.is_visible = false;
         } else {
             shown_tiles.retain(|t| t != tile_coord);
@@ -148,9 +159,7 @@ pub fn show_tiles(
     }
     for tile_coord in shown_tiles {
         if tile_coord.z <= 8 {
-            commands.spawn_bundle(TileBundle::from_tile_coord(
-                tile_coord, &server
-            ));
+            commands.spawn_bundle(TileBundle::from_tile_coord(tile_coord, &server));
         }
     }
 }
@@ -166,7 +175,9 @@ pub fn mouse_drag(
     let (camera, mut transform) = camera.single_mut();
     if buttons.pressed(MouseButton::Left) {
         if let Some(origin_pos) = *mouse_origin_pos {
-            if !mouse_pos.is_changed() {return}
+            if !mouse_pos.is_changed() {
+                return;
+            }
             let win_wh = get_window_width_height(&windows, camera);
             let map_wh = get_map_width_height(camera, &transform);
 
@@ -186,17 +197,20 @@ pub fn mouse_drag(
 
 pub fn mouse_zoom(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut camera: Query<(&Camera, &mut OrthographicProjection, &mut GlobalTransform), With<MainCamera>>,
+    mut camera: Query<
+        (&Camera, &mut OrthographicProjection, &mut GlobalTransform),
+        With<MainCamera>,
+    >,
     mut zoom: ResMut<Zoom>,
-    windows: Res<Windows>
+    windows: Res<Windows>,
 ) {
     let (camera, mut ort_proj, mut transform) = camera.single_mut();
     for ev in scroll_evr.iter() {
         let u = match ev.unit {
-            MouseScrollUnit::Line => ev.y * 0.25,
-            MouseScrollUnit::Pixel => ev.y * 0.025,
+            MouseScrollUnit::Line => ev.y * 0.125,
+            MouseScrollUnit::Pixel => ev.y * 0.0125,
         };
-        if 0.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
+        if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
             zoom.0 += u;
             let orig_x = transform.translation.x;
             let orig_y = transform.translation.y;
@@ -204,12 +218,13 @@ pub fn mouse_zoom(
             let orig_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
-            let dx = (orig_mouse_pos.x - orig_x) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
-            let dy = (orig_mouse_pos.y - orig_y) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
+            let dx =
+                (orig_mouse_pos.x - orig_x) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
+            let dy =
+                (orig_mouse_pos.y - orig_y) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
             transform.translation.x = orig_mouse_pos.x - dx;
             transform.translation.y = orig_mouse_pos.y - dy;
-            println!("{:?}", orig_mouse_pos);
         }
-        eprintln!("{} {:?} {:?}", zoom.0, ev.unit, ev.y as f64)
+        eprintln!("{:?}", zoom.0);
     }
 }
