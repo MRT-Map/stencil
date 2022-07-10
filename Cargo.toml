@@ -1,0 +1,27 @@
+[package]
+name = "stencil2"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+console_error_panic_hook = "0.1.7"
+bevy_web_asset = "0.3.0"
+bevy_mouse_tracking_plugin = "0.2.1"
+
+[dependencies.bevy]
+version = "0.7.0"
+default-features = false
+features = [
+    "bevy_sprite",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_winit",
+    "png"
+]
+
+[profile.dev.package."*"]
+opt-level = 3
+[profile.dev]
+opt-level = 3
