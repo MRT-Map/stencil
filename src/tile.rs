@@ -108,7 +108,7 @@ pub fn get_shown_tiles(
     q_camera: &Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     zoom: i8,
 ) -> Vec<TileCoord> {
-    let (camera, transform) = q_camera.single();
+    let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
     let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, transform);
     let TileCoord {
         x: t_left,
@@ -172,7 +172,7 @@ pub fn mouse_drag(
     mut camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
     windows: Res<Windows>,
 ) {
-    let (camera, mut transform) = camera.single_mut();
+    let (camera, mut transform): (&Camera, Mut<GlobalTransform>) = camera.single_mut();
     if buttons.pressed(MouseButton::Left) {
         if let Some(origin_pos) = *mouse_origin_pos {
             if !mouse_pos.is_changed() {
@@ -204,26 +204,43 @@ pub fn mouse_zoom(
     mut zoom: ResMut<Zoom>,
     windows: Res<Windows>,
 ) {
-    let (camera, mut ort_proj, mut transform) = camera.single_mut();
+    let (camera, mut ort_proj, mut transform): (
+        &Camera,
+        Mut<OrthographicProjection>,
+        Mut<GlobalTransform>,
+    ) = camera.single_mut();
     for ev in scroll_evr.iter() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125,
             MouseScrollUnit::Pixel => ev.y * 0.0125,
         };
         if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
-            zoom.0 += u;
             let orig_x = transform.translation.x;
             let orig_y = transform.translation.y;
             let orig_scale = ort_proj.scale;
             let orig_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
+            zoom.0 += u;
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
+
             let dx =
-                (orig_mouse_pos.x - orig_x) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
+                (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
             let dy =
-                (orig_mouse_pos.y - orig_y) / (2f32.powf(orig_scale) / 2f32.powf(ort_proj.scale));
-            transform.translation.x = orig_mouse_pos.x - dx;
-            transform.translation.y = orig_mouse_pos.y - dy;
+                (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
+            let new_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
+            transform.translation.x = new_mouse_pos.x - dx;
+            transform.translation.y = new_mouse_pos.y - dy;
+
+            /*
+            var mousePos = {x: mouseEvent.offsetX, y: mouseEvent.offsetY};
+            var mouseGridPos = plus(multiply(mousePos, scale), gridPos); orig_mouse_pos
+            var delta = mouseEvent.deltaY; u
+            zoom += delta;
+            zoom = Math.min(zoom, 3000);
+            zoom = Math.max(zoom, -1000);
+            scale = Math.pow(2,(zoom / 1000));
+            gridPos = minus(mouseGridPos, multiply(mousePos, scale));
+            */
         }
         eprintln!("{:?}", zoom.0);
     }
