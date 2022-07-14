@@ -6,10 +6,12 @@ use rendering::tile::*;
 use rendering::utils::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext, EguiPlugin};
+use bevy_egui::EguiPlugin;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePosPlugin};
 use bevy_web_asset::WebAssetPlugin;
 use iyes_loopless::prelude::*;
+use editor::component_panel;
+use crate::component_panel::CurrentComponentData;
 use crate::types::*;
 
 fn main() {
@@ -27,48 +29,14 @@ fn main() {
         .insert_resource(Zoom(7.0))
         .add_loopless_state(EditorState::Idle)
         .add_startup_system(setup)
-        .add_system(ui)
+        .init_resource::<CurrentComponentData>()
+        .insert_resource()
+        .add_system(component_panel::ui)
         .add_system(world_pos)
         .add_system(show_tiles)
         .add_system(mouse_drag)
         .add_system(mouse_zoom)
         .run();
-}
-
-fn ui(mut ctx: ResMut<EguiContext>) {
-    let mut namespace = "";
-    let mut id = "";
-    let mut display_name = "";
-    let mut description = "";
-    let mut tags = "";
-    let mut layer = 0.0;
-    egui::SidePanel::left("main")
-        .default_width(200.0)
-        .show(ctx.ctx_mut(), |ui| {
-            ui.heading(format!("Stencil v{}", env!("CARGO_PKG_VERSION")));
-            ui.end_row();
-            ui.add(egui::TextEdit::singleline(&mut namespace)
-                .hint_text("namespace"));
-            ui.add(egui::TextEdit::singleline(&mut id)
-                .hint_text("id"));
-            ui.end_row();
-            ui.add(egui::TextEdit::singleline(&mut display_name)
-                .hint_text("Displayed as"));
-            ui.end_row();
-            ui.add(egui::TextEdit::multiline(&mut description)
-                .hint_text("Description"));
-            ui.end_row();
-            ui.separator();
-            egui::ComboBox::from_label("Component type")
-                .show_ui(ui, |_|());
-            ui.end_row();
-            ui.add(egui::TextEdit::singleline(&mut tags)
-                .hint_text("Tags"));
-            ui.end_row();
-            ui.label("Layer:");
-            ui.add(egui::Slider::new(&mut layer, -10.0..=10.0));
-
-        });
 }
 
 fn world_pos(

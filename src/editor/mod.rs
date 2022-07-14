@@ -1,1 +1,1 @@
-pub mod toolbar;
+pub mod component_panel;

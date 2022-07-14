@@ -10,6 +10,9 @@ use crate::Zoom;
 
 #[derive(Component)]
 pub struct Tile;
+impl Drop for Tile { // appease clippy
+    fn drop(&mut self) {}
+}
 
 #[derive(Bundle)]
 pub struct TileBundle {
