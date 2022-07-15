@@ -30,7 +30,6 @@ fn main() {
         .add_loopless_state(EditorState::Idle)
         .add_startup_system(setup)
         .init_resource::<CurrentComponentData>()
-        .insert_resource()
         .add_system(component_panel::ui)
         .add_system(world_pos)
         .add_system(show_tiles)

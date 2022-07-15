@@ -1,4 +1,7 @@
+mod skin;
+
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 pub struct Zoom(pub f32);
 
@@ -63,10 +66,13 @@ impl TileCoord {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub enum ComponentType {
+    #[serde(rename = "point")]
     Point,
+    #[serde(rename = "line")]
     Line,
+    #[serde(rename = "area")]
     Area
 }
 
