@@ -1,16 +1,17 @@
 use crate::rendering::utils::{
     get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height, get_window_width_height,
 };
+use crate::types::TileCoord;
+use crate::Zoom;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
-use crate::types::TileCoord;
-use crate::Zoom;
 
 #[derive(Component)]
 pub struct Tile;
-impl Drop for Tile { // appease clippy
+impl Drop for Tile {
+    // appease clippy
     fn drop(&mut self) {}
 }
 
@@ -168,10 +169,8 @@ pub fn mouse_zoom(
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
-            let dx =
-                (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
-            let dy =
-                (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
+            let dx = (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
+            let dy = (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
             transform.translation.x = new_mouse_pos.x - dx;
             transform.translation.y = new_mouse_pos.y - dy;

@@ -1,27 +1,27 @@
+mod editor;
 mod rendering;
 mod types;
-mod editor;
 
-use rendering::tile::*;
-use rendering::utils::*;
+use crate::component_panel::CurrentComponentData;
+use crate::skin::{get_skin, Skin};
+use crate::types::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePosPlugin};
 use bevy_web_asset::WebAssetPlugin;
-use iyes_loopless::prelude::*;
 use editor::component_panel;
-use crate::component_panel::CurrentComponentData;
-use crate::types::*;
+use iyes_loopless::prelude::*;
+use rendering::tile::*;
+use rendering::utils::*;
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
-   /*let skin = reqwest::blocking::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
+    /*let skin = reqwest::blocking::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
         .unwrap().json::<skin::Skin>().unwrap();
     println!("{:#?}", skin.info);
     return;*/
-
 
     App::new()
         .add_plugins_with(DefaultPlugins, |group| {
@@ -32,14 +32,21 @@ fn main() {
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_plugin(EguiPlugin)
         .insert_resource(Zoom(7.0))
-        .add_loopless_state(EditorState::Idle)
-        .add_startup_system(setup)
+        .add_loopless_state(EditorState::Loading)
         .init_resource::<CurrentComponentData>()
-        .add_system(component_panel::ui)
-        .add_system(world_pos)
-        .add_system(show_tiles)
-        .add_system(mouse_drag)
-        .add_system(mouse_zoom)
+        .init_resource::<Skin>()
+        .add_startup_system(get_skin)
+        .add_exit_system(EditorState::Loading, setup)
+        .add_system_set(
+            ConditionSet::new()
+                .run_in_state(EditorState::Idle)
+                .with_system(component_panel::ui)
+                .with_system(world_pos)
+                .with_system(show_tiles)
+                .with_system(mouse_drag)
+                .with_system(mouse_zoom)
+                .into(),
+        )
         .run();
 }
 

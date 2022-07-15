@@ -1,3 +1,4 @@
+pub mod pla;
 pub mod skin;
 
 use bevy::prelude::*;
@@ -73,12 +74,13 @@ pub enum ComponentType {
     #[serde(rename = "line")]
     Line,
     #[serde(rename = "area")]
-    Area
+    Area,
 }
 
 #[derive(Default, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {
     #[default]
+    Loading,
     Idle,
-    CreatingComponent(ComponentType)
+    CreatingComponent(ComponentType),
 }
