@@ -1,4 +1,4 @@
-mod skin;
+pub mod skin;
 
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};

@@ -17,6 +17,11 @@ use crate::types::*;
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
+   /*let skin = reqwest::blocking::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
+        .unwrap().json::<skin::Skin>().unwrap();
+    println!("{:#?}", skin.info);
+    return;*/
+
 
     App::new()
         .add_plugins_with(DefaultPlugins, |group| {

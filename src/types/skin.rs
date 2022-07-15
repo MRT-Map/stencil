@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use crate::ComponentType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -11,51 +10,98 @@ pub struct SkinInfo {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "layer")]
-pub enum SkinStyle {
-    AreaFill {
-        colour: String,
+pub enum AreaStyle {
+    #[serde(rename = "fill")]
+    Fill {
+        colour: Option<String>,
         outline: Option<String>,
         stripe: Option<(u32, u32, u8)>
     },
-    AreaCenterText {
+    #[serde(rename = "centertext")]
+    CenterText {
         colour: String,
         offset: (i32, i32),
         size: u32
     },
-    AreaBorderText {
+    #[serde(rename = "bordertext")]
+    BorderText {
         colour: String,
-        offset: (i32, i32),
+        offset: i32,
         size: u32
-    },
-    LineFore {
+    }
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "layer")]
+pub enum LineStyle {
+    #[serde(rename = "fore")]
+    Fore {
         colour: String,
         width: u32,
         dash: Option<(u32, u32)>
     },
-    LineBack {
+    #[serde(rename = "back")]
+    Back {
         colour: String,
         width: u32,
         dash: Option<(u32, u32)>
     },
-    LineText {
+    #[serde(rename = "text")]
+    Text {
         colour: String,
         arrow_colour: String,
         size: u32,
         offset: i32
-    },
-    PointImage {
+    }
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "layer")]
+pub enum PointStyle {
+    #[serde(rename = "image")]
+    Image {
         file: String,
         offset: (i32, i32),
     },
-    // TODO
-
+    #[serde(rename = "square")]
+    Square {
+        colour: String,
+        outline: Option<String>,
+        size: u32,
+        width: u32
+    },
+    #[serde(rename = "circle")]
+    Circle {
+        colour: String,
+        outline: Option<String>,
+        size: u32,
+        width: u32
+    },
+    #[serde(rename = "text")]
+    Text {
+        colour: String,
+        size: u32,
+        offset: (i32, i32),
+        anchor: Option<String>
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SkinComponent {
-    pub tags: Vec<String>,
-    pub type_: ComponentType,
-    pub style: HashMap<String, Vec<SkinStyle>
+#[serde(tag = "type")]
+pub enum SkinComponent {
+    #[serde(rename = "point")]
+    Point {
+        tags: Vec<String>,
+        style: HashMap<String, Vec<PointStyle>>
+    },
+    #[serde(rename = "line")]
+    Line {
+        tags: Vec<String>,
+        style: HashMap<String, Vec<LineStyle>>
+    },
+    #[serde(rename = "area")]
+    Area {
+        tags: Vec<String>,
+        style: HashMap<String, Vec<AreaStyle>>
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
