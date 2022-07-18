@@ -3,6 +3,7 @@ pub mod skin;
 
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::PlaComponent;
 
 pub struct Zoom(pub f32);
 
@@ -82,5 +83,5 @@ pub enum EditorState {
     #[default]
     Loading,
     Idle,
-    CreatingComponent(ComponentType),
+    EditingComponent
 }

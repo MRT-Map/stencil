@@ -18,7 +18,7 @@ pub fn ui(mut ctx: ResMut<EguiContext>, mut current_comp_data: ResMut<CurrentCom
     egui::SidePanel::left("main")
         .default_width(200.0)
         .show(ctx.ctx_mut(), |ui| {
-            ui.heading(format!("Stencil v{}", env!("CARGO_PKG_VERSION")));
+            ui.heading("Edit component data");
             ui.end_row();
             ui.add(
                 egui::TextEdit::singleline(&mut current_comp_data.namespace)

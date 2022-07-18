@@ -14,14 +14,12 @@ use editor::component_panel;
 use iyes_loopless::prelude::*;
 use rendering::tile::*;
 use rendering::utils::*;
+use crate::editor::menu;
+use crate::pla::{PlaComponent, PlaNode};
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
-    /*let skin = reqwest::blocking::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
-        .unwrap().json::<skin::Skin>().unwrap();
-    println!("{:#?}", skin.info);
-    return;*/
 
     App::new()
         .add_plugins_with(DefaultPlugins, |group| {
@@ -34,12 +32,16 @@ fn main() {
         .insert_resource(Zoom(7.0))
         .add_loopless_state(EditorState::Loading)
         .init_resource::<CurrentComponentData>()
+        .init_resource::<Vec<PlaComponent>>()
+        .init_resource::<Vec<PlaNode>>()
+        .init_resource::<Option<&PlaComponent>>()
         .init_resource::<Skin>()
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(
             ConditionSet::new()
                 .run_in_state(EditorState::Idle)
+                .with_system(menu::ui)
                 .with_system(component_panel::ui)
                 .with_system(world_pos)
                 .with_system(show_tiles)
