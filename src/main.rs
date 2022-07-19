@@ -42,14 +42,19 @@ fn main() {
         .add_system_set(
             ConditionSet::new()
                 .run_in_state(EditorState::Idle)
-                .with_system(menu::ui)
-                .with_system(component_panel::ui)
-                .with_system(world_pos)
-                .with_system(show_tiles)
+                .run_if(menu::ui)
+                .run_if(component_panel::ui)
+                .with_system(mouse_button_input)
                 .with_system(mouse_drag)
                 .with_system(mouse_zoom)
-                .with_system(mouse_button_input)
-                .into(),
+                .into()
+        )
+        .add_system_set(
+            ConditionSet::new()
+                .run_in_state(EditorState::Idle)
+                .with_system(world_pos)
+                .with_system(show_tiles)
+                .into()
         )
         .run();
 }

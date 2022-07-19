@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-pub fn ui(mut ctx: ResMut<EguiContext>) {
-    egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
+pub fn ui(mut ctx: ResMut<EguiContext>) -> bool {
+    !egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         // The top panel is often a good place for a menu bar:
         egui::menu::bar(ui, |ui| {
             egui::menu::menu_button(ui,
@@ -19,5 +19,5 @@ pub fn ui(mut ctx: ResMut<EguiContext>) {
                 ui.label("Coming soon");
             });
         });
-    });
+    }).response.hovered()
 }
