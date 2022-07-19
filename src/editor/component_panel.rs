@@ -1,4 +1,4 @@
-use crate::ResMut;
+use crate::{PlaComponent, ResMut};
 use bevy_egui::{egui, EguiContext};
 use std::collections::HashMap;
 
@@ -14,7 +14,14 @@ pub struct CurrentComponentData {
     attributes: HashMap<String, String>,
 }
 
-pub fn ui(mut ctx: ResMut<EguiContext>, mut current_comp_data: ResMut<CurrentComponentData>) {
+pub fn ui(
+    mut ctx: ResMut<EguiContext>,
+    mut current_comp_data: ResMut<CurrentComponentData>,
+    mut selected: ResMut<Option<&'static PlaComponent>>
+) {
+    if selected.is_none() {
+        return;
+    }
     egui::SidePanel::left("main")
         .default_width(200.0)
         .show(ctx.ctx_mut(), |ui| {

@@ -14,6 +14,7 @@ use editor::component_panel;
 use iyes_loopless::prelude::*;
 use rendering::tile::*;
 use rendering::utils::*;
+use crate::editor::create_component::mouse_button_input;
 use crate::editor::menu;
 use crate::pla::{PlaComponent, PlaNode};
 
@@ -47,6 +48,7 @@ fn main() {
                 .with_system(show_tiles)
                 .with_system(mouse_drag)
                 .with_system(mouse_zoom)
+                .with_system(mouse_button_input)
                 .into(),
         )
         .run();

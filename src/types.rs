@@ -83,5 +83,6 @@ pub enum EditorState {
     #[default]
     Loading,
     Idle,
+    CreatingComponent(ComponentType),
     EditingComponent
 }
