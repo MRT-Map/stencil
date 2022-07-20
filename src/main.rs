@@ -3,6 +3,9 @@ mod rendering;
 mod types;
 
 use crate::component_panel::CurrentComponentData;
+use crate::editor::create_component::mouse_button_input;
+use crate::editor::{menu, toolbar};
+use crate::pla::{PlaComponent, PlaNode};
 use crate::skin::{get_skin, Skin};
 use crate::types::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -14,9 +17,6 @@ use editor::component_panel;
 use iyes_loopless::prelude::*;
 use rendering::tile::*;
 use rendering::utils::*;
-use crate::editor::create_component::mouse_button_input;
-use crate::editor::menu;
-use crate::pla::{PlaComponent, PlaNode};
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
@@ -37,25 +37,38 @@ fn main() {
         .init_resource::<Vec<PlaNode>>()
         .init_resource::<Option<&PlaComponent>>()
         .init_resource::<Skin>()
+        .init_resource::<HoveringOverGui>()
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(
             ConditionSet::new()
                 .run_in_state(EditorState::Idle)
-                .run_if(menu::ui)
-                .run_if(component_panel::ui)
+                .label("ui")
+                .with_system(menu::ui)
+                .with_system(component_panel::ui)
+                .with_system(toolbar::ui)
+                .into()
+        )
+        .add_system_set(
+            ConditionSet::new()
+                .run_in_state(EditorState::Idle)
+                .label("controls")
+                .after("ui")
+                .before("cleanup")
+                .run_if_not(|hovering: Res<HoveringOverGui>| hovering.0)
                 .with_system(mouse_button_input)
                 .with_system(mouse_drag)
                 .with_system(mouse_zoom)
-                .into()
+                .into(),
         )
         .add_system_set(
             ConditionSet::new()
                 .run_in_state(EditorState::Idle)
                 .with_system(world_pos)
                 .with_system(show_tiles)
-                .into()
+                .into(),
         )
+        .add_system((|mut hovering: ResMut<HoveringOverGui>| hovering.0 = false).label("cleanup"))
         .run();
 }
 

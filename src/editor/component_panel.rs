@@ -1,4 +1,4 @@
-use crate::{PlaComponent, ResMut};
+use crate::{HoveringOverGui, PlaComponent, ResMut};
 use bevy_egui::{egui, EguiContext};
 use std::collections::HashMap;
 
@@ -17,12 +17,13 @@ pub struct CurrentComponentData {
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut current_comp_data: ResMut<CurrentComponentData>,
-    mut selected: ResMut<Option<&'static PlaComponent>>
-) -> bool {
+    mut selected: ResMut<Option<&'static PlaComponent>>,
+    mut hovering: ResMut<HoveringOverGui>
+) {
     if selected.is_none() {
-        return true;
+        return;
     }
-    !egui::SidePanel::left("main")
+    if egui::SidePanel::left("component_data")
         .default_width(200.0)
         .show(ctx.ctx_mut(), |ui| {
             ui.heading("Edit component data");
@@ -54,5 +55,9 @@ pub fn ui(
             ui.add(egui::TextEdit::singleline(&mut current_comp_data.tags).hint_text("Tags"));
             ui.end_row();
             ui.add(egui::Slider::new(&mut current_comp_data.layer, -10.0..=10.0).text("Layer"));
-        }).response.hovered()
+        })
+        .response
+        .hovered() {
+        hovering.0 = true;
+    }
 }

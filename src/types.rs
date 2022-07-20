@@ -1,9 +1,9 @@
 pub mod pla;
 pub mod skin;
 
+use crate::PlaComponent;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::PlaComponent;
 
 pub struct Zoom(pub f32);
 
@@ -84,5 +84,8 @@ pub enum EditorState {
     Loading,
     Idle,
     CreatingComponent(ComponentType),
-    EditingComponent
+    EditingComponent,
 }
+
+#[derive(Default)]
+pub struct HoveringOverGui(pub bool);
