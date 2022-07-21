@@ -44,10 +44,13 @@ fn main() {
             ConditionSet::new()
                 .run_in_state(EditorState::Idle)
                 .label("ui")
-                .with_system(menu::ui)
-                .with_system(component_panel::ui)
-                .with_system(toolbar::ui)
-                .into()
+                .with_system(menu::ui.label("menu"))
+                .with_system(component_panel::ui
+                    .label("component_panel")
+                    .after("menu")
+                    .before("toolbar"))
+                .with_system(toolbar::ui.label("toolbar"))
+                .into(),
         )
         .add_system_set(
             ConditionSet::new()
