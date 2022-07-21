@@ -41,22 +41,35 @@ fn main() {
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(
+        ConditionSet::new()
+            .run_not_in_state(EditorState::Loading)
+            .label("ui1")
+            .with_system(menu::ui)
+            .into(),
+    )
+        .add_system_set(
             ConditionSet::new()
-                .run_in_state(EditorState::Idle)
-                .label("ui")
-                .with_system(menu::ui.label("menu"))
-                .with_system(component_panel::ui
-                    .label("component_panel")
-                    .after("menu")
-                    .before("toolbar"))
-                .with_system(toolbar::ui.label("toolbar"))
+                .run_not_in_state(EditorState::Loading)
+                .label("ui2")
+                .after("ui1")
+                .before("ui3")
+                .with_system(component_panel::ui)
                 .into(),
         )
         .add_system_set(
             ConditionSet::new()
-                .run_in_state(EditorState::Idle)
+                .run_not_in_state(EditorState::Loading)
+                .label("ui3")
+                .after("ui2")
+                .before("controls")
+                .with_system(toolbar::ui)
+                .into(),
+        )
+        .add_system_set(
+            ConditionSet::new()
+                .run_not_in_state(EditorState::Loading)
                 .label("controls")
-                .after("ui")
+                .after("ui3")
                 .before("cleanup")
                 .run_if_not(|hovering: Res<HoveringOverGui>| hovering.0)
                 .with_system(mouse_button_input)
@@ -66,7 +79,7 @@ fn main() {
         )
         .add_system_set(
             ConditionSet::new()
-                .run_in_state(EditorState::Idle)
+                .run_not_in_state(EditorState::Loading)
                 .with_system(world_pos)
                 .with_system(show_tiles)
                 .into(),

@@ -20,12 +20,13 @@ pub fn ui(
     mut selected: ResMut<Option<&'static PlaComponent>>,
     mut hovering: ResMut<HoveringOverGui>,
 ) {
-    if selected.is_none() {
-        return;
-    }
     let panel = egui::SidePanel::left("component_data")
         .default_width(200.0)
         .show(ctx.ctx_mut(), |ui| {
+            if selected.is_none() {
+                ui.heading("Select a component...");
+                return;
+            }
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
