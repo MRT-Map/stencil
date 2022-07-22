@@ -1,9 +1,13 @@
-use bevy::app::AppExit;
 use crate::HoveringOverGui;
+use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-pub fn ui(mut ctx: ResMut<EguiContext>, mut hovering: ResMut<HoveringOverGui>, mut exit: EventWriter<AppExit>) {
+pub fn ui(
+    mut ctx: ResMut<EguiContext>,
+    mut hovering: ResMut<HoveringOverGui>,
+    mut exit: EventWriter<AppExit>,
+) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
             egui::menu::menu_button(

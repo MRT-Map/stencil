@@ -41,12 +41,12 @@ fn main() {
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(
-        ConditionSet::new()
-            .run_not_in_state(EditorState::Loading)
-            .label("ui1")
-            .with_system(menu::ui)
-            .into(),
-    )
+            ConditionSet::new()
+                .run_not_in_state(EditorState::Loading)
+                .label("ui1")
+                .with_system(menu::ui)
+                .into(),
+        )
         .add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
@@ -72,10 +72,15 @@ fn main() {
                 .after("ui3")
                 .before("cleanup")
                 .run_if_not(|hovering: Res<HoveringOverGui>| hovering.0)
-                .with_system(mouse_button_input)
                 .with_system(mouse_drag)
                 .with_system(mouse_zoom)
                 .into(),
+        )
+        .add_system_set(
+            ConditionSet::new()
+                .after("ui3")
+                .with_system(mouse_button_input)
+                .into()
         )
         .add_system_set(
             ConditionSet::new()
