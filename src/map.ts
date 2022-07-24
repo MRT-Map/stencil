@@ -36,7 +36,9 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
     }
 
     if (zzz.length != 0) zzz += "_";
-    let url = `https://dynmap.minecartrapidtransit.net/tiles/new/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
+    const dynmap = new URLSearchParams(location.search).has("map") ? new URLSearchParams(location.search).get("map") : "https://dynmap.minecartrapidtransit.net";
+    const world = new URLSearchParams(location.search).has("world") ? new URLSearchParams(location.search).get("world") : "new";
+    let url = `${dynmap}/tiles/${world}/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
     //console.log(url)
     return url;
 
