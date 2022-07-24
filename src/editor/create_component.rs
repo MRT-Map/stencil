@@ -9,7 +9,7 @@ pub fn mouse_button_input(
     mut windows: ResMut<Windows>,
     state: Res<CurrentState<EditorState>>
 ) {
-    if let EditorState::CreatingComponent(_) = *state { } else { return }
+    if let EditorState::CreatingComponent(_) = state.0 { } else { return }
     windows.primary_mut().set_cursor_icon(CursorIcon::Crosshair);
     if buttons.just_released(MouseButton::Left) {
         println!("{:?}", mouse_pos);
