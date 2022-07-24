@@ -9,7 +9,9 @@ var map = L.map('map', {
 //@ts-ignore
 L.TileLayer.customTileLayer = L.TileLayer.extend({
   getTileUrl: function(coords) {
-
+    let urlSearchParams = new URLSearchParams(location.search);
+    let zOffset = parseInt(urlSearchParams.get('zOffset')) || 0;
+    coords.z += zOffset
 
     let Zcoord = 2 ** (8 - coords.z);
     let Xcoord = (coords.x * 1);
@@ -36,8 +38,8 @@ L.TileLayer.customTileLayer = L.TileLayer.extend({
     }
 
     if (zzz.length != 0) zzz += "_";
-    const dynmap = new URLSearchParams(location.search).has("map") ? new URLSearchParams(location.search).get("map") : "https://dynmap.minecartrapidtransit.net";
-    const world = new URLSearchParams(location.search).has("world") ? new URLSearchParams(location.search).get("world") : "new";
+    const dynmap = urlSearchParams.get("map") || "https://dynmap.minecartrapidtransit.net";
+    const world = urlSearchParams.get("world") || "new";
     let url = `${dynmap}/tiles/${world}/flat/${group.x}_${group.y}/${zzz}${numberInGroup.x}_${numberInGroup.y}.png`;
     //console.log(url)
     return url;
