@@ -3,7 +3,7 @@ mod rendering;
 mod types;
 
 use crate::component_panel::CurrentComponentData;
-use crate::editor::create_component::mouse_button_input;
+use crate::editor::cursor::cursor_icon;
 use crate::editor::{menu, toolbar};
 use crate::pla::{PlaComponent, PlaNode};
 use crate::skin::{get_skin, Skin};
@@ -38,6 +38,7 @@ fn main() {
         .init_resource::<Option<&PlaComponent>>()
         .init_resource::<Skin>()
         .init_resource::<HoveringOverGui>()
+        .init_resource::<CreatedComponent>()
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(
@@ -79,8 +80,9 @@ fn main() {
         .add_system_set(
             ConditionSet::new()
                 .after("ui3")
-                .with_system(mouse_button_input)
-                .into()
+                .before("cleanup")
+                .with_system(cursor_icon)
+                .into(),
         )
         .add_system_set(
             ConditionSet::new()

@@ -84,8 +84,14 @@ pub enum EditorState {
     Loading,
     Idle,
     CreatingComponent(ComponentType),
-    EditingComponent,
+    EditingNodes,
+    MovingComponent,
+    RotatingComponent,
+    DeletingComponent,
 }
 
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);
+
+#[derive(Default)]
+pub struct CreatedComponent(pub Option<PlaComponent>);

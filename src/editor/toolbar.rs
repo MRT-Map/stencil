@@ -42,10 +42,30 @@ pub fn ui(
                     ComponentType::Area,
                 )))
             }
-            ui.selectable_value(&mut current_value, "edit_nodes", "Edit Nodes");
-            ui.selectable_value(&mut current_value, "move", "Move Components");
-            ui.selectable_value(&mut current_value, "rotate", "Rotate Components");
-            ui.selectable_value(&mut current_value, "delete", "Delete Components");
+            if ui
+                .selectable_value(&mut current_value, "edit_nodes", "Edit Nodes")
+                .clicked()
+            {
+                commands.insert_resource(NextState(EditorState::EditingNodes))
+            };
+            if ui
+                .selectable_value(&mut current_value, "move", "Move Components")
+                .clicked()
+            {
+                commands.insert_resource(NextState(EditorState::MovingComponent))
+            };
+            if ui
+                .selectable_value(&mut current_value, "rotate", "Rotate Components")
+                .clicked()
+            {
+                commands.insert_resource(NextState(EditorState::RotatingComponent))
+            };
+            if ui
+                .selectable_value(&mut current_value, "delete", "Delete Components")
+                .clicked()
+            {
+                commands.insert_resource(NextState(EditorState::DeletingComponent))
+            };
         });
     });
     if panel.response.hovered() {
