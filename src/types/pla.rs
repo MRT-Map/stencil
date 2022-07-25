@@ -40,9 +40,40 @@ pub struct PlaNode {
     connections: Vec<String>,
 }
 
+#[derive(Debug, Default, Component)]
+pub struct EditorComponent {
+    pub namespace: String,
+    pub id: String,
+    pub display_name: String,
+    pub description: String,
+    pub tags: Vec<String>,
+    pub layer: f64,
+    pub type_: String,
+    pub nodes: Vec<String>,
+    pub attributes: HashMap<String, String>,
+}
+impl PlaComponent {
+    pub fn new(type_: ComponentType) -> Self {
+        Self {
+            type_: format!(
+                "simple{}",
+                match type_ {
+                    ComponentType::Point => "Point",
+                    ComponentType::Line => "Line",
+                    ComponentType::Area => "Area",
+                }
+            ),
+            ..Default::default()
+        }
+    }
+    pub fn get_type(&self, skin: &Skin) -> Option<ComponentType> {
+        Some(skin.types.get(self.type_.as_str())?.get_type())
+    }
+}
+
 #[derive(Bundle)]
 pub struct ComponentBundle {
-    pub data: PlaComponent,
+    pub data: EditorComponent,
 }
 #[derive(Component)]
 pub struct CreatedComponent;

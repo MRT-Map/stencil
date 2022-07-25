@@ -32,7 +32,6 @@ fn main() {
         .add_plugin(EguiPlugin)
         .insert_resource(Zoom(7.0))
         .add_loopless_state(EditorState::Loading)
-        .init_resource::<CurrentComponentData>()
         .init_resource::<Vec<PlaComponent>>()
         .init_resource::<Vec<PlaNode>>()
         .init_resource::<Skin>()

@@ -5,7 +5,7 @@ use iyes_loopless::prelude::*;
 
 pub fn create_component(
     mut commands: Commands,
-    mut created_query: Query<&mut PlaComponent, With<CreatedComponent>>,
+    mut created_query: Query<&mut EditorComponent, With<CreatedComponent>>,
     buttons: Res<Input<MouseButton>>,
     skin: Res<Skin>,
     state: Res<CurrentState<EditorState>>,
