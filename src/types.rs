@@ -92,6 +92,3 @@ pub enum EditorState {
 
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);
-
-#[derive(Default)]
-pub struct CreatedComponent(pub Option<PlaComponent>);

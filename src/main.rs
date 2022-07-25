@@ -35,10 +35,8 @@ fn main() {
         .init_resource::<CurrentComponentData>()
         .init_resource::<Vec<PlaComponent>>()
         .init_resource::<Vec<PlaNode>>()
-        .init_resource::<Option<&PlaComponent>>()
         .init_resource::<Skin>()
         .init_resource::<HoveringOverGui>()
-        .init_resource::<CreatedComponent>()
         .add_startup_system(get_skin)
         .add_exit_system(EditorState::Loading, setup)
         .add_system_set(

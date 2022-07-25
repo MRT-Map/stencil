@@ -1,4 +1,4 @@
-use crate::EditorState;
+use crate::{ComponentType, EditorState};
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -102,6 +102,15 @@ pub enum SkinComponent {
         tags: Vec<String>,
         style: HashMap<String, Vec<AreaStyle>>,
     },
+}
+impl SkinComponent {
+    pub fn get_type(&self) -> ComponentType {
+        match self {
+            Self::Point { .. } => ComponentType::Point,
+            Self::Line { .. } => ComponentType::Line,
+            Self::Area { .. } => ComponentType::Area,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
