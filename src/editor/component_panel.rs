@@ -1,8 +1,8 @@
+use crate::pla::{EditorComponent, SelectedComponent};
 use crate::{HoveringOverGui, PlaComponent, ResMut};
+use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use std::collections::HashMap;
-use bevy::prelude::*;
-use crate::pla::{EditorComponent, SelectedComponent};
 
 #[derive(Default)]
 pub struct CurrentComponentData {
@@ -44,8 +44,7 @@ pub fn ui(
             );
             ui.end_row();
             ui.add(
-                egui::TextEdit::multiline(&mut component_data.description)
-                    .hint_text("Description"),
+                egui::TextEdit::multiline(&mut component_data.description).hint_text("Description"),
             );
             ui.end_row();
             ui.separator();

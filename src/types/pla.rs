@@ -1,8 +1,8 @@
 use crate::{ComponentType, Skin};
 use bevy::prelude::*;
+use bevy_prototype_lyon::entity::ShapeBundle;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use bevy_prototype_lyon::entity::ShapeBundle;
 
 #[derive(Serialize, Deserialize, Debug, Default, Component)]
 pub struct PlaComponent {
@@ -50,7 +50,6 @@ pub struct EditorComponent {
     pub tags: Vec<String>,
     pub layer: f64,
     pub type_: String,
-    pub nodes: Vec<String>,
     pub attributes: HashMap<String, String>,
 }
 impl EditorComponent {
@@ -71,13 +70,28 @@ impl EditorComponent {
         Some(skin.types.get(self.type_.as_str())?.get_type())
     }
 }
+#[derive(Component)]
+pub struct ComponentCoords(pub Vec<IVec2>);
 
 #[derive(Bundle)]
 pub struct ComponentBundle {
     pub data: EditorComponent,
+    pub coords: ComponentCoords,
 
     #[bundle]
-    pub shape: ShapeBundle
+    pub shape: ShapeBundle,
+}
+impl ComponentBundle {
+    pub fn new(data: EditorComponent, orig_coords: IVec2) -> Self {
+        Self {
+            data,
+            coords: ComponentCoords(vec![orig_coords]),
+            shape: ShapeBundle::default(),
+        }
+    }
+    pub fn update_shape(&mut self) {
+
+    }
 }
 #[derive(Component)]
 pub struct CreatedComponent;
