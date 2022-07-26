@@ -1,4 +1,4 @@
-use crate::pla::{ComponentBundle, CreatedComponent, SelectedComponent};
+use crate::pla::{ComponentBundle, CreatedComponent, EditorComponent, SelectedComponent};
 use crate::{ComponentType, EditorState, PlaComponent, Skin};
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -15,7 +15,7 @@ pub fn create_component(
             if *type_ == ComponentType::Point {
                 commands
                     .spawn_bundle(ComponentBundle {
-                        data: PlaComponent::new(type_.to_owned()),
+                        data: EditorComponent::new(type_.to_owned()),
                     })
                     .insert(SelectedComponent);
                 return;
@@ -23,7 +23,7 @@ pub fn create_component(
             if created_query.is_empty() {
                 commands
                     .spawn_bundle(ComponentBundle {
-                        data: PlaComponent::new(type_.to_owned()),
+                        data: EditorComponent::new(type_.to_owned()),
                     })
                     .insert(CreatedComponent);
             } else {

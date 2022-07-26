@@ -2,6 +2,7 @@ use crate::{ComponentType, Skin};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use bevy_prototype_lyon::entity::ShapeBundle;
 
 #[derive(Serialize, Deserialize, Debug, Default, Component)]
 pub struct PlaComponent {
@@ -52,7 +53,7 @@ pub struct EditorComponent {
     pub nodes: Vec<String>,
     pub attributes: HashMap<String, String>,
 }
-impl PlaComponent {
+impl EditorComponent {
     pub fn new(type_: ComponentType) -> Self {
         Self {
             type_: format!(
@@ -74,6 +75,9 @@ impl PlaComponent {
 #[derive(Bundle)]
 pub struct ComponentBundle {
     pub data: EditorComponent,
+
+    #[bundle]
+    pub shape: ShapeBundle
 }
 #[derive(Component)]
 pub struct CreatedComponent;
