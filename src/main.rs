@@ -2,7 +2,6 @@ mod editor;
 mod rendering;
 mod types;
 
-use crate::component_panel::CurrentComponentData;
 use crate::editor::cursor::cursor_icon;
 use crate::editor::{menu, toolbar};
 use crate::pla::{PlaComponent, PlaNode};
@@ -12,6 +11,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePosPlugin};
+use bevy_prototype_lyon::prelude::*;
 use bevy_web_asset::WebAssetPlugin;
 use editor::component_panel;
 use iyes_loopless::prelude::*;
@@ -30,6 +30,7 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_plugin(EguiPlugin)
+        .add_plugin(ShapePlugin)
         .insert_resource(Zoom(7.0))
         .add_loopless_state(EditorState::Loading)
         .init_resource::<Vec<PlaComponent>>()
@@ -88,6 +89,7 @@ fn main() {
                 .with_system(show_tiles)
                 .into(),
         )
+        .add_system(editor::creating_component::create_component)
         .add_system((|mut hovering: ResMut<HoveringOverGui>| hovering.0 = false).label("cleanup"))
         .run();
 }

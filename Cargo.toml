@@ -24,7 +24,10 @@ features = [
     "bevy_render",
     "bevy_core_pipeline",
     "bevy_winit",
-    "png"
+    "png",
+    "trace",
+    "wgpu_trace",
+    "dynamic"
 ]
 
 [profile.dev.package."*"]

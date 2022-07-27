@@ -4,18 +4,6 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use std::collections::HashMap;
 
-#[derive(Default)]
-pub struct CurrentComponentData {
-    namespace: String,
-    id: String,
-    display_name: String,
-    description: String,
-    tags: String,
-    layer: f64,
-    type_: String,
-    attributes: HashMap<String, String>,
-}
-
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut selected: Query<&mut EditorComponent, With<SelectedComponent>>,
@@ -28,7 +16,7 @@ pub fn ui(
                 ui.heading("Select a component...");
                 return;
             }
-            let component_data = selected.single_mut();
+            let mut component_data = selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
