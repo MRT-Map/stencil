@@ -85,12 +85,12 @@ impl EditorComponent {
                 &{
                     let mut pb = PathBuilder::new();
                     for coord in coords.0 {
-                        pb.move_to(coord.as_vec2());
+                        pb.line_to(coord.as_vec2());
                     }
                     pb.build()
                 },
                 DrawMode::Stroke(StrokeMode::new(Color::CYAN, 8.0)),
-                Transform::default()
+                Transform::default(),
             )
         }
     }
