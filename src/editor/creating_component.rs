@@ -75,3 +75,23 @@ pub fn create_component(
         }
     }
 }
+
+pub fn clear_created_component(
+    mut commands: Commands,
+    mut skin: Res<Skin>,
+    created_query: Query<
+        (&EditorComponent, &mut ComponentCoords, Entity),
+        With<CreatedComponent>,
+    >,
+    state: Res<CurrentState<EditorState>>,
+) {
+    if let EditorState::CreatingComponent(_) = &state.0 {
+        return
+    }
+    for (data, coords, entity) in created_query.iter() {
+        commands
+            .entity(entity)
+            .insert_bundle(data.get_shape(coords.to_owned(), &skin));
+        commands.entity(entity).remove::<CreatedComponent>();
+    }
+}

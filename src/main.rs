@@ -90,7 +90,11 @@ fn main() {
                 .with_system(show_tiles)
                 .into(),
         )
-        .add_system(editor::creating_component::create_component)
+        .add_system_set(
+            SystemSet::new()
+                .with_system(editor::creating_component::create_component)
+                .with_system(editor::creating_component::clear_created_component)
+        )
         .add_system((|mut hovering: ResMut<HoveringOverGui>| hovering.0 = false).label("cleanup"))
         .run();
 }
