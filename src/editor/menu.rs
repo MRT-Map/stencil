@@ -1,5 +1,6 @@
 use crate::HoveringOverGui;
 use bevy::app::AppExit;
+use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
@@ -7,6 +8,7 @@ pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut hovering: ResMut<HoveringOverGui>,
     mut exit: EventWriter<AppExit>,
+    diagnostics: Res<Diagnostics>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -25,6 +27,20 @@ pub fn ui(
             egui::menu::menu_button(ui, "Edit", |ui| {
                 ui.label("Coming soon");
             });
+            ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                ui.label(format!(
+                    "FPS: {}",
+                    if let Some(diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+                        if let Some(fps) = diagnostic.average() {
+                            format!("{:.2}", fps)
+                        } else {
+                            "???".to_string()
+                        }
+                    } else {
+                        "???".to_string()
+                    }
+                ));
+            })
         });
     });
     if panel.response.hovered() {
