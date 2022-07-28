@@ -5,7 +5,6 @@ use iyes_loopless::prelude::*;
 
 pub fn cursor_icon(
     buttons: Res<Input<MouseButton>>,
-    mouse_pos: Res<MousePos>,
     mut windows: ResMut<Windows>,
     state: Res<CurrentState<EditorState>>,
     hovering: Res<HoveringOverGui>,
@@ -26,8 +25,5 @@ pub fn cursor_icon(
             EditorState::RotatingComponent => CursorIcon::Hand,
             EditorState::DeletingComponent => CursorIcon::Hand,
         });
-    }
-    if buttons.just_released(MouseButton::Left) {
-        println!("{:?}", mouse_pos);
     }
 }

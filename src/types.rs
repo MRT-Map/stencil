@@ -1,7 +1,6 @@
 pub mod pla;
 pub mod skin;
 
-use crate::PlaComponent;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 

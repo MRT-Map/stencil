@@ -15,6 +15,7 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_web_asset::WebAssetPlugin;
 use editor::component_panel;
 use iyes_loopless::prelude::*;
+use rendering::mouse_nav::{mouse_drag, mouse_zoom};
 use rendering::tile::*;
 use rendering::utils::*;
 
