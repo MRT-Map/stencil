@@ -11,6 +11,7 @@ bevy_mouse_tracking_plugin = "~0.2.1"
 bevy_prototype_lyon = "~0.5.0"
 iyes_loopless = "~0.6.1"
 bevy_egui = "~0.14.0"
+bevy_mod_picking = "~0.7.0"
 
 console_error_panic_hook = "~0.1.7"
 serde = { version = "~1.0.139", features = ["derive"] }

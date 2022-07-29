@@ -78,7 +78,7 @@ pub fn create_component(
 
 pub fn clear_created_component(
     mut commands: Commands,
-    mut skin: Res<Skin>,
+    skin: Res<Skin>,
     created_query: Query<
         (&EditorComponent, &mut ComponentCoords, Entity),
         With<CreatedComponent>,
@@ -91,7 +91,8 @@ pub fn clear_created_component(
     for (data, coords, entity) in created_query.iter() {
         commands
             .entity(entity)
-            .insert_bundle(data.get_shape(coords.to_owned(), &skin));
-        commands.entity(entity).remove::<CreatedComponent>();
+            .insert_bundle(data.get_shape(coords.to_owned(), &skin))
+            .remove::<CreatedComponent>()
+            .insert(SelectedComponent);
     }
 }

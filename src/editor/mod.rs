@@ -3,3 +3,4 @@ pub mod creating_component;
 pub mod cursor;
 pub mod menu;
 pub mod toolbar;
+pub mod selecting_component;
