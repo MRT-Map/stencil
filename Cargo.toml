@@ -6,19 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_web_asset = "~0.3.0"
-bevy_mouse_tracking_plugin = "~0.2.1"
-bevy_prototype_lyon = "~0.5.0"
-iyes_loopless = "~0.6.1"
-bevy_egui = "~0.14.0"
-bevy_mod_picking = "~0.7.0"
+bevy_web_asset = "~0.4.0"
+bevy_mouse_tracking_plugin = "~0.3.0"
+bevy_prototype_lyon = "~0.6.0"
+iyes_loopless = "~0.7.0"
+bevy_egui = "~0.15.0"
+bevy_mod_picking = "~0.8.0"
 
 console_error_panic_hook = "~0.1.7"
 serde = { version = "~1.0.139", features = ["derive"] }
 reqwest = { version = "~0.11.11", features = ["blocking", "json"] }
 
 [dependencies.bevy]
-version = "~0.7.0"
+version = "~0.8.0"
 default-features = false
 features = [
     "bevy_sprite",
