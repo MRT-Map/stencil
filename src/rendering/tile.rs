@@ -1,14 +1,12 @@
 use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
     sprite::Anchor,
 };
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
+use bevy_mouse_tracking_plugin::MainCamera;
 
 use crate::{
     rendering::utils::{
-        get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height,
-        get_window_width_height,
+        get_map_coords_of_edges,
     },
     types::TileCoord,
     Zoom,

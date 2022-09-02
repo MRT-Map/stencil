@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::MousePos;
 use iyes_loopless::prelude::*;
 
 use crate::{EditorState, HoveringOverGui};

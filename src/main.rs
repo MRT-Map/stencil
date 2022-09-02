@@ -124,25 +124,23 @@ struct CursorCoords;
 
 fn setup(mut commands: Commands, server: Res<AssetServer>) {
     commands
-        .spawn_bundle(OrthographicCameraBundle::new_2d())
-        .insert(MainCamera);
-    commands.spawn_bundle(UiCameraBundle::default());
+        .spawn_bundle(Camera2dBundle::default())
+        .insert(MainCamera)
+        .insert(UiCameraConfig {
+        show_ui: true,
+    });
     commands
         .spawn_bundle(TextBundle {
-            text: Text::with_section(
+            text: Text::from_section(
                 "x: ? z: ?",
                 TextStyle {
                     font: server.load("NotoSans-Medium.ttf"),
                     font_size: 20.0,
                     color: Color::WHITE,
                 },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Right,
-                    ..default()
-                },
-            ),
+            ).with_alignment(TextAlignment::CENTER_RIGHT),
             style: Style {
-                position: Rect {
+                position: UiRect {
                     top: Val::Px(5.0),
                     right: Val::Px(15.0),
                     ..default()

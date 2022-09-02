@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
 use crate::{
     pla::{EditorComponent, SelectedComponent},
-    HoveringOverGui, PlaComponent, ResMut,
+    HoveringOverGui, ResMut,
 };
 
 pub fn ui(

@@ -26,11 +26,11 @@ pub fn mouse_drag(
 
             let dx = map_wh.x / win_wh.x * (mouse_pos.x - origin_pos.x);
             let dy = map_wh.y / win_wh.y * (mouse_pos.y - origin_pos.y);
-            transform.translation.x = camera_origin_pos.unwrap().x - dx;
-            transform.translation.y = camera_origin_pos.unwrap().y - dy;
+            transform.translation_mut().x = camera_origin_pos.unwrap().x - dx;
+            transform.translation_mut().y = camera_origin_pos.unwrap().y - dy;
         } else {
             *mouse_origin_pos = Some(*mouse_pos.into_inner());
-            *camera_origin_pos = Some(transform.translation.truncate());
+            *camera_origin_pos = Some(transform.translation().truncate());
         }
     } else {
         *mouse_origin_pos = None;
@@ -58,8 +58,8 @@ pub fn mouse_zoom(
             MouseScrollUnit::Pixel => ev.y * 0.0125,
         };
         if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
-            let orig_x = transform.translation.x;
-            let orig_y = transform.translation.y;
+            let orig_x = transform.translation().x;
+            let orig_y = transform.translation().y;
             let orig_scale = ort_proj.scale;
             let orig_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
             zoom.0 += u;
@@ -69,8 +69,8 @@ pub fn mouse_zoom(
             let dx = (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
             let dy = (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
-            transform.translation.x = new_mouse_pos.x - dx;
-            transform.translation.y = new_mouse_pos.y - dy;
+            transform.translation_mut().x = new_mouse_pos.x - dx;
+            transform.translation_mut().y = new_mouse_pos.y - dy;
 
             /*
             var mousePos = {x: mouseEvent.offsetX, y: mouseEvent.offsetY};

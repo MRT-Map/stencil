@@ -4,6 +4,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, EguiContext};
+use bevy_egui::egui::Align;
 
 use crate::HoveringOverGui;
 
@@ -30,7 +31,7 @@ pub fn ui(
             egui::menu::menu_button(ui, "Edit", |ui| {
                 ui.label("Coming soon");
             });
-            ui.with_layout(egui::Layout::right_to_left(), |ui| {
+            ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {}",
                     if let Some(diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {

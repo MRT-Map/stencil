@@ -15,7 +15,7 @@ impl Zoom {
     }
 }
 
-#[derive(Component, Default, PartialEq, Copy, Clone, Debug)]
+#[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub struct TileCoord {
     pub x: i32,
     pub y: i32,
@@ -41,7 +41,6 @@ impl TileCoord {
     }
 
     pub fn url(&self) -> String {
-        return "".into();
         let z = 2.0f64.powi((8 - self.z) as i32);
         let x = self.x as f64;
         let y = self.y as f64;
