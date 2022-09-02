@@ -1,8 +1,11 @@
-use crate::HoveringOverGui;
-use bevy::app::AppExit;
-use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
-use bevy::prelude::*;
+use bevy::{
+    app::AppExit,
+    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_egui::{egui, EguiContext};
+
+use crate::HoveringOverGui;
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,

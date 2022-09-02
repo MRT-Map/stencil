@@ -1,10 +1,12 @@
-use crate::pla::{
-    ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent,
-};
-use crate::{get_cursor_world_pos, ComponentType, EditorState, HoveringOverGui, Skin};
 use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
+
+use crate::{
+    get_cursor_world_pos,
+    pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
+    ComponentType, EditorState, HoveringOverGui, Skin,
+};
 
 #[allow(clippy::too_many_arguments)]
 pub fn create_component(
@@ -79,14 +81,11 @@ pub fn create_component(
 pub fn clear_created_component(
     mut commands: Commands,
     skin: Res<Skin>,
-    created_query: Query<
-        (&EditorComponent, &mut ComponentCoords, Entity),
-        With<CreatedComponent>,
-    >,
+    created_query: Query<(&EditorComponent, &mut ComponentCoords, Entity), With<CreatedComponent>>,
     state: Res<CurrentState<EditorState>>,
 ) {
     if let EditorState::CreatingComponent(_) = &state.0 {
-        return
+        return;
     }
     for (data, coords, entity) in created_query.iter() {
         commands

@@ -1,8 +1,10 @@
-use crate::{ComponentType, EditorState};
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+
+use crate::{ComponentType, EditorState};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {

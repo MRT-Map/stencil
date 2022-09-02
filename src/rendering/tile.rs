@@ -1,12 +1,18 @@
-use crate::rendering::utils::{
-    get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height, get_window_width_height,
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
+    sprite::Anchor,
 };
-use crate::types::TileCoord;
-use crate::Zoom;
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
-use bevy::prelude::*;
-use bevy::sprite::Anchor;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
+
+use crate::{
+    rendering::utils::{
+        get_cursor_world_pos, get_map_coords_of_edges, get_map_width_height,
+        get_window_width_height,
+    },
+    types::TileCoord,
+    Zoom,
+};
 
 #[derive(Component)]
 pub struct Tile;

@@ -2,22 +2,28 @@ mod editor;
 mod rendering;
 mod types;
 
-use crate::editor::cursor::cursor_icon;
-use crate::editor::{menu, toolbar};
-use crate::pla::{PlaComponent, PlaNode};
-use crate::skin::{get_skin, Skin};
-use crate::types::*;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_egui::EguiPlugin;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePosPlugin};
 use bevy_prototype_lyon::prelude::*;
 use bevy_web_asset::WebAssetPlugin;
 use editor::component_panel;
 use iyes_loopless::prelude::*;
-use rendering::mouse_nav::{mouse_drag, mouse_zoom};
-use rendering::tile::*;
-use rendering::utils::*;
+use rendering::{
+    mouse_nav::{mouse_drag, mouse_zoom},
+    tile::*,
+    utils::*,
+};
+
+use crate::{
+    editor::{cursor::cursor_icon, menu, toolbar},
+    pla::{PlaComponent, PlaNode},
+    skin::{get_skin, Skin},
+    types::*,
+};
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
@@ -93,7 +99,7 @@ fn main() {
         .add_system_set(
             SystemSet::new()
                 .with_system(editor::creating_component::create_component)
-                .with_system(editor::creating_component::clear_created_component)
+                .with_system(editor::creating_component::clear_created_component),
         )
         .add_system((|mut hovering: ResMut<HoveringOverGui>| hovering.0 = false).label("cleanup"))
         .run();

@@ -1,9 +1,10 @@
-use crate::{ComponentType, Skin};
-use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
-use bevy_prototype_lyon::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use bevy::prelude::*;
+use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
+use serde::{Deserialize, Serialize};
+
+use crate::{ComponentType, Skin};
 
 #[derive(Serialize, Deserialize, Debug, Default, Component)]
 pub struct PlaComponent {

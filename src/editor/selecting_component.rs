@@ -1,22 +1,22 @@
-use crate::{EditorState, Skin};
 use bevy::prelude::*;
+use bevy_mod_picking::PickingEvent;
 use iyes_loopless::prelude::*;
-use bevy_mod_picking::{PickingEvent};
-use crate::pla::{ComponentCoords, EditorComponent, SelectedComponent};
+
+use crate::{
+    pla::{ComponentCoords, EditorComponent, SelectedComponent},
+    EditorState, Skin,
+};
 
 pub fn selector(
     state: Res<CurrentState<EditorState>>,
     mut events: EventReader<PickingEvent>,
     mut commands: Commands,
-    selected_query: Query<
-        (&EditorComponent, &ComponentCoords, Entity),
-        With<SelectedComponent>,
-    >,
+    selected_query: Query<(&EditorComponent, &ComponentCoords, Entity), With<SelectedComponent>>,
     skin: Res<Skin>,
     buttons: Res<Input<MouseButton>>,
 ) {
     if let EditorState::CreatingComponent(_) = &state.0 {
-        return
+        return;
     }
     if buttons.just_released(MouseButton::Left) {
         let mut clicked = false;

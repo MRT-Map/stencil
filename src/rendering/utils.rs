@@ -1,5 +1,4 @@
-use bevy::prelude::*;
-use bevy::render::camera::RenderTarget;
+use bevy::{prelude::*, render::camera::RenderTarget};
 
 pub fn get_window_width_height(windows: &Res<Windows>, camera: &Camera) -> Vec2 {
     let wnd = if let RenderTarget::Window(id) = camera.target {

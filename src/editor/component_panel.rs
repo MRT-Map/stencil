@@ -1,8 +1,12 @@
-use crate::pla::{EditorComponent, SelectedComponent};
-use crate::{HoveringOverGui, PlaComponent, ResMut};
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use std::collections::HashMap;
+
+use crate::{
+    pla::{EditorComponent, SelectedComponent},
+    HoveringOverGui, PlaComponent, ResMut,
+};
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,

@@ -1,7 +1,8 @@
-use crate::{EditorState, HoveringOverGui};
 use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MousePos;
 use iyes_loopless::prelude::*;
+
+use crate::{EditorState, HoveringOverGui};
 
 pub fn cursor_icon(
     buttons: Res<Input<MouseButton>>,
