@@ -2,10 +2,11 @@ use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
 
 use crate::{
-    get_cursor_world_pos, get_map_width_height, get_window_width_height, Camera, EventReader,
+    Camera, EventReader, get_cursor_world_pos, get_map_width_height, get_window_width_height,
     GlobalTransform, Input, Local, MouseButton, Mut, OrthographicProjection, Query, Res, ResMut,
-    Vec2, Windows, With, Zoom,
+    Vec2, Windows, With,
 };
+use crate::types::zoom::Zoom;
 
 pub fn mouse_drag(
     buttons: Res<Input<MouseButton>>,

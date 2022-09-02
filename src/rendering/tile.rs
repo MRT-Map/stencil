@@ -4,13 +4,9 @@ use bevy::{
 };
 use bevy_mouse_tracking_plugin::MainCamera;
 
-use crate::{
-    rendering::utils::{
-        get_map_coords_of_edges,
-    },
-    types::TileCoord,
-    Zoom,
-};
+use crate::rendering::utils::get_map_coords_of_edges;
+use crate::types::tile_coord::TileCoord;
+use crate::types::zoom::Zoom;
 
 #[derive(Component)]
 pub struct Tile;

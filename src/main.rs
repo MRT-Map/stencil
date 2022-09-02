@@ -17,6 +17,7 @@ use rendering::{
     tile::*,
     utils::*,
 };
+use types::zoom::Zoom;
 
 use crate::{
     editor::{cursor::cursor_icon, menu, toolbar},
@@ -33,8 +34,8 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |group| {
             group.add_before::<bevy::asset::AssetPlugin, _>(WebAssetPlugin)
         })
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        //.add_plugin(LogDiagnosticsPlugin::default())
+        //.add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(MousePosPlugin::SingleCamera)
         .add_plugin(EguiPlugin)
         .add_plugin(ShapePlugin)
