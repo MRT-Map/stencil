@@ -4,15 +4,15 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
+    editor::{
+        bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
+        ui::HoveringOverGui,
+    },
     types::{
-        DeselectQuery, EditorState, SelectQuery,
+        pla::ComponentCoords, skin::Skin, DeselectQuery, DetectMouseMoveOnClick,
+        DetectMouseMoveOnClickExt, EditorState, Label, SelectQuery,
     },
 };
-use crate::editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent};
-use crate::editor::ui::HoveringOverGui;
-use crate::types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, Label};
-use crate::types::pla::ComponentCoords;
-use crate::types::skin::Skin;
 
 #[derive(Default)]
 pub struct HoveringOverComponent(pub bool);
@@ -27,7 +27,7 @@ pub fn selector(
     hovering_over_gui: Res<HoveringOverGui>,
     mut hovering_over_comp: ResMut<HoveringOverComponent>,
     mut selected_entity: Local<Option<Entity>>,
-    mut mm_detector: DetectMouseMoveOnClick
+    mut mm_detector: DetectMouseMoveOnClick,
 ) {
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
@@ -41,7 +41,7 @@ pub fn selector(
         } else if let PickingEvent::Hover(e) = event {
             hovering_over_comp.0 = match e {
                 HoverEvent::JustLeft(_) => false,
-                HoverEvent::JustEntered(_) => true
+                HoverEvent::JustEntered(_) => true,
             };
         }
     }
@@ -59,13 +59,14 @@ pub fn highlight_selected(
     state: Res<CurrentState<EditorState>>,
     mut commands: Commands,
     query: Query<(&EditorComponent, &ComponentCoords, Entity), With<SelectedComponent>>,
-    skin: Res<Skin>
+    skin: Res<Skin>,
 ) {
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
     }
     for (data, coords, entity) in query.iter() {
-        commands.entity(entity)
+        commands
+            .entity(entity)
             .insert_bundle(data.get_shape(coords.to_owned(), &skin, true));
     }
 }
@@ -101,22 +102,21 @@ pub fn select_query(commands: &mut Commands, set: &mut SelectQuery<impl WorldQue
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<HoveringOverComponent>()
+        app.init_resource::<HoveringOverComponent>()
             .add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .label(Label::Select)
-                .before(Label::HighlightSelected)
-                .with_system(selector)
-                .into(),
-        ).add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .label(Label::HighlightSelected)
-                .with_system(highlight_selected)
-                .into(),
-        );
+                ConditionSet::new()
+                    .run_not_in_state(EditorState::Loading)
+                    .label(Label::Select)
+                    .before(Label::HighlightSelected)
+                    .with_system(selector)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_not_in_state(EditorState::Loading)
+                    .label(Label::HighlightSelected)
+                    .with_system(highlight_selected)
+                    .into(),
+            );
     }
 }
-

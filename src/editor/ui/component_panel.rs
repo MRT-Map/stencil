@@ -2,9 +2,13 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use itertools::Itertools;
 
-use crate::editor::ui::HoveringOverGui;
-use crate::editor::bundles::component::{EditorComponent, SelectedComponent};
-use crate::types::pla::ComponentCoords;
+use crate::{
+    editor::{
+        bundles::component::{EditorComponent, SelectedComponent},
+        ui::HoveringOverGui,
+    },
+    types::pla::ComponentCoords,
+};
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
@@ -18,7 +22,8 @@ pub fn ui(
                 ui.heading("Select a component...");
                 return;
             }
-            let (mut component_data, component_coords): (Mut<EditorComponent>, &ComponentCoords) = selected.single_mut();
+            let (mut component_data, component_coords): (Mut<EditorComponent>, &ComponentCoords) =
+                selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
@@ -50,7 +55,13 @@ pub fn ui(
             ui.end_row();
             ui.separator();
             ui.heading("Position data");
-            ui.label(component_coords.0.iter().map(|a| format!("{}, {}", a.x, a.y)).join("\n"));
+            ui.label(
+                component_coords
+                    .0
+                    .iter()
+                    .map(|a| format!("{}, {}", a.x, a.y))
+                    .join("\n"),
+            );
         });
     if panel.response.hovered() {
         hovering_over_gui.0 = true;

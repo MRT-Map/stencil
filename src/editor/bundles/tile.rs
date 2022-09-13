@@ -1,7 +1,6 @@
-use bevy::prelude::*;
-use bevy::sprite::Anchor;
-use crate::types::tile_coord::TileCoord;
-use crate::types::zoom::Zoom;
+use bevy::{prelude::*, sprite::Anchor};
+
+use crate::types::{tile_coord::TileCoord, zoom::Zoom};
 
 #[derive(Component)]
 pub struct Tile;

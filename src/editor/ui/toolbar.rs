@@ -3,12 +3,9 @@ use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::ui::HoveringOverGui,
-    types::{ComponentType, EditorState},
+    editor::{creating_component::clear_created_component, ui::HoveringOverGui},
+    types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
 };
-use crate::editor::creating_component::clear_created_component;
-use crate::types::CreatedQuery;
-use crate::types::skin::Skin;
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
@@ -30,17 +27,37 @@ pub fn ui(
                         clear_created_component(&mut _commands, &_created_query, &_skin);
                         _commands.insert_resource(NextState($next_state));
                     }
-                }
+                };
             }
 
             button!("", "Select", EditorState::Idle);
-            button!("point", "Point", EditorState::CreatingComponent(ComponentType::Point));
-            button!("line", "Line", EditorState::CreatingComponent(ComponentType::Line));
-            button!("area", "Area", EditorState::CreatingComponent(ComponentType::Area));
+            button!(
+                "point",
+                "Point",
+                EditorState::CreatingComponent(ComponentType::Point)
+            );
+            button!(
+                "line",
+                "Line",
+                EditorState::CreatingComponent(ComponentType::Line)
+            );
+            button!(
+                "area",
+                "Area",
+                EditorState::CreatingComponent(ComponentType::Area)
+            );
             button!("edit_nodes", "Edit Nodes", EditorState::EditingNodes);
             button!("move", "Move Components", EditorState::MovingComponent);
-            button!("rotate", "Rotate Components", EditorState::RotatingComponent);
-            button!("delete", "Delete Components", EditorState::DeletingComponent);
+            button!(
+                "rotate",
+                "Rotate Components",
+                EditorState::RotatingComponent
+            );
+            button!(
+                "delete",
+                "Delete Components",
+                EditorState::DeletingComponent
+            );
         });
     });
     if panel.response.hovered() {

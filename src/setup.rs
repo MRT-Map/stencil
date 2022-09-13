@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::MainCamera;
-use bevy_mouse_tracking_plugin::prelude::*;
+use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
 use iyes_loopless::prelude::*;
 
 use crate::types::{

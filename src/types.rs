@@ -9,12 +9,9 @@ use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 
 use crate::{
-    types::{
-        pla::ComponentCoords,
-        skin::Skin,
-    },
+    editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
+    types::{pla::ComponentCoords, skin::Skin},
 };
-use crate::editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub enum ComponentType {
@@ -46,7 +43,7 @@ pub enum Label {
     Cleanup,
     Select,
     HighlightSelected,
-    CreateComponent
+    CreateComponent,
 }
 impl SystemLabel for Label {
     fn as_str(&self) -> &'static str {
@@ -68,7 +65,7 @@ pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
     'state,
     (
         DeselectQuery<'world, 'state, 'a>,
-        Query<'world, 'state, Entity, F>
+        Query<'world, 'state, Entity, F>,
     ),
 >;
 pub type CreatedQuery<'world, 'state, 'a> = Query<
@@ -77,17 +74,17 @@ pub type CreatedQuery<'world, 'state, 'a> = Query<
     (&'a EditorComponent, &'a mut ComponentCoords, Entity),
     With<CreatedComponent>,
 >;
-pub type DetectMouseMoveOnClick<'world, 'a> = (
-    Local<'a, Option<MousePos>>,
-    Res<'world, MousePos>
-);
+pub type DetectMouseMoveOnClick<'world, 'a> = (Local<'a, Option<MousePos>>, Res<'world, MousePos>);
 pub trait DetectMouseMoveOnClickExt {
     fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>);
     fn handle_release(&mut self) -> bool;
 }
 impl DetectMouseMoveOnClickExt for DetectMouseMoveOnClick<'_, '_> {
     fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>) {
-        if buttons.just_pressed(MouseButton::Left) || buttons.just_pressed(MouseButton::Right) || buttons.just_pressed(MouseButton::Middle) {
+        if buttons.just_pressed(MouseButton::Left)
+            || buttons.just_pressed(MouseButton::Right)
+            || buttons.just_pressed(MouseButton::Middle)
+        {
             *self.0 = Some(*self.1)
         }
     }

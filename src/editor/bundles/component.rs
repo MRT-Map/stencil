@@ -1,11 +1,10 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
-use std::collections::HashMap;
-use bevy_prototype_lyon::entity::ShapeBundle;
-use bevy_prototype_lyon::prelude::*;
-use crate::types::ComponentType;
-use crate::types::pla::ComponentCoords;
-use crate::types::skin::Skin;
+use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
+
+use crate::types::{pla::ComponentCoords, skin::Skin, ComponentType};
 
 #[derive(Debug, Default, Component)]
 pub struct EditorComponent {
@@ -77,7 +76,7 @@ pub struct ComponentBundle {
     #[bundle]
     pub shape: ShapeBundle,
     #[bundle]
-    pub pickable: PickableBundle
+    pub pickable: PickableBundle,
 }
 
 impl ComponentBundle {
@@ -86,7 +85,7 @@ impl ComponentBundle {
             data,
             coords: ComponentCoords(vec![orig_coords]),
             shape: ShapeBundle::default(),
-            pickable: PickableBundle::default()
+            pickable: PickableBundle::default(),
         }
     }
     pub fn update_shape(&mut self, skin: &Skin) {

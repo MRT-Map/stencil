@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ComponentType, skin::Skin};
+use crate::types::{skin::Skin, ComponentType};
 
 #[derive(Serialize, Deserialize, Debug, Default, Component)]
 pub struct PlaComponent {

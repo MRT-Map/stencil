@@ -13,12 +13,11 @@ use bevy_web_asset::WebAssetPlugin;
 
 use crate::{
     editor::{
-        creating_component::CreateComponentPlugin, cursor::CursorPlugin, tilemap::RenderingPlugin,
-        ui::UiPlugin,
+        creating_component::CreateComponentPlugin, cursor::CursorPlugin,
+        selecting_component::SelectComponentPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
     },
     setup::SetupPlugin,
 };
-use crate::editor::selecting_component::SelectComponentPlugin;
 
 fn main() {
     #[cfg(target_arch = "wasm32")]

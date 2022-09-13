@@ -1,22 +1,20 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::{MainCamera};
+use bevy_mouse_tracking_plugin::MainCamera;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
+        bundles::component::{ComponentBundle, CreatedComponent, EditorComponent},
         cursor::get_cursor_world_pos,
         selecting_component::{deselect, select_query},
         ui::HoveringOverGui,
     },
     types::{
-        ComponentType,
-        CreatedQuery,
-        DeselectQuery, EditorState, pla::ComponentCoords, SelectQuery, skin::Skin,
+        pla::ComponentCoords, skin::Skin, ComponentType, CreatedQuery, DeselectQuery,
+        DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState, Label, SelectQuery,
     },
 };
-use crate::editor::bundles::component::{ComponentBundle, CreatedComponent, EditorComponent};
-use crate::types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, Label};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn create_component(
@@ -32,7 +30,7 @@ pub fn create_component(
     windows: Res<Windows>,
     mut camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     hovering_over_gui: Res<HoveringOverGui>,
-    mut mm_detector: DetectMouseMoveOnClick
+    mut mm_detector: DetectMouseMoveOnClick,
 ) {
     // TODO check if screen is moved
     if let EditorState::CreatingComponent(type_) = &state.0 {
@@ -46,7 +44,9 @@ pub fn create_component(
             mm_detector.handle_press(&buttons);
         }
         if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
-            if mm_detector.handle_release() {return};
+            if mm_detector.handle_release() {
+                return;
+            };
             if *type_ == ComponentType::Point {
                 let mut new_point = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),
@@ -81,7 +81,9 @@ pub fn create_component(
                 }
             }
         } else if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
-            if mm_detector.handle_release() { return };
+            if mm_detector.handle_release() {
+                return;
+            };
             select_query(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
