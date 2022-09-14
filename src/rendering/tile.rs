@@ -1,12 +1,10 @@
-use bevy::{
-    prelude::*,
-    sprite::Anchor,
-};
+use bevy::{prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MainCamera;
 
-use crate::rendering::utils::get_map_coords_of_edges;
-use crate::types::tile_coord::TileCoord;
-use crate::types::zoom::Zoom;
+use crate::{
+    rendering::utils::get_map_coords_of_edges,
+    types::{tile_coord::TileCoord, zoom::Zoom},
+};
 
 #[derive(Component)]
 pub struct Tile;

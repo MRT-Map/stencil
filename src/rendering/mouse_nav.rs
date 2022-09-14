@@ -2,11 +2,10 @@ use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
 
 use crate::{
-    Camera, EventReader, get_cursor_world_pos, get_map_width_height, get_window_width_height,
-    GlobalTransform, Input, Local, MouseButton, Mut, OrthographicProjection, Query, Res, ResMut,
-    Vec2, Windows, With,
+    get_cursor_world_pos, get_map_width_height, get_window_width_height, types::zoom::Zoom, Camera,
+    EventReader, GlobalTransform, Input, Local, MouseButton, Mut, OrthographicProjection, Query,
+    Res, ResMut, Vec2, Windows, With,
 };
-use crate::types::zoom::Zoom;
 
 pub fn mouse_drag(
     buttons: Res<Input<MouseButton>>,
@@ -22,7 +21,11 @@ pub fn mouse_drag(
             if !mouse_pos.is_changed() {
                 return;
             }
-            let win_wh = get_window_width_height(&windows, camera);
+            let win_wh = if let Some(win_wh) = get_window_width_height(&windows, camera) {
+                win_wh
+            } else {
+                return
+            };
             let map_wh = get_map_width_height(camera, &transform);
 
             let dx = map_wh.x / win_wh.x * (mouse_pos.x - origin_pos.x);
@@ -62,14 +65,22 @@ pub fn mouse_zoom(
             let orig_x = transform.translation().x;
             let orig_y = transform.translation().y;
             let orig_scale = ort_proj.scale;
-            let orig_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
+            let orig_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
+                mp
+            } else {
+                return
+            };
             zoom.0 += u;
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
             let dx = (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
             let dy = (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
-            let new_mouse_pos = get_cursor_world_pos(&windows, camera, &transform).unwrap();
+            let new_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
+                mp
+            } else {
+                return
+            };
             transform.translation_mut().x = new_mouse_pos.x - dx;
             transform.translation_mut().y = new_mouse_pos.y - dy;
 

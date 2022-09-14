@@ -1,13 +1,13 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
 
-pub fn get_window_width_height(windows: &Res<Windows>, camera: &Camera) -> Vec2 {
+pub fn get_window_width_height(windows: &Res<Windows>, camera: &Camera) -> Option<Vec2> {
     let wnd = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id).unwrap()
+        windows.get(id)?
     } else {
-        windows.get_primary().unwrap()
+        windows.get_primary()?
     };
 
-    Vec2::new(wnd.width() as f32, wnd.height() as f32)
+    Some(Vec2::new(wnd.width() as f32, wnd.height() as f32))
 }
 
 pub fn get_map_width_height(camera: &Camera, transform: &GlobalTransform) -> Vec2 {
@@ -21,9 +21,9 @@ pub fn get_cursor_world_pos(
     transform: &GlobalTransform,
 ) -> Option<Vec2> {
     let wnd = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id).unwrap()
+        windows.get(id)?
     } else {
-        windows.get_primary().unwrap()
+        windows.get_primary()?
     };
 
     if let Some(screen_pos) = wnd.cursor_position() {

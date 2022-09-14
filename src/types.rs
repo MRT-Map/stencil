@@ -1,15 +1,19 @@
 pub mod pla;
 pub mod skin;
-pub mod zoom;
 pub mod tile_coord;
+pub mod zoom;
 
-use serde::{Deserialize, Serialize};
 use bevy::prelude::*;
-use crate::editor::shadow::SelectShadow;
-use crate::pla::{ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent};
-use crate::Skin;
+use serde::{Deserialize, Serialize};
+use strum::IntoStaticStr;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
+use crate::{
+    editor::shadow::SelectShadow,
+    pla::{ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
+    Skin,
+};
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub enum ComponentType {
     #[serde(rename = "point")]
     Point,
@@ -19,7 +23,7 @@ pub enum ComponentType {
     Area,
 }
 
-#[derive(Default, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {
     #[default]
     Loading,
@@ -31,22 +35,44 @@ pub enum EditorState {
     DeletingComponent,
 }
 
-#[derive(Default)]
-pub struct HoveringOverGui(pub bool);
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, IntoStaticStr)]
+pub enum Label {
+    MenuUi,
+    ComponentPanelUi,
+    ToolbarUi,
+    Controls,
+    Cleanup,
+}
+impl SystemLabel for Label {
+    fn as_str(&self) -> &'static str {
+        self.into()
+    }
+}
 
 pub type DeselectQuery<'world, 'state, 'a> = (
-    Query<'world, 'state, (&'a EditorComponent, &'a ComponentCoords, Entity), With<SelectedComponent>>,
+    Query<
+        'world,
+        'state,
+        (&'a EditorComponent, &'a ComponentCoords, Entity),
+        With<SelectedComponent>,
+    >,
     Query<'world, 'state, Entity, With<SelectShadow>>,
     Res<'world, Skin>,
 );
-pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<'world, 'state, (
-    DeselectQuery<'world, 'state, 'a>,
+pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
+    'world,
+    'state,
     (
-        Query<'world, 'state, (&'a EditorComponent, &'a mut ComponentCoords, Entity), F>,
-        Res<'world, Skin>
-    )
-)>;
-pub type CreatedQuery<'world, 'state, 'a> = Query<'world, 'state,
+        DeselectQuery<'world, 'state, 'a>,
+        (
+            Query<'world, 'state, (&'a EditorComponent, &'a mut ComponentCoords, Entity), F>,
+            Res<'world, Skin>,
+        ),
+    ),
+>;
+pub type CreatedQuery<'world, 'state, 'a> = Query<
+    'world,
+    'state,
     (&'a EditorComponent, &'a mut ComponentCoords, Entity),
     With<CreatedComponent>,
 >;

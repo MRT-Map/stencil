@@ -1,11 +1,12 @@
-use bevy::ecs::query::WorldQuery;
-use bevy::prelude::*;
+use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_mod_picking::PickingEvent;
 use iyes_loopless::prelude::*;
 
-use crate::{pla::{SelectedComponent}, EditorState, Skin, DeselectQuery, SelectQuery};
-use crate::editor::shadow::{SelectShadow, SelectShadowBundle};
-use crate::pla::CreatedComponent;
+use crate::{
+    editor::shadow::{SelectShadow, SelectShadowBundle},
+    pla::{CreatedComponent, SelectedComponent},
+    DeselectQuery, EditorState, SelectQuery,
+};
 
 pub fn selector(
     state: Res<CurrentState<EditorState>>,
@@ -32,10 +33,7 @@ pub fn selector(
     }
 }
 
-pub fn deselect(
-    commands: &mut Commands,
-    (selected_query, shadow_query, skin): &DeselectQuery
-) {
+pub fn deselect(commands: &mut Commands, (selected_query, shadow_query, skin): &DeselectQuery) {
     for (data, coords, entity) in selected_query.iter() {
         commands
             .entity(entity)
@@ -43,16 +41,11 @@ pub fn deselect(
             .remove::<SelectedComponent>();
     }
     for entity in shadow_query.iter() {
-        commands
-            .entity(entity)
-            .despawn();
+        commands.entity(entity).despawn();
     }
 }
 
-pub fn select(
-    commands: &mut Commands,
-    set: &mut SelectQuery<impl WorldQuery>
-) {
+pub fn select(commands: &mut Commands, set: &mut SelectQuery<impl WorldQuery>) {
     if !set.p1().0.is_empty() {
         deselect(commands, &set.p0())
     }
@@ -65,7 +58,7 @@ pub fn select(
             .insert(SelectedComponent);
         commands.spawn_bundle(SelectShadowBundle {
             _marker: SelectShadow,
-            shape: data.get_shape(coords.to_owned(), &skin, true)
+            shape: data.get_shape(coords.to_owned(), &skin, true),
         });
     }
 }

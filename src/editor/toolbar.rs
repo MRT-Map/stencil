@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
-use crate::{ComponentType, EditorState, HoveringOverGui};
+use crate::{editor::HoveringOverGui, ComponentType, EditorState};
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,

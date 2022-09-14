@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+
 use crate::Zoom;
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug)]

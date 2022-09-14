@@ -3,10 +3,9 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, EguiContext};
-use bevy_egui::egui::Align;
+use bevy_egui::{egui, egui::Align, EguiContext};
 
-use crate::HoveringOverGui;
+use crate::editor::HoveringOverGui;
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,

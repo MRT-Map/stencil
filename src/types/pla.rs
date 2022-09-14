@@ -78,7 +78,11 @@ impl EditorComponent {
                     extents: Vec2::new(10.0, 10.0),
                     origin: RectangleOrigin::Center,
                 },
-                DrawMode::Fill(FillMode::color(if selected {Color::YELLOW} else {Color::CYAN})),
+                DrawMode::Fill(FillMode::color(if selected {
+                    Color::YELLOW
+                } else {
+                    Color::CYAN
+                })),
                 Transform::from_xyz(coords.0[0].x as f32, coords.0[0].y as f32, 0.0),
             )
         } else {
@@ -90,7 +94,10 @@ impl EditorComponent {
                     }
                     pb.build()
                 },
-                DrawMode::Stroke(StrokeMode::new(if selected {Color::YELLOW} else {Color::CYAN}, 8.0)),
+                DrawMode::Stroke(StrokeMode::new(
+                    if selected { Color::YELLOW } else { Color::CYAN },
+                    8.0,
+                )),
                 Transform::default(),
             )
         }

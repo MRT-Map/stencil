@@ -2,15 +2,22 @@ use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
 
-use crate::{get_cursor_world_pos, pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent}, ComponentType, EditorState, HoveringOverGui, Skin, DeselectQuery, SelectQuery, CreatedQuery};
-use crate::editor::selecting_component::{deselect, select};
+use crate::{
+    editor::{
+        selecting_component::{deselect, select},
+        HoveringOverGui,
+    },
+    get_cursor_world_pos,
+    pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
+    ComponentType, CreatedQuery, DeselectQuery, EditorState, SelectQuery, Skin,
+};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn create_component(
     mut set: ParamSet<(
         CreatedQuery,
         DeselectQuery,
-        SelectQuery<With<CreatedComponent>>
+        SelectQuery<With<CreatedComponent>>,
     )>,
     mut commands: Commands,
     buttons: Res<Input<MouseButton>>,
@@ -53,14 +60,17 @@ pub fn create_component(
                 match data.get_type(&skin).unwrap() {
                     ComponentType::Line | ComponentType::Area => {
                         coords.0.push(mouse_pos.as_ivec2());
-                        commands
-                            .entity(entity)
-                            .insert_bundle(data.get_shape((*coords).to_owned(), &skin, false));
+                        commands.entity(entity).insert_bundle(data.get_shape(
+                            (*coords).to_owned(),
+                            &skin,
+                            false,
+                        ));
                     }
                     ComponentType::Point => unreachable!(),
                 }
             }
-        } else if buttons.just_released(MouseButton::Right) { // or double left-click?
+        } else if buttons.just_released(MouseButton::Right) {
+            // or double left-click?
             select(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
@@ -77,7 +87,7 @@ pub fn create_component(
 
 pub fn clear_created_component(
     mut commands: Commands,
-    mut created_query: CreatedQuery,
+    created_query: CreatedQuery,
     skin: Res<Skin>,
     state: Res<CurrentState<EditorState>>,
 ) {
@@ -89,5 +99,18 @@ pub fn clear_created_component(
             .entity(entity)
             .insert_bundle(data.get_shape(coords.to_owned(), &skin, false))
             .remove::<CreatedComponent>();
+    }
+}
+
+pub struct CreateComponentPlugin;
+impl Plugin for CreateComponentPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(
+            ConditionSet::new()
+                .run_not_in_state(EditorState::Loading)
+                .with_system(create_component)
+                .with_system(clear_created_component)
+                .into(),
+        );
     }
 }
