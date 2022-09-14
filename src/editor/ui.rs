@@ -41,7 +41,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system(
-                (|mut hovering: ResMut<HoveringOverGui>| hovering.0 = false).label(Label::Cleanup),
+                (|mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false).label(Label::Cleanup),
             );
     }
 }

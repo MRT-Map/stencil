@@ -7,7 +7,7 @@ use crate::editor::bundles::component::{EditorComponent, SelectedComponent};
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut selected: Query<&mut EditorComponent, With<SelectedComponent>>,
-    mut hovering: ResMut<HoveringOverGui>,
+    mut hovering_over_gui: ResMut<HoveringOverGui>,
 ) {
     let panel = egui::SidePanel::left("component_data")
         .default_width(200.0)
@@ -47,6 +47,6 @@ pub fn ui(
             ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
         });
     if panel.response.hovered() {
-        hovering.0 = true;
+        hovering_over_gui.0 = true;
     }
 }

@@ -44,6 +44,8 @@ pub enum Label {
     ToolbarUi,
     Controls,
     Cleanup,
+    Select,
+    HighlightSelected
 }
 impl SystemLabel for Label {
     fn as_str(&self) -> &'static str {

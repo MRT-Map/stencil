@@ -29,7 +29,7 @@ pub fn create_component(
     state: Res<CurrentState<EditorState>>,
     windows: Res<Windows>,
     mut camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    hovering: Res<HoveringOverGui>,
+    hovering_over_gui: Res<HoveringOverGui>,
 ) {
     // TODO check if screen is moved
     if let EditorState::CreatingComponent(type_) = &state.0 {
@@ -39,7 +39,7 @@ pub fn create_component(
         } else {
             return;
         };
-        if buttons.just_released(MouseButton::Left) && !hovering.0 {
+        if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
             if *type_ == ComponentType::Point {
                 let mut new_point = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),

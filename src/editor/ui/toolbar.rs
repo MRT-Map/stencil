@@ -10,7 +10,7 @@ use crate::{
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut commands: Commands,
-    mut hovering: ResMut<HoveringOverGui>,
+    mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut cv: Local<&'static str>,
 ) {
     let mut current_value = *cv;
@@ -73,7 +73,7 @@ pub fn ui(
         });
     });
     if panel.response.hovered() {
-        hovering.0 = true
+        hovering_over_gui.0 = true
     }
     *cv = current_value;
 }

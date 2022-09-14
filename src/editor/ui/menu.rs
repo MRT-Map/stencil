@@ -9,7 +9,7 @@ use crate::editor::ui::HoveringOverGui;
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
-    mut hovering: ResMut<HoveringOverGui>,
+    mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut exit: EventWriter<AppExit>,
     diagnostics: Res<Diagnostics>,
 ) {
@@ -47,6 +47,6 @@ pub fn ui(
         });
     });
     if panel.response.hovered() {
-        hovering.0 = true;
+        hovering_over_gui.0 = true;
     }
 }

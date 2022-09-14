@@ -20,7 +20,7 @@ impl Plugin for RenderingPlugin {
                     .label(Label::Controls)
                     .after(Label::ToolbarUi)
                     .before(Label::Cleanup)
-                    .run_if_not(|hovering: Res<HoveringOverGui>| hovering.0)
+                    .run_if_not(|hovering_over_gui: Res<HoveringOverGui>| hovering_over_gui.0)
                     .with_system(mouse_nav::mouse_drag)
                     .with_system(mouse_nav::mouse_zoom)
                     .into(),
