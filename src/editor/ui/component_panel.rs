@@ -1,12 +1,14 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
+use itertools::Itertools;
 
 use crate::editor::ui::HoveringOverGui;
 use crate::editor::bundles::component::{EditorComponent, SelectedComponent};
+use crate::types::pla::ComponentCoords;
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
-    mut selected: Query<&mut EditorComponent, With<SelectedComponent>>,
+    mut selected: Query<(&mut EditorComponent, &ComponentCoords), With<SelectedComponent>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
 ) {
     let panel = egui::SidePanel::left("component_data")
@@ -16,7 +18,7 @@ pub fn ui(
                 ui.heading("Select a component...");
                 return;
             }
-            let mut component_data = selected.single_mut();
+            let (mut component_data, component_coords): (Mut<EditorComponent>, &ComponentCoords) = selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
@@ -45,6 +47,10 @@ pub fn ui(
             ui.add(egui::TextEdit::singleline(&mut component_data.tags).hint_text("Tags"));
             ui.end_row();
             ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
+            ui.end_row();
+            ui.separator();
+            ui.heading("Position data");
+            ui.label(component_coords.0.iter().map(|a| format!("{}, {}", a.x, a.y)).join("\n"));
         });
     if panel.response.hovered() {
         hovering_over_gui.0 = true;

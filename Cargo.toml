@@ -16,6 +16,7 @@ bevy_mod_picking = "~0.9.0"
 console_error_panic_hook = "~0.1.7"
 serde = { version = "~1.0.139", features = ["derive"] }
 reqwest = { version = "~0.11.11", features = ["blocking", "json"] }
+itertools = "~0.10.4"
 
 strum = { version = "~0.24.1", features = ["derive"] }
 
