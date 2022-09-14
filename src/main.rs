@@ -3,7 +3,6 @@ mod rendering;
 mod types;
 
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::EguiPlugin;

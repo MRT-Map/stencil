@@ -4,3 +4,4 @@ pub mod cursor;
 pub mod menu;
 pub mod selecting_component;
 pub mod toolbar;
+pub mod shadow;

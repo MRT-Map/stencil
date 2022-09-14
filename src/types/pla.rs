@@ -71,14 +71,14 @@ impl EditorComponent {
     pub fn get_type(&self, skin: &Skin) -> Option<ComponentType> {
         Some(skin.types.get(self.type_.as_str())?.get_type())
     }
-    pub fn get_shape(&self, coords: ComponentCoords, skin: &Skin) -> ShapeBundle {
+    pub fn get_shape(&self, coords: ComponentCoords, skin: &Skin, selected: bool) -> ShapeBundle {
         if self.get_type(skin) == Some(ComponentType::Point) {
             GeometryBuilder::build_as(
                 &shapes::Rectangle {
                     extents: Vec2::new(10.0, 10.0),
                     origin: RectangleOrigin::Center,
                 },
-                DrawMode::Fill(FillMode::color(Color::CYAN)),
+                DrawMode::Fill(FillMode::color(if selected {Color::YELLOW} else {Color::CYAN})),
                 Transform::from_xyz(coords.0[0].x as f32, coords.0[0].y as f32, 0.0),
             )
         } else {
@@ -90,7 +90,7 @@ impl EditorComponent {
                     }
                     pb.build()
                 },
-                DrawMode::Stroke(StrokeMode::new(Color::CYAN, 8.0)),
+                DrawMode::Stroke(StrokeMode::new(if selected {Color::YELLOW} else {Color::CYAN}, 8.0)),
                 Transform::default(),
             )
         }
@@ -116,7 +116,10 @@ impl ComponentBundle {
         }
     }
     pub fn update_shape(&mut self, skin: &Skin) {
-        self.shape = self.data.get_shape(self.coords.to_owned(), skin);
+        self.shape = self.data.get_shape(self.coords.to_owned(), skin, false);
+    }
+    pub fn create_shadow(&self, skin: &Skin) -> ShapeBundle {
+        self.data.get_shape(self.coords.to_owned(), skin, true)
     }
 }
 #[derive(Component)]

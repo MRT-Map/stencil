@@ -2,20 +2,17 @@ use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
 
-use crate::{
-    get_cursor_world_pos,
-    pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
-    ComponentType, EditorState, HoveringOverGui, Skin,
-};
+use crate::{get_cursor_world_pos, pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent}, ComponentType, EditorState, HoveringOverGui, Skin, DeselectQuery, SelectQuery, CreatedQuery};
+use crate::editor::selecting_component::{deselect, select};
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn create_component(
+    mut set: ParamSet<(
+        CreatedQuery,
+        DeselectQuery,
+        SelectQuery<With<CreatedComponent>>
+    )>,
     mut commands: Commands,
-    mut created_query: Query<
-        (&EditorComponent, &mut ComponentCoords, Entity),
-        With<CreatedComponent>,
-    >,
-    selected_query: Query<Entity, With<SelectedComponent>>,
     buttons: Res<Input<MouseButton>>,
     skin: Res<Skin>,
     state: Res<CurrentState<EditorState>>,
@@ -33,9 +30,7 @@ pub fn create_component(
         };
         if buttons.just_released(MouseButton::Left) && !hovering.0 {
             if *type_ == ComponentType::Point {
-                for entity in selected_query.iter() {
-                    commands.entity(entity).remove::<SelectedComponent>();
-                }
+                deselect(&mut commands, &set.p1());
                 let mut new_point = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),
                     mouse_pos.as_ivec2(),
@@ -44,7 +39,7 @@ pub fn create_component(
                 commands.spawn_bundle(new_point).insert(SelectedComponent);
                 return;
             }
-            if created_query.is_empty() {
+            if set.p0().is_empty() {
                 let mut new_comp = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),
                     mouse_pos.as_ivec2(),
@@ -52,6 +47,7 @@ pub fn create_component(
                 new_comp.update_shape(&skin);
                 commands.spawn_bundle(new_comp).insert(CreatedComponent);
             } else {
+                let mut created_query = set.p0();
                 let (data, mut coords, entity): (&EditorComponent, Mut<ComponentCoords>, Entity) =
                     created_query.single_mut();
                 match data.get_type(&skin).unwrap() {
@@ -59,39 +55,39 @@ pub fn create_component(
                         coords.0.push(mouse_pos.as_ivec2());
                         commands
                             .entity(entity)
-                            .insert_bundle(data.get_shape((*coords).to_owned(), &skin));
+                            .insert_bundle(data.get_shape((*coords).to_owned(), &skin, false));
                     }
                     ComponentType::Point => unreachable!(),
                 }
             }
         } else if buttons.just_released(MouseButton::Right) { // or double left-click?
-             // TODO complete line/area
-        } else if *type_ != ComponentType::Point && !created_query.is_empty() {
+            select(&mut commands, &mut set.p2());
+        } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
+            let mut created_query = set.p0();
             let (data, coords, entity): (&EditorComponent, Mut<ComponentCoords>, Entity) =
                 created_query.single_mut();
             let mut coords = coords.to_owned();
             coords.0.push(mouse_pos.as_ivec2());
             commands
                 .entity(entity)
-                .insert_bundle(data.get_shape(coords, &skin));
+                .insert_bundle(data.get_shape(coords, &skin, false));
         }
     }
 }
 
 pub fn clear_created_component(
     mut commands: Commands,
+    mut created_query: CreatedQuery,
     skin: Res<Skin>,
-    created_query: Query<(&EditorComponent, &mut ComponentCoords, Entity), With<CreatedComponent>>,
     state: Res<CurrentState<EditorState>>,
 ) {
-    if let EditorState::CreatingComponent(_) = &state.0 {
+    if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
     }
     for (data, coords, entity) in created_query.iter() {
         commands
             .entity(entity)
-            .insert_bundle(data.get_shape(coords.to_owned(), &skin))
-            .remove::<CreatedComponent>()
-            .insert(SelectedComponent);
+            .insert_bundle(data.get_shape(coords.to_owned(), &skin, false))
+            .remove::<CreatedComponent>();
     }
 }
