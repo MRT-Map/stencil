@@ -102,6 +102,5 @@ pub fn mouse_zoom(
             gridPos = minus(mouseGridPos, multiply(mousePos, scale));
             */
         }
-        eprintln!("{:?}", zoom.0);
     }
 }

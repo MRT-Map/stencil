@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::{
-    editor::ui::HoveringOverGui,
-    types::pla::{EditorComponent, SelectedComponent},
-};
+use crate::editor::ui::HoveringOverGui;
+use crate::editor::bundles::component::{EditorComponent, SelectedComponent};
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,

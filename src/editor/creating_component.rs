@@ -5,17 +5,16 @@ use iyes_loopless::prelude::*;
 use crate::{
     editor::{
         cursor::get_cursor_world_pos,
-        selecting_component::{deselect, select},
+        selecting_component::{deselect, select_query},
         ui::HoveringOverGui,
     },
     types::{
-        pla::{
-            ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent,
-        },
-        skin::Skin,
-        ComponentType, CreatedQuery, DeselectQuery, EditorState, SelectQuery,
+        ComponentType,
+        CreatedQuery,
+        DeselectQuery, EditorState, pla::ComponentCoords, SelectQuery, skin::Skin,
     },
 };
+use crate::editor::bundles::component::{ComponentBundle, CreatedComponent, EditorComponent, SelectedComponent};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn create_component(
@@ -42,12 +41,12 @@ pub fn create_component(
         };
         if buttons.just_released(MouseButton::Left) && !hovering.0 {
             if *type_ == ComponentType::Point {
-                deselect(&mut commands, &set.p1());
                 let mut new_point = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),
                     mouse_pos.as_ivec2(),
                 );
                 new_point.update_shape(&skin);
+                deselect(&mut commands, &set.p1());
                 commands.spawn_bundle(new_point).insert(SelectedComponent);
                 return;
             }
@@ -76,13 +75,7 @@ pub fn create_component(
             }
         } else if buttons.just_released(MouseButton::Right) {
             // or double left-click?
-            for (data, coords, entity) in set.p0().iter() {
-                commands
-                    .entity(entity)
-                    .insert_bundle(data.get_shape(coords.to_owned(), &skin, false))
-                    .remove::<CreatedComponent>();
-            }
-            select(&mut commands, &mut set.p2());
+            select_query(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
             let (data, coords, entity): (&EditorComponent, Mut<ComponentCoords>, Entity) =

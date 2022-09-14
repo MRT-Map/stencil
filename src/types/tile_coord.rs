@@ -27,8 +27,8 @@ impl TileCoord {
         )
     }
 
+    #[allow(unreachable_code)]
     pub fn url(&self) -> String {
-        return "".into();
         let z = 2.0f64.powi((8 - self.z) as i32);
         let x = self.x as f64;
         let y = self.y as f64;

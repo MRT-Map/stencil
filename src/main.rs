@@ -6,6 +6,7 @@ use bevy::{
     asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::App, DefaultPlugins,
 };
 use bevy_egui::EguiPlugin;
+use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use bevy_web_asset::WebAssetPlugin;
@@ -17,6 +18,7 @@ use crate::{
     },
     setup::SetupPlugin,
 };
+use crate::editor::selecting_component::SelectComponentPlugin;
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
@@ -26,6 +28,7 @@ fn main() {
         .add_plugins_with(DefaultPlugins, |group| {
             group.add_before::<AssetPlugin, _>(WebAssetPlugin)
         })
+        .add_plugins(DefaultPickingPlugins)
         //.add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(SetupPlugin)
@@ -36,5 +39,6 @@ fn main() {
         .add_plugin(CursorPlugin)
         .add_plugin(RenderingPlugin)
         .add_plugin(CreateComponentPlugin)
+        .add_plugin(SelectComponentPlugin)
         .run();
 }

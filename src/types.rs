@@ -8,12 +8,12 @@ use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 
 use crate::{
-    editor::shadow::SelectShadow,
     types::{
-        pla::{ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
+        pla::ComponentCoords,
         skin::Skin,
     },
 };
+use crate::editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub enum ComponentType {
@@ -58,7 +58,6 @@ pub type DeselectQuery<'world, 'state, 'a> = (
         (&'a EditorComponent, &'a ComponentCoords, Entity),
         With<SelectedComponent>,
     >,
-    Query<'world, 'state, Entity, With<SelectShadow>>,
     Res<'world, Skin>,
 );
 pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
@@ -66,10 +65,7 @@ pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
     'state,
     (
         DeselectQuery<'world, 'state, 'a>,
-        (
-            Query<'world, 'state, (&'a EditorComponent, &'a mut ComponentCoords, Entity), F>,
-            Res<'world, Skin>,
-        ),
+        Query<'world, 'state, Entity, F>
     ),
 >;
 pub type CreatedQuery<'world, 'state, 'a> = Query<

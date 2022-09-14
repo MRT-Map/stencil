@@ -1,5 +1,7 @@
 use bevy::prelude::*;
+use bevy_mod_picking::PickingCameraBundle;
 use bevy_mouse_tracking_plugin::MainCamera;
+use bevy_mouse_tracking_plugin::prelude::*;
 use iyes_loopless::prelude::*;
 
 use crate::types::{
@@ -25,5 +27,7 @@ fn setup(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera)
-        .insert(UiCameraConfig { show_ui: true });
+        .insert(UiCameraConfig { show_ui: true })
+        .insert_bundle(PickingCameraBundle::default())
+        .add_mouse_tracking();
 }
