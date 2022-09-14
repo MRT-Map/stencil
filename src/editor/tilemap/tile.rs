@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MainCamera;
 
 use crate::{
-    rendering::utils::get_map_coords_of_edges,
+    editor::tilemap::utils::get_map_coords_of_edges,
     types::{tile_coord::TileCoord, zoom::Zoom},
 };
 

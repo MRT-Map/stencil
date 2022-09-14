@@ -9,8 +9,10 @@ use strum::IntoStaticStr;
 
 use crate::{
     editor::shadow::SelectShadow,
-    pla::{ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
-    Skin,
+    types::{
+        pla::{ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
+        skin::Skin,
+    },
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{ComponentType, EditorState};
+use crate::types::{ComponentType, EditorState};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {

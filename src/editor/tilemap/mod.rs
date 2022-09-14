@@ -2,7 +2,8 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::HoveringOverGui, mouse_drag, mouse_zoom, show_tiles, EditorState, Label, Zoom,
+    editor::ui::HoveringOverGui,
+    types::{zoom::Zoom, EditorState, Label},
 };
 
 pub mod mouse_nav;
@@ -20,14 +21,14 @@ impl Plugin for RenderingPlugin {
                     .after(Label::ToolbarUi)
                     .before(Label::Cleanup)
                     .run_if_not(|hovering: Res<HoveringOverGui>| hovering.0)
-                    .with_system(mouse_drag)
-                    .with_system(mouse_zoom)
+                    .with_system(mouse_nav::mouse_drag)
+                    .with_system(mouse_nav::mouse_zoom)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .with_system(show_tiles)
+                    .with_system(tile::show_tiles)
                     .into(),
             );
     }

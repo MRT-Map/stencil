@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::Zoom;
+use crate::types::zoom::Zoom;
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub struct TileCoord {

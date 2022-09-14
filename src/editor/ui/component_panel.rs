@@ -2,9 +2,8 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
 use crate::{
-    editor::HoveringOverGui,
-    pla::{EditorComponent, SelectedComponent},
-    ResMut,
+    editor::ui::HoveringOverGui,
+    types::pla::{EditorComponent, SelectedComponent},
 };
 
 pub fn ui(

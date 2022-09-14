@@ -1,10 +1,15 @@
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
+};
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
 
 use crate::{
-    get_cursor_world_pos, get_map_width_height, get_window_width_height, types::zoom::Zoom, Camera,
-    EventReader, GlobalTransform, Input, Local, MouseButton, Mut, OrthographicProjection, Query,
-    Res, ResMut, Vec2, Windows, With,
+    editor::{
+        cursor::get_cursor_world_pos,
+        tilemap::utils::{get_map_width_height, get_window_width_height},
+    },
+    types::zoom::Zoom,
 };
 
 pub fn mouse_drag(
@@ -24,7 +29,7 @@ pub fn mouse_drag(
             let win_wh = if let Some(win_wh) = get_window_width_height(&windows, camera) {
                 win_wh
             } else {
-                return
+                return;
             };
             let map_wh = get_map_width_height(camera, &transform);
 
@@ -65,21 +70,23 @@ pub fn mouse_zoom(
             let orig_x = transform.translation().x;
             let orig_y = transform.translation().y;
             let orig_scale = ort_proj.scale;
-            let orig_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
-                mp
-            } else {
-                return
-            };
+            let orig_mouse_pos =
+                if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
+                    mp
+                } else {
+                    return;
+                };
             zoom.0 += u;
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
             let dx = (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
             let dy = (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
-            let new_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
+            let new_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform)
+            {
                 mp
             } else {
-                return
+                return;
             };
             transform.translation_mut().x = new_mouse_pos.x - dx;
             transform.translation_mut().y = new_mouse_pos.y - dy;

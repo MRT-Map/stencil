@@ -4,12 +4,17 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
+        cursor::get_cursor_world_pos,
         selecting_component::{deselect, select},
-        HoveringOverGui,
+        ui::HoveringOverGui,
     },
-    get_cursor_world_pos,
-    pla::{ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent},
-    ComponentType, CreatedQuery, DeselectQuery, EditorState, SelectQuery, Skin,
+    types::{
+        pla::{
+            ComponentBundle, ComponentCoords, CreatedComponent, EditorComponent, SelectedComponent,
+        },
+        skin::Skin,
+        ComponentType, CreatedQuery, DeselectQuery, EditorState, SelectQuery,
+    },
 };
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -71,6 +76,12 @@ pub fn create_component(
             }
         } else if buttons.just_released(MouseButton::Right) {
             // or double left-click?
+            for (data, coords, entity) in set.p0().iter() {
+                commands
+                    .entity(entity)
+                    .insert_bundle(data.get_shape(coords.to_owned(), &skin, false))
+                    .remove::<CreatedComponent>();
+            }
             select(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();

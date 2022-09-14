@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{ComponentType, Skin};
+use crate::types::{skin::Skin, ComponentType};
 
 #[derive(Serialize, Deserialize, Debug, Default, Component)]
 pub struct PlaComponent {

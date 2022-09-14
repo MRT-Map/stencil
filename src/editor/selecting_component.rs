@@ -4,8 +4,10 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::shadow::{SelectShadow, SelectShadowBundle},
-    pla::{CreatedComponent, SelectedComponent},
-    DeselectQuery, EditorState, SelectQuery,
+    types::{
+        pla::{CreatedComponent, SelectedComponent},
+        DeselectQuery, EditorState, SelectQuery,
+    },
 };
 
 pub fn selector(

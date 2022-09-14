@@ -1,8 +1,11 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::RenderTarget};
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
 
-use crate::{editor::HoveringOverGui, get_cursor_world_pos, EditorState, Label};
+use crate::{
+    editor::ui::HoveringOverGui,
+    types::{EditorState, Label},
+};
 
 pub fn cursor_icon(
     buttons: Res<Input<MouseButton>>,
@@ -70,6 +73,28 @@ pub fn cursor_setup(mut commands: Commands, server: Res<AssetServer>) {
             ..default()
         })
         .insert(CursorCoords);
+}
+
+pub fn get_cursor_world_pos(
+    windows: &Res<Windows>,
+    camera: &Camera,
+    transform: &GlobalTransform,
+) -> Option<Vec2> {
+    let wnd = if let RenderTarget::Window(id) = camera.target {
+        windows.get(id)?
+    } else {
+        windows.get_primary()?
+    };
+
+    if let Some(screen_pos) = wnd.cursor_position() {
+        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
+        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
+        let ndc_to_world = transform.compute_matrix() * camera.projection_matrix().inverse();
+        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
+        Some(world_pos.truncate())
+    } else {
+        None
+    }
 }
 
 pub struct CursorPlugin;
