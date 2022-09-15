@@ -5,7 +5,7 @@ mod toolbar;
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::types::{EditorState, Label};
+use crate::types::{EditorState};
 
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);
@@ -45,7 +45,7 @@ impl Plugin for UiPlugin {
             )
             .add_system_to_stage(
                 CoreStage::PostUpdate,
-                (|mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false),
+                |mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false,
             );
     }
 }

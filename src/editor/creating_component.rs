@@ -12,7 +12,7 @@ use crate::{
     },
     types::{
         pla::ComponentCoords, skin::Skin, ComponentType, CreatedQuery, DeselectQuery,
-        DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState, Label, SelectQuery,
+        DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState, SelectQuery,
     },
 };
 

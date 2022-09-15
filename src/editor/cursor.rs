@@ -4,7 +4,7 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
-    types::{EditorState, Label},
+    types::{EditorState},
 };
 
 pub fn cursor_icon(

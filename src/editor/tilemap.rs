@@ -3,7 +3,7 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::ui::HoveringOverGui,
-    types::{zoom::Zoom, EditorState, Label},
+    types::{zoom::Zoom, EditorState},
 };
 
 pub mod mouse_nav;
