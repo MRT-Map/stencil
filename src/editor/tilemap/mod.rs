@@ -17,9 +17,6 @@ impl Plugin for RenderingPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .label(Label::Controls)
-                    .after(Label::ToolbarUi)
-                    .before(Label::Cleanup)
                     .run_if_not(|hovering_over_gui: Res<HoveringOverGui>| hovering_over_gui.0)
                     .with_system(mouse_nav::mouse_drag)
                     .with_system(mouse_nav::mouse_zoom)

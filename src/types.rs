@@ -4,6 +4,7 @@ pub mod tile_coord;
 pub mod zoom;
 
 use bevy::prelude::*;
+use bevy_mouse_tracking_plugin::MousePos;
 use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 
@@ -38,14 +39,14 @@ pub enum EditorState {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, IntoStaticStr)]
+#[non_exhaustive]
 pub enum Label {
-    MenuUi,
-    ComponentPanelUi,
-    ToolbarUi,
+    Ui,
     Controls,
     Cleanup,
     Select,
-    HighlightSelected
+    HighlightSelected,
+    CreateComponent
 }
 impl SystemLabel for Label {
     fn as_str(&self) -> &'static str {
@@ -76,3 +77,31 @@ pub type CreatedQuery<'world, 'state, 'a> = Query<
     (&'a EditorComponent, &'a mut ComponentCoords, Entity),
     With<CreatedComponent>,
 >;
+pub type DetectMouseMoveOnClick<'world, 'a> = (
+    Local<'a, Option<MousePos>>,
+    Res<'world, MousePos>
+);
+pub trait DetectMouseMoveOnClickExt {
+    fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>);
+    fn handle_release(&mut self) -> bool;
+}
+impl DetectMouseMoveOnClickExt for DetectMouseMoveOnClick<'_, '_> {
+    fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>) {
+        if buttons.just_pressed(MouseButton::Left) || buttons.just_pressed(MouseButton::Right) || buttons.just_pressed(MouseButton::Middle) {
+            *self.0 = Some(*self.1)
+        }
+    }
+    fn handle_release(&mut self) -> bool {
+        if let Some(prev) = *self.0 {
+            if prev != *self.1 {
+                *self.0 = None;
+                true
+            } else {
+                *self.0 = None;
+                false
+            }
+        } else {
+            false
+        }
+    }
+}

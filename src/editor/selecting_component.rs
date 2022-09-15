@@ -1,6 +1,5 @@
 use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_mod_picking::{HoverEvent, PickingEvent};
-use bevy_mouse_tracking_plugin::MousePos;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
@@ -11,7 +10,7 @@ use crate::{
 };
 use crate::editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent};
 use crate::editor::ui::HoveringOverGui;
-use crate::types::Label;
+use crate::types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, Label};
 use crate::types::pla::ComponentCoords;
 use crate::types::skin::Skin;
 
@@ -28,8 +27,7 @@ pub fn selector(
     hovering_over_gui: Res<HoveringOverGui>,
     mut hovering_over_comp: ResMut<HoveringOverComponent>,
     mut selected_entity: Local<Option<Entity>>,
-    mut previous_mouse_pos: Local<Option<MousePos>>,
-    mouse_pos: Res<MousePos>
+    mut mm_detector: DetectMouseMoveOnClick
 ) {
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
@@ -38,7 +36,7 @@ pub fn selector(
         if let PickingEvent::Clicked(e) = event {
             if !hovering_over_gui.0 {
                 *selected_entity = Some(*e);
-                *previous_mouse_pos = Some(mouse_pos.to_owned());
+                *mm_detector.0 = Some(*mm_detector.1)
             }
         } else if let PickingEvent::Hover(e) = event {
             hovering_over_comp.0 = match e {
@@ -47,17 +45,13 @@ pub fn selector(
             };
         }
     }
-    if buttons.just_released(MouseButton::Left) {
+    if buttons.just_released(MouseButton::Left) && !mm_detector.handle_release() {
         if let Some(selected_entity) = *selected_entity {
-            let previous_mouse_pos = previous_mouse_pos.unwrap();
-            if previous_mouse_pos == *mouse_pos {
-                select_entity(&mut commands, &deselect_query, &selected_entity)
-            }
+            select_entity(&mut commands, &deselect_query, &selected_entity)
         } else {
             deselect(&mut commands, &deselect_query)
         }
         *selected_entity = None;
-        *previous_mouse_pos = None;
     }
 }
 
@@ -115,14 +109,11 @@ impl Plugin for SelectComponentPlugin {
                 .label(Label::Select)
                 .before(Label::HighlightSelected)
                 .with_system(selector)
-                .with_system(highlight_selected)
                 .into(),
         ).add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
                 .label(Label::HighlightSelected)
-                .before(Label::Cleanup)
-                .with_system(selector)
                 .with_system(highlight_selected)
                 .into(),
         );

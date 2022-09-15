@@ -106,8 +106,6 @@ impl Plugin for CursorPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .after(Label::ToolbarUi)
-                .before(Label::Cleanup)
                 .with_system(cursor_icon)
                 .into(),
         )

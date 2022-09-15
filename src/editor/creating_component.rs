@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
+use bevy_mouse_tracking_plugin::{MainCamera};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
@@ -16,7 +16,7 @@ use crate::{
     },
 };
 use crate::editor::bundles::component::{ComponentBundle, CreatedComponent, EditorComponent};
-use crate::types::Label;
+use crate::types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, Label};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn create_component(
@@ -32,8 +32,7 @@ pub fn create_component(
     windows: Res<Windows>,
     mut camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     hovering_over_gui: Res<HoveringOverGui>,
-    mut previous_mouse_pos: Local<Option<MousePos>>,
-    mouse_pos: Res<MousePos>
+    mut mm_detector: DetectMouseMoveOnClick
 ) {
     // TODO check if screen is moved
     if let EditorState::CreatingComponent(type_) = &state.0 {
@@ -44,13 +43,10 @@ pub fn create_component(
             return;
         };
         if buttons.just_pressed(MouseButton::Left) || buttons.just_pressed(MouseButton::Right) {
-            *previous_mouse_pos = Some(*mouse_pos)
+            mm_detector.handle_press(&buttons);
         }
         if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
-            if let Some(previous_mouse_pos) = *previous_mouse_pos {
-                if previous_mouse_pos != *mouse_pos { return }
-            }
-            *previous_mouse_pos = None;
+            if mm_detector.handle_release() {return};
             if *type_ == ComponentType::Point {
                 let mut new_point = ComponentBundle::new(
                     EditorComponent::new(type_.to_owned()),
@@ -85,10 +81,7 @@ pub fn create_component(
                 }
             }
         } else if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
-            if let Some(previous_mouse_pos) = *previous_mouse_pos {
-                if previous_mouse_pos != *mouse_pos { return }
-            }
-            *previous_mouse_pos = None;
+            if mm_detector.handle_release() { return };
             select_query(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
@@ -123,9 +116,6 @@ impl Plugin for CreateComponentPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .after(Label::ToolbarUi)
-                .after(Label::MenuUi)
-                .after(Label::ComponentPanelUi)
                 .with_system(create_component)
                 .into(),
         );
