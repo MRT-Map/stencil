@@ -17,6 +17,7 @@ use crate::{
 };
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
+#[tracing::instrument(skip_all)]
 pub fn create_component(
     mut set: ParamSet<(
         CreatedQuery,
@@ -103,6 +104,7 @@ pub fn create_component(
     }
 }
 
+#[tracing::instrument(skip_all)]
 pub fn clear_created_component(
     commands: &mut Commands,
     created_query: &CreatedQuery,

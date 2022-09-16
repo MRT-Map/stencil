@@ -18,6 +18,7 @@ use crate::{
 pub struct HoveringOverComponent(pub bool);
 
 #[allow(clippy::too_many_arguments)]
+#[tracing::instrument(skip_all)]
 pub fn selector(
     state: Res<CurrentState<EditorState>>,
     mut events: EventReader<PickingEvent>,
@@ -58,6 +59,7 @@ pub fn selector(
     }
 }
 
+#[tracing::instrument(skip_all)]
 pub fn highlight_selected(
     state: Res<CurrentState<EditorState>>,
     mut commands: Commands,

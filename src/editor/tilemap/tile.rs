@@ -35,6 +35,7 @@ pub fn get_shown_tiles(
         .collect()
 }
 
+#[tracing::instrument(skip_all)]
 pub fn show_tiles(
     mut commands: Commands,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,

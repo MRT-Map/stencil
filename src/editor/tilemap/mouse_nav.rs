@@ -12,6 +12,7 @@ use crate::{
     types::zoom::Zoom,
 };
 
+#[tracing::instrument(skip_all)]
 pub fn mouse_drag(
     buttons: Res<Input<MouseButton>>,
     mut mouse_origin_pos: Local<Option<MousePos>>,
@@ -48,6 +49,7 @@ pub fn mouse_drag(
     }
 }
 
+#[tracing::instrument(skip_all)]
 pub fn mouse_zoom(
     mut scroll_evr: EventReader<MouseWheel>,
     mut camera: Query<
