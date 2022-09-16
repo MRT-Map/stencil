@@ -4,6 +4,7 @@ mod toolbar;
 
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
+use crate::impl_derefs;
 
 use crate::types::{EditorState};
 

@@ -3,16 +3,13 @@ use bevy_mod_picking::{HoverEvent, PickingEvent, PickingSystem};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
-use crate::{
-    editor::{
-        bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
-        ui::HoveringOverGui,
-    },
-    types::{
-        pla::ComponentCoords, skin::Skin, DeselectQuery, DetectMouseMoveOnClick,
-        DetectMouseMoveOnClickExt, EditorState, SelectQuery,
-    },
-};
+use crate::{editor::{
+    bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
+    ui::HoveringOverGui,
+}, types::{
+    pla::ComponentCoords, skin::Skin, DeselectQuery, DetectMouseMoveOnClick,
+    DetectMouseMoveOnClickExt, EditorState, SelectQuery,
+}};
 
 #[derive(Default)]
 pub struct HoveringOverComponent(pub bool);
@@ -33,6 +30,7 @@ pub fn selector(
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
     }
+    mm_detector.handle_press(&buttons);
     for event in events.iter() {
         if let PickingEvent::Clicked(e) = event {
             if !hovering_over_gui.0 {
@@ -48,7 +46,7 @@ pub fn selector(
             };
         }
     }
-    if buttons.just_released(MouseButton::Left) && !mm_detector.handle_release() {
+    if buttons.just_released(MouseButton::Left) && !mm_detector.handle_release() && !hovering_over_gui.0 {
         if let Some(selected_entity) = *selected_entity {
             select_entity(&mut commands, &deselect_query, &selected_entity)
         } else {
