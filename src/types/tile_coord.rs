@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use std::fmt::{Display, Formatter};
 
 use crate::types::zoom::Zoom;
 
@@ -7,6 +8,11 @@ pub struct TileCoord {
     pub x: i32,
     pub y: i32,
     pub z: i8,
+}
+impl Display for TileCoord {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{self.z}}, {{self.y}}, {{self.x}}")
+    }
 }
 
 impl TileCoord {

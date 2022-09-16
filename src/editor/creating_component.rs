@@ -32,7 +32,6 @@ pub fn create_component(
     hovering_over_gui: Res<HoveringOverGui>,
     mut mm_detector: DetectMouseMoveOnClick,
 ) {
-    // TODO check if screen is moved
     if let EditorState::CreatingComponent(type_) = &state.0 {
         let (camera, transform): (&Camera, &GlobalTransform) = camera.single_mut();
         let mouse_world_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, transform) {
@@ -45,6 +44,7 @@ pub fn create_component(
         }
         if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
             if mm_detector.handle_release() {
+                debug!("Mouse move detected, won't place new point");
                 return;
             };
             if *type_ == ComponentType::Point {
@@ -52,6 +52,7 @@ pub fn create_component(
                     EditorComponent::new(type_.to_owned()),
                     mouse_world_pos.as_ivec2(),
                 );
+                debug!("Placing new point at {:?}", mouse_world_pos);
                 new_point.update_shape(&skin);
                 deselect(&mut commands, &set.p1());
                 commands.spawn_bundle(new_point);
@@ -62,6 +63,7 @@ pub fn create_component(
                     EditorComponent::new(type_.to_owned()),
                     mouse_world_pos.as_ivec2(),
                 );
+                debug!("Starting new line/area at {:?}", mouse_world_pos);
                 new_comp.update_shape(&skin);
                 commands.spawn_bundle(new_comp).insert(CreatedComponent);
             } else {
@@ -71,6 +73,7 @@ pub fn create_component(
                 match data.get_type(&skin).unwrap() {
                     ComponentType::Line | ComponentType::Area => {
                         coords.0.push(mouse_world_pos.as_ivec2());
+                        debug!(?entity, "Continuing line/area at {}, {}", mouse_world_pos.as_ivec2().x, mouse_world_pos.as_ivec2().y);
                         commands.entity(entity).insert_bundle(data.get_shape(
                             (*coords).to_owned(),
                             &skin,
@@ -82,8 +85,10 @@ pub fn create_component(
             }
         } else if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
             if mm_detector.handle_release() {
+                debug!("Mouse move detected, won't complete line/area");
                 return;
             };
+            debug!("Completing line/area");
             select_query(&mut commands, &mut set.p2());
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
@@ -104,6 +109,7 @@ pub fn clear_created_component(
     skin: &Res<Skin>,
 ) {
     for (data, coords, entity) in created_query.iter() {
+        debug!(?entity, "Clearing CreatedComponent marker");
         commands
             .entity(entity)
             .remove_bundle::<ShapeBundle>()

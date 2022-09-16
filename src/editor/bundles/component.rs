@@ -89,6 +89,7 @@ impl ComponentBundle {
         }
     }
     pub fn update_shape(&mut self, skin: &Skin) {
+        debug!(selected = false, "Updating shape of component");
         self.shape = self.data.get_shape(self.coords.to_owned(), skin, false);
     }
 }

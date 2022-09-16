@@ -10,7 +10,7 @@ use crate::{
     },
     types::{
         pla::ComponentCoords, skin::Skin, DeselectQuery, DetectMouseMoveOnClick,
-        DetectMouseMoveOnClickExt, EditorState, Label, SelectQuery,
+        DetectMouseMoveOnClickExt, EditorState, SelectQuery,
     },
 };
 
@@ -35,10 +35,12 @@ pub fn selector(
     for event in events.iter() {
         if let PickingEvent::Clicked(e) = event {
             if !hovering_over_gui.0 {
+                debug!(?e, "Click detected");
                 *selected_entity = Some(*e);
                 *mm_detector.0 = Some(*mm_detector.1)
             }
         } else if let PickingEvent::Hover(e) = event {
+            debug!("Hover detected");
             hovering_over_comp.0 = match e {
                 HoverEvent::JustLeft(_) => false,
                 HoverEvent::JustEntered(_) => true,
@@ -49,6 +51,7 @@ pub fn selector(
         if let Some(selected_entity) = *selected_entity {
             select_entity(&mut commands, &deselect_query, &selected_entity)
         } else {
+            info!("Selected nothing, deselecting");
             deselect(&mut commands, &deselect_query)
         }
         *selected_entity = None;
@@ -65,6 +68,7 @@ pub fn highlight_selected(
         return;
     }
     for (data, coords, entity) in query.iter() {
+        trace!(?entity, "Highlighting selected component");
         commands
             .entity(entity)
             .insert_bundle(data.get_shape(coords.to_owned(), &skin, true));
@@ -73,6 +77,7 @@ pub fn highlight_selected(
 
 pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery) {
     for (data, coords, entity) in selected_query.iter() {
+        debug!(?entity, "Deselecting component");
         commands
             .entity(entity)
             .remove::<SelectedComponent>()
@@ -82,6 +87,7 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
 }
 
 pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, entity: &Entity) {
+    info!(?entity, "Selecting entity");
     deselect(commands, deselect_query);
     commands.entity(*entity).insert(SelectedComponent);
 }
@@ -92,6 +98,7 @@ pub fn select_query(commands: &mut Commands, set: &mut SelectQuery<impl WorldQue
     }
     let query = set.p1();
     for entity in query.iter() {
+        debug!(?entity, "Selecting entity");
         commands
             .entity(entity)
             .remove::<CreatedComponent>()
@@ -106,15 +113,14 @@ impl Plugin for SelectComponentPlugin {
             .add_system_set(
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .label(Label::Select)
-                    .before(Label::HighlightSelected)
+                    .after("highlight_selected")
                     .with_system(selector)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
+                    .label("highlight_selected")
                     .run_not_in_state(EditorState::Loading)
-                    .label(Label::HighlightSelected)
                     .with_system(highlight_selected)
                     .into(),
             );

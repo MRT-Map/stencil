@@ -56,14 +56,17 @@ pub fn show_tiles(
             })
             || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord))
         {
+            trace!("Hiding {tile_coord}");
             visibility.is_visible = false;
         } else {
             shown_tiles.retain(|t| t != tile_coord);
+            trace!("Showing {tile_coord}");
             visibility.is_visible = true;
         }
     }
     for tile_coord in shown_tiles {
         if tile_coord.z <= 8 {
+            trace!("Loading tile {tile_coord}");
             commands.spawn_bundle(TileBundle::from_tile_coord(tile_coord, &server));
         }
     }

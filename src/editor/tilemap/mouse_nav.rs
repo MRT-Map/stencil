@@ -35,6 +35,7 @@ pub fn mouse_drag(
 
             let dx = map_wh.x / win_wh.x * (mouse_pos.x - origin_pos.x);
             let dy = map_wh.y / win_wh.y * (mouse_pos.y - origin_pos.y);
+            trace!("Mouse moved {dx}, {dy} from origin");
             transform.translation_mut().x = camera_origin_pos.unwrap().x - dx;
             transform.translation_mut().y = camera_origin_pos.unwrap().y - dy;
         } else {
@@ -77,6 +78,7 @@ pub fn mouse_zoom(
                     return;
                 };
             zoom.0 += u;
+            trace!("Zoom changed from {orig_scale} to {{zoom.0}}");
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
@@ -88,6 +90,7 @@ pub fn mouse_zoom(
             } else {
                 return;
             };
+            trace!("View moved by {dx}, {dy}");
             transform.translation_mut().x = new_mouse_pos.x - dx;
             transform.translation_mut().y = new_mouse_pos.y - dy;
 

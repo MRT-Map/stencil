@@ -123,14 +123,14 @@ pub struct Skin {
 }
 
 pub fn get_skin(mut commands: Commands) {
-    println!("Getting skin");
+    info!("Retrieving skin");
     let skin = reqwest::blocking::get(
         "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json",
     )
     .unwrap()
     .json::<Skin>()
     .unwrap();
-    println!("Got");
+    info!("Retrieved");
     commands.insert_resource(skin);
     commands.insert_resource(NextState(EditorState::Idle));
 }

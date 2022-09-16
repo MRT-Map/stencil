@@ -15,31 +15,32 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
+            .add_stage_before(CoreStage::Update, "ui", SystemStage::single_threaded())
             .add_system_set_to_stage(
-                CoreStage::PreUpdate,
+                "ui",
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .label("menu")
-                    .before("component_panel")
+                    .label("ui_menu")
+                    .before("ui_component_panel")
                     .with_system(menu::ui)
                     .into(),
             )
             .add_system_set_to_stage(
-                CoreStage::PreUpdate,
+                "ui",
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .label("component_panel")
-                    .after("menu")
-                    .before("toolbar")
+                    .label("ui_component_panel")
+                    .after("ui_menu")
+                    .before("ui_toolbar")
                     .with_system(component_panel::ui)
                     .into(),
             )
             .add_system_set_to_stage(
-                CoreStage::PreUpdate,
+                "ui",
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .label("toolbar")
-                    .after("component_panel")
+                    .label("ui_toolbar")
+                    .after("ui_component_panel")
                     .with_system(toolbar::ui)
                     .into(),
             )

@@ -25,6 +25,7 @@ impl TileBundle {
             Zoom(coord.z as f32).map_size() as f32,
             Zoom(coord.z as f32).map_size() as f32,
         );
+        trace!(coord = coord.to_string(), "Loading tile");
         Self {
             _t: Tile,
             coord,
