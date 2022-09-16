@@ -2,9 +2,10 @@ mod editor;
 mod setup;
 mod types;
 
-use bevy::{
-    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::App, DefaultPlugins,
-};
+use bevy::asset::AssetPlugin;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::prelude::*;
+use bevy::window::WindowMode;
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
@@ -24,6 +25,11 @@ fn main() {
     console_error_panic_hook::set_once();
 
     App::new()
+        .insert_resource(WindowDescriptor {
+            title: "Stencil".to_string(),
+            mode: if cfg!(debug_assertions) { WindowMode::Windowed } else { WindowMode::BorderlessFullscreen },
+            ..default()
+        })
         .add_plugins_with(DefaultPlugins, |group| {
             group.add_before::<AssetPlugin, _>(WebAssetPlugin)
         })
