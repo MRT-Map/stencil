@@ -1,7 +1,11 @@
 use std::collections::HashMap;
+use bevy::app::AppExit;
+use futures_lite::future;
 
 use bevy::prelude::*;
+use bevy::tasks::{AsyncComputeTaskPool, Task};
 use iyes_loopless::prelude::*;
+use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
 
 use crate::types::{ComponentType, EditorState};
@@ -122,15 +126,45 @@ pub struct Skin {
     pub types: HashMap<String, SkinComponent>,
 }
 
-pub fn get_skin(mut commands: Commands) {
+#[derive(Component)]
+pub struct AsyncTask<T>(Task<T>);
+
+pub fn request_skin(
+    mut commands: Commands
+) {
+    let thread_pool = AsyncComputeTaskPool::get();
+    let task = thread_pool.spawn(async move {
+        surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
+            .recv_json::<Skin>().await
+    });
     info!("Retrieving skin");
-    let skin = reqwest::blocking::get(
-        "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json",
-    )
-    .unwrap()
-    .json::<Skin>()
-    .unwrap();
-    info!("Retrieved");
-    commands.insert_resource(skin);
-    commands.insert_resource(NextState(EditorState::Idle));
+    commands.spawn().insert(AsyncTask(task));
+}
+
+pub fn retrieve_skin(
+    mut commands: Commands,
+    mut tasks: Query<(Entity, &mut AsyncTask<surf::Result<Skin>>)>,
+    mut exit: EventWriter<AppExit>
+) {
+    for (entity, mut task) in tasks.iter_mut() {
+        match future::block_on(future::poll_once(&mut task.0)) {
+            None => {},
+            Some(Ok(skin)) => {
+                info!("Retrieved");
+                commands.insert_resource(skin);
+                commands.insert_resource(NextState(EditorState::Idle));
+                commands.entity(entity).despawn();
+            }
+            Some(Err(err)) => {
+                error!(?err, "Unable to retrieve skin");
+                MessageDialog::new()
+                    .set_type(MessageType::Error)
+                    .set_title("Unable to load skin, make sure you are connected to the internet.")
+                    .set_text(&*format!("Error: {:?}", err))
+                    .show_alert().unwrap();
+                exit.send(AppExit)
+            }
+        }
+
+    }
 }
