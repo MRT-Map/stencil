@@ -59,7 +59,7 @@ pub fn ui(
                 component_coords
                     .0
                     .iter()
-                    .map(|a| format!("{}, {}", a.x, a.y))
+                    .map(|a| format!("{}, {}", a.x, -a.y))
                     .join("\n"),
             );
         });

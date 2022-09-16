@@ -1,5 +1,5 @@
 use bevy::{ecs::query::WorldQuery, prelude::*};
-use bevy_mod_picking::{HoverEvent, PickingEvent};
+use bevy_mod_picking::{HoverEvent, PickingEvent, PickingSystem};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
@@ -35,12 +35,12 @@ pub fn selector(
     for event in events.iter() {
         if let PickingEvent::Clicked(e) = event {
             if !hovering_over_gui.0 {
-                debug!(?e, "Click detected");
+                info!(?e, "Select detected");
                 *selected_entity = Some(*e);
-                *mm_detector.0 = Some(*mm_detector.1)
+                *mm_detector.0 = Some(*mm_detector.1);
             }
         } else if let PickingEvent::Hover(e) = event {
-            debug!("Hover detected");
+            trace!("Hover detected");
             hovering_over_comp.0 = match e {
                 HoverEvent::JustLeft(_) => false,
                 HoverEvent::JustEntered(_) => true,
@@ -52,7 +52,7 @@ pub fn selector(
             select_entity(&mut commands, &deselect_query, &selected_entity)
         } else {
             info!("Selected nothing, deselecting");
-            deselect(&mut commands, &deselect_query)
+            deselect(&mut commands, &deselect_query);
         }
         *selected_entity = None;
     }
@@ -114,6 +114,7 @@ impl Plugin for SelectComponentPlugin {
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .after("highlight_selected")
+                    .after(PickingSystem::Events)
                     .with_system(selector)
                     .into(),
             )

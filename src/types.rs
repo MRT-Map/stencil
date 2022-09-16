@@ -90,13 +90,9 @@ impl DetectMouseMoveOnClickExt for DetectMouseMoveOnClick<'_, '_> {
     }
     fn handle_release(&mut self) -> bool {
         if let Some(prev) = *self.0 {
-            if prev != *self.1 {
-                *self.0 = None;
-                true
-            } else {
-                *self.0 = None;
-                false
-            }
+            *self.0 = None;
+            let curr = *self.1;
+            (*prev - *curr).length_squared() > 4.0
         } else {
             false
         }
