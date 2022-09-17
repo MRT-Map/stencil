@@ -5,9 +5,11 @@ use strum::IntoStaticStr;
 
 use crate::{
     editor::bundles::component::{CreatedComponent, SelectedComponent},
-    types::{pla::EditorCoords, skin::Skin},
+    types::{
+        pla::{EditorCoords, PlaComponent},
+        skin::Skin,
+    },
 };
-use crate::types::pla::PlaComponent;
 
 pub mod pla;
 pub mod skin;
@@ -53,20 +55,11 @@ impl SystemLabel for Label {
 }
 
 pub type DeselectQuery<'world, 'state, 'a> = (
-    Query<
-        'world,
-        'state,
-        (&'a PlaComponent<EditorCoords>, Entity),
-        With<SelectedComponent>,
-    >,
+    Query<'world, 'state, (&'a PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     Res<'world, Skin>,
 );
-pub type CreatedQuery<'world, 'state, 'a> = Query<
-    'world,
-    'state,
-    (&'a mut PlaComponent<EditorCoords>, Entity),
-    With<CreatedComponent>,
->;
+pub type CreatedQuery<'world, 'state, 'a> =
+Query<'world, 'state, (&'a mut PlaComponent<EditorCoords>, Entity), With<CreatedComponent>>;
 pub type DetectMouseMoveOnClick<'world, 'a> = (Local<'a, Option<MousePos>>, Res<'world, MousePos>);
 pub trait DetectMouseMoveOnClickExt {
     fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>);

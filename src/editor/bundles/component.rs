@@ -2,8 +2,10 @@ use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
 use bevy_prototype_lyon::entity::ShapeBundle;
 
-use crate::types::{pla::EditorCoords, skin::Skin};
-use crate::types::pla::PlaComponent;
+use crate::types::{
+    pla::{EditorCoords, PlaComponent},
+    skin::Skin,
+};
 
 #[derive(Bundle)]
 pub struct ComponentBundle {

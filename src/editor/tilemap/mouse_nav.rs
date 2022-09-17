@@ -1,18 +1,18 @@
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
+    math::Vec3Swizzles,
     prelude::*,
 };
-use bevy::math::Vec3Swizzles;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
 
 use crate::{
     editor::{
         cursor::get_cursor_world_pos,
         tilemap::utils::{get_map_width_height, get_window_width_height},
+        ui::HoveringOverGui,
     },
     types::zoom::Zoom,
 };
-use crate::editor::ui::HoveringOverGui;
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag(
@@ -22,9 +22,11 @@ pub fn mouse_drag(
     mouse_pos: Res<MousePos>,
     mut camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
     windows: Res<Windows>,
-    hovering_over_gui: Res<HoveringOverGui>
+    hovering_over_gui: Res<HoveringOverGui>,
 ) {
-    if hovering_over_gui.0 { return }
+    if hovering_over_gui.0 {
+        return;
+    }
     let (camera, mut transform): (&Camera, Mut<GlobalTransform>) = camera.single_mut();
     if buttons.pressed(MouseButton::Left) {
         if let Some(origin_pos) = *mouse_origin_pos {
@@ -61,9 +63,11 @@ pub fn mouse_zoom(
     >,
     mut zoom: ResMut<Zoom>,
     windows: Res<Windows>,
-    hovering_over_gui: Res<HoveringOverGui>
+    hovering_over_gui: Res<HoveringOverGui>,
 ) {
-    if hovering_over_gui.0 { return }
+    if hovering_over_gui.0 {
+        return;
+    }
     let (camera, mut ort_proj, mut transform): (
         &Camera,
         Mut<OrthographicProjection>,

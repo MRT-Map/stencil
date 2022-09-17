@@ -1,19 +1,16 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent, PickingSystem};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{
-        bundles::component::SelectedComponent,
-        ui::HoveringOverGui,
-    },
+    editor::{bundles::component::SelectedComponent, ui::HoveringOverGui},
     types::{
-        DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState,
-        skin::Skin,
+        DeselectQuery,
+        DetectMouseMoveOnClick,
+        DetectMouseMoveOnClickExt, EditorState, pla::{EditorCoords, PlaComponent}, skin::Skin,
     },
 };
-use crate::types::pla::{EditorCoords, PlaComponent};
 
 #[derive(Default)]
 pub struct HoveringOverComponent(pub bool);

@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug};
 
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
-use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ComponentType, skin::Skin};
-use crate::types::skin::{AreaStyle, LineStyle, PointStyle, SkinComponent};
+use crate::types::{
+    ComponentType,
+    skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
+};
 
 fn hex_to_color(hex: &HexColor) -> Color {
     Color::Rgba {
@@ -54,69 +54,63 @@ impl<T: Coords> PlaComponent<T> {
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
         let type_layers = skin.types.get(self.type_.as_str())?;
         match type_layers {
-            SkinComponent::Point { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        PointStyle::Circle { colour, .. }
-                        | PointStyle::Square { colour, .. } => Some(colour),
-                        _ => None
-                    })
-                    .last()
-            }
-            SkinComponent::Line { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        LineStyle::Fore { colour, .. } => Some(colour),
-                        _ => None
-                    }).last()
-            }
-            SkinComponent::Area { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        AreaStyle::Fill { colour, .. } => colour.into(),
-                        _ => None
-                    }).last()
-            }
+            SkinComponent::Point { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    PointStyle::Circle { colour, .. } | PointStyle::Square { colour, .. } => {
+                        Some(colour)
+                    }
+                    _ => None,
+                })
+                .last(),
+            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Fore { colour, .. } => Some(colour),
+                    _ => None,
+                })
+                .last(),
+            SkinComponent::Area { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .last(),
         }
     }
     pub fn back_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
         let type_layers = skin.types.get(self.type_.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
-            SkinComponent::Line { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        LineStyle::Back { colour, .. } => Some(colour),
-                        _ => None
-                    }).last()
-            }
-            SkinComponent::Area { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        AreaStyle::Fill { outline, .. } => outline.into(),
-                        _ => None
-                    }).last()
-            }
+            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Back { colour, .. } => Some(colour),
+                    _ => None,
+                })
+                .last(),
+            SkinComponent::Area { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { outline, .. } => outline.into(),
+                    _ => None,
+                })
+                .last(),
         }
     }
     pub fn weight(&self, skin: &Skin) -> Option<u32> {
         let type_layers = skin.types.get(self.type_.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
-            SkinComponent::Line { style, .. } => {
-                style_in_max_zoom(style)?
-                    .iter()
-                    .filter_map(|style| match style {
-                        LineStyle::Fore { width, .. } => Some(width / 2),
-                        _ => None
-                    }).last()
-            }
-            SkinComponent::Area { .. } => Some(4)
+            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Fore { width, .. } => Some(width / 2),
+                    _ => None,
+                })
+                .last(),
+            SkinComponent::Area { .. } => Some(4),
         }
     }
 }
@@ -182,7 +176,7 @@ impl PlaComponent<EditorCoords> {
                             Color::WHITE
                         },
                         options,
-                    }, )
+                    })
                 },
                 Transform::from_xyz(0.0, 0.0, 10.0),
             )
@@ -191,12 +185,13 @@ impl PlaComponent<EditorCoords> {
 }
 
 fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
-    Some(style.iter()
-        .map(|(zl, data)| (
-            zl.split(", ").next().unwrap().parse::<u8>().unwrap(), data)
-        )
-        .find(|(min, _)|
-            *min == 0)?.1)
+    Some(
+        style
+            .iter()
+            .map(|(zl, data)| (zl.split(", ").next().unwrap().parse::<u8>().unwrap(), data))
+            .find(|(min, _)| *min == 0)?
+            .1,
+    )
 }
 
 pub trait Coords: Debug + Default + Copy + Clone {}
@@ -228,4 +223,3 @@ impl From<IVec2> for EditorCoords {
 impl Coords for MCCoords {}
 
 impl Coords for EditorCoords {}
-

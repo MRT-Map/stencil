@@ -11,19 +11,17 @@ use crate::{
         ui::HoveringOverGui,
     },
     types::{
-        ComponentType, CreatedQuery, DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt,
-        EditorState, pla::EditorCoords, skin::Skin,
+        ComponentType,
+        CreatedQuery,
+        DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState,
+        pla::{EditorCoords, PlaComponent}, skin::Skin,
     },
 };
-use crate::types::pla::PlaComponent;
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 #[tracing::instrument(skip_all)]
 pub fn create_component(
-    mut set: ParamSet<(
-        CreatedQuery,
-        DeselectQuery,
-    )>,
+    mut set: ParamSet<(CreatedQuery, DeselectQuery)>,
     mut commands: Commands,
     buttons: Res<Input<MouseButton>>,
     skin: Res<Skin>,
@@ -82,10 +80,9 @@ pub fn create_component(
                             mouse_world_pos.round().as_ivec2().x,
                             mouse_world_pos.round().as_ivec2().y
                         );
-                        commands.entity(entity).insert_bundle(data.get_shape(
-                            &skin,
-                            false,
-                        ));
+                        commands
+                            .entity(entity)
+                            .insert_bundle(data.get_shape(&skin, false));
                     }
                     ComponentType::Point => unreachable!(),
                 }
