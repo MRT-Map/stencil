@@ -68,7 +68,7 @@ pub fn selector(
 pub fn highlight_selected(
     state: Res<CurrentState<EditorState>>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
+    query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
     skin: Res<Skin>,
 ) {
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
