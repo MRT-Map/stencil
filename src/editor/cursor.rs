@@ -79,7 +79,7 @@ pub fn cursor_icon(
         }
         windows.primary_mut().set_cursor_icon(match state.0 {
             EditorState::Loading => CursorIcon::Wait,
-            EditorState::Idle => {
+            EditorState::Idle | EditorState::DeletingComponent => {
                 if hovering_over_comp.0 {
                     CursorIcon::Hand
                 } else if buttons.pressed(MouseButton::Left) {
@@ -92,7 +92,6 @@ pub fn cursor_icon(
             EditorState::EditingNodes => CursorIcon::Hand,
             EditorState::MovingComponent => CursorIcon::Hand,
             EditorState::RotatingComponent => CursorIcon::Hand,
-            EditorState::DeletingComponent => CursorIcon::Hand,
         });
     } else {
         windows.primary_mut().set_cursor_visibility(true);

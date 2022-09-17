@@ -15,6 +15,7 @@ use crate::{
     },
     setup::SetupPlugin,
 };
+use crate::editor::delete_component::DeleteComponentPlugin;
 
 mod editor;
 mod setup;
@@ -50,5 +51,6 @@ fn main() {
         .add_plugin(RenderingPlugin)
         .add_plugin(CreateComponentPlugin)
         .add_plugin(SelectComponentPlugin)
+        .add_plugin(DeleteComponentPlugin)
         .run();
 }

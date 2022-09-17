@@ -4,3 +4,4 @@ pub mod cursor;
 pub mod selecting_component;
 pub mod tilemap;
 pub mod ui;
+pub mod delete_component;
