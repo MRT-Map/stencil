@@ -36,6 +36,8 @@ features = [
     "bevy_winit",
     "png",
     "trace",
+    "x11",
+    "wayland",
     "dynamic"
 ]
 
