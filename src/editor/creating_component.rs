@@ -51,7 +51,7 @@ pub fn create_component(
             if *type_ == ComponentType::Point {
                 let mut new_point = ComponentBundle::new({
                     let mut point = PlaComponent::new(type_.to_owned());
-                    point.nodes.push(mouse_world_pos.as_ivec2().into());
+                    point.nodes.push(mouse_world_pos.round().as_ivec2().into());
                     point
                 });
                 debug!("Placing new point at {:?}", mouse_world_pos);
@@ -63,7 +63,7 @@ pub fn create_component(
             if set.p0().is_empty() {
                 let mut new_comp = ComponentBundle::new({
                     let mut point = PlaComponent::new(type_.to_owned());
-                    point.nodes.push(mouse_world_pos.as_ivec2().into());
+                    point.nodes.push(mouse_world_pos.round().as_ivec2().into());
                     point
                 });
                 debug!("Starting new line/area at {:?}", mouse_world_pos);
@@ -75,12 +75,12 @@ pub fn create_component(
                     created_query.single_mut();
                 match data.get_type(&skin).unwrap() {
                     ComponentType::Line | ComponentType::Area => {
-                        data.nodes.push(mouse_world_pos.as_ivec2().into());
+                        data.nodes.push(mouse_world_pos.round().as_ivec2().into());
                         debug!(
                             ?entity,
                             "Continuing line/area at {}, {}",
-                            mouse_world_pos.as_ivec2().x,
-                            mouse_world_pos.as_ivec2().y
+                            mouse_world_pos.round().as_ivec2().x,
+                            mouse_world_pos.round().as_ivec2().y
                         );
                         commands.entity(entity).insert_bundle(data.get_shape(
                             &skin,
@@ -102,7 +102,7 @@ pub fn create_component(
             let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
                 created_query.single_mut();
             let mut data = (*data).to_owned();
-            data.nodes.push(mouse_world_pos.as_ivec2().into());
+            data.nodes.push(mouse_world_pos.round().as_ivec2().into());
             commands
                 .entity(entity)
                 .insert_bundle(data.get_shape(&skin, false));
@@ -118,11 +118,15 @@ pub fn clear_created_component(
 ) {
     for (data, entity) in created_query.iter() {
         debug!(?entity, "Clearing CreatedComponent marker");
-        commands
-            .entity(entity)
-            .remove_bundle::<ShapeBundle>()
-            .insert_bundle(data.get_shape(skin, false))
-            .remove::<CreatedComponent>();
+        if data.nodes.len() == 1 {
+            commands.entity(entity).despawn();
+        } else {
+            commands
+                .entity(entity)
+                .remove_bundle::<ShapeBundle>()
+                .insert_bundle(data.get_shape(skin, false))
+                .remove::<CreatedComponent>();
+        }
     }
 }
 

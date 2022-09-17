@@ -30,7 +30,9 @@ impl ComponentBundle {
 }
 
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct CreatedComponent;
 
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct SelectedComponent;

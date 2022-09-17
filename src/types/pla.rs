@@ -13,7 +13,7 @@ use crate::types::skin::{AreaStyle, LineStyle, PointStyle, SkinComponent};
 
 fn hex_to_color(hex: &HexColor) -> Color {
     Color::Rgba {
-        red: hex.a as f32 / 255.0,
+        red: hex.r as f32 / 255.0,
         green: hex.g as f32 / 255.0,
         blue: hex.b as f32 / 255.0,
         alpha: 1.0,
@@ -151,19 +151,19 @@ impl PlaComponent<EditorCoords> {
                 if self.get_type(skin) == Some(ComponentType::Area) {
                     DrawMode::Outlined {
                         fill_mode: FillMode::color(if selected {
-                            *Color::YELLOW.set_a(0.5)
+                            *Color::YELLOW.clone().set_a(0.5)
                         } else if let Some(hex) = self.front_colour(skin) {
                             *hex_to_color(hex).set_a(0.5)
                         } else {
-                            *Color::WHITE.set_a(0.5)
+                            *Color::WHITE.clone().set_a(0.5)
                         }),
                         outline_mode: StrokeMode::new(
                             if selected {
-                                *Color::YELLOW.set_a(0.5)
+                                Color::YELLOW
                             } else if let Some(hex) = self.back_colour(skin) {
-                                *hex_to_color(hex).set_a(0.5)
+                                hex_to_color(hex)
                             } else {
-                                *Color::WHITE.set_a(0.5)
+                                Color::WHITE
                             },
                             self.weight(skin).unwrap_or(0) as f32,
                         ),

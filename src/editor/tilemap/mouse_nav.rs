@@ -11,6 +11,7 @@ use crate::{
     },
     types::zoom::Zoom,
 };
+use crate::editor::ui::HoveringOverGui;
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag(
@@ -20,7 +21,9 @@ pub fn mouse_drag(
     mouse_pos: Res<MousePos>,
     mut camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
     windows: Res<Windows>,
+    hovering_over_gui: Res<HoveringOverGui>
 ) {
+    if hovering_over_gui.0 { return }
     let (camera, mut transform): (&Camera, Mut<GlobalTransform>) = camera.single_mut();
     if buttons.pressed(MouseButton::Left) {
         if let Some(origin_pos) = *mouse_origin_pos {
@@ -58,7 +61,9 @@ pub fn mouse_zoom(
     >,
     mut zoom: ResMut<Zoom>,
     windows: Res<Windows>,
+    hovering_over_gui: Res<HoveringOverGui>
 ) {
+    if hovering_over_gui.0 { return }
     let (camera, mut ort_proj, mut transform): (
         &Camera,
         Mut<OrthographicProjection>,

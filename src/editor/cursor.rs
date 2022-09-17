@@ -8,6 +8,7 @@ use crate::{
 };
 
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct Crosshair;
 
 #[tracing::instrument(skip_all)]
