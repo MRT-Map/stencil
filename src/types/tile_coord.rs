@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use std::fmt::{Display, Formatter};
+use bevy::math::DVec2;
 
 use crate::types::zoom::Zoom;
 
@@ -35,16 +36,13 @@ impl TileCoord {
 
     #[allow(unreachable_code)]
     pub fn url(&self) -> String {
-        return "".into();
+        //return "".into();
         let z = 2.0f64.powi((8 - self.z) as i32);
-        let x = self.x as f64;
-        let y = self.y as f64;
+        let xy = IVec2::new(self.x, self.y).as_dvec2();
 
-        let group_x = ((x * z) as f64 / 32.0).floor() as i32;
-        let group_y = ((y * z) as f64 / 32.0).floor() as i32;
+        let group = (xy * z / 32.0).floor().as_ivec2();
 
-        let num_in_group_x = x * z;
-        let num_in_group_y = y * z;
+        let num_in_group = xy * z;
 
         let mut zzz = "".to_string();
         let mut i = 8;
@@ -57,6 +55,6 @@ impl TileCoord {
             zzz += "_"
         };
         format!("http://api.allorigins.win/raw?url=https%3A//dynmap.minecartrapidtransit.net/tiles/new/flat/{}_{}/{}{}_{}.png",
-            group_x, group_y, zzz, num_in_group_x, num_in_group_y)
+                group.x, group.y, zzz, num_in_group.x, num_in_group.y)
     }
 }

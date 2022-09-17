@@ -1,4 +1,5 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
+use bevy::sprite::Anchor;
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
 
@@ -6,6 +7,58 @@ use crate::{
     editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
     types::{EditorState},
 };
+use crate::types::zoom::Zoom;
+
+#[derive(Component)]
+pub struct Crosshair;
+
+pub fn crosshair(
+    mut commands: Commands,
+    state: Res<CurrentState<EditorState>>,
+    mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
+    mut q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    server: Res<AssetServer>,
+    windows: Res<Windows>,
+    zoom: Res<Zoom>,
+) {
+    if !matches!(state.0, EditorState::CreatingComponent(_)) {
+        for (e, _, _) in ch.iter() {
+            debug!("Despawning crosshair");
+            commands.entity(e).despawn();
+        }
+        return;
+    }
+    let (camera, c_transform) = q_camera.single_mut();
+    let mouse_world_pos = if let Some(p) = get_cursor_world_pos(&windows, camera, c_transform) {
+        p
+    } else {
+        for (e, _, _) in ch.iter() {
+            debug!("Despawning crosshair");
+            commands.entity(e).despawn();
+        }
+        return
+    };
+    let new_transform = Transform::from_translation(mouse_world_pos.round().extend(100.0));
+    let new_custom_size = Some(Vec2::splat(2f32.powf(8f32 - zoom.0) * 16f32));
+    if ch.is_empty() {
+        debug!("Spawning crosshair");
+        commands.spawn_bundle(SpriteBundle {
+            texture: server.load("crosshair.png"),
+            transform: new_transform,
+            sprite: Sprite {
+                custom_size: new_custom_size,
+                anchor: Anchor::Center,
+                ..default()
+            },
+            ..default()
+        }).insert(Crosshair);
+    } else {
+        trace!("Updating crosshair location");
+        let (_, mut transform, mut sprite) = ch.single_mut();
+        *transform = new_transform;
+        sprite.custom_size = new_custom_size;
+    }
+}
 
 pub fn cursor_icon(
     buttons: Res<Input<MouseButton>>,
@@ -15,6 +68,12 @@ pub fn cursor_icon(
     hovering_over_comp: Res<HoveringOverComponent>,
 ) {
     if !hovering_over_gui.0 {
+        if matches!(state.0, EditorState::CreatingComponent(_)) {
+            windows.primary_mut().set_cursor_visibility(false);
+            return
+        } else {
+            windows.primary_mut().set_cursor_visibility(true);
+        }
         windows.primary_mut().set_cursor_icon(match state.0 {
             EditorState::Loading => CursorIcon::Wait,
             EditorState::Idle => {
@@ -26,12 +85,14 @@ pub fn cursor_icon(
                     CursorIcon::Grab
                 }
             }
-            EditorState::CreatingComponent(_) => CursorIcon::Crosshair,
+            EditorState::CreatingComponent(_) => unreachable!(),
             EditorState::EditingNodes => CursorIcon::Hand,
             EditorState::MovingComponent => CursorIcon::Hand,
             EditorState::RotatingComponent => CursorIcon::Hand,
             EditorState::DeletingComponent => CursorIcon::Hand,
         });
+    } else {
+        windows.primary_mut().set_cursor_visibility(true);
     }
 }
 
@@ -107,6 +168,7 @@ impl Plugin for CursorPlugin {
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
                 .with_system(cursor_icon)
+                .with_system(crosshair)
                 .into(),
         )
         .add_system_set(

@@ -5,6 +5,7 @@ mod types;
 use bevy::asset::AssetPlugin;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
+use bevy::render::texture::ImageSettings;
 use bevy::window::WindowMode;
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
@@ -30,6 +31,7 @@ fn main() {
             mode: if cfg!(debug_assertions) { WindowMode::Windowed } else { WindowMode::BorderlessFullscreen },
             ..default()
         })
+        .insert_resource(ImageSettings::default_nearest())
         .add_plugins_with(DefaultPlugins, |group| {
             group.add_before::<AssetPlugin, _>(WebAssetPlugin)
         })
