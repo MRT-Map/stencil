@@ -186,7 +186,7 @@ impl PlaComponent<EditorCoords> {
     }
 }
 
-fn style_in_max_zoom<S>(style: &HashMap<String, Vec<S>>) -> Option<&Vec<S>> {
+fn style_in_max_zoom<A>(style: &HashMap<String, Vec<A>>) -> Option<&Vec<A>> {
     Some(style.iter()
         .map(|(zl, data)| (
             zl.split(", ")

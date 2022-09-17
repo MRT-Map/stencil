@@ -61,14 +61,6 @@ pub type DeselectQuery<'world, 'state, 'a> = (
     >,
     Res<'world, Skin>,
 );
-pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
-    'world,
-    'state,
-    (
-        DeselectQuery<'world, 'state, 'a>,
-        Query<'world, 'state, Entity, F>,
-    ),
->;
 pub type CreatedQuery<'world, 'state, 'a> = Query<
     'world,
     'state,

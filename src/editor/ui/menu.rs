@@ -11,7 +11,7 @@ pub fn ui(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut exit: EventWriter<AppExit>,
-    diagnostics: Res<Diagnostics>,
+    diagnostics: Res<Diagnostics>
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {

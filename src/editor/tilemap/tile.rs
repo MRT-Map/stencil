@@ -39,7 +39,7 @@ pub fn get_shown_tiles(
 pub fn show_tiles(
     mut commands: Commands,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut query: Query<(&mut Visibility, &TileCoord), With<Tile>>,
+    mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
 ) {
@@ -48,21 +48,20 @@ pub fn show_tiles(
 
     let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
     let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
-    for (mut visibility, tile_coord) in query.iter_mut() {
+    for (entity, tile_coord) in query.iter_mut() {
         if (zoom.0 <= 8f32 && tile_coord.z > zoom.0.round() as i8)
             || (zoom.0 > 8f32 && tile_coord.z != 8)
             || (zoom.0 > 8f32 && {
-                let (tl, tt, tr, tb) = tile_coord.get_edges();
-                tr < ml || tl > mr || tb < mt || tt > mb
-            })
+            let (tl, tt, tr, tb) = tile_coord.get_edges();
+            tr < ml || tl > mr || tb < mt || tt > mb
+        })
             || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord))
         {
             trace!("Hiding {tile_coord}");
-            visibility.is_visible = false;
+            commands.entity(entity).despawn();
         } else {
             shown_tiles.retain(|t| t != tile_coord);
             trace!("Showing {tile_coord}");
-            visibility.is_visible = true;
         }
     }
     for tile_coord in shown_tiles {

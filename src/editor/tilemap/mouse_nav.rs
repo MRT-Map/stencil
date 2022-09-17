@@ -2,6 +2,7 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
 };
+use bevy::math::Vec3Swizzles;
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
 
 use crate::{
@@ -37,11 +38,10 @@ pub fn mouse_drag(
             };
             let map_wh = get_map_width_height(camera, &transform);
 
-            let dx = map_wh.x / win_wh.x * (mouse_pos.x - origin_pos.x);
-            let dy = map_wh.y / win_wh.y * (mouse_pos.y - origin_pos.y);
-            trace!("Mouse moved {dx}, {dy} from origin");
-            transform.translation_mut().x = camera_origin_pos.unwrap().x - dx;
-            transform.translation_mut().y = camera_origin_pos.unwrap().y - dy;
+            let d = map_wh / win_wh * (**mouse_pos - *origin_pos);
+            trace!("Mouse moved {d:?} from origin");
+            transform.translation_mut().x = camera_origin_pos.unwrap().x - d.x;
+            transform.translation_mut().y = camera_origin_pos.unwrap().y - d.y;
         } else {
             *mouse_origin_pos = Some(*mouse_pos.into_inner());
             *camera_origin_pos = Some(transform.translation().truncate());
@@ -75,8 +75,7 @@ pub fn mouse_zoom(
             MouseScrollUnit::Pixel => ev.y * 0.0125,
         };
         if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
-            let orig_x = transform.translation().x;
-            let orig_y = transform.translation().y;
+            let orig = transform.translation().xy();
             let orig_scale = ort_proj.scale;
             let orig_mouse_pos =
                 if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
@@ -89,28 +88,16 @@ pub fn mouse_zoom(
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
-            let dx = (orig_mouse_pos.x - orig_x) * (ort_proj.scale / orig_scale);
-            let dy = (orig_mouse_pos.y - orig_y) * (ort_proj.scale / orig_scale);
+            let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform)
             {
                 mp
             } else {
                 return;
             };
-            trace!("View moved by {dx}, {dy}");
-            transform.translation_mut().x = new_mouse_pos.x - dx;
-            transform.translation_mut().y = new_mouse_pos.y - dy;
-
-            /*
-            var mousePos = {x: mouseEvent.offsetX, y: mouseEvent.offsetY};
-            var mouseGridPos = plus(multiply(mousePos, scale), gridPos); orig_mouse_pos
-            var delta = mouseEvent.deltaY; u
-            zoom += delta;
-            zoom = Math.min(zoom, 3000);
-            zoom = Math.max(zoom, -1000);
-            scale = Math.pow(2,(zoom / 1000));
-            gridPos = minus(mouseGridPos, multiply(mousePos, scale));
-            */
+            trace!("View moved by {d:?}");
+            transform.translation_mut().x = new_mouse_pos.x - d.x;
+            transform.translation_mut().y = new_mouse_pos.y - d.y;
         }
     }
 }

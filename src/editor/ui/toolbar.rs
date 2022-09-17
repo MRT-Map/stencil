@@ -4,7 +4,7 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{creating_component::clear_created_component, ui::HoveringOverGui},
-    types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
+    types::{ComponentType, CreatedQuery, EditorState, skin::Skin},
 };
 
 pub fn ui(
@@ -61,7 +61,7 @@ pub fn ui(
         });
     });
     if panel.response.hovered() {
-        hovering_over_gui.0 = true
+        hovering_over_gui.0 = true;
     }
     *cv = current_value;
 }

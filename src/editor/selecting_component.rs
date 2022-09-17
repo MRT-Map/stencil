@@ -1,16 +1,16 @@
-use bevy::{ecs::query::WorldQuery, prelude::*};
+use bevy::{prelude::*};
 use bevy_mod_picking::{HoverEvent, PickingEvent, PickingSystem};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
-        bundles::component::{CreatedComponent, SelectedComponent},
+        bundles::component::SelectedComponent,
         ui::HoveringOverGui,
     },
     types::{
         DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState,
-        SelectQuery, skin::Skin,
+        skin::Skin,
     },
 };
 use crate::types::pla::{EditorCoords, PlaComponent};
@@ -97,20 +97,6 @@ pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, en
     info!(?entity, "Selecting entity");
     deselect(commands, deselect_query);
     commands.entity(*entity).insert(SelectedComponent);
-}
-
-pub fn select_query(commands: &mut Commands, set: &mut SelectQuery<impl WorldQuery>) {
-    if !set.p1().is_empty() {
-        deselect(commands, &set.p0())
-    }
-    let query = set.p1();
-    for entity in query.iter() {
-        debug!(?entity, "Selecting entity");
-        commands
-            .entity(entity)
-            .remove::<CreatedComponent>()
-            .insert(SelectedComponent);
-    }
 }
 
 pub struct SelectComponentPlugin;

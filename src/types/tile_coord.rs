@@ -13,7 +13,7 @@ pub struct TileCoord {
 
 impl Display for TileCoord {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{self.z}}, {{self.y}}, {{self.x}}")
+        write!(f, "{}, {}, {}", self.z, self.y, self.x)
     }
 }
 
