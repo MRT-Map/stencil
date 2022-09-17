@@ -1,3 +1,4 @@
+#[derive(Copy, Clone, Debug)]
 pub struct Zoom(pub f32);
 
 impl Zoom {

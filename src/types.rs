@@ -1,17 +1,18 @@
-pub mod pla;
-pub mod skin;
-pub mod tile_coord;
-pub mod zoom;
-
 use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MousePos;
 use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 
 use crate::{
-    editor::bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
-    types::{pla::ComponentCoords, skin::Skin},
+    editor::bundles::component::{CreatedComponent, SelectedComponent},
+    types::{pla::EditorCoords, skin::Skin},
 };
+use crate::types::pla::PlaComponent;
+
+pub mod pla;
+pub mod skin;
+pub mod tile_coord;
+pub mod zoom;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub enum ComponentType {
@@ -55,7 +56,7 @@ pub type DeselectQuery<'world, 'state, 'a> = (
     Query<
         'world,
         'state,
-        (&'a EditorComponent, &'a ComponentCoords, Entity),
+        (&'a PlaComponent<EditorCoords>, Entity),
         With<SelectedComponent>,
     >,
     Res<'world, Skin>,
@@ -71,7 +72,7 @@ pub type SelectQuery<'world, 'state, 'a, F = ()> = ParamSet<
 pub type CreatedQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
-    (&'a EditorComponent, &'a mut ComponentCoords, Entity),
+    (&'a mut PlaComponent<EditorCoords>, Entity),
     With<CreatedComponent>,
 >;
 pub type DetectMouseMoveOnClick<'world, 'a> = (Local<'a, Option<MousePos>>, Res<'world, MousePos>);

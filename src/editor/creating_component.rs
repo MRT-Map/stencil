@@ -5,16 +5,17 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
-        bundles::component::{ComponentBundle, CreatedComponent, EditorComponent},
+        bundles::component::{ComponentBundle, CreatedComponent},
         cursor::get_cursor_world_pos,
-        selecting_component::{deselect, select_query},
+        selecting_component::deselect,
         ui::HoveringOverGui,
     },
     types::{
         ComponentType, CreatedQuery, DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt,
-        EditorState, pla::ComponentCoords, SelectQuery, skin::Skin,
+        EditorState, pla::EditorCoords, skin::Skin,
     },
 };
+use crate::types::pla::PlaComponent;
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 #[tracing::instrument(skip_all)]
@@ -22,7 +23,6 @@ pub fn create_component(
     mut set: ParamSet<(
         CreatedQuery,
         DeselectQuery,
-        SelectQuery<With<CreatedComponent>>,
     )>,
     mut commands: Commands,
     buttons: Res<Input<MouseButton>>,
@@ -49,10 +49,11 @@ pub fn create_component(
                 return;
             };
             if *type_ == ComponentType::Point {
-                let mut new_point = ComponentBundle::new(
-                    EditorComponent::new(type_.to_owned()),
-                    mouse_world_pos.as_ivec2(),
-                );
+                let mut new_point = ComponentBundle::new({
+                    let mut point = PlaComponent::new(type_.to_owned());
+                    point.nodes.push(mouse_world_pos.as_ivec2().into());
+                    point
+                });
                 debug!("Placing new point at {:?}", mouse_world_pos);
                 new_point.update_shape(&skin);
                 deselect(&mut commands, &set.p1());
@@ -60,20 +61,21 @@ pub fn create_component(
                 return;
             }
             if set.p0().is_empty() {
-                let mut new_comp = ComponentBundle::new(
-                    EditorComponent::new(type_.to_owned()),
-                    mouse_world_pos.as_ivec2(),
-                );
+                let mut new_comp = ComponentBundle::new({
+                    let mut point = PlaComponent::new(type_.to_owned());
+                    point.nodes.push(mouse_world_pos.as_ivec2().into());
+                    point
+                });
                 debug!("Starting new line/area at {:?}", mouse_world_pos);
                 new_comp.update_shape(&skin);
                 commands.spawn_bundle(new_comp).insert(CreatedComponent);
             } else {
                 let mut created_query = set.p0();
-                let (data, mut coords, entity): (&EditorComponent, Mut<ComponentCoords>, Entity) =
+                let (mut data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
                     created_query.single_mut();
                 match data.get_type(&skin).unwrap() {
                     ComponentType::Line | ComponentType::Area => {
-                        coords.0.push(mouse_world_pos.as_ivec2());
+                        data.nodes.push(mouse_world_pos.as_ivec2().into());
                         debug!(
                             ?entity,
                             "Continuing line/area at {}, {}",
@@ -81,7 +83,6 @@ pub fn create_component(
                             mouse_world_pos.as_ivec2().y
                         );
                         commands.entity(entity).insert_bundle(data.get_shape(
-                            (*coords).to_owned(),
                             &skin,
                             false,
                         ));
@@ -95,16 +96,16 @@ pub fn create_component(
                 return;
             };
             debug!("Completing line/area");
-            select_query(&mut commands, &mut set.p2());
+            clear_created_component(&mut commands, &set.p0(), &skin);
         } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
             let mut created_query = set.p0();
-            let (data, coords, entity): (&EditorComponent, Mut<ComponentCoords>, Entity) =
+            let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
                 created_query.single_mut();
-            let mut coords = coords.to_owned();
-            coords.0.push(mouse_world_pos.as_ivec2());
+            let mut data = (*data).to_owned();
+            data.nodes.push(mouse_world_pos.as_ivec2().into());
             commands
                 .entity(entity)
-                .insert_bundle(data.get_shape(coords, &skin, false));
+                .insert_bundle(data.get_shape(&skin, false));
         }
     }
 }
@@ -115,12 +116,12 @@ pub fn clear_created_component(
     created_query: &CreatedQuery,
     skin: &Res<Skin>,
 ) {
-    for (data, coords, entity) in created_query.iter() {
+    for (data, entity) in created_query.iter() {
         debug!(?entity, "Clearing CreatedComponent marker");
         commands
             .entity(entity)
             .remove_bundle::<ShapeBundle>()
-            .insert_bundle(data.get_shape(coords.to_owned(), skin, false))
+            .insert_bundle(data.get_shape(skin, false))
             .remove::<CreatedComponent>();
     }
 }

@@ -5,7 +5,6 @@ use iyes_loopless::prelude::*;
 
 use crate::types::{
     EditorState,
-    pla::{PlaComponent, PlaNode},
     skin::{request_skin, retrieve_skin, Skin},
 };
 
@@ -15,8 +14,6 @@ impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(EditorState::Loading)
             .init_resource::<Skin>()
-            .init_resource::<Vec<PlaComponent>>()
-            .init_resource::<Vec<PlaNode>>()
             .add_startup_system(request_skin)
             .add_system_set(
                 ConditionSet::new()

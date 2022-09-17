@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use bevy::{math::DVec2, prelude::*};
+use bevy::prelude::*;
 
 use crate::types::zoom::Zoom;
 

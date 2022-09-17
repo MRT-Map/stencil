@@ -10,6 +10,7 @@ use crate::{
 #[derive(Component)]
 pub struct Crosshair;
 
+#[tracing::instrument(skip_all)]
 pub fn crosshair(
     mut commands: Commands,
     state: Res<CurrentState<EditorState>>,
@@ -60,6 +61,7 @@ pub fn crosshair(
     }
 }
 
+#[tracing::instrument(skip_all)]
 pub fn cursor_icon(
     buttons: Res<Input<MouseButton>>,
     mut windows: ResMut<Windows>,

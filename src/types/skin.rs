@@ -6,6 +6,7 @@ use bevy::{
     tasks::{AsyncComputeTaskPool, Task},
 };
 use futures_lite::future;
+use hex_color::HexColor;
 use iyes_loopless::prelude::*;
 use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
@@ -16,7 +17,7 @@ use crate::types::{ComponentType, EditorState};
 pub struct SkinInfo {
     pub size: u32,
     pub font: HashMap<String, String>,
-    pub background: String,
+    pub background: HexColor,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,19 +25,19 @@ pub struct SkinInfo {
 pub enum AreaStyle {
     #[serde(rename = "fill")]
     Fill {
-        colour: Option<String>,
-        outline: Option<String>,
+        colour: Option<HexColor>,
+        outline: Option<HexColor>,
         stripe: Option<(u32, u32, u8)>,
     },
     #[serde(rename = "centertext")]
     CenterText {
-        colour: String,
-        offset: (i32, i32),
+        colour: HexColor,
+        offset: IVec2,
         size: u32,
     },
     #[serde(rename = "bordertext")]
     BorderText {
-        colour: String,
+        colour: HexColor,
         offset: i32,
         size: u32,
     },
@@ -46,20 +47,20 @@ pub enum AreaStyle {
 pub enum LineStyle {
     #[serde(rename = "fore")]
     Fore {
-        colour: String,
+        colour: HexColor,
         width: u32,
-        dash: Option<(u32, u32)>,
+        dash: Option<UVec2>,
     },
     #[serde(rename = "back")]
     Back {
-        colour: String,
+        colour: HexColor,
         width: u32,
-        dash: Option<(u32, u32)>,
+        dash: Option<UVec2>,
     },
     #[serde(rename = "text")]
     Text {
-        colour: String,
-        arrow_colour: String,
+        colour: HexColor,
+        arrow_colour: HexColor,
         size: u32,
         offset: i32,
     },
@@ -68,26 +69,26 @@ pub enum LineStyle {
 #[serde(tag = "layer")]
 pub enum PointStyle {
     #[serde(rename = "image")]
-    Image { file: String, offset: (i32, i32) },
+    Image { file: String, offset: IVec2 },
     #[serde(rename = "square")]
     Square {
-        colour: String,
-        outline: Option<String>,
+        colour: HexColor,
+        outline: Option<HexColor>,
         size: u32,
         width: u32,
     },
     #[serde(rename = "circle")]
     Circle {
-        colour: String,
-        outline: Option<String>,
+        colour: HexColor,
+        outline: Option<HexColor>,
         size: u32,
         width: u32,
     },
     #[serde(rename = "text")]
     Text {
-        colour: String,
+        colour: HexColor,
         size: u32,
-        offset: (i32, i32),
+        offset: IVec2,
         anchor: Option<String>,
     },
 }

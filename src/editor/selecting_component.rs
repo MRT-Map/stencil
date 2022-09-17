@@ -5,14 +5,15 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
-        bundles::component::{CreatedComponent, EditorComponent, SelectedComponent},
+        bundles::component::{CreatedComponent, SelectedComponent},
         ui::HoveringOverGui,
     },
     types::{
         DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState,
-        pla::ComponentCoords, SelectQuery, skin::Skin,
+        SelectQuery, skin::Skin,
     },
 };
+use crate::types::pla::{EditorCoords, PlaComponent};
 
 #[derive(Default)]
 pub struct HoveringOverComponent(pub bool);
@@ -67,28 +68,28 @@ pub fn selector(
 pub fn highlight_selected(
     state: Res<CurrentState<EditorState>>,
     mut commands: Commands,
-    query: Query<(&EditorComponent, &ComponentCoords, Entity), With<SelectedComponent>>,
+    query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     skin: Res<Skin>,
 ) {
     if matches!(&state.0, EditorState::CreatingComponent(_)) {
         return;
     }
-    for (data, coords, entity) in query.iter() {
+    for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
         commands
             .entity(entity)
-            .insert_bundle(data.get_shape(coords.to_owned(), &skin, true));
+            .insert_bundle(data.get_shape(&skin, true));
     }
 }
 
 pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery) {
-    for (data, coords, entity) in selected_query.iter() {
+    for (data, entity) in selected_query.iter() {
         debug!(?entity, "Deselecting component");
         commands
             .entity(entity)
             .remove::<SelectedComponent>()
             .remove_bundle::<ShapeBundle>()
-            .insert_bundle(data.get_shape(coords.to_owned(), skin, false));
+            .insert_bundle(data.get_shape(skin, false));
     }
 }
 
