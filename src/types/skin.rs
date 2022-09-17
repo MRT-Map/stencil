@@ -1,9 +1,11 @@
 use std::collections::HashMap;
-use bevy::app::AppExit;
-use futures_lite::future;
 
-use bevy::prelude::*;
-use bevy::tasks::{AsyncComputeTaskPool, Task};
+use bevy::{
+    app::AppExit,
+    prelude::*,
+    tasks::{AsyncComputeTaskPool, Task},
+};
+use futures_lite::future;
 use iyes_loopless::prelude::*;
 use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
@@ -129,9 +131,7 @@ pub struct Skin {
 #[derive(Component)]
 pub struct AsyncTask<T>(Task<T>);
 
-pub fn request_skin(
-    mut commands: Commands
-) {
+pub fn request_skin(mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
     let task = thread_pool.spawn(async move {
         surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
@@ -144,11 +144,11 @@ pub fn request_skin(
 pub fn retrieve_skin(
     mut commands: Commands,
     mut tasks: Query<(Entity, &mut AsyncTask<surf::Result<Skin>>)>,
-    mut exit: EventWriter<AppExit>
+    mut exit: EventWriter<AppExit>,
 ) {
     for (entity, mut task) in tasks.iter_mut() {
         match future::block_on(future::poll_once(&mut task.0)) {
-            None => {},
+            None => {}
             Some(Ok(skin)) => {
                 info!("Retrieved");
                 commands.insert_resource(skin);
@@ -161,10 +161,10 @@ pub fn retrieve_skin(
                     .set_type(MessageType::Error)
                     .set_title("Unable to load skin, make sure you are connected to the internet.")
                     .set_text(&*format!("Error: {:?}", err))
-                    .show_alert().unwrap();
+                    .show_alert()
+                    .unwrap();
                 exit.send(AppExit)
             }
         }
-
     }
 }

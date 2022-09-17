@@ -21,9 +21,7 @@ pub struct TileBundle {
 
 impl TileBundle {
     pub fn from_tile_coord(coord: TileCoord, server: &Res<AssetServer>) -> Self {
-        let custom_size = Vec2::splat(
-            Zoom(coord.z as f32).map_size() as f32
-        );
+        let custom_size = Vec2::splat(Zoom(coord.z as f32).map_size() as f32);
         trace!(coord = coord.to_string(), "Loading tile");
         Self {
             _t: Tile,

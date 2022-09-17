@@ -1,12 +1,7 @@
-mod editor;
-mod setup;
-mod types;
-
-use bevy::asset::AssetPlugin;
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-use bevy::prelude::*;
-use bevy::render::texture::ImageSettings;
-use bevy::window::WindowMode;
+use bevy::{
+    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    render::texture::ImageSettings, window::WindowMode,
+};
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
@@ -21,6 +16,10 @@ use crate::{
     setup::SetupPlugin,
 };
 
+mod editor;
+mod setup;
+mod types;
+
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
@@ -28,7 +27,11 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             title: "Stencil".to_string(),
-            mode: if cfg!(debug_assertions) { WindowMode::Windowed } else { WindowMode::BorderlessFullscreen },
+            mode: if cfg!(debug_assertions) {
+                WindowMode::Windowed
+            } else {
+                WindowMode::BorderlessFullscreen
+            },
             ..default()
         })
         .insert_resource(ImageSettings::default_nearest())

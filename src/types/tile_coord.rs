@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use std::fmt::{Display, Formatter};
-use bevy::math::DVec2;
+
+use bevy::{math::DVec2, prelude::*};
 
 use crate::types::zoom::Zoom;
 
@@ -10,6 +10,7 @@ pub struct TileCoord {
     pub y: i32,
     pub z: i8,
 }
+
 impl Display for TileCoord {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{self.z}}, {{self.y}}, {{self.x}}")

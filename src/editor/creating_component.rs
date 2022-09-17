@@ -11,8 +11,8 @@ use crate::{
         ui::HoveringOverGui,
     },
     types::{
-        pla::ComponentCoords, skin::Skin, ComponentType, CreatedQuery, DeselectQuery,
-        DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState, SelectQuery,
+        ComponentType, CreatedQuery, DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt,
+        EditorState, pla::ComponentCoords, SelectQuery, skin::Skin,
     },
 };
 
@@ -74,7 +74,12 @@ pub fn create_component(
                 match data.get_type(&skin).unwrap() {
                     ComponentType::Line | ComponentType::Area => {
                         coords.0.push(mouse_world_pos.as_ivec2());
-                        debug!(?entity, "Continuing line/area at {}, {}", mouse_world_pos.as_ivec2().x, mouse_world_pos.as_ivec2().y);
+                        debug!(
+                            ?entity,
+                            "Continuing line/area at {}, {}",
+                            mouse_world_pos.as_ivec2().x,
+                            mouse_world_pos.as_ivec2().y
+                        );
                         commands.entity(entity).insert_bundle(data.get_shape(
                             (*coords).to_owned(),
                             &skin,

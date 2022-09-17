@@ -1,13 +1,11 @@
-use bevy::{prelude::*, render::camera::RenderTarget};
-use bevy::sprite::Anchor;
+use bevy::{prelude::*, render::camera::RenderTarget, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MainCamera;
 use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
-    types::{EditorState},
+    types::{EditorState, zoom::Zoom},
 };
-use crate::types::zoom::Zoom;
 
 #[derive(Component)]
 pub struct Crosshair;
@@ -36,22 +34,24 @@ pub fn crosshair(
             debug!("Despawning crosshair");
             commands.entity(e).despawn();
         }
-        return
+        return;
     };
     let new_transform = Transform::from_translation(mouse_world_pos.round().extend(100.0));
     let new_custom_size = Some(Vec2::splat(2f32.powf(8f32 - zoom.0) * 16f32));
     if ch.is_empty() {
         debug!("Spawning crosshair");
-        commands.spawn_bundle(SpriteBundle {
-            texture: server.load("crosshair.png"),
-            transform: new_transform,
-            sprite: Sprite {
-                custom_size: new_custom_size,
-                anchor: Anchor::Center,
+        commands
+            .spawn_bundle(SpriteBundle {
+                texture: server.load("crosshair.png"),
+                transform: new_transform,
+                sprite: Sprite {
+                    custom_size: new_custom_size,
+                    anchor: Anchor::Center,
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        }).insert(Crosshair);
+            })
+            .insert(Crosshair);
     } else {
         trace!("Updating crosshair location");
         let (_, mut transform, mut sprite) = ch.single_mut();
@@ -70,7 +70,7 @@ pub fn cursor_icon(
     if !hovering_over_gui.0 {
         if matches!(state.0, EditorState::CreatingComponent(_)) {
             windows.primary_mut().set_cursor_visibility(false);
-            return
+            return;
         } else {
             windows.primary_mut().set_cursor_visibility(true);
         }

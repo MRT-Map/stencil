@@ -1,11 +1,11 @@
-mod component_panel;
-mod menu;
-mod toolbar;
-
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::types::{EditorState};
+use crate::types::EditorState;
+
+mod component_panel;
+mod menu;
+mod toolbar;
 
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);

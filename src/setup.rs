@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
+use bevy_mouse_tracking_plugin::{MainCamera, prelude::*};
 use iyes_loopless::prelude::*;
 
 use crate::types::{
-    pla::{PlaComponent, PlaNode},
-    skin::{request_skin, Skin},
     EditorState,
+    pla::{PlaComponent, PlaNode},
+    skin::{request_skin, retrieve_skin, Skin},
 };
-use crate::types::skin::retrieve_skin;
 
 pub struct SetupPlugin;
 
@@ -23,7 +22,7 @@ impl Plugin for SetupPlugin {
                 ConditionSet::new()
                     .run_in_state(EditorState::Loading)
                     .with_system(retrieve_skin)
-                    .into()
+                    .into(),
             )
             .add_exit_system(EditorState::Loading, setup);
     }
