@@ -15,7 +15,7 @@ use crate::{
     },
     setup::SetupPlugin,
 };
-use crate::editor::delete_component::DeleteComponentPlugin;
+use crate::editor::deleting_component::DeleteComponentPlugin;
 
 mod editor;
 mod setup;
