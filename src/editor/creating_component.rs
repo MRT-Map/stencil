@@ -76,9 +76,8 @@ pub fn create_component(
                         data.nodes.push(mouse_world_pos.round().as_ivec2().into());
                         debug!(
                             ?entity,
-                            "Continuing line/area at {}, {}",
-                            mouse_world_pos.round().as_ivec2().x,
-                            mouse_world_pos.round().as_ivec2().y
+                            "Continuing line/area at {:?}",
+                            mouse_world_pos.round().as_ivec2()
                         );
                         commands
                             .entity(entity)
