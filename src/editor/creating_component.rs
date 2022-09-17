@@ -83,6 +83,12 @@ pub fn create_component(
                         commands
                             .entity(entity)
                             .insert_bundle(data.get_shape(&skin, false));
+
+                        if data.get_type(&skin).unwrap() == ComponentType::Area
+                            && data.nodes.first() == data.nodes.last() && data.nodes.first().is_some() {
+                            debug!("Ended on same point, completing area");
+                            clear_created_component(&mut commands, &set.p0(), &skin);
+                        }
                     }
                     ComponentType::Point => unreachable!(),
                 }

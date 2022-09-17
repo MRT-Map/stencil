@@ -144,6 +144,11 @@ impl PlaComponent<EditorCoords> {
                     for coord in &self.nodes {
                         pb.line_to(coord.0.as_vec2());
                     }
+                    if self.get_type(skin) == Some(ComponentType::Area) {
+                        if let Some(coord) = self.nodes.first() {
+                            pb.line_to(coord.0.as_vec2());
+                        }
+                    }
                     pb.build()
                 },
                 if self.get_type(skin) == Some(ComponentType::Area) {
@@ -196,10 +201,10 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
 
 pub trait Coords: Debug + Default + Copy + Clone {}
 
-#[derive(Component, Debug, Default, Copy, Clone, Serialize, Deserialize)]
+#[derive(Component, Debug, Default, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MCCoords(pub IVec2);
 
-#[derive(Component, Debug, Default, Copy, Clone, Serialize, Deserialize)]
+#[derive(Component, Debug, Default, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EditorCoords(pub IVec2);
 
 impl From<EditorCoords> for MCCoords {
