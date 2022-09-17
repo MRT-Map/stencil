@@ -5,7 +5,6 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use bevy_prototype_lyon::prelude::*;
 use hex_color::HexColor;
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::types::{ComponentType, skin::Skin};
@@ -127,7 +126,7 @@ impl PlaComponent<EditorCoords> {
         if self.get_type(skin) == Some(ComponentType::Point) {
             GeometryBuilder::build_as(
                 &shapes::Rectangle {
-                    extents: Vec2::new(10.0, 10.0),
+                    extents: Vec2::new(5.0, 5.0),
                     origin: RectangleOrigin::Center,
                 },
                 DrawMode::Fill(FillMode::color(if selected {
@@ -140,6 +139,11 @@ impl PlaComponent<EditorCoords> {
                 Transform::from_xyz(self.nodes[0].0.x as f32, self.nodes[0].0.y as f32, 10.0),
             )
         } else {
+            let options = StrokeOptions::default()
+                .with_start_cap(LineCap::Round)
+                .with_end_cap(LineCap::Round)
+                .with_line_join(LineJoin::Round)
+                .with_line_width(self.weight(skin).unwrap_or(2) as f32);
             GeometryBuilder::build_as(
                 &{
                     let mut pb = PathBuilder::new();
@@ -155,30 +159,30 @@ impl PlaComponent<EditorCoords> {
                         } else if let Some(hex) = self.front_colour(skin) {
                             *hex_to_color(hex).set_a(0.5)
                         } else {
-                            *Color::WHITE.clone().set_a(0.5)
+                            Color::NONE
                         }),
-                        outline_mode: StrokeMode::new(
-                            if selected {
+                        outline_mode: StrokeMode {
+                            color: if selected {
                                 Color::YELLOW
                             } else if let Some(hex) = self.back_colour(skin) {
                                 hex_to_color(hex)
                             } else {
-                                Color::WHITE
+                                Color::NONE
                             },
-                            self.weight(skin).unwrap_or(0) as f32,
-                        ),
+                            options,
+                        },
                     }
                 } else {
-                    DrawMode::Stroke(StrokeMode::new(
-                        if selected {
+                    DrawMode::Stroke(StrokeMode {
+                        color: if selected {
                             Color::YELLOW
                         } else if let Some(hex) = self.front_colour(skin) {
                             hex_to_color(hex)
                         } else {
                             Color::WHITE
                         },
-                        self.weight(skin).unwrap_or(0) as f32,
-                    ))
+                        options,
+                    }, )
                 },
                 Transform::from_xyz(0.0, 0.0, 10.0),
             )
@@ -186,16 +190,12 @@ impl PlaComponent<EditorCoords> {
     }
 }
 
-fn style_in_max_zoom<A>(style: &HashMap<String, Vec<A>>) -> Option<&Vec<A>> {
+fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
     Some(style.iter()
         .map(|(zl, data)| (
-            zl.split(", ")
-                .map(|a|
-                    a.parse::<u8>().unwrap()
-                )
-                .collect_tuple::<(_, _)>().unwrap(), data)
+            zl.split(", ").next().unwrap().parse::<u8>().unwrap(), data)
         )
-        .find(|((min, _), _)|
+        .find(|(min, _)|
             *min == 0)?.1)
 }
 
