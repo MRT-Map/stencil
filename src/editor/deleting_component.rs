@@ -2,9 +2,10 @@ use bevy::prelude::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent};
 use iyes_loopless::prelude::*;
 
-use crate::editor::selecting_component::HoveringOverComponent;
-use crate::editor::ui::HoveringOverGui;
-use crate::types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState};
+use crate::{
+    editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
+    types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState},
+};
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component(
