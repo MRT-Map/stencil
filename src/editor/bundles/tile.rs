@@ -34,8 +34,8 @@ impl TileBundle {
                 },
                 texture: server.load(&*coord.url()) as Handle<Image>,
                 transform: Transform::from_translation(Vec3::new(
-                    coord.x as f32 * Zoom(coord.z as f32).map_size() as f32,
-                    coord.y as f32 * Zoom(coord.z as f32).map_size() as f32 + 32f32,
+                    coord.x as f32 * Zoom(coord.z as f32).map_size() as f32 - 0.5f32,
+                    coord.y as f32 * Zoom(coord.z as f32).map_size() as f32 + 32f32 + 0.5f32,
                     coord.z as f32,
                 )),
                 ..default()

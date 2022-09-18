@@ -1,3 +1,4 @@
+use bevy::ecs::query::WorldQuery;
 use bevy::prelude::*;
 use bevy_mouse_tracking_plugin::MainCamera;
 
@@ -10,7 +11,7 @@ use crate::{
 };
 
 pub fn get_shown_tiles(
-    q_camera: &Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    q_camera: &Query<(&Camera, &GlobalTransform), impl WorldQuery>,
     zoom: i8,
 ) -> Vec<TileCoord> {
     let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
@@ -19,31 +20,32 @@ pub fn get_shown_tiles(
         x: t_left,
         y: t_top,
         ..
-    } = TileCoord::from_world_coords(c_left as f64, c_top as f64, zoom);
+    } = TileCoord::from_world_coords(c_left as f64, c_top as f64, zoom.min(8));
     let TileCoord {
         x: t_right,
         y: t_bottom,
         ..
-    } = TileCoord::from_world_coords(c_right as f64, c_bottom as f64, zoom);
+    } = TileCoord::from_world_coords(c_right as f64, c_bottom as f64, zoom.min(8));
 
     (t_left - 1..=t_right + 1)
         .flat_map(|ref x| {
             (t_top - 1..=t_bottom + 1)
-                .map(|y| TileCoord { x: *x, y, z: zoom })
+                .map(|y| TileCoord { x: *x, y, z: zoom.min(8) })
                 .collect::<Vec<_>>()
         })
         .collect()
 }
 
 #[tracing::instrument(skip_all)]
+#[allow(clippy::type_complexity)]
 pub fn show_tiles(
     mut commands: Commands,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    q_camera: Query<(&Camera, &GlobalTransform), (With<MainCamera>, Changed<GlobalTransform>)>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
 ) {
-    //if !zoom.is_changed() {return}
+    if q_camera.is_empty() { return }
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8);
 
     let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
