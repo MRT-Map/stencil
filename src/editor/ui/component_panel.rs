@@ -13,8 +13,9 @@ use crate::{
 
 pub fn ui(
     mut ctx: ResMut<EguiContext>,
-    mut selected: Query<&mut PlaComponent<EditorCoords>, With<SelectedComponent>>,
+    mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
+    mut commands: Commands,
     skin: Res<Skin>,
     mouse_pos: Res<MousePos>,
 ) {
@@ -25,7 +26,7 @@ pub fn ui(
                 ui.heading("Select a component...");
                 return;
             }
-            let mut component_data = selected.single_mut();
+            let (entity, mut component_data) = selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
@@ -46,6 +47,7 @@ pub fn ui(
             ui.end_row();
             ui.separator();
             let component_type = component_data.get_type(&skin).unwrap();
+            let old_skin_type = component_data.type_.to_owned();
             egui::ComboBox::from_label("Component type")
                 .selected_text(component_data.type_.to_owned())
                 .show_ui(ui, |ui| {
@@ -57,6 +59,9 @@ pub fn ui(
                         })
                         .for_each(|_| ());
                 });
+            if old_skin_type != component_data.type_ {
+                commands.entity(entity).insert_bundle(component_data.get_shape(&*skin, true));
+            }
             ui.end_row();
             let mut tags = component_data.tags.join(",");
             ui.add(egui::TextEdit::singleline(&mut tags).hint_text("Tags"));
