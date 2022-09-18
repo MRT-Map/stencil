@@ -4,7 +4,7 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{creating_component::clear_created_component, ui::HoveringOverGui},
-    types::{ComponentType, CreatedQuery, EditorState, skin::Skin},
+    types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
 };
 
 pub fn ui(

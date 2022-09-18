@@ -11,11 +11,11 @@ use bevy_web_asset::WebAssetPlugin;
 use crate::{
     editor::{
         creating_component::CreateComponentPlugin, cursor::CursorPlugin,
-        selecting_component::SelectComponentPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
+        deleting_component::DeleteComponentPlugin, selecting_component::SelectComponentPlugin,
+        tilemap::RenderingPlugin, ui::UiPlugin,
     },
     setup::SetupPlugin,
 };
-use crate::editor::deleting_component::DeleteComponentPlugin;
 
 mod editor;
 mod setup;

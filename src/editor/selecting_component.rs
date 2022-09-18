@@ -28,7 +28,10 @@ pub fn selector(
     mut selected_entity: Local<Option<Entity>>,
     mut mm_detector: DetectMouseMoveOnClick,
 ) {
-    if matches!(&state.0, EditorState::CreatingComponent(_) | EditorState::DeletingComponent) {
+    if matches!(
+        &state.0,
+        EditorState::CreatingComponent(_) | EditorState::DeletingComponent
+    ) {
         return;
     }
     mm_detector.handle_press(&buttons);

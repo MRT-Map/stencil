@@ -1,5 +1,4 @@
-use bevy::ecs::query::WorldQuery;
-use bevy::prelude::*;
+use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_mouse_tracking_plugin::MainCamera;
 
 use crate::{
@@ -30,7 +29,11 @@ pub fn get_shown_tiles(
     (t_left - 1..=t_right + 1)
         .flat_map(|ref x| {
             (t_top - 1..=t_bottom + 1)
-                .map(|y| TileCoord { x: *x, y, z: zoom.min(8) })
+                .map(|y| TileCoord {
+                    x: *x,
+                    y,
+                    z: zoom.min(8),
+                })
                 .collect::<Vec<_>>()
         })
         .collect()
@@ -45,7 +48,9 @@ pub fn show_tiles(
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
 ) {
-    if q_camera.is_empty() { return }
+    if q_camera.is_empty() {
+        return;
+    }
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8);
 
     let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
@@ -54,9 +59,9 @@ pub fn show_tiles(
         if (zoom.0 <= 8f32 && tile_coord.z > zoom.0.round() as i8)
             || (zoom.0 > 8f32 && tile_coord.z != 8)
             || (zoom.0 > 8f32 && {
-            let (tl, tt, tr, tb) = tile_coord.get_edges();
-            tr < ml || tl > mr || tb < mt || tt > mb
-        })
+                let (tl, tt, tr, tb) = tile_coord.get_edges();
+                tr < ml || tl > mr || tb < mt || tt > mb
+            })
             || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord))
         {
             trace!("Hiding {tile_coord}");
