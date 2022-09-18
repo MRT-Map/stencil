@@ -106,7 +106,7 @@ impl<T: Coords> PlaComponent<T> {
             SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
                 .iter()
                 .filter_map(|style| match style {
-                    LineStyle::Fore { width, .. } => Some(width / 2),
+                    LineStyle::Fore { width, .. } => Some(width / 4),
                     _ => None,
                 })
                 .last(),
