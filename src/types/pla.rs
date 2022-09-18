@@ -110,7 +110,7 @@ impl<T: Coords> PlaComponent<T> {
                     _ => None,
                 })
                 .last(),
-            SkinComponent::Area { .. } => Some(4),
+            SkinComponent::Area { .. } => Some(2),
         }
     }
 }
