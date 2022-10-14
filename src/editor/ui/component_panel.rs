@@ -60,7 +60,9 @@ pub fn ui(
                         .for_each(|_| ());
                 });
             if old_skin_type != component_data.type_ {
-                commands.entity(entity).insert_bundle(component_data.get_shape(&*skin, true));
+                commands
+                    .entity(entity)
+                    .insert_bundle(component_data.get_shape(&*skin, true));
             }
             ui.end_row();
             let mut tags = component_data.tags.join(",");

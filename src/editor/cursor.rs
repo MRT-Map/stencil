@@ -1,10 +1,10 @@
-use bevy::{prelude::*, render::camera::RenderTarget, sprite::Anchor};
-use bevy_mouse_tracking_plugin::MainCamera;
+use bevy::{math::Vec3Swizzles, prelude::*, render::camera::RenderTarget, sprite::Anchor};
+use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
-    types::{EditorState, zoom::Zoom},
+    types::{zoom::Zoom, EditorState},
 };
 
 #[derive(Component)]
@@ -16,10 +16,9 @@ pub fn crosshair(
     mut commands: Commands,
     state: Res<CurrentState<EditorState>>,
     mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
-    mut q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     server: Res<AssetServer>,
-    windows: Res<Windows>,
     zoom: Res<Zoom>,
+    mouse_pos_world: Res<MousePosWorld>,
 ) {
     if !matches!(state.0, EditorState::CreatingComponent(_)) {
         for (e, _, _) in ch.iter() {
@@ -28,17 +27,7 @@ pub fn crosshair(
         }
         return;
     }
-    let (camera, c_transform) = q_camera.single_mut();
-    let mouse_world_pos = if let Some(p) = get_cursor_world_pos(&windows, camera, c_transform) {
-        p
-    } else {
-        for (e, _, _) in ch.iter() {
-            debug!("Despawning crosshair");
-            commands.entity(e).despawn();
-        }
-        return;
-    };
-    let new_transform = Transform::from_translation(mouse_world_pos.round().extend(100.0));
+    let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
     let new_custom_size = Some(Vec2::splat(2f32.powf(8f32 - zoom.0) * 16f32));
     if ch.is_empty() {
         debug!("Spawning crosshair");
@@ -99,17 +88,15 @@ pub fn cursor_icon(
 }
 
 pub fn world_pos(
-    windows: Res<Windows>,
-    mut q_camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
     mut texts: Query<&mut Text, With<CursorCoords>>,
+    mouse_pos_world: Res<MousePosWorld>,
 ) {
-    let (camera, transform) = q_camera.single_mut();
-    let cursor_pos = get_cursor_world_pos(&windows, camera, &transform);
-
-    if let Some(cursor_pos) = cursor_pos {
-        let mut text = texts.single_mut();
-        text.sections[0].value = format!("x: {} z: {}", cursor_pos.x.round(), cursor_pos.y.round());
-    }
+    let mut text = texts.single_mut();
+    text.sections[0].value = format!(
+        "x: {} z: {}",
+        mouse_pos_world.x.round(),
+        mouse_pos_world.y.round()
+    );
 }
 
 #[derive(Component)]
@@ -139,28 +126,6 @@ pub fn cursor_setup(mut commands: Commands, server: Res<AssetServer>) {
             ..default()
         })
         .insert(CursorCoords);
-}
-
-pub fn get_cursor_world_pos(
-    windows: &Res<Windows>,
-    camera: &Camera,
-    transform: &GlobalTransform,
-) -> Option<Vec2> {
-    let wnd = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id)?
-    } else {
-        windows.get_primary()?
-    };
-
-    if let Some(screen_pos) = wnd.cursor_position() {
-        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
-        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
-        let ndc_to_world = transform.compute_matrix() * camera.projection_matrix().inverse();
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-        Some(world_pos.truncate())
-    } else {
-        None
-    }
 }
 
 pub struct CursorPlugin;

@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::{MainCamera, prelude::*};
+use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
 use iyes_loopless::prelude::*;
 
 use crate::types::{
-    EditorState,
     skin::{request_skin, retrieve_skin, Skin},
+    EditorState,
 };
 
 pub struct SetupPlugin;
@@ -31,5 +31,5 @@ fn setup(mut commands: Commands) {
         .insert(MainCamera)
         .insert(UiCameraConfig { show_ui: true })
         .insert_bundle(PickingCameraBundle::default())
-        .add_mouse_tracking();
+        .add_world_tracking();
 }

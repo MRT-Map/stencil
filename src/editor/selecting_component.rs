@@ -6,9 +6,9 @@ use iyes_loopless::prelude::*;
 use crate::{
     editor::{bundles::component::SelectedComponent, ui::HoveringOverGui},
     types::{
-        DeselectQuery,
-        DetectMouseMoveOnClick,
-        DetectMouseMoveOnClickExt, EditorState, pla::{EditorCoords, PlaComponent}, skin::Skin,
+        pla::{EditorCoords, PlaComponent},
+        skin::Skin,
+        DeselectQuery, DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState,
     },
 };
 

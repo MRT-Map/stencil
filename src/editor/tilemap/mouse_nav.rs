@@ -3,11 +3,10 @@ use bevy::{
     math::Vec3Swizzles,
     prelude::*,
 };
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos};
+use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
     editor::{
-        cursor::get_cursor_world_pos,
         tilemap::utils::{get_map_width_height, get_window_width_height},
         ui::HoveringOverGui,
     },
@@ -57,22 +56,16 @@ pub fn mouse_drag(
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut camera: Query<
-        (&Camera, &mut OrthographicProjection, &mut GlobalTransform),
-        With<MainCamera>,
-    >,
+    mut camera: Query<(&mut OrthographicProjection, &mut GlobalTransform), With<MainCamera>>,
     mut zoom: ResMut<Zoom>,
-    windows: Res<Windows>,
     hovering_over_gui: Res<HoveringOverGui>,
+    mouse_pos_world: Query<&MousePosWorld>,
 ) {
     if hovering_over_gui.0 {
         return;
     }
-    let (camera, mut ort_proj, mut transform): (
-        &Camera,
-        Mut<OrthographicProjection>,
-        Mut<GlobalTransform>,
-    ) = camera.single_mut();
+    let (mut ort_proj, mut transform): (Mut<OrthographicProjection>, Mut<GlobalTransform>) =
+        camera.single_mut();
     for ev in scroll_evr.iter() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125,
@@ -81,24 +74,14 @@ pub fn mouse_zoom(
         if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
             let orig = transform.translation().xy();
             let orig_scale = ort_proj.scale;
-            let orig_mouse_pos =
-                if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform) {
-                    mp
-                } else {
-                    return;
-                };
+            let orig_mouse_pos = mouse_pos_world.single();
             zoom.0 += u;
             trace!("Zoom changed from {orig_scale} to {{zoom.0}}");
 
             ort_proj.scale = 2f32.powf(7.0 - zoom.0);
 
-            let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
-            let new_mouse_pos = if let Some(mp) = get_cursor_world_pos(&windows, camera, &transform)
-            {
-                mp
-            } else {
-                return;
-            };
+            let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
+            let new_mouse_pos = mouse_pos_world.single();
             trace!("View moved by {d:?}");
             transform.translation_mut().x = new_mouse_pos.x - d.x;
             transform.translation_mut().y = new_mouse_pos.y - d.y;

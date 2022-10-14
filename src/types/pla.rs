@@ -6,8 +6,8 @@ use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
 use crate::types::{
-    ComponentType,
     skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
+    ComponentType,
 };
 
 fn hex_to_color(hex: &HexColor) -> Color {
