@@ -1,9 +1,9 @@
-use bevy::{math::Vec3Swizzles, prelude::*, render::camera::RenderTarget, sprite::Anchor};
+use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
+    editor::{modes::selecting::HoveringOverComponent, ui::HoveringOverGui},
     types::{zoom::Zoom, EditorState},
 };
 

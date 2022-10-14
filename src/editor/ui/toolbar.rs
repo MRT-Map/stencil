@@ -3,7 +3,7 @@ use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{creating_component::clear_created_component, ui::HoveringOverGui},
+    editor::{modes::creating::clear_created_component, ui::HoveringOverGui},
     types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
 };
 

@@ -6,7 +6,7 @@ use iyes_loopless::prelude::*;
 use crate::{
     editor::{
         bundles::component::{ComponentBundle, CreatedComponent},
-        selecting_component::deselect,
+        modes::selecting::deselect,
         ui::HoveringOverGui,
     },
     types::{

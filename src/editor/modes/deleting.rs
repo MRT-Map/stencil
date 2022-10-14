@@ -3,7 +3,7 @@ use bevy_mod_picking::{HoverEvent, PickingEvent};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{selecting_component::HoveringOverComponent, ui::HoveringOverGui},
+    editor::{modes::selecting::HoveringOverComponent, ui::HoveringOverGui},
     types::{DetectMouseMoveOnClick, DetectMouseMoveOnClickExt, EditorState},
 };
 

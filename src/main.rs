@@ -10,9 +10,13 @@ use bevy_web_asset::WebAssetPlugin;
 
 use crate::{
     editor::{
-        creating_component::CreateComponentPlugin, cursor::CursorPlugin,
-        deleting_component::DeleteComponentPlugin, selecting_component::SelectComponentPlugin,
-        tilemap::RenderingPlugin, ui::UiPlugin,
+        cursor::CursorPlugin,
+        modes::{
+            creating::CreateComponentPlugin, deleting::DeleteComponentPlugin,
+            selecting::SelectComponentPlugin,
+        },
+        tilemap::RenderingPlugin,
+        ui::UiPlugin,
     },
     setup::SetupPlugin,
 };
