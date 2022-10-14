@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
@@ -31,8 +29,8 @@ pub fn create_component_sy(
     mut mm_detector: DetectMouseMoveOnClick,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    let type_ = if let EditorState::CreatingComponent(type_) = &state.0 {
-        type_
+    let ty = if let EditorState::CreatingComponent(ty) = &state.0 {
+        ty
     } else {
         return;
     };
@@ -42,9 +40,9 @@ pub fn create_component_sy(
             debug!("Mouse move detected, won't place new point");
             return;
         };
-        if *type_ == ComponentType::Point {
+        if *ty == ComponentType::Point {
             let mut new_point = ComponentBundle::new({
-                let mut point = PlaComponent::new(type_.to_owned());
+                let mut point = PlaComponent::new(ty.to_owned());
                 point
                     .nodes
                     .push(mouse_pos_world.xy().round().as_ivec2().into());
@@ -58,7 +56,7 @@ pub fn create_component_sy(
         }
         if set.p0().is_empty() {
             let mut new_comp = ComponentBundle::new({
-                let mut point = PlaComponent::new(type_.to_owned());
+                let mut point = PlaComponent::new(ty.to_owned());
                 point
                     .nodes
                     .push(mouse_pos_world.xy().round().as_ivec2().into());
@@ -102,7 +100,7 @@ pub fn create_component_sy(
         };
         debug!("Completing line/area");
         clear_created_component(&mut commands, &set.p0(), &skin);
-    } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
+    } else if *ty != ComponentType::Point && !set.p0().is_empty() {
         let mut created_query = set.p0();
         let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) = created_query.single_mut();
         let mut data = (*data).to_owned();

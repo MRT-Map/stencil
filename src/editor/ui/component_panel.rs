@@ -47,19 +47,19 @@ pub fn ui_sy(
             ui.end_row();
             ui.separator();
             let component_type = component_data.get_type(&skin).unwrap();
-            let old_skin_type = component_data.type_.to_owned();
+            let old_skin_type = component_data.ty.to_owned();
             egui::ComboBox::from_label("Component type")
-                .selected_text(component_data.type_.to_owned())
+                .selected_text(component_data.ty.to_owned())
                 .show_ui(ui, |ui| {
                     skin.types
                         .iter()
                         .filter(|(_, data)| data.get_type() == component_type)
                         .map(|(name, _)| {
-                            ui.selectable_value(&mut component_data.type_, name.to_owned(), name)
+                            ui.selectable_value(&mut component_data.ty, name.to_owned(), name)
                         })
                         .for_each(|_| ());
                 });
-            if old_skin_type != component_data.type_ {
+            if old_skin_type != component_data.ty {
                 commands
                     .entity(entity)
                     .insert_bundle(component_data.get_shape(&*skin, true));

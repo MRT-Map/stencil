@@ -28,18 +28,18 @@ pub struct PlaComponent<T: Coords> {
     pub tags: Vec<String>,
     pub layer: f64,
     #[serde(rename = "type")]
-    pub type_: String,
+    pub ty: String,
     pub nodes: Vec<T>,
     pub attributes: HashMap<String, String>,
 }
 
 #[allow(dead_code)]
 impl<T: Coords> PlaComponent<T> {
-    pub fn new(type_: ComponentType) -> Self {
+    pub fn new(ty: ComponentType) -> Self {
         Self {
-            type_: format!(
+            ty: format!(
                 "simple{}",
-                match type_ {
+                match ty {
                     ComponentType::Point => "Point",
                     ComponentType::Line => "Line",
                     ComponentType::Area => "Area",
@@ -49,10 +49,10 @@ impl<T: Coords> PlaComponent<T> {
         }
     }
     pub fn get_type(&self, skin: &Skin) -> Option<ComponentType> {
-        Some(skin.types.get(self.type_.as_str())?.get_type())
+        Some(skin.types.get(self.ty.as_str())?.get_type())
     }
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
-        let type_layers = skin.types.get(self.type_.as_str())?;
+        let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
             SkinComponent::Point { style, .. } => style_in_max_zoom(style)?
                 .iter()
@@ -80,7 +80,7 @@ impl<T: Coords> PlaComponent<T> {
         }
     }
     pub fn back_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
-        let type_layers = skin.types.get(self.type_.as_str())?;
+        let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
             SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
@@ -100,7 +100,7 @@ impl<T: Coords> PlaComponent<T> {
         }
     }
     pub fn weight(&self, skin: &Skin) -> Option<u32> {
-        let type_layers = skin.types.get(self.type_.as_str())?;
+        let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
             SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
