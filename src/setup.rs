@@ -21,11 +21,11 @@ impl Plugin for SetupPlugin {
                     .with_system(retrieve_skin)
                     .into(),
             )
-            .add_exit_system(EditorState::Loading, setup);
+            .add_exit_system(EditorState::Loading, setup_sy);
     }
 }
 
-fn setup(mut commands: Commands) {
+fn setup_sy(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(MainCamera)

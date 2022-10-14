@@ -18,14 +18,14 @@ impl Plugin for RenderingPlugin {
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .run_if_not(|hovering_over_gui: Res<HoveringOverGui>| hovering_over_gui.0)
-                    .with_system(mouse_nav::mouse_drag)
-                    .with_system(mouse_nav::mouse_zoom)
+                    .with_system(mouse_nav::mouse_drag_sy)
+                    .with_system(mouse_nav::mouse_zoom_sy)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
-                    .with_system(tile::show_tiles)
+                    .with_system(tile::show_tiles_sy)
                     .into(),
             );
     }

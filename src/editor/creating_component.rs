@@ -19,7 +19,7 @@ use crate::{
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 #[tracing::instrument(skip_all)]
-pub fn create_component(
+pub fn create_component_sy(
     mut set: ParamSet<(CreatedQuery, DeselectQuery)>,
     mut commands: Commands,
     buttons: Res<Input<MouseButton>>,
@@ -138,7 +138,7 @@ impl Plugin for CreateComponentPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .with_system(create_component)
+                .with_system(create_component_sy)
                 .into(),
         );
     }

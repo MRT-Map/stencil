@@ -7,7 +7,7 @@ use bevy_egui::{egui, egui::Align, EguiContext};
 
 use crate::editor::ui::HoveringOverGui;
 
-pub fn ui(
+pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut exit: EventWriter<AppExit>,

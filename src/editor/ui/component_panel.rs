@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-pub fn ui(
+pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,

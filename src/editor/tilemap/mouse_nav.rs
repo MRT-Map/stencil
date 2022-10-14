@@ -14,7 +14,7 @@ use crate::{
 };
 
 #[tracing::instrument(skip_all)]
-pub fn mouse_drag(
+pub fn mouse_drag_sy(
     buttons: Res<Input<MouseButton>>,
     mut mouse_origin_pos: Local<Option<MousePos>>,
     mut camera_origin_pos: Local<Option<Vec2>>,
@@ -54,7 +54,7 @@ pub fn mouse_drag(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn mouse_zoom(
+pub fn mouse_zoom_sy(
     mut scroll_evr: EventReader<MouseWheel>,
     mut camera: Query<(&mut OrthographicProjection, &mut GlobalTransform), With<MainCamera>>,
     mut zoom: ResMut<Zoom>,

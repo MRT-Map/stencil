@@ -22,7 +22,7 @@ impl Plugin for UiPlugin {
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_menu")
                     .before("ui_component_panel")
-                    .with_system(menu::ui)
+                    .with_system(menu::ui_sy)
                     .into(),
             )
             .add_system_set_to_stage(
@@ -32,7 +32,7 @@ impl Plugin for UiPlugin {
                     .label("ui_component_panel")
                     .after("ui_menu")
                     .before("ui_toolbar")
-                    .with_system(component_panel::ui)
+                    .with_system(component_panel::ui_sy)
                     .into(),
             )
             .add_system_set_to_stage(
@@ -41,7 +41,7 @@ impl Plugin for UiPlugin {
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_toolbar")
                     .after("ui_component_panel")
-                    .with_system(toolbar::ui)
+                    .with_system(toolbar::ui_sy)
                     .into(),
             )
             .add_system_to_stage(

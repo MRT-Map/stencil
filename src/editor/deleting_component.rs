@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[tracing::instrument(skip_all)]
-pub fn delete_component(
+pub fn delete_component_sy(
     mut events: EventReader<PickingEvent>,
     mut commands: Commands,
     buttons: Res<Input<MouseButton>>,
@@ -52,7 +52,7 @@ impl Plugin for DeleteComponentPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_in_state(EditorState::DeletingComponent)
-                .with_system(delete_component)
+                .with_system(delete_component_sy)
                 .into(),
         );
     }

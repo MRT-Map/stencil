@@ -17,7 +17,7 @@ pub struct HoveringOverComponent(pub bool);
 
 #[allow(clippy::too_many_arguments)]
 #[tracing::instrument(skip_all)]
-pub fn selector(
+pub fn selector_sy(
     state: Res<CurrentState<EditorState>>,
     mut events: EventReader<PickingEvent>,
     mut commands: Commands,
@@ -65,7 +65,7 @@ pub fn selector(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn highlight_selected(
+pub fn highlight_selected_sy(
     state: Res<CurrentState<EditorState>>,
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
@@ -108,14 +108,14 @@ impl Plugin for SelectComponentPlugin {
                     .run_not_in_state(EditorState::Loading)
                     .after("highlight_selected")
                     .after(PickingSystem::Events)
-                    .with_system(selector)
+                    .with_system(selector_sy)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
                     .label("highlight_selected")
                     .run_not_in_state(EditorState::Loading)
-                    .with_system(highlight_selected)
+                    .with_system(highlight_selected_sy)
                     .into(),
             );
     }

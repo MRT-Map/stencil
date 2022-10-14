@@ -7,7 +7,7 @@ use crate::{
     types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
 };
 
-pub fn ui(
+pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut _commands: Commands,
     mut hovering_over_gui: ResMut<HoveringOverGui>,

@@ -12,7 +12,7 @@ use crate::{
 pub struct Crosshair;
 
 #[tracing::instrument(skip_all)]
-pub fn crosshair(
+pub fn crosshair_sy(
     mut commands: Commands,
     state: Res<CurrentState<EditorState>>,
     mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
@@ -52,7 +52,7 @@ pub fn crosshair(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn cursor_icon(
+pub fn cursor_icon_sy(
     buttons: Res<Input<MouseButton>>,
     mut windows: ResMut<Windows>,
     state: Res<CurrentState<EditorState>>,
@@ -87,7 +87,7 @@ pub fn cursor_icon(
     }
 }
 
-pub fn world_pos(
+pub fn world_pos_sy(
     mut texts: Query<&mut Text, With<CursorCoords>>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
@@ -134,14 +134,14 @@ impl Plugin for CursorPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .with_system(cursor_icon)
-                .with_system(crosshair)
+                .with_system(cursor_icon_sy)
+                .with_system(crosshair_sy)
                 .into(),
         )
         .add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .with_system(world_pos)
+                .with_system(world_pos_sy)
                 .into(),
         )
         .add_exit_system(EditorState::Loading, cursor_setup);

@@ -41,7 +41,7 @@ pub fn get_shown_tiles(
 
 #[tracing::instrument(skip_all)]
 #[allow(clippy::type_complexity)]
-pub fn show_tiles(
+pub fn show_tiles_sy(
     mut commands: Commands,
     q_camera: Query<(&Camera, &GlobalTransform), (With<MainCamera>, Changed<GlobalTransform>)>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
