@@ -59,32 +59,31 @@ pub fn cursor_icon_sy(
     hovering_over_gui: Res<HoveringOverGui>,
     hovering_over_comp: Res<HoveringOverComponent>,
 ) {
-    if !hovering_over_gui.0 {
-        if matches!(state.0, EditorState::CreatingComponent(_)) {
-            windows.primary_mut().set_cursor_visibility(false);
-            return;
-        } else {
-            windows.primary_mut().set_cursor_visibility(true);
-        }
-        windows.primary_mut().set_cursor_icon(match state.0 {
-            EditorState::Loading => CursorIcon::Wait,
-            EditorState::Idle | EditorState::DeletingComponent => {
-                if hovering_over_comp.0 {
-                    CursorIcon::Hand
-                } else if buttons.pressed(MouseButton::Left) {
-                    CursorIcon::Grabbing
-                } else {
-                    CursorIcon::Grab
-                }
-            }
-            EditorState::CreatingComponent(_) => unreachable!(),
-            EditorState::EditingNodes => CursorIcon::Hand,
-            EditorState::MovingComponent => CursorIcon::Hand,
-            EditorState::RotatingComponent => CursorIcon::Hand,
-        });
+    if matches!(state.0, EditorState::CreatingComponent(_)) {
+        windows.primary_mut().set_cursor_visibility(false);
+        return;
     } else {
         windows.primary_mut().set_cursor_visibility(true);
+        if hovering_over_gui.0 {
+            return;
+        }
     }
+    windows.primary_mut().set_cursor_icon(match state.0 {
+        EditorState::Loading => CursorIcon::Wait,
+        EditorState::Idle | EditorState::DeletingComponent => {
+            if hovering_over_comp.0 {
+                CursorIcon::Hand
+            } else if buttons.pressed(MouseButton::Left) {
+                CursorIcon::Grabbing
+            } else {
+                CursorIcon::Grab
+            }
+        }
+        EditorState::CreatingComponent(_) => unreachable!(),
+        EditorState::EditingNodes => CursorIcon::Hand,
+        EditorState::MovingComponent => CursorIcon::Hand,
+        EditorState::RotatingComponent => CursorIcon::Hand,
+    });
 }
 
 pub fn world_pos_sy(

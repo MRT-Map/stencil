@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
@@ -29,86 +31,86 @@ pub fn create_component_sy(
     mut mm_detector: DetectMouseMoveOnClick,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    if let EditorState::CreatingComponent(type_) = &state.0 {
-        if buttons.just_pressed(MouseButton::Left) || buttons.just_pressed(MouseButton::Right) {
-            mm_detector.handle_press(&buttons);
+    let type_ = if let EditorState::CreatingComponent(type_) = &state.0 {
+        type_
+    } else {
+        return;
+    };
+    mm_detector.handle_press(&buttons);
+    if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
+        if mm_detector.handle_release() {
+            debug!("Mouse move detected, won't place new point");
+            return;
+        };
+        if *type_ == ComponentType::Point {
+            let mut new_point = ComponentBundle::new({
+                let mut point = PlaComponent::new(type_.to_owned());
+                point
+                    .nodes
+                    .push(mouse_pos_world.xy().round().as_ivec2().into());
+                point
+            });
+            debug!("Placing new point at {:?}", mouse_pos_world);
+            new_point.update_shape(&skin);
+            deselect(&mut commands, &set.p1());
+            commands.spawn_bundle(new_point);
+            return;
         }
-        if buttons.just_released(MouseButton::Left) && !hovering_over_gui.0 {
-            if mm_detector.handle_release() {
-                debug!("Mouse move detected, won't place new point");
-                return;
-            };
-            if *type_ == ComponentType::Point {
-                let mut new_point = ComponentBundle::new({
-                    let mut point = PlaComponent::new(type_.to_owned());
-                    point
-                        .nodes
-                        .push(mouse_pos_world.xy().round().as_ivec2().into());
-                    point
-                });
-                debug!("Placing new point at {:?}", mouse_pos_world);
-                new_point.update_shape(&skin);
-                deselect(&mut commands, &set.p1());
-                commands.spawn_bundle(new_point);
-                return;
-            }
-            if set.p0().is_empty() {
-                let mut new_comp = ComponentBundle::new({
-                    let mut point = PlaComponent::new(type_.to_owned());
-                    point
-                        .nodes
-                        .push(mouse_pos_world.xy().round().as_ivec2().into());
-                    point
-                });
-                debug!("Starting new line/area at {:?}", mouse_pos_world);
-                new_comp.update_shape(&skin);
-                commands.spawn_bundle(new_comp).insert(CreatedComponent);
-            } else {
-                let mut created_query = set.p0();
-                let (mut data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
-                    created_query.single_mut();
-                match data.get_type(&skin).unwrap() {
-                    ComponentType::Line | ComponentType::Area => {
-                        data.nodes
-                            .push(mouse_pos_world.xy().round().as_ivec2().into());
-                        debug!(
-                            ?entity,
-                            "Continuing line/area at {:?}",
-                            mouse_pos_world.xy().round().as_ivec2()
-                        );
-                        commands
-                            .entity(entity)
-                            .insert_bundle(data.get_shape(&skin, false));
-
-                        if data.get_type(&skin).unwrap() == ComponentType::Area
-                            && data.nodes.first() == data.nodes.last()
-                            && data.nodes.first().is_some()
-                        {
-                            debug!("Ended on same point, completing area");
-                            clear_created_component(&mut commands, &set.p0(), &skin);
-                        }
-                    }
-                    ComponentType::Point => unreachable!(),
-                }
-            }
-        } else if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
-            if mm_detector.handle_release() {
-                debug!("Mouse move detected, won't complete line/area");
-                return;
-            };
-            debug!("Completing line/area");
-            clear_created_component(&mut commands, &set.p0(), &skin);
-        } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
+        if set.p0().is_empty() {
+            let mut new_comp = ComponentBundle::new({
+                let mut point = PlaComponent::new(type_.to_owned());
+                point
+                    .nodes
+                    .push(mouse_pos_world.xy().round().as_ivec2().into());
+                point
+            });
+            debug!("Starting new line/area at {:?}", mouse_pos_world);
+            new_comp.update_shape(&skin);
+            commands.spawn_bundle(new_comp).insert(CreatedComponent);
+        } else {
             let mut created_query = set.p0();
-            let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
+            let (mut data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
                 created_query.single_mut();
-            let mut data = (*data).to_owned();
-            data.nodes
-                .push(mouse_pos_world.xy().round().as_ivec2().into());
-            commands
-                .entity(entity)
-                .insert_bundle(data.get_shape(&skin, false));
+            match data.get_type(&skin).unwrap() {
+                ComponentType::Line | ComponentType::Area => {
+                    data.nodes
+                        .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    debug!(
+                        ?entity,
+                        "Continuing line/area at {:?}",
+                        mouse_pos_world.xy().round().as_ivec2()
+                    );
+                    commands
+                        .entity(entity)
+                        .insert_bundle(data.get_shape(&skin, false));
+
+                    if data.get_type(&skin).unwrap() == ComponentType::Area
+                        && data.nodes.first() == data.nodes.last()
+                        && data.nodes.first().is_some()
+                    {
+                        debug!("Ended on same point, completing area");
+                        clear_created_component(&mut commands, &set.p0(), &skin);
+                    }
+                }
+                ComponentType::Point => unreachable!(),
+            }
         }
+    } else if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
+        if mm_detector.handle_release() {
+            debug!("Mouse move detected, won't complete line/area");
+            return;
+        };
+        debug!("Completing line/area");
+        clear_created_component(&mut commands, &set.p0(), &skin);
+    } else if *type_ != ComponentType::Point && !set.p0().is_empty() {
+        let mut created_query = set.p0();
+        let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) = created_query.single_mut();
+        let mut data = (*data).to_owned();
+        data.nodes
+            .push(mouse_pos_world.xy().round().as_ivec2().into());
+        commands
+            .entity(entity)
+            .insert_bundle(data.get_shape(&skin, false));
     }
 }
 
