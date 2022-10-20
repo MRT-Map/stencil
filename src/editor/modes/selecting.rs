@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_mod_picking::{HoverEvent, PickingEvent, PickingSystem};
+use bevy_mod_picking::{HoverEvent, PickingEvent};
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
@@ -107,7 +107,7 @@ impl Plugin for SelectComponentPlugin {
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .after("highlight_selected")
-                    .after(PickingSystem::Events)
+                    //.after(PickingSystem::Events)
                     .with_system(selector_sy)
                     .into(),
             )

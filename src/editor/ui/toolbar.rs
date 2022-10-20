@@ -31,6 +31,15 @@ pub fn ui_sy(
             }
 
             button!("", "Select", EditorState::Idle);
+
+            ui.separator();
+            button!("edit_nodes", "Edit Nodes", EditorState::EditingNodes);
+            button!("move", "Move", EditorState::MovingComponent);
+            button!("rotate", "Rotate", EditorState::RotatingComponent);
+            button!("delete", "Delete", EditorState::DeletingComponent);
+
+            ui.separator();
+            ui.label("Create...");
             button!(
                 "point",
                 "Point",
@@ -45,18 +54,6 @@ pub fn ui_sy(
                 "area",
                 "Area",
                 EditorState::CreatingComponent(ComponentType::Area)
-            );
-            button!("edit_nodes", "Edit Nodes", EditorState::EditingNodes);
-            button!("move", "Move Components", EditorState::MovingComponent);
-            button!(
-                "rotate",
-                "Rotate Components",
-                EditorState::RotatingComponent
-            );
-            button!(
-                "delete",
-                "Delete Components",
-                EditorState::DeletingComponent
             );
         });
     });

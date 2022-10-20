@@ -60,7 +60,9 @@ pub fn cursor_icon_sy(
     hovering_over_comp: Res<HoveringOverComponent>,
 ) {
     if matches!(state.0, EditorState::CreatingComponent(_)) {
-        windows.primary_mut().set_cursor_visibility(false);
+        windows
+            .primary_mut()
+            .set_cursor_visibility(hovering_over_gui.0);
         return;
     } else {
         windows.primary_mut().set_cursor_visibility(true);
