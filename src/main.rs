@@ -34,11 +34,7 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             title: "Stencil".to_string(),
-            mode: if cfg!(debug_assertions) {
-                WindowMode::Windowed
-            } else {
-                WindowMode::BorderlessFullscreen
-            },
+            mode: WindowMode::BorderlessFullscreen,
             ..default()
         })
         .insert_resource(ImageSettings::default_nearest())

@@ -4,14 +4,19 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContext};
+use native_dialog::MessageType;
 
-use crate::editor::ui::HoveringOverGui;
+use crate::{
+    editor::ui::HoveringOverGui,
+    types::pla::{EditorCoords, PlaComponent},
+};
 
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut exit: EventWriter<AppExit>,
     diagnostics: Res<Diagnostics>,
+    components: Query<(), With<PlaComponent<EditorCoords>>>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -19,7 +24,16 @@ pub fn ui_sy(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
                 |ui| {
-                    if ui.button("Quit").clicked() {
+                    if ui.button("Quit").clicked()
+                        && (components.is_empty()
+                            || cfg!(debug_assertions)
+                            || native_dialog::MessageDialog::default()
+                                .set_title("Are you sure you want to exit?")
+                                .set_text("You may have unsaved changes")
+                                .set_type(MessageType::Warning)
+                                .show_confirm()
+                                .unwrap())
+                    {
                         exit.send(AppExit);
                     }
                 },
