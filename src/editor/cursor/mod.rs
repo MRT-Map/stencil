@@ -1,9 +1,11 @@
+pub mod mouse_events;
+
 use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{actions::mouse_events::HoveredComponent, ui::HoveringOverGui},
+    editor::{cursor::mouse_events::HoveredComponent, ui::HoveringOverGui},
     types::{zoom::Zoom, EditorState},
 };
 
@@ -128,6 +130,7 @@ pub fn cursor_setup(mut commands: Commands, server: Res<AssetServer>) {
 }
 
 pub struct CursorPlugin;
+
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(

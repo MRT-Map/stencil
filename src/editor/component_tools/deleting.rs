@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
-use crate::{editor::actions::mouse_events::MouseEvent, types::EditorState};
+use crate::{editor::cursor::mouse_events::MouseEvent, types::EditorState};
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(mut events: EventReader<MouseEvent>, mut commands: Commands) {

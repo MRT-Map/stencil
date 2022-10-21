@@ -4,8 +4,8 @@ use iyes_loopless::{condition::ConditionSet, prelude::CurrentState};
 
 use crate::{
     editor::{
-        actions::mouse_events::{HoveredComponent, MouseEvent},
         bundles::component::SelectedComponent,
+        cursor::mouse_events::{HoveredComponent, MouseEvent},
     },
     types::{
         pla::{EditorCoords, PlaComponent},

@@ -7,15 +7,13 @@ use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use bevy_web_asset::WebAssetPlugin;
+use editor::component_actions::moving::MoveComponentPlugin;
 
 use crate::{
     editor::{
-        actions::{mouse_events::ComponentEventsPlugin, selecting::SelectComponentPlugin},
-        cursor::CursorPlugin,
-        modes::{
-            creating::CreateComponentPlugin, deleting::DeleteComponentPlugin,
-            moving::MoveComponentPlugin,
-        },
+        component_actions::selecting::SelectComponentPlugin,
+        component_tools::{creating::CreateComponentPlugin, deleting::DeleteComponentPlugin},
+        cursor::{mouse_events::MouseEventsPlugin, CursorPlugin},
         tilemap::RenderingPlugin,
         ui::UiPlugin,
     },
@@ -51,7 +49,7 @@ fn main() {
         .add_plugin(EguiPlugin)
         .add_plugin(ShapePlugin)
         .add_plugin(SetupPlugin)
-        .add_plugin(ComponentEventsPlugin)
+        .add_plugin(MouseEventsPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(RenderingPlugin)

@@ -3,7 +3,7 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{actions::mouse_events::MouseEvent, bundles::component::SelectedComponent},
+    editor::{bundles::component::SelectedComponent, cursor::mouse_events::MouseEvent},
     types::{
         pla::{EditorCoords, PlaComponent},
         skin::Skin,

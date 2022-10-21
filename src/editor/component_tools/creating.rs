@@ -5,8 +5,9 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     editor::{
-        actions::{mouse_events::MouseEvent, selecting::deselect},
         bundles::component::{ComponentBundle, CreatedComponent},
+        component_actions::selecting::deselect,
+        cursor::mouse_events::MouseEvent,
     },
     types::{
         pla::{EditorCoords, PlaComponent},

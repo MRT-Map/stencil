@@ -110,8 +110,8 @@ pub fn left_click_handler_sy(
     }
 }
 
-pub struct ComponentEventsPlugin;
-impl Plugin for ComponentEventsPlugin {
+pub struct MouseEventsPlugin;
+impl Plugin for MouseEventsPlugin {
     fn build(&self, app: &mut App) {
         app.add_stage_before(CoreStage::Update, "events", SystemStage::parallel())
             .add_event::<MouseEvent>()
