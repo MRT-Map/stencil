@@ -12,7 +12,10 @@ use editor::component_actions::moving::MoveComponentPlugin;
 use crate::{
     editor::{
         component_actions::selecting::SelectComponentPlugin,
-        component_tools::{creating::CreateComponentPlugin, deleting::DeleteComponentPlugin},
+        component_tools::{
+            creating::CreateComponentPlugin, deleting::DeleteComponentPlugin,
+            node_editing::EditNodePlugin,
+        },
         cursor::{mouse_events::MouseEventsPlugin, CursorPlugin},
         tilemap::RenderingPlugin,
         ui::UiPlugin,
@@ -57,5 +60,6 @@ fn main() {
         .add_plugin(SelectComponentPlugin)
         .add_plugin(DeleteComponentPlugin)
         .add_plugin(MoveComponentPlugin)
+        .add_plugin(EditNodePlugin)
         .run();
 }

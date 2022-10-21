@@ -113,7 +113,7 @@ pub fn clear_created_component(
     for (data, entity) in created_query.iter() {
         debug!(?entity, "Clearing CreatedComponent marker");
         if data.nodes.len() == 1 {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         } else {
             commands
                 .entity(entity)

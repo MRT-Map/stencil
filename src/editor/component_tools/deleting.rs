@@ -8,7 +8,7 @@ pub fn delete_component_sy(mut events: EventReader<MouseEvent>, mut commands: Co
     for event in events.iter() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
             info!(?e, "Deleting entity");
-            commands.entity(*e).despawn();
+            commands.entity(*e).despawn_recursive();
         }
     }
 }

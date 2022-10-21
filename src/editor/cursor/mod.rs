@@ -25,7 +25,7 @@ pub fn crosshair_sy(
     if !matches!(state.0, EditorState::CreatingComponent(_)) {
         for (e, _, _) in ch.iter() {
             debug!("Despawning crosshair");
-            commands.entity(e).despawn();
+            commands.entity(e).despawn_recursive();
         }
         return;
     }

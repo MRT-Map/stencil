@@ -37,7 +37,6 @@ pub fn right_click_handler_sy(
     }
     if buttons.just_released(MouseButton::Right) && !hovering_over_gui.0 {
         debug!("RightRelease detected");
-        *prev_mouse_pos = Some(*mouse_pos);
         event_writer.send(MouseEvent::RightRelease(*mouse_pos_world));
         if let Some(prev) = *prev_mouse_pos {
             if (*prev - **mouse_pos).length_squared() <= 4.0 && !hovering_over_gui.0 {

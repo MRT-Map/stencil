@@ -65,7 +65,7 @@ pub fn show_tiles_sy(
             || (tile_coord.z <= 7 && zoom.0 <= 8f32 && !shown_tiles.contains(tile_coord))
         {
             trace!("Hiding {tile_coord}");
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         } else {
             shown_tiles.retain(|t| t != tile_coord);
             trace!("Showing {tile_coord}");

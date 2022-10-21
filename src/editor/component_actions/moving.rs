@@ -13,6 +13,7 @@ use crate::{
     },
 };
 
+#[allow(clippy::type_complexity)]
 #[tracing::instrument(skip_all)]
 pub fn move_component_sy(
     mut selected: Query<
@@ -30,7 +31,9 @@ pub fn move_component_sy(
 ) {
     if matches!(
         &state.0,
-        EditorState::CreatingComponent(_) | EditorState::DeletingComponent
+        EditorState::CreatingComponent(_)
+            | EditorState::DeletingComponent
+            | EditorState::EditingNodes
     ) {
         return;
     }
@@ -43,7 +46,7 @@ pub fn move_component_sy(
     } else {
         return;
     };
-    if let Some((orig_mouse_pos_world, orig_select_translation)) = *orig {
+    if let Some((orig_mouse_pos_world, orig_select_translation)) = &*orig {
         transform.translation.x =
             (mouse_pos_world.x - orig_mouse_pos_world.x + orig_select_translation.x).round();
         transform.translation.y =

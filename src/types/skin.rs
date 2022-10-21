@@ -154,7 +154,7 @@ pub fn retrieve_skin(
                 info!("Retrieved");
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(EditorState::Idle));
-                commands.entity(entity).despawn();
+                commands.entity(entity).despawn_recursive();
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
