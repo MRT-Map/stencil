@@ -3,7 +3,7 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{modes::selecting::HoveringOverComponent, ui::HoveringOverGui},
+    editor::{actions::mouse_events::HoveredComponent, ui::HoveringOverGui},
     types::{zoom::Zoom, EditorState},
 };
 
@@ -57,7 +57,7 @@ pub fn cursor_icon_sy(
     mut windows: ResMut<Windows>,
     state: Res<CurrentState<EditorState>>,
     hovering_over_gui: Res<HoveringOverGui>,
-    hovering_over_comp: Res<HoveringOverComponent>,
+    hovered_comp: Query<(), With<HoveredComponent>>,
 ) {
     if matches!(state.0, EditorState::CreatingComponent(_)) {
         windows
@@ -73,7 +73,7 @@ pub fn cursor_icon_sy(
     windows.primary_mut().set_cursor_icon(match state.0 {
         EditorState::Loading => CursorIcon::Wait,
         EditorState::Idle | EditorState::DeletingComponent => {
-            if hovering_over_comp.0 {
+            if !hovered_comp.is_empty() {
                 CursorIcon::Hand
             } else if buttons.pressed(MouseButton::Left) {
                 CursorIcon::Grabbing

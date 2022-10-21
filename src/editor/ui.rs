@@ -15,7 +15,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
-            .add_stage_before(CoreStage::Update, "ui", SystemStage::single_threaded())
+            .add_stage_before("events", "ui", SystemStage::single_threaded())
             .add_system_set_to_stage(
                 "ui",
                 ConditionSet::new()

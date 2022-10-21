@@ -10,11 +10,9 @@ use bevy_web_asset::WebAssetPlugin;
 
 use crate::{
     editor::{
+        actions::{mouse_events::ComponentEventsPlugin, selecting::SelectComponentPlugin},
         cursor::CursorPlugin,
-        modes::{
-            creating::CreateComponentPlugin, deleting::DeleteComponentPlugin,
-            selecting::SelectComponentPlugin,
-        },
+        modes::{creating::CreateComponentPlugin, deleting::DeleteComponentPlugin},
         tilemap::RenderingPlugin,
         ui::UiPlugin,
     },
@@ -50,6 +48,7 @@ fn main() {
         .add_plugin(EguiPlugin)
         .add_plugin(ShapePlugin)
         .add_plugin(SetupPlugin)
+        .add_plugin(ComponentEventsPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(RenderingPlugin)

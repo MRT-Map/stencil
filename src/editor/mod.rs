@@ -1,3 +1,4 @@
+pub mod actions;
 pub mod bundles;
 pub mod cursor;
 pub mod modes;

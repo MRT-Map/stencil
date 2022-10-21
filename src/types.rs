@@ -60,27 +60,3 @@ pub type DeselectQuery<'world, 'state, 'a> = (
 );
 pub type CreatedQuery<'world, 'state, 'a> =
     Query<'world, 'state, (&'a mut PlaComponent<EditorCoords>, Entity), With<CreatedComponent>>;
-pub type DetectMouseMoveOnClick<'world, 'a> = (Local<'a, Option<MousePos>>, Res<'world, MousePos>);
-pub trait DetectMouseMoveOnClickExt {
-    fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>);
-    fn handle_release(&mut self) -> bool;
-}
-impl DetectMouseMoveOnClickExt for DetectMouseMoveOnClick<'_, '_> {
-    fn handle_press(&mut self, buttons: &Res<Input<MouseButton>>) {
-        if buttons.just_pressed(MouseButton::Left)
-            || buttons.just_pressed(MouseButton::Right)
-            || buttons.just_pressed(MouseButton::Middle)
-        {
-            *self.0 = Some(*self.1)
-        }
-    }
-    fn handle_release(&mut self) -> bool {
-        if let Some(prev) = *self.0 {
-            *self.0 = None;
-            let curr = *self.1;
-            (*prev - *curr).length_squared() > 4.0
-        } else {
-            false
-        }
-    }
-}
