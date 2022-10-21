@@ -8,6 +8,7 @@ use crate::{
     types::{
         pla::{EditorCoords, PlaComponent},
         skin::Skin,
+        ComponentType,
     },
 };
 
@@ -26,7 +27,8 @@ pub fn ui_sy(
                 ui.heading("Select a component...");
                 return;
             }
-            let (entity, mut component_data) = selected.single_mut();
+            let (entity, mut component_data): (Entity, Mut<PlaComponent<EditorCoords>>) =
+                selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(
@@ -72,6 +74,13 @@ pub fn ui_sy(
             ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
             ui.end_row();
             ui.separator();
+            if component_data.get_type(&skin) == Some(ComponentType::Line) {
+                if ui.button("Reverse direction").clicked() {
+                    component_data.nodes.reverse();
+                };
+                ui.end_row();
+                ui.separator();
+            }
             ui.heading("Position data");
             ui.label(
                 component_data
