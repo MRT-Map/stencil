@@ -57,16 +57,29 @@ pub fn edit_nodes_sy(
                 Existing(usize),
                 NewBefore(usize),
             }
-            let handles =
-                pla.nodes
-                    .iter()
-                    .enumerate()
-                    .map(|(i, ec)| (Pos::Existing(i), ec.0))
-                    .chain(
-                        pla.nodes.iter().enumerate().tuple_windows::<(_, _)>().map(
-                            |((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2),
-                        ),
-                    );
+            let handles = pla
+                .nodes
+                .iter()
+                .enumerate()
+                .map(|(i, ec)| (Pos::Existing(i), ec.0))
+                .chain(
+                    if pla.get_type(&skin) == Some(ComponentType::Area) {
+                        pla.nodes
+                            .iter()
+                            .enumerate()
+                            .circular_tuple_windows::<(_, _)>()
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                    } else {
+                        pla.nodes
+                            .iter()
+                            .enumerate()
+                            .tuple_windows::<(_, _)>()
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                    }
+                    .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
+                );
             let (list_pos, world_pos) = if let Some(h) = handles.min_by_key(|(_, pos)| {
                 mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
             }) {
@@ -139,7 +152,11 @@ pub fn update_handles(
             GeometryBuilder::build_as(
                 &Circle {
                     radius: weight * 0.5,
-                    center: coord.as_vec2(),
+                    center: if pla.get_type(skin) == Some(ComponentType::Point) {
+                        Vec2::ZERO
+                    } else {
+                        coord.as_vec2()
+                    },
                 },
                 DrawMode::Outlined {
                     fill_mode: FillMode::color(Color::WHITE),
@@ -151,27 +168,36 @@ pub fn update_handles(
         .map(|bundle| commands.spawn_bundle(bundle).id())
         .collect::<Vec<_>>();
     commands.entity(*e).push_children(&children);
-    let more_children = pla
-        .nodes
-        .iter()
-        .tuple_windows::<(_, _)>()
-        .map(|(c1, c2)| (c1.0 + c2.0) / 2)
-        .map(|coord| {
-            let weight = pla.weight(skin).unwrap_or(2) as f32;
-            GeometryBuilder::build_as(
-                &Circle {
-                    radius: weight * 0.25,
-                    center: coord.as_vec2(),
-                },
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(Color::WHITE),
-                    outline_mode: StrokeMode::new(Color::GRAY, weight * 0.25),
-                },
-                Transform::from_xyz(0.0, 0.0, 100.0),
-            )
-        })
-        .map(|bundle| commands.spawn_bundle(bundle).id())
-        .collect::<Vec<_>>();
+    let more_children = if pla.get_type(skin) == Some(ComponentType::Area) {
+        pla.nodes
+            .iter()
+            .circular_tuple_windows::<(_, _)>()
+            .collect::<Vec<_>>()
+            .into_iter()
+    } else {
+        pla.nodes
+            .iter()
+            .tuple_windows::<(_, _)>()
+            .collect::<Vec<_>>()
+            .into_iter()
+    }
+    .map(|(c1, c2)| (c1.0 + c2.0) / 2)
+    .map(|coord| {
+        let weight = pla.weight(skin).unwrap_or(2) as f32;
+        GeometryBuilder::build_as(
+            &Circle {
+                radius: weight * 0.25,
+                center: coord.as_vec2(),
+            },
+            DrawMode::Outlined {
+                fill_mode: FillMode::color(Color::WHITE),
+                outline_mode: StrokeMode::new(Color::GRAY, weight * 0.25),
+            },
+            Transform::from_xyz(0.0, 0.0, 100.0),
+        )
+    })
+    .map(|bundle| commands.spawn_bundle(bundle).id())
+    .collect::<Vec<_>>();
     commands.entity(*e).push_children(&more_children);
 }
 

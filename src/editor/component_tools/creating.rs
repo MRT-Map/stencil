@@ -94,6 +94,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                     && data.nodes.first().is_some()
                 {
                     debug!("Ended on same point, completing area");
+                    data.nodes.pop();
                     clear_created_component(&mut commands, &set, &skin);
                 }
             }

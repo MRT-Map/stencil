@@ -120,7 +120,7 @@ impl PlaComponent<EditorCoords> {
         if self.get_type(skin) == Some(ComponentType::Point) {
             GeometryBuilder::build_as(
                 &shapes::Rectangle {
-                    extents: Vec2::new(5.0, 5.0),
+                    extents: Vec2::splat(2.0),
                     origin: RectangleOrigin::Center,
                 },
                 DrawMode::Fill(FillMode::color(if selected {
