@@ -126,7 +126,10 @@ pub fn update_handles(
     e: &Entity,
     skin: &Skin,
 ) {
-    commands.entity(*e).despawn_descendants();
+    commands
+        .entity(*e)
+        .insert_bundle(pla.get_shape(skin, true))
+        .despawn_descendants();
     let children = pla
         .nodes
         .iter()

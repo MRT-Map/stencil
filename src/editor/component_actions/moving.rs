@@ -58,9 +58,9 @@ pub fn move_component_sy(
                 *orig = Some((*mouse_pos_world, transform.translation));
             }
         } else if let MouseEvent::RightRelease(_) = event {
-            if let Some((_, orig_select_translation)) = *orig {
+            if let Some((orig_mouse_pos_world, _)) = *orig {
                 for node in pla.nodes.iter_mut() {
-                    node.0 += (transform.translation.xy() - orig_select_translation.xy())
+                    node.0 += (mouse_pos_world.xy() - orig_mouse_pos_world.xy())
                         .round()
                         .as_ivec2()
                 }
