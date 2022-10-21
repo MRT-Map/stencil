@@ -12,6 +12,9 @@ use crate::{
     },
 };
 
+#[derive(Default)]
+pub struct PrevNamespaceUsed(pub String);
+
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
@@ -19,6 +22,7 @@ pub fn ui_sy(
     mut commands: Commands,
     skin: Res<Skin>,
     mouse_pos: Res<MousePos>,
+    mut prev_namespace_used: ResMut<PrevNamespaceUsed>,
 ) {
     let panel = egui::SidePanel::left("component_data")
         .default_width(200.0)
@@ -36,6 +40,7 @@ pub fn ui_sy(
                     .hint_text("ns.")
                     .desired_width(25.0),
             );
+            prev_namespace_used.0 = component_data.namespace.to_owned();
             ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
             ui.end_row();
             ui.add(

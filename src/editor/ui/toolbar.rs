@@ -3,7 +3,10 @@ use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{component_tools::creating::clear_created_component, ui::HoveringOverGui},
+    editor::{
+        component_tools::creating::clear_created_component,
+        ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
+    },
     types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
 };
 
@@ -12,8 +15,9 @@ pub fn ui_sy(
     mut _commands: Commands,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut cv: Local<&'static str>,
-    _created_query: CreatedQuery,
+    mut _created_query: CreatedQuery,
     _skin: Res<Skin>,
+    _prev_namespace_used: Res<PrevNamespaceUsed>,
 ) {
     let mut current_value = *cv;
     let panel = egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
@@ -24,7 +28,12 @@ pub fn ui_sy(
                         .selectable_value(&mut current_value, $value, $text)
                         .clicked()
                     {
-                        clear_created_component(&mut _commands, &_created_query, &_skin);
+                        clear_created_component(
+                            &mut _commands,
+                            &mut _created_query,
+                            &_skin,
+                            &_prev_namespace_used.0,
+                        );
                         _commands.insert_resource(NextState($next_state));
                     }
                 };

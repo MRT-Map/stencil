@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::types::EditorState;
+use crate::{editor::ui::component_panel::PrevNamespaceUsed, types::EditorState};
 
-mod component_panel;
-mod menu;
-mod toolbar;
+pub mod component_panel;
+pub mod menu;
+pub mod toolbar;
 
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);
@@ -15,6 +15,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
+            .init_resource::<PrevNamespaceUsed>()
             .add_stage_before("events", "ui", SystemStage::single_threaded())
             .add_system_set_to_stage(
                 "ui",

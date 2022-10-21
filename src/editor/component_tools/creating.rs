@@ -2,12 +2,14 @@ use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
+use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
     editor::{
         bundles::component::{ComponentBundle, CreatedComponent},
         component_actions::selecting::deselect,
         cursor::mouse_events::MouseEvent,
+        ui::component_panel::PrevNamespaceUsed,
     },
     types::{
         pla::{EditorCoords, PlaComponent},
@@ -22,6 +24,7 @@ pub fn create_point_sy(
     mut events: EventReader<MouseEvent>,
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
+    prev_namespace_used: Res<PrevNamespaceUsed>,
 ) {
     for event in events.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
@@ -30,6 +33,8 @@ pub fn create_point_sy(
                 point
                     .nodes
                     .push(mouse_pos_world.xy().round().as_ivec2().into());
+                point.namespace = prev_namespace_used.0.to_owned();
+                point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
                 point
             });
             debug!("Placing new point at {:?}", mouse_pos_world);
@@ -47,6 +52,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     skin: Res<Skin>,
     mut events: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
+    prev_namespace_used: Res<PrevNamespaceUsed>,
 ) {
     let ty = if IS_AREA {
         ComponentType::Area
@@ -95,12 +101,12 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 {
                     debug!("Ended on same point, completing area");
                     data.nodes.pop();
-                    clear_created_component(&mut commands, &set, &skin);
+                    clear_created_component(&mut commands, &mut set, &skin, &prev_namespace_used.0);
                 }
             }
         } else if let MouseEvent::RightClick(_) = event {
             debug!("Completing line/area");
-            clear_created_component(&mut commands, &set, &skin);
+            clear_created_component(&mut commands, &mut set, &skin, &prev_namespace_used.0);
         }
     }
 }
@@ -108,14 +114,17 @@ pub fn create_component_sy<const IS_AREA: bool>(
 #[tracing::instrument(skip_all)]
 pub fn clear_created_component(
     commands: &mut Commands,
-    created_query: &CreatedQuery,
+    created_query: &mut CreatedQuery,
     skin: &Res<Skin>,
+    prev_namespace_used: &String,
 ) {
-    for (data, entity) in created_query.iter() {
+    for (mut data, entity) in created_query.iter_mut() {
         debug!(?entity, "Clearing CreatedComponent marker");
         if data.nodes.len() == 1 {
             commands.entity(entity).despawn_recursive();
         } else {
+            data.namespace = prev_namespace_used.to_owned();
+            data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
             commands
                 .entity(entity)
                 .remove_bundle::<ShapeBundle>()
