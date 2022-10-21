@@ -62,7 +62,8 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
             .entity(entity)
             .remove::<SelectedComponent>()
             .remove_bundle::<ShapeBundle>()
-            .insert_bundle(data.get_shape(skin, false));
+            .insert_bundle(data.get_shape(skin, false))
+            .despawn_descendants();
     }
 }
 
