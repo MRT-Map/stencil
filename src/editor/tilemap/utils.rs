@@ -7,7 +7,7 @@ pub fn get_window_width_height(windows: &Res<Windows>, camera: &Camera) -> Optio
         windows.get_primary()?
     };
 
-    Some(Vec2::new(wnd.width() as f32, wnd.height() as f32))
+    Some(Vec2::new(wnd.width(), wnd.height()))
 }
 
 pub fn get_map_width_height(camera: &Camera, transform: &GlobalTransform) -> Vec2 {

@@ -62,7 +62,7 @@ pub fn ui_sy(
             if old_skin_type != component_data.ty {
                 commands
                     .entity(entity)
-                    .insert_bundle(component_data.get_shape(&*skin, true));
+                    .insert_bundle(component_data.get_shape(&skin, true));
             }
             ui.end_row();
             let mut tags = component_data.tags.join(",");

@@ -161,7 +161,7 @@ pub fn retrieve_skin(
                 MessageDialog::new()
                     .set_type(MessageType::Error)
                     .set_title("Unable to load skin, make sure you are connected to the internet.")
-                    .set_text(&*format!("Error: {:?}", err))
+                    .set_text(&format!("Error: {:?}", err))
                     .show_alert()
                     .unwrap();
                 exit.send(AppExit)
