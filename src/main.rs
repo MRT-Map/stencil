@@ -17,6 +17,7 @@ use crate::{
             node_editing::EditNodePlugin,
         },
         cursor::{mouse_events::MouseEventsPlugin, CursorPlugin},
+        menu_actions::MenuPlugin,
         tilemap::RenderingPlugin,
         ui::UiPlugin,
     },
@@ -57,5 +58,6 @@ fn main() {
         .add_plugin(DeleteComponentPlugin)
         .add_plugin(MoveComponentPlugin)
         .add_plugin(EditNodePlugin)
+        .add_plugin(MenuPlugin)
         .run();
 }

@@ -1,45 +1,37 @@
 use bevy::{
-    app::AppExit,
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContext};
-use native_dialog::MessageType;
 
-use crate::{
-    editor::ui::HoveringOverGui,
-    types::pla::{EditorCoords, PlaComponent},
-};
+use crate::editor::{menu_actions::MenuAction, ui::HoveringOverGui};
 
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
-    mut exit: EventWriter<AppExit>,
+    mut event_writer: EventWriter<MenuAction>,
     diagnostics: Res<Diagnostics>,
-    components: Query<(), With<PlaComponent<EditorCoords>>>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
+            macro_rules! button {
+                ($ui:ident, $ew:ident, $label:literal, $id:literal) => {
+                    if $ui.button($label).clicked() {
+                        $ew.send(MenuAction($id))
+                    }
+                };
+            }
+
             egui::menu::menu_button(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
                 |ui| {
-                    if ui.button("Quit").clicked()
-                        && (components.is_empty()
-                            || cfg!(debug_assertions)
-                            || native_dialog::MessageDialog::default()
-                                .set_title("Are you sure you want to exit?")
-                                .set_text("You may have unsaved changes")
-                                .set_type(MessageType::Warning)
-                                .show_confirm()
-                                .unwrap())
-                    {
-                        exit.send(AppExit);
-                    }
+                    button!(ui, event_writer, "Quit", "quit");
                 },
             );
             egui::menu::menu_button(ui, "File", |ui| {
-                ui.label("Coming soon");
+                button!(ui, event_writer, "Load namespace", "load_ns");
+                button!(ui, event_writer, "Save namespaces", "save_ns");
             });
             egui::menu::menu_button(ui, "Edit", |ui| {
                 ui.label("Coming soon");

@@ -30,6 +30,7 @@ pub struct PlaComponent<T: Coords> {
     #[serde(rename = "type")]
     pub ty: String,
     pub nodes: Vec<T>,
+    #[serde(skip)]
     pub attributes: HashMap<String, String>,
 }
 
@@ -115,7 +116,36 @@ impl<T: Coords> PlaComponent<T> {
     }
 }
 
+impl PlaComponent<MCCoords> {
+    pub fn to_editor_coords(&self) -> PlaComponent<EditorCoords> {
+        PlaComponent {
+            namespace: self.namespace.to_owned(),
+            id: self.id.to_owned(),
+            display_name: self.display_name.to_owned(),
+            description: self.description.to_owned(),
+            tags: self.tags.to_owned(),
+            layer: self.layer,
+            ty: self.ty.to_owned(),
+            nodes: self.nodes.iter().map(|a| (*a).into()).collect(),
+            attributes: self.attributes.to_owned(),
+        }
+    }
+}
+
 impl PlaComponent<EditorCoords> {
+    pub fn to_mc_coords(&self) -> PlaComponent<MCCoords> {
+        PlaComponent {
+            namespace: self.namespace.to_owned(),
+            id: self.id.to_owned(),
+            display_name: self.display_name.to_owned(),
+            description: self.description.to_owned(),
+            tags: self.tags.to_owned(),
+            layer: self.layer,
+            ty: self.ty.to_owned(),
+            nodes: self.nodes.iter().map(|a| (*a).into()).collect(),
+            attributes: self.attributes.to_owned(),
+        }
+    }
     pub fn get_shape(&self, skin: &Skin, selected: bool) -> ShapeBundle {
         if self.get_type(skin) == Some(ComponentType::Point) {
             GeometryBuilder::build_as(
@@ -201,21 +231,21 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
 
 pub trait Coords: Debug + Default + Copy + Clone {}
 
-#[derive(Component, Debug, Default, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MCCoords(pub IVec2);
+#[derive(Component, Debug, Default, Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MCCoords(pub Vec2);
 
 #[derive(Component, Debug, Default, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EditorCoords(pub IVec2);
 
 impl From<EditorCoords> for MCCoords {
     fn from(c: EditorCoords) -> Self {
-        Self(IVec2::new(c.0.x, -c.0.y))
+        Self(Vec2::new(c.0.x as f32, -c.0.y as f32))
     }
 }
 
 impl From<MCCoords> for EditorCoords {
     fn from(c: MCCoords) -> Self {
-        Self(IVec2::new(c.0.x, -c.0.y))
+        Self(IVec2::new(c.0.x as i32, -c.0.y as i32))
     }
 }
 
