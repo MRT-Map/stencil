@@ -32,8 +32,6 @@ pub enum EditorState {
     Idle,
     CreatingComponent(ComponentType),
     EditingNodes,
-    MovingComponent,
-    RotatingComponent,
     DeletingComponent,
 }
 

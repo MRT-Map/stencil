@@ -34,8 +34,6 @@ pub fn ui_sy(
 
             ui.separator();
             button!("edit_nodes", "Edit Nodes", EditorState::EditingNodes);
-            button!("move", "Move", EditorState::MovingComponent);
-            button!("rotate", "Rotate", EditorState::RotatingComponent);
             button!("delete", "Delete", EditorState::DeletingComponent);
 
             ui.separator();

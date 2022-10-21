@@ -83,8 +83,6 @@ pub fn cursor_icon_sy(
         }
         EditorState::CreatingComponent(_) => unreachable!(),
         EditorState::EditingNodes => CursorIcon::Hand,
-        EditorState::MovingComponent => CursorIcon::Hand,
-        EditorState::RotatingComponent => CursorIcon::Hand,
     });
 }
 
