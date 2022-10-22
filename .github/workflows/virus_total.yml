@@ -1,5 +1,3 @@
-name: released
-
 on:
   workflow_run:
     workflows: ["build.yml"]
