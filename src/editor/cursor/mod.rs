@@ -74,7 +74,7 @@ pub fn cursor_icon_sy(
     }
     windows.primary_mut().set_cursor_icon(match state.0 {
         EditorState::Loading => CursorIcon::Wait,
-        EditorState::Idle | EditorState::DeletingComponent => {
+        EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
             if !hovered_comp.is_empty() {
                 CursorIcon::Hand
             } else if buttons.pressed(MouseButton::Left) {
@@ -84,7 +84,6 @@ pub fn cursor_icon_sy(
             }
         }
         EditorState::CreatingComponent(_) => unreachable!(),
-        EditorState::EditingNodes => CursorIcon::Hand,
     });
 }
 
@@ -117,13 +116,14 @@ pub fn cursor_setup(mut commands: Commands, server: Res<AssetServer>) {
             .with_alignment(TextAlignment::CENTER_RIGHT),
             style: Style {
                 position: UiRect {
-                    top: Val::Px(5.0),
+                    top: Val::Px(30.0),
                     right: Val::Px(15.0),
                     ..default()
                 },
                 position_type: PositionType::Absolute,
                 ..default()
             },
+            transform: Transform::from_xyz(0.0, 0.0, 999.0),
             ..default()
         })
         .insert(CursorCoords);

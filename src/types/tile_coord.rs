@@ -55,7 +55,9 @@ impl TileCoord {
         if !zzz.is_empty() {
             zzz += "_"
         };
-        format!("http://api.allorigins.win/raw?url=https%3A//dynmap.minecartrapidtransit.net/tiles/new/flat/{}_{}/{}{}_{}.png",
-                group.x, group.y, zzz, num_in_group.x, num_in_group.y)
+        format!(
+            "https://dynmap.minecartrapidtransit.net/tiles/new/flat/{}_{}/{}{}_{}.png",
+            group.x, group.y, zzz, num_in_group.x, num_in_group.y
+        )
     }
 }
