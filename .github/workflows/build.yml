@@ -2,6 +2,7 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -33,6 +34,9 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Install nightly
       run: rustup toolchain install nightly
+    - name: Install dependencies
+      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      if: ${{ matrix.os == 'ubuntu-latest' }}
     - name: Build
       run: cargo +nightly build --release
     - name: Upload binaries
@@ -42,3 +46,4 @@ jobs:
         file: target/release/${{ matrix.artifact_name }}
         asset_name: ${{ matrix.asset_name }}
         tag: ${{ github.ref }}
+      if: ${{github.event.action != "workflow_dispatch"}}
