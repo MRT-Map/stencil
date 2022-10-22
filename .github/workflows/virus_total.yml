@@ -2,9 +2,10 @@ name: released
 
 on:
   workflow_run:
-    workflows: ["build"]
+    workflows: ["build.yml"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   virustotal:
