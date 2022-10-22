@@ -25,8 +25,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Xcode select
+      run: sudo xcode-select -s /Applications/Xcode_12.5.1.app/Contents/Developer
+      if: ${{ matrix.os == 'macos-latest' }}
+    - name: Install zld
+      run: brew install michaeleisel/zld/zld
+      if: ${{ matrix.os == 'macos-latest' }}
     - name: Build
-      run: cargo build --release
+      run: cargo +nightly build --release
     - name: Upload binaries
       uses: svenstaro/upload-release-action@v2
       with:
