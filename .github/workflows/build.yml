@@ -31,6 +31,8 @@ jobs:
     - name: Install zld
       run: brew install michaeleisel/zld/zld
       if: ${{ matrix.os == 'macos-latest' }}
+    - name: Install nightly
+      run: rustup toolchain install nightly
     - name: Build
       run: cargo +nightly build --release
     - name: Upload binaries
