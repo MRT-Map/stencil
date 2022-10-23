@@ -183,7 +183,7 @@ impl PlaComponent<EditorCoords> {
                         fill_mode: FillMode::color(if selected {
                             *Color::YELLOW.clone().set_a(0.5)
                         } else if let Some(hex) = self.front_colour(skin) {
-                            *hex_to_color(hex).set_a(0.5)
+                            *hex_to_color(hex).set_a(0.25)
                         } else {
                             Color::NONE
                         }),

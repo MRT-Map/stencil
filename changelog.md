@@ -3,8 +3,10 @@
 * Handles in node editing of components with 50+ nodes will only show if they are nearest
 * Added changelog window
 * Fix crosshair not showing up on Mac builds (maybe other builds too)
+* Fix quitting the app crashing on Mac builds (maybe other builds too)
 * Fix a majority of z-fighting in components
 * Add mouse X and Z-coordinate display
+* Increase transparency of areas
 
 # v2.0.0-beta.0
 * Added tile map
