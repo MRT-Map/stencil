@@ -1,14 +1,15 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
+use zoom::Zoom;
 
-use crate::{
-    editor::ui::HoveringOverGui,
-    types::{zoom::Zoom, EditorState},
-};
+use crate::{setup::EditorState, ui::HoveringOverGui};
 
+pub mod bundle;
 pub mod mouse_nav;
 pub mod tile;
+pub mod tile_coord;
 pub mod utils;
+pub mod zoom;
 
 pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {

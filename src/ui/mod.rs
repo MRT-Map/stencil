@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::{editor::ui::component_panel::PrevNamespaceUsed, types::EditorState};
+use crate::{setup::EditorState, ui::component_panel::PrevNamespaceUsed};
 
 pub mod component_panel;
 pub mod menu;
@@ -11,15 +11,26 @@ pub mod toolbar;
 #[derive(Default)]
 pub struct HoveringOverGui(pub bool);
 
+pub struct UiStage;
+impl StageLabel for UiStage {
+    fn as_str(&self) -> &'static str {
+        "ui"
+    }
+}
+
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<PrevNamespaceUsed>()
-            .add_stage_before(CoreStage::PreUpdate, "ui", SystemStage::single_threaded())
+            .add_stage_before(
+                CoreStage::PreUpdate,
+                UiStage,
+                SystemStage::single_threaded(),
+            )
             .add_system_set_to_stage(
-                "ui",
+                UiStage,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_menu")
@@ -28,7 +39,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system_set_to_stage(
-                "ui",
+                UiStage,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_component_panel")
@@ -38,7 +49,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system_set_to_stage(
-                "ui",
+                UiStage,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_toolbar")
@@ -49,6 +60,7 @@ impl Plugin for UiPlugin {
             .add_system_to_stage(
                 CoreStage::Last,
                 |mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false,
-            );
+            )
+            .add_plugin(popup::PopupPlugin);
     }
 }
