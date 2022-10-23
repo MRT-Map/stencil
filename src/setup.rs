@@ -27,7 +27,7 @@ impl Plugin for SetupPlugin {
 
 fn setup_sy(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn_bundle(Camera2dBundle::new_with_far(1e5))
         .insert(MainCamera)
         .insert(UiCameraConfig { show_ui: true })
         .insert_bundle(PickingCameraBundle::default())

@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use bevy::{
     asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
     render::texture::ImageSettings, window::WindowMode,

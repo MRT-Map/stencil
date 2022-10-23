@@ -3,11 +3,16 @@ use bevy_mod_picking::{HoverEvent, PickingEvent};
 use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 use iyes_loopless::condition::ConditionSet;
 
-use crate::{setup::EditorState, ui::HoveringOverGui};
+use crate::{
+    setup::EditorState,
+    ui::{HoveringOverGui, UiStage},
+};
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct HoveredComponent;
+
+pub const CLICK_MAX_OFFSET: f32 = 25.0;
 
 #[derive(Debug)]
 pub enum MouseEvent {
@@ -39,7 +44,7 @@ pub fn right_click_handler_sy(
         debug!("RightRelease detected");
         event_writer.send(MouseEvent::RightRelease(*mouse_pos_world));
         if let Some(prev) = *prev_mouse_pos {
-            if (*prev - **mouse_pos).length_squared() <= 4.0 && !hovering_over_gui.0 {
+            if (*prev - **mouse_pos).length_squared() <= CLICK_MAX_OFFSET && !hovering_over_gui.0 {
                 debug!("RightClick detected");
                 event_writer.send(MouseEvent::RightClick(*mouse_pos_world))
             }
@@ -103,7 +108,7 @@ pub fn left_click_handler_sy(
     let curr = *mouse_pos;
     debug!(e = ?selected_entity, "LeftRelease detected");
     event_writer.send(MouseEvent::LeftRelease(*selected_entity, *mouse_pos_world));
-    if (*prev - *curr).length_squared() <= 4.0 && !hovering_over_gui.0 {
+    if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && !hovering_over_gui.0 {
         debug!(e = ?selected_entity, "LeftClick detected");
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world))
     }
@@ -112,13 +117,15 @@ pub fn left_click_handler_sy(
 pub struct MouseEventsPlugin;
 impl Plugin for MouseEventsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MouseEvent>().add_system_set_to_stage(
-            CoreStage::PreUpdate,
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(left_click_handler_sy)
-                .with_system(right_click_handler_sy)
-                .into(),
-        );
+        app.add_event::<MouseEvent>()
+            .add_stage_after(UiStage, "cursor_events", SystemStage::parallel())
+            .add_system_set_to_stage(
+                "cursor_events",
+                ConditionSet::new()
+                    .run_not_in_state(EditorState::Loading)
+                    .with_system(left_click_handler_sy)
+                    .with_system(right_click_handler_sy)
+                    .into(),
+            );
     }
 }

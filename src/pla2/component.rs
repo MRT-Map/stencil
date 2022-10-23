@@ -210,7 +210,16 @@ impl PlaComponent<EditorCoords> {
                         options,
                     })
                 },
-                Transform::from_xyz(0.0, 0.0, 10.0),
+                Transform::from_xyz(0.0, 0.0, {
+                    let order = skin
+                        .order
+                        .iter()
+                        .enumerate()
+                        .find(|(_, a)| **a == self.ty)
+                        .map(|a| a.0)
+                        .unwrap_or(0);
+                    self.layer as f32 + 20.0 + order as f32 * f32::EPSILON
+                }),
             )
         }
     }
