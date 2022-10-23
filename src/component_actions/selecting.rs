@@ -3,12 +3,14 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{bundles::component::SelectedComponent, cursor::mouse_events::MouseEvent},
-    types::{
-        pla::{EditorCoords, PlaComponent},
+    cursor::mouse_events::MouseEvent,
+    pla2::{
+        bundle::SelectedComponent,
+        component::{EditorCoords, PlaComponent},
         skin::Skin,
-        DeselectQuery, EditorState,
     },
+    setup::EditorState,
+    ui::UiStage,
 };
 
 #[allow(clippy::too_many_arguments)]
@@ -79,17 +81,21 @@ impl Plugin for SelectComponentPlugin {
         app.add_system_set(
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
-                .after("highlight_selected")
                 //.after(PickingSystem::Events)
                 .with_system(selector_sy)
                 .into(),
         )
-        .add_system_set(
+        .add_system_set_to_stage(
+            UiStage,
             ConditionSet::new()
-                .label("highlight_selected")
                 .run_not_in_state(EditorState::Loading)
                 .with_system(highlight_selected_sy)
                 .into(),
         );
     }
 }
+
+pub type DeselectQuery<'world, 'state, 'a> = (
+    Query<'world, 'state, (&'a PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
+    Res<'world, Skin>,
+);

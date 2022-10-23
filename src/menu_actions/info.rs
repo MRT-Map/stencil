@@ -3,10 +3,7 @@ use std::sync::Arc;
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-use crate::{
-    editor::{menu_actions::MenuAction, ui::popup::Popup},
-    menu,
-};
+use crate::{menu, menu_actions::MenuAction, ui::popup::Popup};
 
 pub fn info_msy(mut events: EventReader<MenuAction>, mut popup: EventWriter<Arc<Popup>>) {
     menu!(events, "info");

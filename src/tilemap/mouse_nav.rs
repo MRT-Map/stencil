@@ -6,11 +6,11 @@ use bevy::{
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
-    editor::{
-        tilemap::utils::{get_map_width_height, get_window_width_height},
-        ui::HoveringOverGui,
+    tilemap::{
+        utils::{get_map_width_height, get_window_width_height},
+        zoom::Zoom,
     },
-    types::zoom::Zoom,
+    ui::HoveringOverGui,
 };
 
 #[tracing::instrument(skip_all)]

@@ -11,7 +11,7 @@ use iyes_loopless::prelude::*;
 use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ComponentType, EditorState};
+use crate::{pla2::component::ComponentType, setup::EditorState};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {
@@ -132,7 +132,7 @@ pub struct Skin {
 #[derive(Component)]
 pub struct AsyncTask<T>(Task<T>);
 
-pub fn request_skin(mut commands: Commands) {
+pub fn request_skin_sy(mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
     let task = thread_pool.spawn(async move {
         surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
@@ -142,7 +142,7 @@ pub fn request_skin(mut commands: Commands) {
     commands.spawn().insert(AsyncTask(task));
 }
 
-pub fn retrieve_skin(
+pub fn retrieve_skin_sy(
     mut commands: Commands,
     mut tasks: Query<(Entity, &mut AsyncTask<surf::Result<Skin>>)>,
     mut exit: EventWriter<AppExit>,

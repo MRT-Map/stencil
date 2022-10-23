@@ -5,9 +5,9 @@ use itertools::Itertools;
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 
 use crate::{
-    editor::menu_actions::MenuAction,
     menu,
-    types::pla::{EditorCoords, MCCoords, PlaComponent},
+    menu_actions::MenuAction,
+    pla2::component::{EditorCoords, MCCoords, PlaComponent},
     EventReader,
 };
 

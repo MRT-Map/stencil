@@ -5,8 +5,8 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{cursor::mouse_events::HoveredComponent, ui::HoveringOverGui},
-    types::{zoom::Zoom, EditorState},
+    cursor::mouse_events::HoveredComponent, setup::EditorState, tilemap::zoom::Zoom,
+    ui::HoveringOverGui,
 };
 
 #[derive(Component)]
@@ -147,6 +147,7 @@ impl Plugin for CursorPlugin {
                 .with_system(world_pos_sy)
                 .into(),
         )
-        .add_exit_system(EditorState::Loading, cursor_setup);
+        .add_exit_system(EditorState::Loading, cursor_setup)
+        .add_plugin(mouse_events::MouseEventsPlugin);
     }
 }

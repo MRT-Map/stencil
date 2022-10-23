@@ -5,10 +5,7 @@ use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
-use crate::types::{
-    skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
-    ComponentType,
-};
+use crate::pla2::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent};
 
 fn hex_to_color(hex: &HexColor) -> Color {
     Color::Rgba {
@@ -258,3 +255,13 @@ impl From<IVec2> for EditorCoords {
 impl Coords for MCCoords {}
 
 impl Coords for EditorCoords {}
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
+pub enum ComponentType {
+    #[serde(rename = "point")]
+    Point,
+    #[serde(rename = "line")]
+    Line,
+    #[serde(rename = "area")]
+    Area,
+}

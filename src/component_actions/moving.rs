@@ -3,14 +3,12 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::{condition::ConditionSet, prelude::CurrentState};
 
 use crate::{
-    editor::{
-        bundles::component::SelectedComponent,
-        cursor::mouse_events::{HoveredComponent, MouseEvent},
+    cursor::mouse_events::{HoveredComponent, MouseEvent},
+    pla2::{
+        bundle::SelectedComponent,
+        component::{EditorCoords, PlaComponent},
     },
-    types::{
-        pla::{EditorCoords, PlaComponent},
-        EditorState,
-    },
+    setup::EditorState,
 };
 
 #[allow(clippy::type_complexity)]

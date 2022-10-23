@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_egui::{egui, egui::Align, EguiContext};
 
-use crate::editor::{menu_actions::MenuAction, ui::HoveringOverGui};
+use crate::{menu_actions::MenuAction, ui::HoveringOverGui};
 
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,

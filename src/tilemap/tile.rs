@@ -1,12 +1,11 @@
 use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_mouse_tracking_plugin::MainCamera;
 
-use crate::{
-    editor::{
-        bundles::tile::{Tile, TileBundle},
-        tilemap::utils::get_map_coords_of_edges,
-    },
-    types::{tile_coord::TileCoord, zoom::Zoom},
+use crate::tilemap::{
+    bundle::{Tile, TileBundle},
+    tile_coord::TileCoord,
+    utils::get_map_coords_of_edges,
+    zoom::Zoom,
 };
 
 pub fn get_shown_tiles(

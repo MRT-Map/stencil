@@ -7,7 +7,7 @@ use std::{
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::editor::ui::HoveringOverGui;
+use crate::ui::{HoveringOverGui, UiStage};
 
 #[allow(clippy::type_complexity)]
 pub struct Popup {
@@ -60,6 +60,6 @@ impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
             .add_event::<PopupResponse>()
-            .add_system_to_stage("ui", popup_handler);
+            .add_system_to_stage(UiStage, popup_handler);
     }
 }

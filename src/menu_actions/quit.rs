@@ -2,9 +2,9 @@ use bevy::{app::AppExit, prelude::*};
 use native_dialog::{MessageDialog, MessageType};
 
 use crate::{
-    editor::menu_actions::MenuAction,
     menu,
-    types::pla::{EditorCoords, PlaComponent},
+    menu_actions::MenuAction,
+    pla2::component::{EditorCoords, PlaComponent},
 };
 
 pub fn quit_msy(

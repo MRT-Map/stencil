@@ -5,10 +5,11 @@ use itertools::Itertools;
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 
 use crate::{
-    editor::{bundles::component::ComponentBundle, menu_actions::MenuAction},
     menu,
-    types::{
-        pla::{EditorCoords, MCCoords, PlaComponent},
+    menu_actions::MenuAction,
+    pla2::{
+        bundle::ComponentBundle,
+        component::{EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
     EventReader,

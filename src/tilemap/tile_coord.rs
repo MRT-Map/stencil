@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use bevy::prelude::*;
 
-use crate::types::zoom::Zoom;
+use crate::tilemap::zoom::Zoom;
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug)]
 pub struct TileCoord {

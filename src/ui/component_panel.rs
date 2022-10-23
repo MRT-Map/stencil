@@ -4,12 +4,12 @@ use bevy_mouse_tracking_plugin::MousePos;
 use itertools::Itertools;
 
 use crate::{
-    editor::{bundles::component::SelectedComponent, ui::HoveringOverGui},
-    types::{
-        pla::{EditorCoords, PlaComponent},
+    pla2::{
+        bundle::SelectedComponent,
+        component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
-        ComponentType,
     },
+    ui::HoveringOverGui,
 };
 
 #[derive(Default)]

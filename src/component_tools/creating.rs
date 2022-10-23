@@ -5,17 +5,15 @@ use iyes_loopless::prelude::*;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
-    editor::{
-        bundles::component::{ComponentBundle, CreatedComponent},
-        component_actions::selecting::deselect,
-        cursor::mouse_events::MouseEvent,
-        ui::component_panel::PrevNamespaceUsed,
-    },
-    types::{
-        pla::{EditorCoords, PlaComponent},
+    component_actions::selecting::{deselect, DeselectQuery},
+    cursor::mouse_events::MouseEvent,
+    pla2::{
+        bundle::{ComponentBundle, CreatedComponent},
+        component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
-        ComponentType, CreatedQuery, DeselectQuery, EditorState,
     },
+    setup::EditorState,
+    ui::component_panel::PrevNamespaceUsed,
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [
@@ -195,3 +193,6 @@ impl Plugin for CreateComponentPlugin {
         );
     }
 }
+
+pub type CreatedQuery<'world, 'state, 'a> =
+    Query<'world, 'state, (&'a mut PlaComponent<EditorCoords>, Entity), With<CreatedComponent>>;

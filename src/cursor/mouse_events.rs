@@ -3,7 +3,7 @@ use bevy_mod_picking::{HoverEvent, PickingEvent};
 use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 use iyes_loopless::condition::ConditionSet;
 
-use crate::{editor::ui::HoveringOverGui, types::EditorState};
+use crate::{setup::EditorState, ui::HoveringOverGui};
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]

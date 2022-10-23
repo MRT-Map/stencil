@@ -5,12 +5,14 @@ use itertools::Itertools;
 use iyes_loopless::{condition::ConditionSet, prelude::AppLooplessStateExt};
 
 use crate::{
-    editor::{bundles::component::SelectedComponent, cursor::mouse_events::MouseEvent},
-    types::{
-        pla::{EditorCoords, PlaComponent},
+    cursor::mouse_events::MouseEvent,
+    pla2::{
+        bundle::SelectedComponent,
+        component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
-        ComponentType, EditorState,
     },
+    setup::EditorState,
+    ui::UiStage,
 };
 
 #[derive(Debug)]
@@ -228,7 +230,7 @@ impl Plugin for EditNodePlugin {
         )
         .add_exit_system(EditorState::EditingNodes, remove_handles_sy)
         .add_system_set_to_stage(
-            CoreStage::PreUpdate,
+            UiStage,
             ConditionSet::new()
                 .run_in_state(EditorState::EditingNodes)
                 .with_system(show_handles_sy)

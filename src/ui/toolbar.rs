@@ -3,11 +3,10 @@ use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    editor::{
-        component_tools::creating::clear_created_component,
-        ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
-    },
-    types::{skin::Skin, ComponentType, CreatedQuery, EditorState},
+    component_tools::creating::{clear_created_component, CreatedQuery},
+    pla2::{component::ComponentType, skin::Skin},
+    setup::EditorState,
+    ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
 };
 
 pub fn ui_sy(

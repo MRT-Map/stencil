@@ -7,26 +7,21 @@ use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use bevy_web_asset::WebAssetPlugin;
-use editor::component_actions::moving::MoveComponentPlugin;
 
 use crate::{
-    editor::{
-        component_actions::selecting::SelectComponentPlugin,
-        component_tools::{
-            creating::CreateComponentPlugin, deleting::DeleteComponentPlugin,
-            node_editing::EditNodePlugin,
-        },
-        cursor::{mouse_events::MouseEventsPlugin, CursorPlugin},
-        menu_actions::MenuPlugin,
-        tilemap::RenderingPlugin,
-        ui::{popup::PopupPlugin, UiPlugin},
-    },
-    setup::SetupPlugin,
+    component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
+    cursor::CursorPlugin, menu_actions::MenuPlugin, setup::SetupPlugin, tilemap::RenderingPlugin,
+    ui::UiPlugin,
 };
 
-mod editor;
+mod component_actions;
+mod component_tools;
+mod cursor;
+mod menu_actions;
+mod pla2;
 mod setup;
-mod types;
+mod tilemap;
+mod ui;
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
@@ -49,16 +44,11 @@ fn main() {
         .add_plugin(EguiPlugin)
         .add_plugin(ShapePlugin)
         .add_plugin(SetupPlugin)
-        .add_plugin(MouseEventsPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(RenderingPlugin)
-        .add_plugin(CreateComponentPlugin)
-        .add_plugin(SelectComponentPlugin)
-        .add_plugin(DeleteComponentPlugin)
-        .add_plugin(MoveComponentPlugin)
-        .add_plugin(EditNodePlugin)
+        .add_plugins(ComponentToolPlugins)
+        .add_plugins(ComponentActionPlugins)
         .add_plugin(MenuPlugin)
-        .add_plugin(PopupPlugin)
         .run();
 }
