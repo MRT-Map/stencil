@@ -2,6 +2,7 @@
 * Added popup handling system
 * Handles in node editing of components with 50+ nodes will only show if they are nearest
 * Added changelog window
+* Added angle-snapping for lines and areas
 * Fix crosshair not showing up on Mac builds (maybe other builds too)
 * Fix quitting the app crashing on Mac builds (maybe other builds too)
 * Fix a majority of z-fighting in components
