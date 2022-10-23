@@ -140,6 +140,7 @@ pub fn update_handles(
     pla: &PlaComponent<EditorCoords>,
     e: &Entity,
     skin: &Skin,
+    mouse_pos_world: &MousePosWorld,
 ) {
     commands
         .entity(*e)
@@ -149,6 +150,13 @@ pub fn update_handles(
         .nodes
         .iter()
         .map(|coord| &coord.0)
+        .filter(|coord| {
+            if pla.nodes.len() > 50 {
+                (coord.as_vec2() - mouse_pos_world.xy()).length_squared() < 10000.0
+            } else {
+                true
+            }
+        })
         .map(|coord| {
             let weight = pla.weight(skin).unwrap_or(2) as f32;
             GeometryBuilder::build_as(
@@ -184,6 +192,13 @@ pub fn update_handles(
             .into_iter()
     }
     .map(|(c1, c2)| (c1.0 + c2.0) / 2)
+    .filter(|coord| {
+        if pla.nodes.len() > 50 {
+            (coord.as_vec2() - mouse_pos_world.xy()).length_squared() < 10000.0
+        } else {
+            true
+        }
+    })
     .map(|coord| {
         let weight = pla.weight(skin).unwrap_or(2) as f32;
         GeometryBuilder::build_as(
@@ -207,9 +222,10 @@ pub fn show_handles_sy(
     selected: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     mut commands: Commands,
     skin: Res<Skin>,
+    mouse_pos_world: Res<MousePosWorld>,
 ) {
     for (pla, e) in selected.iter() {
-        update_handles(&mut commands, pla, &e, &skin)
+        update_handles(&mut commands, pla, &e, &skin, &mouse_pos_world)
     }
 }
 
