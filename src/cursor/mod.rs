@@ -87,48 +87,6 @@ pub fn cursor_icon_sy(
     });
 }
 
-pub fn world_pos_sy(
-    mut texts: Query<&mut Text, With<CursorCoords>>,
-    mouse_pos_world: Res<MousePosWorld>,
-) {
-    let mut text = texts.single_mut();
-    text.sections[0].value = format!(
-        "x: {} z: {}",
-        mouse_pos_world.x.round(),
-        mouse_pos_world.y.round()
-    );
-}
-
-#[derive(Component)]
-pub struct CursorCoords;
-
-pub fn cursor_setup(mut commands: Commands, server: Res<AssetServer>) {
-    commands
-        .spawn_bundle(TextBundle {
-            text: Text::from_section(
-                "x: ? z: ?",
-                TextStyle {
-                    font: server.load("NotoSans-Medium.ttf"),
-                    font_size: 20.0,
-                    color: Color::WHITE,
-                },
-            )
-            .with_alignment(TextAlignment::CENTER_RIGHT),
-            style: Style {
-                position: UiRect {
-                    top: Val::Px(30.0),
-                    right: Val::Px(15.0),
-                    ..default()
-                },
-                position_type: PositionType::Absolute,
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 0.0, 999.0),
-            ..default()
-        })
-        .insert(CursorCoords);
-}
-
 pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
@@ -141,13 +99,6 @@ impl Plugin for CursorPlugin {
                 .with_system(crosshair_sy)
                 .into(),
         )
-        .add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(world_pos_sy)
-                .into(),
-        )
-        .add_exit_system(EditorState::Loading, cursor_setup)
         .add_plugin(mouse_events::MouseEventsPlugin);
     }
 }

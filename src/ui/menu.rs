@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContext};
+use bevy_mouse_tracking_plugin::MousePosWorld;
 
 use crate::{menu_actions::MenuAction, ui::HoveringOverGui};
 
@@ -11,6 +12,7 @@ pub fn ui_sy(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<MenuAction>,
     diagnostics: Res<Diagnostics>,
+    mouse_pos_world: Res<MousePosWorld>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -41,16 +43,18 @@ pub fn ui_sy(
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {}",
-                    if let Some(diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-                        if let Some(fps) = diagnostic.average() {
-                            format!("{:.2}", fps)
-                        } else {
-                            "???".to_string()
-                        }
-                    } else {
-                        "???".to_string()
-                    }
+                    diagnostics
+                        .get(FrameTimeDiagnosticsPlugin::FPS)
+                        .and_then(|diagnostic| diagnostic.average())
+                        .map(|fps| format!("{:.2}", fps))
+                        .unwrap_or_else(|| "???".into()),
                 ));
+                ui.separator();
+                ui.label(format!(
+                    "x: {} z: {}",
+                    mouse_pos_world.round().x as i32,
+                    -mouse_pos_world.round().y as i32
+                ))
             })
         });
     });
