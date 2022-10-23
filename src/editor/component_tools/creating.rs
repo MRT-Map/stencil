@@ -18,6 +18,29 @@ use crate::{
     },
 };
 
+const ANGLE_VECTORS: [Vec2; 20] = [
+    Vec2::new(4.0, 0.0),
+    Vec2::new(4.0, 1.0),
+    Vec2::new(3.0, 1.0),
+    Vec2::new(2.0, 1.0),
+    Vec2::new(1.5, 1.0),
+    Vec2::new(1.0, 1.0),
+    Vec2::new(1.0, 1.5),
+    Vec2::new(1.0, 2.0),
+    Vec2::new(1.0, 3.0),
+    Vec2::new(1.0, 4.0),
+    Vec2::new(0.0, 4.0),
+    Vec2::new(-1.0, 4.0),
+    Vec2::new(-1.0, 3.0),
+    Vec2::new(-1.0, 2.0),
+    Vec2::new(-1.0, 1.5),
+    Vec2::new(-1.0, 1.0),
+    Vec2::new(-1.5, 1.0),
+    Vec2::new(-2.0, 1.0),
+    Vec2::new(-3.0, 1.0),
+    Vec2::new(-4.0, 1.0),
+];
+
 #[tracing::instrument(skip_all)]
 pub fn create_point_sy(
     mut commands: Commands,
@@ -53,6 +76,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     mut events: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     prev_namespace_used: Res<PrevNamespaceUsed>,
+    keys: Res<Input<KeyCode>>,
 ) {
     let ty = if IS_AREA {
         ComponentType::Area
@@ -62,8 +86,22 @@ pub fn create_component_sy<const IS_AREA: bool>(
     if !set.is_empty() {
         let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) = set.single_mut();
         let mut data = (*data).to_owned();
-        data.nodes
-            .push(mouse_pos_world.xy().round().as_ivec2().into());
+        let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
+        let mouse_pos_world = mouse_pos_world.xy();
+        let next_point =
+            if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
+                let closest_angle_vec = ANGLE_VECTORS
+                    .into_iter()
+                    .chain(ANGLE_VECTORS.iter().map(|a| -*a))
+                    .min_by_key(|v| {
+                        (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
+                    })
+                    .unwrap();
+                (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
+            } else {
+                mouse_pos_world
+            };
+        data.nodes.push(next_point.round().as_ivec2().into());
         commands
             .entity(entity)
             .insert_bundle(data.get_shape(&skin, false));
