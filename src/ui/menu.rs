@@ -27,6 +27,7 @@ pub fn ui_sy(
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
                 |ui| {
                     button!(ui, event_writer, "Info", "info");
+                    button!(ui, event_writer, "Changelog", "changelog");
                     button!(ui, event_writer, "Quit", "quit");
                 },
             );

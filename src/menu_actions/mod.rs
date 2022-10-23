@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod changelog;
 mod file;
 mod info;
 mod quit;
@@ -28,6 +29,7 @@ impl Plugin for MenuPlugin {
         app.add_event::<MenuAction>()
             .add_system(quit::quit_msy.exclusive_system())
             .add_system(info::info_msy)
+            .add_system(changelog::changelog_msy)
             .add_system(file::load_ns::load_ns_msy.exclusive_system())
             .add_system(file::save_ns::save_ns_msy.exclusive_system());
     }

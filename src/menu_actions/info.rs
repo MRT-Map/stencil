@@ -16,7 +16,7 @@ pub fn info_msy(mut events: EventReader<MenuAction>, mut popup: EventWriter<Arc<
         }),
         ui: Box::new(|ui, _, show| {
             ui.label("Made by __7d for the MRT Mapping Services");
-            ui.label("Changelogs would appear here...");
+            ui.label("Links would appear here...");
             if ui.button("Close").clicked() {
                 *show = false;
             }
