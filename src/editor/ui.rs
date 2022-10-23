@@ -5,6 +5,7 @@ use crate::{editor::ui::component_panel::PrevNamespaceUsed, types::EditorState};
 
 pub mod component_panel;
 pub mod menu;
+pub mod popup;
 pub mod toolbar;
 
 #[derive(Default)]
@@ -16,7 +17,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<PrevNamespaceUsed>()
-            .add_stage_before("events", "ui", SystemStage::single_threaded())
+            .add_stage_before(CoreStage::PreUpdate, "ui", SystemStage::single_threaded())
             .add_system_set_to_stage(
                 "ui",
                 ConditionSet::new()
@@ -46,7 +47,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system_to_stage(
-                CoreStage::PostUpdate,
+                CoreStage::Last,
                 |mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false,
             );
     }

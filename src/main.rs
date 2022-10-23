@@ -19,7 +19,7 @@ use crate::{
         cursor::{mouse_events::MouseEventsPlugin, CursorPlugin},
         menu_actions::MenuPlugin,
         tilemap::RenderingPlugin,
-        ui::UiPlugin,
+        ui::{popup::PopupPlugin, UiPlugin},
     },
     setup::SetupPlugin,
 };
@@ -59,5 +59,6 @@ fn main() {
         .add_plugin(MoveComponentPlugin)
         .add_plugin(EditNodePlugin)
         .add_plugin(MenuPlugin)
+        .add_plugin(PopupPlugin)
         .run();
 }

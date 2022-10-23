@@ -1,24 +1,28 @@
+use std::sync::Arc;
+
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::egui;
 
-use crate::{editor::menu_actions::MenuAction, menu};
+use crate::{
+    editor::{menu_actions::MenuAction, ui::popup::Popup},
+    menu,
+};
 
-pub fn info_msy(
-    mut events: EventReader<MenuAction>,
-    mut ctx: ResMut<EguiContext>,
-    mut show_window: Local<bool>,
-) {
-    if *show_window {
-        egui::Window::new(&format!("Stencil v{}", env!("CARGO_PKG_VERSION")))
-            .collapsible(false)
-            .show(ctx.ctx_mut(), |ui| {
-                ui.label("Made by __7d for the MRT Mapping Services");
-                ui.label("Changelogs would appear here...");
-                if ui.button("Close").clicked() {
-                    *show_window = false
-                }
-            });
-    }
+pub fn info_msy(mut events: EventReader<MenuAction>, mut popup: EventWriter<Arc<Popup>>) {
     menu!(events, "info");
-    *show_window = true;
+    popup.send(Arc::new(Popup {
+        id: "info",
+        window: Box::new(|| {
+            egui::Window::new(&format!("Stencil v{}", env!("CARGO_PKG_VERSION")))
+                .collapsible(false)
+                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        }),
+        ui: Box::new(|ui, _, show| {
+            ui.label("Made by __7d for the MRT Mapping Services");
+            ui.label("Changelogs would appear here...");
+            if ui.button("Close").clicked() {
+                *show = false;
+            }
+        }),
+    }));
 }

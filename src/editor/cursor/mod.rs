@@ -133,7 +133,8 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
+        app.add_system_set_to_stage(
+            CoreStage::PreUpdate,
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
                 .with_system(cursor_icon_sy)

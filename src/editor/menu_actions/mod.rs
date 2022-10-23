@@ -26,7 +26,7 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MenuAction>()
-            .add_system(quit::quit_msy)
+            .add_system(quit::quit_msy.exclusive_system())
             .add_system(info::info_msy)
             .add_system(file::load_ns::load_ns_msy.exclusive_system())
             .add_system(file::save_ns::save_ns_msy.exclusive_system());

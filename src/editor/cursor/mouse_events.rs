@@ -112,14 +112,13 @@ pub fn left_click_handler_sy(
 pub struct MouseEventsPlugin;
 impl Plugin for MouseEventsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_stage_before(CoreStage::Update, "events", SystemStage::parallel())
-            .add_event::<MouseEvent>()
-            .add_system_set(
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .with_system(left_click_handler_sy)
-                    .with_system(right_click_handler_sy)
-                    .into(),
-            );
+        app.add_event::<MouseEvent>().add_system_set_to_stage(
+            CoreStage::PreUpdate,
+            ConditionSet::new()
+                .run_not_in_state(EditorState::Loading)
+                .with_system(left_click_handler_sy)
+                .with_system(right_click_handler_sy)
+                .into(),
+        );
     }
 }
