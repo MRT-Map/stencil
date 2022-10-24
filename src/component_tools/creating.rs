@@ -86,6 +86,9 @@ pub fn create_component_sy<const IS_AREA: bool>(
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
+        if keys.just_released(KeyCode::Y) {
+            panic!("Y");
+        }
         let next_point =
             if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
                 let closest_angle_vec = ANGLE_VECTORS

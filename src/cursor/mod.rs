@@ -16,17 +16,21 @@ pub struct Crosshair;
 #[tracing::instrument(skip_all)]
 pub fn crosshair_sy(
     mut commands: Commands,
-    state: Res<CurrentState<EditorState>>,
+    state: Option<Res<CurrentState<EditorState>>>,
     mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
     server: Res<AssetServer>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    if !matches!(state.0, EditorState::CreatingComponent(_)) {
-        for (e, _, _) in ch.iter() {
-            debug!("Despawning crosshair");
-            commands.entity(e).despawn_recursive();
+    if let Some(state) = state {
+        if !matches!(state.0, EditorState::CreatingComponent(_)) {
+            for (e, _, _) in ch.iter() {
+                debug!("Despawning crosshair");
+                commands.entity(e).despawn_recursive();
+            }
+            return;
         }
+    } else {
         return;
     }
     let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
@@ -57,11 +61,16 @@ pub fn crosshair_sy(
 pub fn cursor_icon_sy(
     buttons: Res<Input<MouseButton>>,
     mut windows: ResMut<Windows>,
-    state: Res<CurrentState<EditorState>>,
+    state: Option<Res<CurrentState<EditorState>>>,
     hovering_over_gui: Res<HoveringOverGui>,
     hovered_comp: Query<(), With<HoveredComponent>>,
 ) {
-    if matches!(state.0, EditorState::CreatingComponent(_)) {
+    let state = if let Some(state) = state {
+        state.0
+    } else {
+        EditorState::Loading
+    };
+    if matches!(state, EditorState::CreatingComponent(_)) {
         windows
             .primary_mut()
             .set_cursor_visibility(hovering_over_gui.0);
@@ -72,7 +81,7 @@ pub fn cursor_icon_sy(
             return;
         }
     }
-    windows.primary_mut().set_cursor_icon(match state.0 {
+    windows.primary_mut().set_cursor_icon(match state {
         EditorState::Loading => CursorIcon::Wait,
         EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
             if !hovered_comp.is_empty() {
@@ -94,7 +103,6 @@ impl Plugin for CursorPlugin {
         app.add_system_set_to_stage(
             CoreStage::PreUpdate,
             ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
                 .with_system(cursor_icon_sy)
                 .with_system(crosshair_sy)
                 .into(),
