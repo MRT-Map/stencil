@@ -47,15 +47,20 @@ jobs:
         asset_name: ${{ matrix.asset_name }}
         tag: ${{ github.ref }}
       if: ${{ github.event.action != 'workflow_dispatch' }}
-  virustotal:
-    runs-on: ubuntu-latest
-    environment: VirusTotal
-    needs: build
-    steps:
-      -
-        name: VirusTotal Scan
-        uses: crazy-max/ghaction-virustotal@v3
-        with:
-          vt_api_key: ${{ secrets.VT_API_KEY }}
-          files: "target/release/stencil2?(.exe)"
-          update_release_body: true
+    - name: Create dmg
+      run: sh build/macos/build.sh
+      if: ${{ matrix.os == 'macos-latest' }}
+    - name: Upload dmg
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: stencil2.dmg
+        asset_name: stencil2.dmg
+        tag: ${{ github.ref }}
+      if: ${{ matrix.os == 'macos-latest' }}
+    - name: VirusTotal Scan
+      uses: crazy-max/ghaction-virustotal@v3
+      with:
+        vt_api_key: ${{ secrets.VT_API_KEY }}
+        files: "target/release/stencil2?(.exe)"
+        update_release_body: true

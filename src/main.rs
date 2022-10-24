@@ -5,7 +5,6 @@ use bevy::{
     render::texture::ImageSettings, window::WindowMode,
 };
 use bevy_egui::EguiPlugin;
-use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
@@ -42,7 +41,6 @@ fn main() {
         })
         .insert_resource(ImageSettings::default_nearest())
         .add_plugins_with(DefaultPlugins, |group| {
-            group.add_before::<AssetPlugin, _>(EmbeddedAssetPlugin);
             group.add_before::<AssetPlugin, _>(WebAssetPlugin)
         })
         .add_plugins(DefaultPickingPlugins)
