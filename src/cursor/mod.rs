@@ -5,7 +5,7 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    cursor::mouse_events::HoveredComponent, setup::EditorState, tilemap::zoom::Zoom,
+    cursor::mouse_events::HoveredComponent, misc::EditorState, tilemap::zoom::Zoom,
     ui::HoveringOverGui,
 };
 

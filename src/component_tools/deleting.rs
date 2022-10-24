@@ -4,8 +4,8 @@ use native_dialog::{MessageDialog, MessageType};
 
 use crate::{
     cursor::mouse_events::MouseEvent,
+    misc::EditorState,
     pla2::component::{EditorCoords, PlaComponent},
-    setup::EditorState,
 };
 
 #[tracing::instrument(skip_all)]

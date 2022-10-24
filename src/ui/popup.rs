@@ -7,13 +7,16 @@ use std::{
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::ui::{HoveringOverGui, UiStage};
+use crate::{
+    misc::Action,
+    ui::{HoveringOverGui, UiStage},
+};
 
 #[allow(clippy::type_complexity)]
 pub struct Popup {
     pub id: &'static str,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
-    pub ui: Box<dyn Fn(&mut egui::Ui, &mut EventWriter<PopupResponse>, &mut bool) + Sync + Send>,
+    pub ui: Box<dyn Fn(&mut egui::Ui, &mut EventWriter<Action>, &mut bool) + Sync + Send>,
 }
 
 impl Hash for Popup {
@@ -30,12 +33,10 @@ impl PartialEq<Self> for Popup {
 
 impl Eq for Popup {}
 
-pub struct PopupResponse(pub &'static str);
-
 pub fn popup_handler(
     mut ctx: ResMut<EguiContext>,
     mut event_reader: EventReader<Arc<Popup>>,
-    mut event_writer: EventWriter<PopupResponse>,
+    mut event_writer: EventWriter<Action>,
     mut show: Local<HashMap<Arc<Popup>, bool>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
 ) {
@@ -59,7 +60,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
-            .add_event::<PopupResponse>()
             .add_system_to_stage(UiStage, popup_handler);
     }
 }

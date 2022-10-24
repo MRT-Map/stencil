@@ -11,7 +11,7 @@ use iyes_loopless::prelude::*;
 use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
 
-use crate::{pla2::component::ComponentType, setup::EditorState};
+use crate::{misc::EditorState, pla2::component::ComponentType};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {

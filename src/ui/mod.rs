@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::{setup::EditorState, ui::component_panel::PrevNamespaceUsed};
+use crate::{misc::EditorState, ui::component_panel::PrevNamespaceUsed};
 
 pub mod component_panel;
 pub mod menu;

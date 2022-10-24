@@ -4,11 +4,11 @@ use iyes_loopless::{condition::ConditionSet, prelude::CurrentState};
 
 use crate::{
     cursor::mouse_events::{HoveredComponent, MouseEvent},
+    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
     },
-    setup::EditorState,
 };
 
 #[allow(clippy::type_complexity)]

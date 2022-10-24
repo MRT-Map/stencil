@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use zoom::Zoom;
 
-use crate::{setup::EditorState, ui::HoveringOverGui};
+use crate::{misc::EditorState, ui::HoveringOverGui};
 
 pub mod bundle;
 pub mod mouse_nav;

@@ -4,7 +4,7 @@ use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 use iyes_loopless::condition::ConditionSet;
 
 use crate::{
-    setup::EditorState,
+    misc::EditorState,
     ui::{HoveringOverGui, UiStage},
 };
 

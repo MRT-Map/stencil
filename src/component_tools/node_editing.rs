@@ -6,12 +6,12 @@ use iyes_loopless::{condition::ConditionSet, prelude::AppLooplessStateExt};
 
 use crate::{
     cursor::mouse_events::MouseEvent,
+    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    setup::EditorState,
     ui::UiStage,
 };
 

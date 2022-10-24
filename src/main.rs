@@ -20,6 +20,7 @@ mod component_actions;
 mod component_tools;
 mod cursor;
 mod menu_actions;
+mod misc;
 mod pla2;
 mod setup;
 mod tilemap;

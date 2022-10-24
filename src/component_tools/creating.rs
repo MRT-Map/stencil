@@ -7,12 +7,12 @@ use rand::distributions::{Alphanumeric, DistString};
 use crate::{
     component_actions::selecting::{deselect, DeselectQuery},
     cursor::mouse_events::MouseEvent,
+    misc::EditorState,
     pla2::{
         bundle::{ComponentBundle, CreatedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    setup::EditorState,
     ui::component_panel::PrevNamespaceUsed,
 };
 

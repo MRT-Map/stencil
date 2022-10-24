@@ -4,8 +4,8 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
+    misc::EditorState,
     pla2::{component::ComponentType, skin::Skin},
-    setup::EditorState,
     ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
 };
 

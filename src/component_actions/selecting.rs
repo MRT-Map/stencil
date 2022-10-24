@@ -4,12 +4,12 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     cursor::mouse_events::MouseEvent,
+    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    setup::EditorState,
     ui::UiStage,
 };
 

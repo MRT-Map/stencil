@@ -5,22 +5,28 @@ use bevy::{
 use bevy_egui::{egui, egui::Align, EguiContext};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
-use crate::{menu_actions::MenuAction, ui::HoveringOverGui};
+use crate::{misc::Action, ui::HoveringOverGui};
 
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
-    mut event_writer: EventWriter<MenuAction>,
+    mut event_writer: EventWriter<Action>,
     diagnostics: Res<Diagnostics>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
-                ($ui:ident, $ew:ident, $label:literal, $id:literal) => {
+                ($ui:ident, $ew:ident, $label:literal, $id:literal, $payload:expr) => {
                     if $ui.button($label).clicked() {
-                        $ew.send(MenuAction($id))
+                        $ew.send(Action {
+                            id: $id,
+                            payload: Box::new($payload),
+                        })
                     }
+                };
+                ($ui:ident, $ew:ident, $label:literal, $id:literal) => {
+                    button!($ui, $ew, $label, $id, ())
                 };
             }
 
