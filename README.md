@@ -14,3 +14,30 @@ Still WIP!
 * Cargo: `cargo install --git https://github.com/MRT-Map/stencil2` (omit `./` from this step onwards in this case)
 * As an executable (see the releases for downloads for windows, mac and ubuntu) (save it as `stencil2` / `stencil2.exe`), you would then have to navigate in the command line to the same directory as where you downloaded the executable to
 * For mac/linux you may have to `chmod +x ./stencil2`, unless you downloaded it via Cargo
+
+## Installation
+* **Windows**
+  * Command Line (Invoke-WebRequest)
+    * Run `Invoke-WebRequest -Uri "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-windows" -OutFile "stencil2.exe"
+      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
+    * Launch Stencil from File Explorer
+  * msi (soon)
+  * scoop, chocolatey etc (soon)
+* **MacOS**
+  * As .dmg
+    * Download the .dmg file in the assets folder of the latest GitHub release
+    * Open the .dmg file and drag the application into the folder
+    * Launch stencil2
+  * Command Line (curl)
+    * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-macos" -Lo stencil2
+      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
+    * Run `chmod +x stencil2`
+    * Launch stencil2 with `./stencil2`
+  * brew (soon)
+* **Linux**
+  * Command Line (curl)
+    * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-ubuntu" -Lo stencil2
+      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
+    * Run `chmod +x stencil2`
+    * Launch stencil2 with `./stencil2`
+  * snap, .deb, flatpak, appimage etc (soon)
