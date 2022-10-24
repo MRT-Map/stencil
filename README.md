@@ -16,6 +16,11 @@ Still WIP!
 * For mac/linux you may have to `chmod +x ./stencil2`, unless you downloaded it via Cargo
 
 ## Installation
+* **Universal**
+  * Cargo
+    * Run `cargo toolchain install nightly` if the nightly compiler isn't installed
+    * Run `cargo +nightly install --git https://github.com/MRT-Map/stencil2`
+    * Launch stencil2 with `stencil2`
 * **Windows**
   * Command Line (Invoke-WebRequest)
     * Run `Invoke-WebRequest -Uri "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-windows" -OutFile "stencil2.exe"`
