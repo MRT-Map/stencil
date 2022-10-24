@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use bevy::{
-    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogSettings, prelude::*,
     render::texture::ImageSettings, window::WindowMode,
 };
 use bevy_egui::EguiPlugin;
@@ -35,6 +35,10 @@ fn main() {
             title: "Stencil".to_string(),
             mode: WindowMode::BorderlessFullscreen,
             ..default()
+        })
+        .insert_resource(LogSettings {
+            filter: "warn,bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
+            level: bevy::log::Level::DEBUG,
         })
         .insert_resource(ImageSettings::default_nearest())
         .add_plugins_with(DefaultPlugins, |group| {
