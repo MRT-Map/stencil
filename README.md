@@ -8,14 +8,6 @@ The better stencil. Map editor for MRT Map data
 Still WIP!
 
 ## Installation
-* Command line: (`<version>` is the version number (with `v`) and `<os>` is one of `windows`, `macos`, `ubuntu`)
-  * Windows Powershell: `Invoke-WebRequest -Uri "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-<os>" -OutFile "stencil2.exe"`
-  * Mac / Linux: `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-<os>" -Lo stencil2` (needs curl)
-* Cargo: `cargo install --git https://github.com/MRT-Map/stencil2` (omit `./` from this step onwards in this case)
-* As an executable (see the releases for downloads for windows, mac and ubuntu) (save it as `stencil2` / `stencil2.exe`), you would then have to navigate in the command line to the same directory as where you downloaded the executable to
-* For mac/linux you may have to `chmod +x ./stencil2`, unless you downloaded it via Cargo
-
-## Installation
 * **Universal**
   * Cargo
     * Run `cargo toolchain install nightly` if the nightly compiler isn't installed
