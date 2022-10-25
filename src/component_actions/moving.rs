@@ -23,7 +23,7 @@ pub fn move_component_sy(
         With<SelectedComponent>,
     >,
     mut orig: Local<Option<(MousePosWorld, Vec3)>>,
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<CurrentState<EditorState>>,
 ) {
@@ -50,7 +50,7 @@ pub fn move_component_sy(
         transform.translation.y =
             (mouse_pos_world.y - orig_mouse_pos_world.y + orig_select_translation.y).round();
     }
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             if hovered.is_some() {
                 *orig = Some((*mouse_pos_world, transform.translation));

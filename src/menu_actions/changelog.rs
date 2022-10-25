@@ -6,10 +6,10 @@ use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
 use crate::{action, misc::Action, ui::popup::Popup};
 
-pub fn changelog_msy(mut events: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
-    action!(events, "changelog", |_| {
+pub fn changelog_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
+    action!(actions; "changelog", (), |_| {
         popup.send(Arc::new(Popup {
-            id: "changelog",
+            id: "changelog".into(),
             window: Box::new(|| {
                 egui::Window::new("Changelog")
                     .collapsible(false)

@@ -20,7 +20,7 @@ pub fn ui_sy(
                 ($ui:ident, $ew:ident, $label:literal, $id:literal, $payload:expr) => {
                     if $ui.button($label).clicked() {
                         $ew.send(Action {
-                            id: $id,
+                            id: $id.into(),
                             payload: Box::new($payload),
                         })
                     }

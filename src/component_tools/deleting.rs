@@ -10,12 +10,12 @@ use crate::{
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, Entity)>,
     _non_send: Option<NonSend<()>>,
 ) {
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let pla: &PlaComponent<EditorCoords> = query.iter().find(|(_, a)| a == e).unwrap().0;
             if pla.nodes.len() > 5 && !MessageDialog::default()

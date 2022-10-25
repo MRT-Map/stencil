@@ -42,12 +42,12 @@ const ANGLE_VECTORS: [Vec2; 20] = [
 #[tracing::instrument(skip_all)]
 pub fn create_point_sy(
     mut commands: Commands,
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
     prev_namespace_used: Res<PrevNamespaceUsed>,
 ) {
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             let mut new_point = ComponentBundle::new({
                 let mut point = PlaComponent::new(ComponentType::Point);
@@ -71,7 +71,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     mut set: CreatedQuery,
     mut commands: Commands,
     skin: Res<Skin>,
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     prev_namespace_used: Res<PrevNamespaceUsed>,
     keys: Res<Input<KeyCode>>,
@@ -107,7 +107,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
             .entity(entity)
             .insert_bundle(data.get_shape(&skin, false));
     }
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             if set.is_empty() {
                 let mut new_comp = ComponentBundle::new({

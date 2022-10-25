@@ -1,4 +1,4 @@
-use std::any::Any;
+use std::{any::Any, fmt::Display};
 
 use crate::pla2::component::ComponentType;
 
@@ -13,6 +13,14 @@ pub enum EditorState {
 }
 
 pub struct Action<P: Send + Sync + ?Sized = dyn Any + Send + Sync> {
-    pub id: &'static str,
+    pub id: String,
     pub payload: Box<P>,
+}
+impl Action {
+    pub fn new(id: impl Display) -> Self {
+        Self {
+            id: id.to_string(),
+            payload: Box::new(()),
+        }
+    }
 }

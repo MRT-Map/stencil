@@ -1,8 +1,8 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
 use bevy::prelude::*;
 use itertools::Itertools;
-use native_dialog::{FileDialog, MessageDialog, MessageType};
+use native_dialog::FileDialog;
 
 use crate::{
     action,
@@ -12,82 +12,79 @@ use crate::{
         component::{EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
+    ui::popup::Popup,
     EventReader,
 };
 
 pub fn load_ns_msy(
-    mut events: EventReader<Action>,
+    mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
+    mut popup: EventWriter<Arc<Popup>>,
     mut commands: Commands,
     skin: Res<Skin>,
     existing_comps: Query<(&PlaComponent<EditorCoords>, Entity)>,
 ) {
-    action!(events, "load_ns", |_| {
+    let mut send_queue: Vec<Action> = vec![];
+    action!(actions.p0(); "load_ns", (), |_| {
         let files = FileDialog::default().show_open_multiple_file().unwrap();
-        let existing_namespaces: HashSet<&String> = existing_comps
+        let existing_namespaces: Arc<HashSet<String>> = Arc::new(existing_comps
             .iter()
-            .map(|(a, _)| &a.namespace)
+            .map(|(a, _)| a.namespace.to_owned())
             .sorted()
             .dedup()
-            .collect::<HashSet<_>>();
-        for file in &files {
-            let bytes = std::fs::read(file).unwrap();
-            let content: Vec<PlaComponent<MCCoords>> = match rmp_serde::from_slice(&bytes) {
-                Ok(res) => res,
-                Err(err) => {
-                    MessageDialog::default()
-                        .set_title(&format!("Error parsing {}", file.display()))
-                        .set_text(&format!("Error: {err}"))
-                        .set_type(MessageType::Error)
-                        .show_alert()
-                        .unwrap();
-                    continue;
-                }
-            };
-            if let Some(first) = content.first() {
-                if existing_namespaces.contains(&first.namespace) {
-                    if MessageDialog::default()
-                        .set_title(&format!(
-                            "The namespace {} is already loaded.",
-                            first.namespace
-                        ))
-                        .set_text("Do you want to override this namespace?")
-                        .set_type(MessageType::Warning)
-                        .show_confirm()
-                        .unwrap()
-                    {
-                        existing_comps
-                            .iter()
-                            .filter(|(a, _)| a.namespace == first.namespace)
-                            .map(|(_, a)| a)
-                            .for_each(|a| commands.entity(a).despawn_recursive())
-                    } else {
-                        continue;
-                    }
-                }
+            .collect::<HashSet<_>>());
+        for file in files {
+            send_queue.push(Action {
+                id: "load_ns1".into(),
+                payload: Box::new((
+                    file,
+                    existing_namespaces.to_owned()
+                ))
+            })
+        }
+    }; "load_ns1", (PathBuf, Arc<HashSet<String>>), |(file, existing_namespaces): &(PathBuf, Arc<HashSet<String>>)| {
+        let bytes = std::fs::read(file).unwrap();
+        let content: Vec<PlaComponent<MCCoords>> = match rmp_serde::from_slice(&bytes) {
+            Ok(res) => res,
+            Err(err) => {
+                popup.send(Arc::new(Popup::base_alert(
+                    format!("load_ns_err_{}", file.display()),
+                    format!("Error parsing {}", file.display()),
+                    format!("Error: {err}")
+                )));
+                return
             }
-            for comp in content {
-                let mut bundle = ComponentBundle::new(comp.to_editor_coords());
-                bundle.update_shape(&skin);
-                commands.spawn_bundle(bundle);
+        };
+        if let Some(first) = content.first() {
+            if existing_namespaces.contains(&first.namespace) {
+                popup.send(Arc::new(Popup::base_confirm(
+                    "load_ns2",
+                    format!(
+                        "The namespace {} is already loaded.",
+                        first.namespace
+                    ),
+                    "Do you want to override this namespace?",
+                    content
+                )));
+                return
             }
         }
-        MessageDialog::default()
-            .set_title("Components loaded")
-            .set_text(&format!(
-                "Namespaces: {}",
-                files
-                    .iter()
-                    .filter_map(|f| Some(
-                        f.file_stem()?
-                            .to_string_lossy()
-                            .split('.')
-                            .next()?
-                            .to_owned()
-                    ))
-                    .join(", ")
-            ))
-            .set_type(MessageType::Info)
-            .show_alert()
-            .unwrap();
+        send_queue.push(Action {
+            id: "load_ns1".into(),
+            payload: Box::new(content)
+        });
+    }; "load_ns2", Vec<PlaComponent<MCCoords>>, |content: &Vec<PlaComponent<MCCoords>>| {
+        for comp in content {
+            let mut bundle = ComponentBundle::new(comp.to_editor_coords());
+            bundle.update_shape(&skin);
+            commands.spawn_bundle(bundle);
+        }
+        popup.send(Arc::new(Popup::base_alert(
+            "load_ns_success",
+            "Loaded",
+            format!("Successfully loaded {}", content[0].namespace)
+        )))
     });
+    for action in send_queue {
+        actions.p1().send(action)
+    }
 }

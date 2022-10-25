@@ -1,32 +1,36 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use bevy::prelude::*;
 use itertools::Itertools;
-use native_dialog::{FileDialog, MessageDialog, MessageType};
+use native_dialog::FileDialog;
 
 use crate::{
     action,
     misc::Action,
     pla2::component::{EditorCoords, MCCoords, PlaComponent},
+    ui::popup::Popup,
     EventReader,
 };
 
-pub fn save_ns_msy(mut events: EventReader<Action>, query: Query<&PlaComponent<EditorCoords>>) {
-    action!(events, "save_ns", |_| {
+pub fn save_ns_msy(
+    mut actions: EventReader<Action>,
+    query: Query<&PlaComponent<EditorCoords>>,
+    mut popup: EventWriter<Arc<Popup>>,
+) {
+    action!(actions; "save_ns", (), |_| {
         let comps = query.iter().collect::<Vec<_>>();
         let mut files: HashMap<&String, Vec<PlaComponent<MCCoords>>> = HashMap::new();
         for comp in comps {
             if comp.namespace.is_empty() {
-                MessageDialog::default()
-                    .set_title("Empty namespace detected!")
-                    .set_text(&format!(
+                popup.send(Arc::new(Popup::base_alert(
+                    "save_ns_err",
+                    "Empty namespace detected!",
+                    format!(
                         "It is at {}, {}",
                         comp.nodes[0].0.x, comp.nodes[0].0.y
-                    ))
-                    .set_type(MessageType::Error)
-                    .show_alert()
-                    .unwrap();
-                return;
+                    )
+                )));
+                return
             }
             files
                 .entry(&comp.namespace)
@@ -43,11 +47,10 @@ pub fn save_ns_msy(mut events: EventReader<Action>, query: Query<&PlaComponent<E
             fp.push(PathBuf::from(format!("{ns}.pla2.msgpack")));
             std::fs::write(fp, rmp_serde::to_vec_named(comps).unwrap()).unwrap();
         }
-        MessageDialog::default()
-            .set_title("Components saved!")
-            .set_text(&format!("Namespaces: {}", files.keys().join(", ")))
-            .set_type(MessageType::Info)
-            .show_alert()
-            .unwrap();
+        popup.send(Arc::new(Popup::base_alert(
+            "save_ns_success",
+            "Components saved!",
+            format!("Namespaces: {}", files.keys().join(", "))
+        )))
     });
 }

@@ -29,7 +29,7 @@ pub fn edit_nodes_sy(
     mut selected: Query<(&mut PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     mut commands: Commands,
     mut orig: Local<Option<Orig>>,
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
 ) {
@@ -51,7 +51,7 @@ pub fn edit_nodes_sy(
     }
 
     let mut clear_orig = false;
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             #[derive(Debug, Eq, PartialEq, Hash)]
             #[allow(dead_code)]

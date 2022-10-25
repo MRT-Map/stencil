@@ -18,7 +18,7 @@ use crate::{
 pub fn selector_sy(
     mut commands: Commands,
     state: Res<CurrentState<EditorState>>,
-    mut events: EventReader<MouseEvent>,
+    mut mouse: EventReader<MouseEvent>,
     deselect_query: DeselectQuery,
 ) {
     if matches!(
@@ -27,7 +27,7 @@ pub fn selector_sy(
     ) {
         return;
     }
-    for event in events.iter() {
+    for event in mouse.iter() {
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
                 select_entity(&mut commands, &deselect_query, e);
