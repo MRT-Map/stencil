@@ -5,19 +5,6 @@ mod file;
 mod info;
 mod quit;
 
-#[macro_export]
-macro_rules! action {
-    ($events:expr; $($id:literal, $ty:ty, $f:expr);+) => {{
-        for event in $events.iter() {
-            $(if event.id == $id {
-                let payload = event.payload.downcast_ref::<$ty>().unwrap();
-                $f(payload)
-            })else+
-        }
-    }};
-
-}
-
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
