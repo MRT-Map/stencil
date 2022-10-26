@@ -1,5 +1,8 @@
 use std::{any::Any, fmt::Display};
 
+use bevy::prelude::*;
+use iyes_loopless::prelude::NextState;
+
 use crate::pla2::component::ComponentType;
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
@@ -21,6 +24,15 @@ impl Action {
         Self {
             id: id.to_string(),
             payload: Box::new(()),
+        }
+    }
+}
+
+pub fn state_changer_msy(mut commands: Commands, mut actions: EventReader<Action>) {
+    for event in actions.iter() {
+        if event.id == "change_state" {
+            let state: &EditorState = event.payload.downcast_ref().unwrap();
+            commands.insert_resource(NextState(*state))
         }
     }
 }

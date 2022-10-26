@@ -4,7 +4,7 @@ use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    misc::{Action, EditorState},
+    misc::{state_changer_msy, Action, EditorState},
     pla2::skin::{request_skin_sy, retrieve_skin_sy, Skin},
 };
 
@@ -16,6 +16,7 @@ impl Plugin for SetupPlugin {
             .init_resource::<Skin>()
             .add_event::<Action>()
             .add_startup_system(request_skin_sy)
+            .add_system(state_changer_msy)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(EditorState::Loading)

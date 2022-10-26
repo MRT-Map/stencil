@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use iyes_loopless::prelude::*;
 
 use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
-    misc::EditorState,
+    misc::{Action, EditorState},
     pla2::{component::ComponentType, skin::Skin},
     ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
 };
@@ -12,6 +11,7 @@ use crate::{
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut _commands: Commands,
+    mut _actions: EventWriter<Action>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut cv: Local<&'static str>,
     mut _created_query: CreatedQuery,
@@ -33,7 +33,10 @@ pub fn ui_sy(
                             &_skin,
                             &_prev_namespace_used.0,
                         );
-                        _commands.insert_resource(NextState($next_state));
+                        _actions.send(Action {
+                            id: "change_state".into(),
+                            payload: Box::new($next_state),
+                        });
                     }
                 };
             }
