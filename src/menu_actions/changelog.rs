@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use bevy::prelude::*;
 use bevy_egui::egui;
@@ -9,14 +9,14 @@ use crate::{misc::Action, ui::popup::Popup};
 pub fn changelog_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
         if event.id == "changelog" {
-            popup.send(Arc::new(Popup {
-                id: "changelog".into(),
-                window: Box::new(|| {
+            popup.send(Popup::new(
+                "changelog",
+                || {
                     egui::Window::new("Changelog")
                         .collapsible(false)
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-                }),
-                ui: Box::new(|ui, _, show| {
+                },
+                |_, ui, _, show| {
                     let mut cache = CommonMarkCache::default();
                     CommonMarkViewer::new("viewer").show(
                         ui,
@@ -26,8 +26,9 @@ pub fn changelog_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Ar
                     if ui.button("Close").clicked() {
                         *show = false;
                     }
-                }),
-            }));
+                },
+                Mutex::new(Box::new(())),
+            ));
         }
     }
 }

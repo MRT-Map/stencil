@@ -47,22 +47,22 @@ pub fn load_ns_msy(
             let content: Vec<PlaComponent<MCCoords>> = match rmp_serde::from_slice(&bytes) {
                 Ok(res) => res,
                 Err(err) => {
-                    popup.send(Arc::new(Popup::base_alert(
+                    popup.send(Popup::base_alert(
                         format!("load_ns_err_{}", file.display()),
                         format!("Error parsing {}", file.display()),
                         format!("Error: {err}"),
-                    )));
+                    ));
                     return;
                 }
             };
             if let Some(first) = content.first() {
                 if existing_namespaces.contains(&first.namespace) {
-                    popup.send(Arc::new(Popup::base_confirm(
+                    popup.send(Popup::base_confirm(
                         "load_ns2",
                         format!("The namespace {} is already loaded.", first.namespace),
                         "Do you want to override this namespace?",
                         content,
-                    )));
+                    ));
                     return;
                 }
             }
@@ -77,11 +77,11 @@ pub fn load_ns_msy(
                 bundle.update_shape(&skin);
                 commands.spawn_bundle(bundle);
             }
-            popup.send(Arc::new(Popup::base_alert(
+            popup.send(Popup::base_alert(
                 "load_ns_success",
                 "Loaded",
                 format!("Successfully loaded {}", content[0].namespace),
-            )))
+            ))
         }
     }
     for action in send_queue {

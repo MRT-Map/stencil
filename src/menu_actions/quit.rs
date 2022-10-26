@@ -20,12 +20,12 @@ pub fn quit_msy(
             if components.is_empty() || cfg!(debug_assertions) {
                 send_queue.push(Action::new("quit1"));
             } else {
-                popup.send(Arc::new(Popup::base_confirm(
+                popup.send(Popup::base_confirm(
                     "quit1",
                     "Are you sure you want to exit?",
                     "You may have unsaved changes",
                     (),
-                )))
+                ))
             };
         } else if event.id == "quit1" {
             exit.send(AppExit)

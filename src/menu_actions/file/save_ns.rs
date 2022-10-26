@@ -22,11 +22,11 @@ pub fn save_ns_msy(
             let mut files: HashMap<&String, Vec<PlaComponent<MCCoords>>> = HashMap::new();
             for comp in comps {
                 if comp.namespace.is_empty() {
-                    popup.send(Arc::new(Popup::base_alert(
+                    popup.send(Popup::base_alert(
                         "save_ns_err",
                         "Empty namespace detected!",
                         format!("It is at {}, {}", comp.nodes[0].0.x, comp.nodes[0].0.y),
-                    )));
+                    ));
                     return;
                 }
                 files
@@ -44,11 +44,11 @@ pub fn save_ns_msy(
                 fp.push(PathBuf::from(format!("{ns}.pla2.msgpack")));
                 std::fs::write(fp, rmp_serde::to_vec_named(comps).unwrap()).unwrap();
             }
-            popup.send(Arc::new(Popup::base_alert(
+            popup.send(Popup::base_alert(
                 "save_ns_success",
                 "Components saved!",
                 format!("Namespaces: {}", files.keys().join(", ")),
-            )))
+            ))
         }
     }
 }

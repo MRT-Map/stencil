@@ -160,11 +160,11 @@ pub fn get_skin_sy(
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                popup.send(Arc::new(Popup::base_alert(
+                popup.send(Popup::base_alert(
                     "quit1",
-                    "Unable to load skin, make sure you are connected to the internet.",
-                    format!("Error: {:?}", err),
-                )));
+                    "Unable to load skin",
+                    format!("Make sure you are connected to the internet.\nError: {err}"),
+                ));
                 *task_s = Step::Complete;
             }
         },

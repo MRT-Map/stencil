@@ -2,7 +2,7 @@ use std::{
     any::Any,
     collections::HashMap,
     hash::{Hash, Hasher},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 
 use bevy::prelude::*;
@@ -14,40 +14,66 @@ use crate::{
 };
 
 #[allow(clippy::type_complexity)]
-pub struct Popup {
+pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub id: String,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
-    pub ui: Box<dyn Fn(&mut egui::Ui, &mut EventWriter<Action>, &mut bool) + Sync + Send>,
+    pub ui: Box<
+        dyn Fn(&Mutex<Box<T>>, &mut egui::Ui, &mut EventWriter<Action>, &mut bool)
+            + Sync
+            + Send
+            + 'static,
+    >,
+    pub state: Mutex<Box<T>>,
 }
 
-impl Hash for Popup {
+impl<T: Send + Sync + ?Sized> Hash for Popup<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state)
     }
 }
 
-impl PartialEq<Self> for Popup {
+impl<T: Send + Sync + ?Sized> PartialEq<Self> for Popup<T> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl Eq for Popup {}
+impl<T: Send + Sync + ?Sized> Eq for Popup<T> {}
 
 impl Popup {
+    pub fn new(
+        id: impl std::fmt::Display,
+        window: impl Fn() -> egui::Window<'static> + Sync + Send + 'static,
+        ui: impl Fn(
+                &Mutex<Box<dyn Any + Send + Sync>>,
+                &mut egui::Ui,
+                &mut EventWriter<Action>,
+                &mut bool,
+            ) + Sync
+            + Send
+            + 'static,
+        state: Mutex<Box<dyn Any + Send + Sync>>,
+    ) -> Arc<Self> {
+        Arc::new(Self {
+            id: id.to_string(),
+            window: Box::new(window),
+            ui: Box::new(ui),
+            state,
+        })
+    }
     pub fn base_alert(
         id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-    ) -> Self {
-        Self {
-            id: id.to_string(),
-            window: Box::new(move || {
+    ) -> Arc<Self> {
+        Self::new(
+            id.to_string(),
+            move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-            }),
-            ui: Box::new(move |ui, ew, show| {
+            },
+            move |_, ui, ew, show| {
                 ui.label(text.to_owned());
                 if ui.button("Close").clicked() {
                     ew.send(Action {
@@ -56,23 +82,24 @@ impl Popup {
                     });
                     *show = false;
                 }
-            }),
-        }
+            },
+            Mutex::new(Box::new(())),
+        )
     }
     pub fn base_confirm(
         id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         payload: impl Any + Sync + Send + Clone,
-    ) -> Self {
-        Self {
-            id: id.to_string(),
-            window: Box::new(move || {
+    ) -> Arc<Self> {
+        Self::new(
+            id.to_string(),
+            move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-            }),
-            ui: Box::new(move |ui, ew, show| {
+            },
+            move |_, ui, ew, show| {
                 ui.label(text.to_owned());
                 if ui.button("Yes").clicked() {
                     ew.send(Action {
@@ -84,8 +111,9 @@ impl Popup {
                 if ui.button("No").clicked() {
                     *show = false;
                 }
-            }),
-        }
+            },
+            Mutex::new(Box::new(())),
+        )
     }
 }
 
@@ -93,22 +121,24 @@ pub fn popup_handler(
     mut ctx: ResMut<EguiContext>,
     mut event_reader: EventReader<Arc<Popup>>,
     mut event_writer: EventWriter<Action>,
-    mut show: Local<HashMap<Arc<Popup>, bool>>,
+    mut show: Local<HashMap<String, (Arc<Popup>, bool)>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
 ) {
     for popup in event_reader.iter() {
-        show.insert(popup.to_owned(), true);
+        show.insert(popup.id.to_owned(), (popup.to_owned(), true));
     }
     let ctx = ctx.ctx_mut();
-    for (popup, showed) in show.iter_mut() {
+    for (_, (popup, showed)) in show.iter_mut() {
         let response: egui::InnerResponse<Option<()>> = (popup.window)()
-            .show(ctx, |ui| (popup.ui)(ui, &mut event_writer, showed))
+            .show(ctx, |ui| {
+                (popup.ui)(&popup.state, ui, &mut event_writer, showed)
+            })
             .unwrap();
         if response.response.hovered() {
             hovering_over_gui.0 = true;
         }
     }
-    show.retain(|_, a| *a);
+    show.retain(|_, (_, a)| *a);
 }
 
 pub struct PopupPlugin;
