@@ -86,9 +86,6 @@ pub fn create_component_sy<const IS_AREA: bool>(
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
-        if keys.just_released(KeyCode::Y) {
-            panic!("Y");
-        }
         let next_point =
             if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
                 let closest_angle_vec = ANGLE_VECTORS
@@ -109,12 +106,11 @@ pub fn create_component_sy<const IS_AREA: bool>(
     }
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
+            let new = mouse_pos_world.xy().round().as_ivec2().into();
             if set.is_empty() {
                 let mut new_comp = ComponentBundle::new({
                     let mut point = PlaComponent::new(ty);
-                    point
-                        .nodes
-                        .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    point.nodes.push(new);
                     point
                 });
                 debug!("Starting new line/area at {:?}", mouse_pos_world);
@@ -123,8 +119,15 @@ pub fn create_component_sy<const IS_AREA: bool>(
             } else {
                 let (mut data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
                     set.single_mut();
-                data.nodes
-                    .push(mouse_pos_world.xy().round().as_ivec2().into());
+                if data.nodes.last() == Some(&new) {
+                    data.nodes.pop();
+                    if data.nodes.is_empty() {
+                        commands.entity(entity).despawn_recursive();
+                        continue;
+                    }
+                } else {
+                    data.nodes.push(new);
+                }
                 debug!(
                     ?entity,
                     "Continuing line/area at {:?}",

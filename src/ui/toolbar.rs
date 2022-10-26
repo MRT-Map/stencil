@@ -8,6 +8,7 @@ use crate::{
     ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
 };
 
+#[allow(clippy::too_many_arguments)]
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut _commands: Commands,
