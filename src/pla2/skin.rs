@@ -1,17 +1,15 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use bevy::{
-    app::AppExit,
     prelude::*,
     tasks::{AsyncComputeTaskPool, Task},
 };
 use futures_lite::future;
 use hex_color::HexColor;
 use iyes_loopless::prelude::*;
-use native_dialog::{MessageDialog, MessageType};
 use serde::{Deserialize, Serialize};
 
-use crate::{misc::EditorState, pla2::component::ComponentType};
+use crate::{misc::EditorState, pla2::component::ComponentType, ui::popup::Popup};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {
@@ -129,43 +127,47 @@ pub struct Skin {
     pub types: HashMap<String, SkinComponent>,
 }
 
-#[derive(Component)]
-pub struct AsyncTask<T>(Task<T>);
-
-pub fn request_skin_sy(mut commands: Commands) {
-    let thread_pool = AsyncComputeTaskPool::get();
-    let task = thread_pool.spawn(async move {
-        surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
-            .recv_json::<Skin>().await
-    });
-    info!("Retrieving skin");
-    commands.spawn().insert(AsyncTask(task));
+#[derive(Default)]
+pub enum Step<T> {
+    #[default]
+    Uninitialised,
+    Pending(Task<T>),
+    Complete,
 }
 
-pub fn retrieve_skin_sy(
+pub fn get_skin_sy(
     mut commands: Commands,
-    mut tasks: Query<(Entity, &mut AsyncTask<surf::Result<Skin>>)>,
-    mut exit: EventWriter<AppExit>,
+    mut task_s: Local<Step<surf::Result<Skin>>>,
+    mut popup: EventWriter<Arc<Popup>>,
 ) {
-    for (entity, mut task) in tasks.iter_mut() {
-        match future::block_on(future::poll_once(&mut task.0)) {
+    match &mut *task_s {
+        Step::Uninitialised => {
+            let thread_pool = AsyncComputeTaskPool::get();
+            let new_task = thread_pool.spawn(async move {
+                surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
+                    .recv_json::<Skin>().await
+            });
+            info!("Retrieving skin");
+            *task_s = Step::Pending(new_task);
+        }
+        Step::Pending(task) => match future::block_on(future::poll_once(task)) {
             None => {}
             Some(Ok(skin)) => {
                 info!("Retrieved");
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(EditorState::Idle));
-                commands.entity(entity).despawn_recursive();
+                *task_s = Step::Complete;
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                MessageDialog::new()
-                    .set_type(MessageType::Error)
-                    .set_title("Unable to load skin, make sure you are connected to the internet.")
-                    .set_text(&format!("Error: {:?}", err))
-                    .show_alert()
-                    .unwrap();
-                exit.send(AppExit)
+                popup.send(Arc::new(Popup::base_alert(
+                    "quit1",
+                    "Unable to load skin, make sure you are connected to the internet.",
+                    format!("Error: {:?}", err),
+                )));
+                *task_s = Step::Complete;
             }
-        }
+        },
+        Step::Complete => {}
     }
 }

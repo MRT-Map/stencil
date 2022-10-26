@@ -36,7 +36,7 @@ impl Eq for Popup {}
 
 impl Popup {
     pub fn base_alert(
-        id: impl std::fmt::Display,
+        id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
     ) -> Self {
@@ -47,9 +47,13 @@ impl Popup {
                     .collapsible(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             }),
-            ui: Box::new(move |ui, _, show| {
+            ui: Box::new(move |ui, ew, show| {
                 ui.label(text.to_owned());
                 if ui.button("Close").clicked() {
+                    ew.send(Action {
+                        id: id.to_string(),
+                        payload: Box::new(()),
+                    });
                     *show = false;
                 }
             }),
