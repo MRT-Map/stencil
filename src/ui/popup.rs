@@ -66,12 +66,14 @@ impl Popup {
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
     ) -> Arc<Self> {
+        let win_id = egui::Id::new(id.to_string());
         Self::new(
             id.to_string(),
             move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .id(win_id)
             },
             move |_, ui, ew, show| {
                 ui.label(text.to_owned());
@@ -92,12 +94,14 @@ impl Popup {
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         payload: impl Any + Sync + Send + Clone,
     ) -> Arc<Self> {
+        let win_id = egui::Id::new(id.to_string());
         Self::new(
             id.to_string(),
             move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .id(win_id)
             },
             move |_, ui, ew, show| {
                 ui.label(text.to_owned());

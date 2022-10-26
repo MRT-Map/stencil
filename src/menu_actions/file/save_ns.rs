@@ -2,12 +2,11 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use bevy::prelude::*;
 use itertools::Itertools;
-use native_dialog::FileDialog;
 
 use crate::{
     misc::Action,
     pla2::component::{EditorCoords, MCCoords, PlaComponent},
-    ui::popup::Popup,
+    ui::{file_explorer::save_single_dir, popup::Popup},
     EventReader,
 };
 
@@ -18,6 +17,13 @@ pub fn save_ns_msy(
 ) {
     for event in actions.iter() {
         if event.id == "save_ns" {
+            save_single_dir("save_ns1", &mut popup);
+        } else if event.id == "save_ns1" {
+            let dir = if let Some(dir) = event.payload.downcast_ref::<Option<PathBuf>>().unwrap() {
+                dir
+            } else {
+                continue;
+            };
             let comps = query.iter().collect::<Vec<_>>();
             let mut files: HashMap<&String, Vec<PlaComponent<MCCoords>>> = HashMap::new();
             for comp in comps {
@@ -27,18 +33,13 @@ pub fn save_ns_msy(
                         "Empty namespace detected!",
                         format!("It is at {}, {}", comp.nodes[0].0.x, comp.nodes[0].0.y),
                     ));
-                    return;
+                    continue;
                 }
                 files
                     .entry(&comp.namespace)
                     .or_default()
                     .push(comp.to_mc_coords())
             }
-            let dir = if let Some(dir) = FileDialog::default().show_open_single_dir().unwrap() {
-                dir
-            } else {
-                return;
-            };
             for (ns, comps) in files.iter() {
                 let mut fp = dir.to_owned();
                 fp.push(PathBuf::from(format!("{ns}.pla2.msgpack")));
