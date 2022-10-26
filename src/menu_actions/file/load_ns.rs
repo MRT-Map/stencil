@@ -1,4 +1,4 @@
-use std::{collections::HashSet, path::PathBuf, sync::Arc};
+use std::{collections::BTreeSet, path::PathBuf, sync::Arc};
 
 use bevy::prelude::*;
 use itertools::Itertools;
@@ -26,22 +26,22 @@ pub fn load_ns_msy(
         if event.id == "load_ns" {
             open_multiple_files("load_ns1", &mut popup);
         } else if event.id == "load_ns1" {
-            let files: &HashSet<PathBuf> = if let Some(files) = event
+            let files: &BTreeSet<PathBuf> = if let Some(files) = event
                 .payload
-                .downcast_ref::<Option<HashSet<PathBuf>>>()
+                .downcast_ref::<Option<BTreeSet<PathBuf>>>()
                 .unwrap()
             {
                 files
             } else {
                 continue;
             };
-            let existing_namespaces: Arc<HashSet<String>> = Arc::new(
+            let existing_namespaces: Arc<BTreeSet<String>> = Arc::new(
                 existing_comps
                     .iter()
                     .map(|(a, _)| a.namespace.to_owned())
                     .sorted()
                     .dedup()
-                    .collect::<HashSet<_>>(),
+                    .collect::<BTreeSet<_>>(),
             );
             for file in files {
                 send_queue.push(Action {
@@ -50,15 +50,25 @@ pub fn load_ns_msy(
                 })
             }
         } else if event.id == "load_ns2" {
-            let (file, existing_namespaces): &(PathBuf, Arc<HashSet<String>>) =
+            let (file, existing_namespaces): &(PathBuf, Arc<BTreeSet<String>>) =
                 event.payload.downcast_ref().unwrap();
-            let bytes = std::fs::read(file).unwrap();
+            let bytes = match std::fs::read(file) {
+                Ok(bytes) => bytes,
+                Err(err) => {
+                    popup.send(Popup::base_alert(
+                        format!("load_ns_err_{}", file.to_string_lossy()),
+                        format!("Error loading {}", file.to_string_lossy()),
+                        format!("Error: {err}"),
+                    ));
+                    continue;
+                }
+            };
             let content: Vec<PlaComponent<MCCoords>> = match rmp_serde::from_slice(&bytes) {
                 Ok(res) => res,
                 Err(err) => {
                     popup.send(Popup::base_alert(
-                        format!("load_ns_err_{}", file.display()),
-                        format!("Error parsing {}", file.display()),
+                        format!("load_ns_err_{}", file.to_string_lossy()),
+                        format!("Error parsing {}", file.to_string_lossy()),
                         format!("Error: {err}"),
                     ));
                     continue;

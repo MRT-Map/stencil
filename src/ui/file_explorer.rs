@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashSet},
+    collections::BTreeSet,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -14,11 +14,16 @@ use crate::{misc::Action, ui::popup::Popup};
 pub fn file_explorer(
     ui: &mut egui::Ui,
     current_path: &mut PathBuf,
-    mut chosen_files: Option<&mut HashSet<PathBuf>>,
+    mut chosen_files: Option<&mut BTreeSet<PathBuf>>,
 ) {
     let files: BTreeSet<PathBuf> = current_path
         .read_dir()
-        .and_then(|rd| rd.into_iter().map_ok(|rd| rd.path()).collect())
+        .and_then(|rd| {
+            rd.into_iter()
+                .map_ok(|rd| rd.path())
+                .filter_ok(|p| !p.ends_with(PathBuf::from(".DS_Store")))
+                .collect()
+        })
         .unwrap_or_default();
     if ui.button("Back").clicked() {
         *current_path = current_path
@@ -37,7 +42,20 @@ pub fn file_explorer(
                     .scroll(true)
                     .header(20.0, |mut header| {
                         header.col(|ui| {
-                            ui.heading("");
+                            if let Some(chosen_files) = &mut chosen_files {
+                                let mut files_not_dir: BTreeSet<_> =
+                                    files.iter().filter(|a| !a.is_dir()).cloned().collect();
+                                let mut checked = files_not_dir.is_subset(chosen_files)
+                                    && !files_not_dir.is_empty();
+                                let old_checked = checked;
+                                ui.checkbox(&mut checked, "");
+                                if checked && checked != old_checked {
+                                    chosen_files.append(&mut files_not_dir);
+                                } else if checked != old_checked {
+                                    **chosen_files =
+                                        chosen_files.difference(&files_not_dir).cloned().collect()
+                                }
+                            }
                         });
                         header.col(|ui| {
                             ui.heading(current_path.to_string_lossy());
@@ -62,8 +80,8 @@ pub fn file_explorer(
                                     }
                                 });
                                 row.col(|ui| {
-                                    if file.is_dir()
-                                        && ui
+                                    if file.is_dir() {
+                                        if ui
                                             .add(
                                                 egui::Button::new(
                                                     egui::RichText::new(
@@ -77,8 +95,9 @@ pub fn file_explorer(
                                                 .wrap(false),
                                             )
                                             .clicked()
-                                    {
-                                        *current_path = file;
+                                        {
+                                            *current_path = file;
+                                        }
                                     } else if file.to_string_lossy().ends_with(".pla2.msgpack") {
                                         ui.label(
                                             egui::RichText::new(
@@ -115,25 +134,42 @@ pub fn open_multiple_files(
         || egui::Window::new("Opening multiple files").resizable(true),
         move |state, ui, ew, shown| {
             let mut state = state.lock().unwrap();
-            let (current_path, chosen_files): &mut (PathBuf, HashSet<PathBuf>) =
+            let (current_path, chosen_files): &mut (PathBuf, BTreeSet<PathBuf>) =
                 state.downcast_mut().unwrap();
+            ui.label(egui::RichText::new("Selected:").strong());
+            ui.label(format!(
+                "Selected:\n{}",
+                chosen_files
+                    .iter()
+                    .take(10)
+                    .map(|a| a.to_string_lossy())
+                    .join("\n ")
+            ));
+            if chosen_files.len() > 10 {
+                ui.label("...");
+            }
             file_explorer(ui, current_path, Some(chosen_files));
-            if ui.button("Select").clicked() {
-                ew.send(Action {
-                    id: id.to_string(),
-                    payload: Box::new(Some(chosen_files.to_owned())),
-                });
-                *shown = false;
-            }
-            if ui.button("Cancel").clicked() {
-                ew.send(Action {
-                    id: id.to_string(),
-                    payload: Box::new(Option::<HashSet<PathBuf>>::None),
-                });
-                *shown = false;
-            }
+            ui.horizontal(|ui| {
+                if ui.button("Select").clicked() {
+                    ew.send(Action {
+                        id: id.to_string(),
+                        payload: Box::new(Some(chosen_files.to_owned())),
+                    });
+                    *shown = false;
+                }
+                if ui.button("Cancel").clicked() {
+                    ew.send(Action {
+                        id: id.to_string(),
+                        payload: Box::new(Option::<BTreeSet<PathBuf>>::None),
+                    });
+                    *shown = false;
+                }
+            });
         },
-        Mutex::new(Box::new((PathBuf::from("/"), HashSet::<PathBuf>::new()))),
+        Mutex::new(Box::new((
+            dirs::home_dir().unwrap_or(PathBuf::from("/")),
+            BTreeSet::<PathBuf>::new(),
+        ))),
     ))
 }
 
@@ -148,21 +184,23 @@ pub fn save_single_dir(
             let mut state = state.lock().unwrap();
             let current_path: &mut PathBuf = state.downcast_mut().unwrap();
             file_explorer(ui, current_path, None);
-            if ui.button("Select").clicked() {
-                ew.send(Action {
-                    id: id.to_string(),
-                    payload: Box::new(Some(current_path.to_owned())),
-                });
-                *shown = false;
-            }
-            if ui.button("Cancel").clicked() {
-                ew.send(Action {
-                    id: id.to_string(),
-                    payload: Box::new(Option::<PathBuf>::None),
-                });
-                *shown = false;
-            }
+            ui.horizontal(|ui| {
+                if ui.button("Select").clicked() {
+                    ew.send(Action {
+                        id: id.to_string(),
+                        payload: Box::new(Some(current_path.to_owned())),
+                    });
+                    *shown = false;
+                }
+                if ui.button("Cancel").clicked() {
+                    ew.send(Action {
+                        id: id.to_string(),
+                        payload: Box::new(Option::<PathBuf>::None),
+                    });
+                    *shown = false;
+                }
+            });
         },
-        Mutex::new(Box::new(PathBuf::from("/"))),
+        Mutex::new(Box::new(dirs::home_dir().unwrap_or(PathBuf::from("/")))),
     ))
 }

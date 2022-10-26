@@ -22,12 +22,12 @@ surf = "^2.3.2"
 native-dialog = "^0.6.3"
 
 hex_color = { version = "^2.0.0", features = ["serde"] }
-
 futures-lite = "^1.12.0"
 itertools = "^0.10.5"
 serde = { version = "^1.0.147", features = ["derive"] }
 rmp-serde = "^1.1.1"
 rand = "^0.8.5"
+dirs = "^4.0.0"
 
 [target."cfg(wasm)".dependencies]
 console_error_panic_hook = "^0.1.7"
