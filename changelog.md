@@ -1,5 +1,11 @@
+# v2.0.0-beta.3
+* For lines and areas, clicking on the last node placed will remove the node
+* Move popups (except one temporary one) to a new internal popup system
+* New internal file explorer for importing and exporting PLA 2 files
+  * mostly because file importing broke on macOS Ventura
+
 # v2.0.0-beta.2
-* Stencil 2 is now distributed as .app in .dmg in MacOS
+* Stencil 2 is now distributed as .app in .dmg in macOS
 * Fix crosshair not showing up on Mac builds (maybe other builds too)
 * Shows a confirmation popup when deleting a component of more than 5 nodes
 
