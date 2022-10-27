@@ -12,14 +12,15 @@ use bevy_web_asset::WebAssetPlugin;
 
 use crate::{
     component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
-    cursor::CursorPlugin, menu_actions::MenuPlugin, setup::SetupPlugin, tilemap::RenderingPlugin,
-    ui::UiPlugin,
+    cursor::CursorPlugin, info_windows::InfoWindowsPlugin, load_save::LoadSavePlugin,
+    setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
 };
 
 mod component_actions;
 mod component_tools;
 mod cursor;
-mod menu_actions;
+mod info_windows;
+mod load_save;
 mod misc;
 mod pla2;
 mod setup;
@@ -56,6 +57,7 @@ fn main() {
         .add_plugin(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
-        .add_plugin(MenuPlugin)
+        .add_plugin(LoadSavePlugin)
+        .add_plugin(InfoWindowsPlugin)
         .run();
 }
