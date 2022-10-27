@@ -15,6 +15,7 @@ pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Ar
                     egui::Window::new("Changelog")
                         .collapsible(false)
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                        .vscroll(true)
                 },
                 |_, ui, _, show| {
                     let mut cache = CommonMarkCache::default();
