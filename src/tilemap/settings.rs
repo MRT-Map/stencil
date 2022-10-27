@@ -15,7 +15,7 @@ pub fn tile_settings_msy(mut actions: EventReader<Action>, mut popup: EventWrite
                         .resizable(true)
                         .collapsible(true)
                 },
-                |state, ui, ew, shown| {
+                |_, ui, _, shown| {
                     ui.label("Coming soon...");
                     if ui.button("Close").clicked() {
                         *shown = false;

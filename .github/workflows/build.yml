@@ -36,7 +36,7 @@ jobs:
     - name: Install nightly
       run: rustup toolchain install nightly
     - name: Install dependencies
-      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev mold
       if: ${{ matrix.os == 'ubuntu-latest' }}
     - name: Build
       run: cargo +nightly build --release

@@ -29,6 +29,9 @@ rmp-serde = "^1.1.1"
 rand = "^0.8.5"
 dirs = "^4.0.0"
 
+[target."cfg(not(target_os = \"macos\"))".dependencies]
+bevy_embedded_assets = "^0.4.0"
+
 [target."cfg(wasm)".dependencies]
 console_error_panic_hook = "^0.1.7"
 
@@ -59,4 +62,5 @@ lto = true
 name = "stencil2"
 identifier = "io.github.mrt-map.stencil2"
 icon = ["build/macos/AppIcon.iconset/*.png"]
-deb_depends = ["libasound2-dev", "libudev-dev", "libxkbcommon-dev"]
+deb_depends = ["zenity"]
+resources = ["assets/"]
