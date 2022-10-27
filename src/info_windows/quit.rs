@@ -8,7 +8,7 @@ use crate::{
     ui::popup::Popup,
 };
 
-pub fn quit_msy(
+pub fn quit_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut popup: EventWriter<Arc<Popup>>,
     mut exit: EventWriter<AppExit>,

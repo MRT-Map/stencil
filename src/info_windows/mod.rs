@@ -8,8 +8,8 @@ pub struct InfoWindowsPlugin;
 
 impl Plugin for InfoWindowsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(quit::quit_msy)
-            .add_system(info::info_msy)
-            .add_system(changelog::changelog_msy);
+        app.add_system(quit::quit_asy)
+            .add_system(info::info_asy)
+            .add_system(changelog::changelog_asy);
     }
 }

@@ -14,7 +14,7 @@ use crate::{
     EventReader,
 };
 
-pub fn load_ns_msy(
+pub fn load_ns_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut popup: EventWriter<Arc<Popup>>,
     mut commands: Commands,

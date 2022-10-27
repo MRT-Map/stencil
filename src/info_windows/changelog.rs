@@ -6,7 +6,7 @@ use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
 use crate::{misc::Action, ui::popup::Popup};
 
-pub fn changelog_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
+pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
         if event.id == "changelog" {
             popup.send(Popup::new(

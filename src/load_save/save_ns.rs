@@ -10,7 +10,7 @@ use crate::{
     EventReader,
 };
 
-pub fn save_ns_msy(
+pub fn save_ns_asy(
     mut actions: EventReader<Action>,
     query: Query<&PlaComponent<EditorCoords>>,
     mut popup: EventWriter<Arc<Popup>>,

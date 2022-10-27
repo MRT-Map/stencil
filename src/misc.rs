@@ -28,7 +28,7 @@ impl Action {
     }
 }
 
-pub fn state_changer_msy(mut commands: Commands, mut actions: EventReader<Action>) {
+pub fn state_changer_asy(mut commands: Commands, mut actions: EventReader<Action>) {
     for event in actions.iter() {
         if event.id == "change_state" {
             let state: &EditorState = event.payload.downcast_ref().unwrap();

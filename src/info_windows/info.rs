@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{misc::Action, ui::popup::Popup};
 
-pub fn info_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
+pub fn info_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
         if event.id == "info" {
             popup.send(Popup::base_alert(
