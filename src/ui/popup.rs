@@ -6,7 +6,12 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::WidgetText, EguiContext};
+use bevy_egui::{
+    egui,
+    egui::{Pos2, WidgetText},
+    EguiContext,
+};
+use bevy_mouse_tracking_plugin::MousePos;
 
 use crate::{
     misc::Action,
@@ -150,6 +155,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
-            .add_system_to_stage(UiStage, popup_handler);
+            .add_system_to_stage(UiStage, popup_handler.before("ui_menu"));
     }
 }

@@ -6,6 +6,7 @@ use crate::{misc::EditorState, ui::HoveringOverGui};
 
 pub mod bundle;
 pub mod mouse_nav;
+pub mod settings;
 pub mod tile;
 pub mod tile_coord;
 pub mod utils;
@@ -27,6 +28,7 @@ impl Plugin for RenderingPlugin {
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .with_system(tile::show_tiles_sy)
+                    .with_system(settings::tile_settings_msy)
                     .into(),
             );
     }

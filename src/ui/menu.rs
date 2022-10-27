@@ -46,6 +46,9 @@ pub fn ui_sy(
             egui::menu::menu_button(ui, "Edit", |ui| {
                 ui.label("Coming soon");
             });
+            egui::menu::menu_button(ui, "Settings", |ui| {
+                button!(ui, event_writer, "Tilemap", "tile_settings");
+            });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {}",

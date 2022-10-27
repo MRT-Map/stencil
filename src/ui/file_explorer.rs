@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::prelude::EventWriter;
+use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
 use egui_extras::{Size, StripBuilder, TableBuilder};
 use itertools::Itertools;
