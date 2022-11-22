@@ -53,7 +53,7 @@ pub fn highlight_selected_sy(
         trace!(?entity, "Highlighting selected component");
         commands
             .entity(entity)
-            .insert_bundle(data.get_shape(&skin, true));
+            .insert(data.get_shape(&skin, true));
     }
 }
 
@@ -63,8 +63,8 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
         commands
             .entity(entity)
             .remove::<SelectedComponent>()
-            .remove_bundle::<ShapeBundle>()
-            .insert_bundle(data.get_shape(skin, false))
+            .remove::<ShapeBundle>()
+            .insert(data.get_shape(skin, false))
             .despawn_descendants();
     }
 }

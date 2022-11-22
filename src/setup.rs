@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
+use bevy_mouse_tracking_plugin::{MainCamera, prelude::*};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    misc::{state_changer_asy, Action, EditorState},
+    misc::{Action, EditorState, state_changer_asy},
     pla2::skin::{get_skin_sy, Skin},
 };
 
@@ -23,9 +23,9 @@ impl Plugin for SetupPlugin {
 
 fn setup_sy(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle::new_with_far(1e5))
+        .spawn(Camera2dBundle::new_with_far(1e5))
         .insert(MainCamera)
         .insert(UiCameraConfig { show_ui: true })
-        .insert_bundle(PickingCameraBundle::default())
+        .insert(PickingCameraBundle::default())
         .add_world_tracking();
 }

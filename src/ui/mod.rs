@@ -9,7 +9,7 @@ pub mod menu;
 pub mod popup;
 pub mod toolbar;
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct HoveringOverGui(pub bool);
 
 pub struct UiStage;

@@ -35,11 +35,7 @@ pub fn move_component_sy(
     ) {
         return;
     }
-    let (mut transform, mut pla, hovered): (
-        Mut<Transform>,
-        Mut<PlaComponent<EditorCoords>>,
-        Option<&HoveredComponent>,
-    ) = if let Ok(query_data) = selected.get_single_mut() {
+    let (mut transform, mut pla, hovered) = if let Ok(query_data) = selected.get_single_mut() {
         query_data
     } else {
         return;

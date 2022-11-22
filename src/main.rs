@@ -1,9 +1,10 @@
 #![windows_subsystem = "windows"]
 
 use bevy::{
-    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogSettings, prelude::*,
-    render::texture::ImageSettings, window::WindowMode,
+    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    window::WindowMode,
 };
+use bevy::log::LogPlugin;
 use bevy_egui::EguiPlugin;
 #[cfg(all(not(debug_assertions), not(target_os = "macos")))]
 use bevy_embedded_assets::EmbeddedAssetPlugin;
@@ -32,22 +33,31 @@ mod ui;
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
-
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Stencil".to_string(),
-            mode: WindowMode::BorderlessFullscreen,
-            ..default()
-        })
-        .insert_resource(LogSettings {
-            filter: "warn,bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
-            level: bevy::log::Level::DEBUG,
-        })
-        .insert_resource(ImageSettings::default_nearest())
-        .add_plugins_with(DefaultPlugins, |group| {
+        .add_plugins({
+            let group = DefaultPlugins
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "Stencil".to_string(),
+                        mode: WindowMode::BorderlessFullscreen,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest())
+                .set(LogPlugin {
+                    filter: "warn,bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
+                    level: bevy::log::Level::DEBUG,
+                }).build();
             #[cfg(all(not(debug_assertions), not(target_os = "macos")))]
             group.add_before::<AssetPlugin, _>(EmbeddedAssetPlugin);
-            group.add_before::<AssetPlugin, _>(WebAssetPlugin)
+            group
+                .add_before::<AssetPlugin, _>(WebAssetPlugin {
+                    asset_plugin: AssetPlugin {
+                        //asset_folder: "".to_string(),
+                        ..default()
+                    }
+                })
         })
         .add_plugins(DefaultPickingPlugins)
         //.add_plugin(LogDiagnosticsPlugin::default())

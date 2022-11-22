@@ -12,7 +12,7 @@ use crate::{
     ui::HoveringOverGui,
 };
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct PrevNamespaceUsed(pub String);
 
 pub fn ui_sy(
@@ -31,7 +31,7 @@ pub fn ui_sy(
                 ui.heading("Select a component...");
                 return;
             }
-            let (entity, mut component_data): (Entity, Mut<PlaComponent<EditorCoords>>) =
+            let (entity, mut component_data) =
                 selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
@@ -69,7 +69,7 @@ pub fn ui_sy(
             if old_skin_type != component_data.ty {
                 commands
                     .entity(entity)
-                    .insert_bundle(component_data.get_shape(&skin, true));
+                    .insert(component_data.get_shape(&skin, true));
             }
             ui.end_row();
             let mut tags = component_data.tags.join(",");

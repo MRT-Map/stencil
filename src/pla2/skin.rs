@@ -120,7 +120,7 @@ impl SkinComponent {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Resource)]
 pub struct Skin {
     pub info: SkinInfo,
     pub order: Vec<String>,

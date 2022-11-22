@@ -1,5 +1,3 @@
-pub mod mouse_events;
-
 use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
@@ -8,6 +6,8 @@ use crate::{
     cursor::mouse_events::HoveredComponent, misc::EditorState, tilemap::zoom::Zoom,
     ui::HoveringOverGui,
 };
+
+pub mod mouse_events;
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
@@ -38,7 +38,7 @@ pub fn crosshair_sy(
     if ch.is_empty() {
         debug!("Spawning crosshair");
         commands
-            .spawn_bundle(SpriteBundle {
+            .spawn(SpriteBundle {
                 texture: server.load("crosshair.png"),
                 transform: new_transform,
                 sprite: Sprite {

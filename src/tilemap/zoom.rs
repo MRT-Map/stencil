@@ -1,4 +1,6 @@
-#[derive(Copy, Clone, Debug)]
+use bevy::prelude::*;
+
+#[derive(Copy, Clone, Debug, Resource)]
 pub struct Zoom(pub f32);
 
 impl Zoom {

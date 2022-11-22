@@ -26,7 +26,7 @@ pub fn mouse_drag_sy(
     if hovering_over_gui.0 {
         return;
     }
-    let (camera, mut transform): (&Camera, Mut<GlobalTransform>) = camera.single_mut();
+    let (camera, mut transform) = camera.single_mut();
     if buttons.pressed(MouseButton::Left) {
         if let Some(origin_pos) = *mouse_origin_pos {
             if !mouse_pos.is_changed() {
@@ -64,7 +64,7 @@ pub fn mouse_zoom_sy(
     if hovering_over_gui.0 {
         return;
     }
-    let (mut ort_proj, mut transform): (Mut<OrthographicProjection>, Mut<GlobalTransform>) =
+    let (mut ort_proj, mut transform) =
         camera.single_mut();
     for ev in scroll_evr.iter() {
         let u = match ev.unit {

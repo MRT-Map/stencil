@@ -1,4 +1,5 @@
-use bevy::{ecs::query::WorldQuery, prelude::*};
+use bevy::{prelude::*};
+use bevy::ecs::query::ReadOnlyWorldQuery;
 use bevy_mouse_tracking_plugin::MainCamera;
 
 use crate::tilemap::{
@@ -9,10 +10,10 @@ use crate::tilemap::{
 };
 
 pub fn get_shown_tiles(
-    q_camera: &Query<(&Camera, &GlobalTransform), impl WorldQuery>,
+    q_camera: &Query<(&Camera, &GlobalTransform), impl ReadOnlyWorldQuery>,
     zoom: i8,
 ) -> Vec<TileCoord> {
-    let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
+    let (camera, transform) = q_camera.single();
     let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, transform);
     let TileCoord {
         x: t_left,
@@ -52,7 +53,7 @@ pub fn show_tiles_sy(
     }
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8);
 
-    let (camera, transform): (&Camera, &GlobalTransform) = q_camera.single();
+    let (camera, transform) = q_camera.single();
     let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
     for (entity, tile_coord) in query.iter_mut() {
         if (zoom.0 <= 8f32 && tile_coord.z > zoom.0.round() as i8)
@@ -73,7 +74,7 @@ pub fn show_tiles_sy(
     for tile_coord in shown_tiles {
         if tile_coord.z <= 8 {
             trace!("Loading tile {tile_coord}");
-            commands.spawn_bundle(TileBundle::from_tile_coord(tile_coord, &server));
+            commands.spawn(TileBundle::from_tile_coord(tile_coord, &server));
         }
     }
 }

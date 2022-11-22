@@ -9,10 +9,10 @@ pub mod node_editing;
 pub struct ComponentToolPlugins;
 
 impl PluginGroup for ComponentToolPlugins {
-    fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
             .add(creating::CreateComponentPlugin)
             .add(deleting::DeleteComponentPlugin)
-            .add(node_editing::EditNodePlugin);
+            .add(node_editing::EditNodePlugin)
     }
 }

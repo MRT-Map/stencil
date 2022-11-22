@@ -61,7 +61,7 @@ pub fn create_point_sy(
             debug!("Placing new point at {:?}", mouse_pos_world);
             new_point.update_shape(&skin);
             deselect(&mut commands, &deselect_query);
-            commands.spawn_bundle(new_point);
+            commands.spawn(new_point);
         }
     }
 }
@@ -82,7 +82,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
         ComponentType::Line
     };
     if !set.is_empty() {
-        let (data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) = set.single_mut();
+        let (data, entity) = set.single_mut();
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
@@ -102,7 +102,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
         data.nodes.push(next_point.round().as_ivec2().into());
         commands
             .entity(entity)
-            .insert_bundle(data.get_shape(&skin, false));
+            .insert(data.get_shape(&skin, false));
     }
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
@@ -115,9 +115,9 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 });
                 debug!("Starting new line/area at {:?}", mouse_pos_world);
                 new_comp.update_shape(&skin);
-                commands.spawn_bundle(new_comp).insert(CreatedComponent);
+                commands.spawn(new_comp).insert(CreatedComponent);
             } else {
-                let (mut data, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
+                let (mut data, entity) =
                     set.single_mut();
                 if data.nodes.last() == Some(&new) {
                     data.nodes.pop();
@@ -135,7 +135,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 );
                 commands
                     .entity(entity)
-                    .insert_bundle(data.get_shape(&skin, false));
+                    .insert(data.get_shape(&skin, false));
 
                 if IS_AREA
                     && data.nodes.first() == data.nodes.last()
@@ -169,8 +169,8 @@ pub fn clear_created_component(
             data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
             commands
                 .entity(entity)
-                .remove_bundle::<ShapeBundle>()
-                .insert_bundle(data.get_shape(skin, false))
+                .remove::<ShapeBundle>()
+                .insert(data.get_shape(skin, false))
                 .remove::<CreatedComponent>();
         }
     }

@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
+    EventReader,
     misc::Action,
     pla2::{
         bundle::ComponentBundle,
@@ -11,7 +12,6 @@ use crate::{
         skin::Skin,
     },
     ui::{file_explorer::open_multiple_files, popup::Popup},
-    EventReader,
 };
 
 pub fn load_ns_asy(
@@ -92,12 +92,16 @@ pub fn load_ns_asy(
         } else if event.id == "load_ns3" {
             let content: &Vec<PlaComponent<MCCoords>> = event.payload.downcast_ref().unwrap();
             if content.is_empty() {
-                // TODO
+                popup.send(Popup::base_alert(
+                    format!("load_ns_success_{}_empty", content[0].namespace),
+                    "Loaded with no components",
+                    format!("{} has no components", content[0].namespace),
+                ))
             }
             for comp in content {
                 let mut bundle = ComponentBundle::new(comp.to_editor_coords());
                 bundle.update_shape(&skin);
-                commands.spawn_bundle(bundle);
+                commands.spawn(bundle);
             }
             popup.send(Popup::base_alert(
                 format!("load_ns_success_{}", content[0].namespace),

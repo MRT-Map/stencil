@@ -33,7 +33,7 @@ pub fn edit_nodes_sy(
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
 ) {
-    let (mut pla, entity): (Mut<PlaComponent<EditorCoords>>, Entity) =
+    let (mut pla, entity) =
         if let Ok(query_data) = selected.get_single_mut() {
             query_data
         } else {
@@ -43,11 +43,11 @@ pub fn edit_nodes_sy(
         debug!(?entity, "Moving node");
         pla.nodes[orig.node_list_pos].0 = (mouse_pos_world.xy() - orig.mouse_pos_world.xy()
             + orig.node_pos_world.as_vec2())
-        .round()
-        .as_ivec2();
+            .round()
+            .as_ivec2();
         commands
             .entity(entity)
-            .insert_bundle(pla.get_shape(&skin, true));
+            .insert(pla.get_shape(&skin, true));
     }
 
     let mut clear_orig = false;
@@ -124,7 +124,7 @@ pub fn edit_nodes_sy(
                     } else {
                         commands
                             .entity(entity)
-                            .insert_bundle(pla.get_shape(&skin, true));
+                            .insert(pla.get_shape(&skin, true));
                     }
                 }
             }
@@ -144,7 +144,7 @@ pub fn update_handles(
 ) {
     commands
         .entity(*e)
-        .insert_bundle(pla.get_shape(skin, true))
+        .insert(pla.get_shape(skin, true))
         .despawn_descendants();
     let children = pla
         .nodes
@@ -175,7 +175,7 @@ pub fn update_handles(
                 Transform::from_xyz(0.0, 0.0, 100.0),
             )
         })
-        .map(|bundle| commands.spawn_bundle(bundle).id())
+        .map(|bundle| commands.spawn(bundle).id())
         .collect::<Vec<_>>();
     commands.entity(*e).push_children(&children);
     let more_children = if pla.get_type(skin) == Some(ComponentType::Area) {
@@ -213,7 +213,7 @@ pub fn update_handles(
             Transform::from_xyz(0.0, 0.0, 100.0),
         )
     })
-    .map(|bundle| commands.spawn_bundle(bundle).id())
+        .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     commands.entity(*e).push_children(&more_children);
 }
