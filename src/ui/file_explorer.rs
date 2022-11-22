@@ -167,7 +167,7 @@ pub fn open_multiple_files(
             });
         },
         Mutex::new(Box::new((
-            dirs::home_dir().unwrap_or(PathBuf::from("/")),
+            dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")),
             BTreeSet::<PathBuf>::new(),
         ))),
     ))
@@ -201,6 +201,6 @@ pub fn save_single_dir(
                 }
             });
         },
-        Mutex::new(Box::new(dirs::home_dir().unwrap_or(PathBuf::from("/")))),
+        Mutex::new(Box::new(dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")))),
     ))
 }
