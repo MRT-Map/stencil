@@ -33,21 +33,18 @@ pub fn edit_nodes_sy(
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
 ) {
-    let (mut pla, entity) =
-        if let Ok(query_data) = selected.get_single_mut() {
-            query_data
-        } else {
-            return;
-        };
+    let (mut pla, entity) = if let Ok(query_data) = selected.get_single_mut() {
+        query_data
+    } else {
+        return;
+    };
     if let Some(orig) = &*orig {
         debug!(?entity, "Moving node");
         pla.nodes[orig.node_list_pos].0 = (mouse_pos_world.xy() - orig.mouse_pos_world.xy()
             + orig.node_pos_world.as_vec2())
-            .round()
-            .as_ivec2();
-        commands
-            .entity(entity)
-            .insert(pla.get_shape(&skin, true));
+        .round()
+        .as_ivec2();
+        commands.entity(entity).insert(pla.get_shape(&skin, true));
     }
 
     let mut clear_orig = false;
@@ -122,9 +119,7 @@ pub fn edit_nodes_sy(
                         info!(?entity, "Deleting entity");
                         commands.entity(entity).despawn_recursive()
                     } else {
-                        commands
-                            .entity(entity)
-                            .insert(pla.get_shape(&skin, true));
+                        commands.entity(entity).insert(pla.get_shape(&skin, true));
                     }
                 }
             }
@@ -213,7 +208,7 @@ pub fn update_handles(
             Transform::from_xyz(0.0, 0.0, 100.0),
         )
     })
-        .map(|bundle| commands.spawn(bundle).id())
+    .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     commands.entity(*e).push_children(&more_children);
 }

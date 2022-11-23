@@ -201,6 +201,8 @@ pub fn save_single_dir(
                 }
             });
         },
-        Mutex::new(Box::new(dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")))),
+        Mutex::new(Box::new(
+            dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")),
+        )),
     ))
 }

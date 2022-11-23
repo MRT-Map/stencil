@@ -100,9 +100,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 mouse_pos_world
             };
         data.nodes.push(next_point.round().as_ivec2().into());
-        commands
-            .entity(entity)
-            .insert(data.get_shape(&skin, false));
+        commands.entity(entity).insert(data.get_shape(&skin, false));
     }
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
@@ -117,8 +115,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 new_comp.update_shape(&skin);
                 commands.spawn(new_comp).insert(CreatedComponent);
             } else {
-                let (mut data, entity) =
-                    set.single_mut();
+                let (mut data, entity) = set.single_mut();
                 if data.nodes.last() == Some(&new) {
                     data.nodes.pop();
                     if data.nodes.is_empty() {
@@ -133,9 +130,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                     "Continuing line/area at {:?}",
                     mouse_pos_world.xy().round().as_ivec2()
                 );
-                commands
-                    .entity(entity)
-                    .insert(data.get_shape(&skin, false));
+                commands.entity(entity).insert(data.get_shape(&skin, false));
 
                 if IS_AREA
                     && data.nodes.first() == data.nodes.last()

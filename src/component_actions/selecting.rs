@@ -51,9 +51,7 @@ pub fn highlight_selected_sy(
     }
     for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
-        commands
-            .entity(entity)
-            .insert(data.get_shape(&skin, true));
+        commands.entity(entity).insert(data.get_shape(&skin, true));
     }
 }
 

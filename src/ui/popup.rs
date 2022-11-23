@@ -6,7 +6,12 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::WidgetText, EguiContext};
+use bevy_egui::{
+    egui,
+    egui::{Pos2, WidgetText},
+    EguiContext,
+};
+use bevy_mouse_tracking_plugin::MousePos;
 
 use crate::{
     misc::Action,
@@ -127,6 +132,7 @@ pub fn popup_handler(
     mut event_writer: EventWriter<Action>,
     mut show: Local<HashMap<String, (Arc<Popup>, bool)>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
+    mouse_pos: Res<MousePos>,
 ) {
     for popup in event_reader.iter() {
         show.insert(popup.id.to_owned(), (popup.to_owned(), true));
@@ -138,7 +144,12 @@ pub fn popup_handler(
                 (popup.ui)(&popup.state, ui, &mut event_writer, showed)
             })
             .unwrap();
-        if response.response.hovered() {
+        if response.response.hovered()
+            || response
+                .response
+                .rect
+                .contains(Pos2::from(mouse_pos.to_array()))
+        {
             hovering_over_gui.0 = true;
         }
     }

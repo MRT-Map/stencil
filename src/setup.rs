@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::{MainCamera, prelude::*};
+use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
 use iyes_loopless::prelude::*;
 
 use crate::{
-    misc::{Action, EditorState, state_changer_asy},
+    misc::{state_changer_asy, Action, EditorState},
     pla2::skin::{get_skin_sy, Skin},
 };
 

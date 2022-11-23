@@ -31,8 +31,7 @@ pub fn ui_sy(
                 ui.heading("Select a component...");
                 return;
             }
-            let (entity, mut component_data) =
-                selected.single_mut();
+            let (entity, mut component_data) = selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
             ui.add(

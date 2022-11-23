@@ -36,6 +36,7 @@ pub fn ui_sy(
                 |ui| {
                     button!(ui, event_writer, "Info", "info");
                     button!(ui, event_writer, "Changelog", "changelog");
+                    button!(ui, event_writer, "Licenses", "licenses");
                     button!(ui, event_writer, "Quit", "quit");
                 },
             );

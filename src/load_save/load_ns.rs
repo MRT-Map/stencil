@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
-    EventReader,
     misc::Action,
     pla2::{
         bundle::ComponentBundle,
@@ -12,6 +11,7 @@ use crate::{
         skin::Skin,
     },
     ui::{file_explorer::open_multiple_files, popup::Popup},
+    EventReader,
 };
 
 pub fn load_ns_asy(

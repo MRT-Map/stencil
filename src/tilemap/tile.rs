@@ -1,5 +1,4 @@
-use bevy::{prelude::*};
-use bevy::ecs::query::ReadOnlyWorldQuery;
+use bevy::{ecs::query::ReadOnlyWorldQuery, prelude::*};
 use bevy_mouse_tracking_plugin::MainCamera;
 
 use crate::tilemap::{

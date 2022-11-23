@@ -64,8 +64,7 @@ pub fn mouse_zoom_sy(
     if hovering_over_gui.0 {
         return;
     }
-    let (mut ort_proj, mut transform) =
-        camera.single_mut();
+    let (mut ort_proj, mut transform) = camera.single_mut();
     for ev in scroll_evr.iter() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125,

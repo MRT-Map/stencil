@@ -1,13 +1,10 @@
 #![windows_subsystem = "windows"]
 
 use bevy::{
-    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogPlugin, prelude::*,
     window::WindowMode,
 };
-use bevy::log::LogPlugin;
 use bevy_egui::EguiPlugin;
-#[cfg(all(not(debug_assertions), not(target_os = "macos")))]
-use bevy_embedded_assets::EmbeddedAssetPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
@@ -34,8 +31,14 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
     App::new()
+        .add_plugin(WebAssetPlugin {
+            asset_plugin: AssetPlugin {
+                //asset_folder: "".to_string(),
+                ..default()
+            }
+        })
         .add_plugins({
-            let group = DefaultPlugins
+            DefaultPlugins
                 .set(WindowPlugin {
                     window: WindowDescriptor {
                         title: "Stencil".to_string(),
@@ -48,16 +51,8 @@ fn main() {
                 .set(LogPlugin {
                     filter: "warn,bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
                     level: bevy::log::Level::DEBUG,
-                }).build();
-            #[cfg(all(not(debug_assertions), not(target_os = "macos")))]
-            group.add_before::<AssetPlugin, _>(EmbeddedAssetPlugin);
-            group
-                .add_before::<AssetPlugin, _>(WebAssetPlugin {
-                    asset_plugin: AssetPlugin {
-                        //asset_folder: "".to_string(),
-                        ..default()
-                    }
                 })
+                .disable::<AssetPlugin>()
         })
         .add_plugins(DefaultPickingPlugins)
         //.add_plugin(LogDiagnosticsPlugin::default())
