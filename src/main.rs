@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
     asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogPlugin, prelude::*,
@@ -49,8 +49,8 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest())
                 .set(LogPlugin {
-                    filter: "warn,bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
-                    level: bevy::log::Level::DEBUG,
+                    filter: "bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
+                    level: bevy::log::Level::WARN,
                 })
                 .disable::<AssetPlugin>()
         })

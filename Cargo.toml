@@ -3,6 +3,8 @@ name = "stencil2"
 version = "2.0.0-beta.3"
 edition = "2021"
 description = "Map editor for MRT Map data"
+authors = ["7d <i.third.7d@protonmail.com>"]
+license = "GPL-3.0-only"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -40,7 +42,7 @@ console_error_panic_hook = "0.1.7"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.89"
 anyhow = { version = "1.0.66", features = ["backtrace"] }
-futures = "0.3.19"
+futures = "0.3.25"
 surf = "2.3.2"
 regex = "1.7.0"
 rmp-serde = "1.1.1"
