@@ -137,6 +137,7 @@ pub fn update_handles(
     skin: &Skin,
     mouse_pos_world: &MousePosWorld,
 ) {
+    trace!("Updating handles");
     commands
         .entity(*e)
         .insert(pla.get_shape(skin, true))
@@ -172,6 +173,7 @@ pub fn update_handles(
         })
         .map(|bundle| commands.spawn(bundle).id())
         .collect::<Vec<_>>();
+    trace!("Pushing first set of children");
     commands.entity(*e).push_children(&children);
     let more_children = if pla.get_type(skin) == Some(ComponentType::Area) {
         pla.nodes
@@ -210,6 +212,7 @@ pub fn update_handles(
     })
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
+    trace!("Pushing second set of children");
     commands.entity(*e).push_children(&more_children);
 }
 

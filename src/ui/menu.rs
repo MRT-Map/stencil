@@ -19,6 +19,7 @@ pub fn ui_sy(
             macro_rules! button {
                 ($ui:ident, $ew:ident, $label:literal, $id:literal, $payload:expr) => {
                     if $ui.button($label).clicked() {
+                        info!(label = $label, "Clicked menu item");
                         $ew.send(Action {
                             id: $id.into(),
                             payload: Box::new($payload),

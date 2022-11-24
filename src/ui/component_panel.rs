@@ -34,13 +34,15 @@ pub fn ui_sy(
             let (entity, mut component_data) = selected.single_mut();
             ui.heading("Edit component data");
             ui.end_row();
-            ui.add(
-                egui::TextEdit::singleline(&mut component_data.namespace)
-                    .hint_text("ns.")
-                    .desired_width(25.0),
-            );
-            prev_namespace_used.0 = component_data.namespace.to_owned();
-            ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
+            ui.horizontal(|ui| {
+                ui.add(
+                    egui::TextEdit::singleline(&mut component_data.namespace)
+                        .hint_text("ns.")
+                        .desired_width(25.0),
+                );
+                prev_namespace_used.0 = component_data.namespace.to_owned();
+                ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
+            });
             ui.end_row();
             ui.add(
                 egui::TextEdit::singleline(&mut component_data.display_name)
@@ -60,10 +62,10 @@ pub fn ui_sy(
                     skin.types
                         .iter()
                         .filter(|(_, data)| data.get_type() == component_type)
-                        .map(|(name, _)| {
-                            ui.selectable_value(&mut component_data.ty, name.to_owned(), name)
-                        })
-                        .for_each(|_| ());
+                        .sorted_by_key(|(name, _)| *name)
+                        .for_each(|(name, _)| {
+                            ui.selectable_value(&mut component_data.ty, name.to_owned(), name);
+                        });
                 });
             if old_skin_type != component_data.ty {
                 commands
@@ -94,10 +96,11 @@ pub fn ui_sy(
                     .join("\n"),
             );
         });
-    if panel
-        .response
-        .rect
-        .contains(Pos2::new(mouse_pos.x, mouse_pos.y))
+    if panel.response.hovered()
+        || panel
+            .response
+            .rect
+            .contains(Pos2::new(mouse_pos.x, mouse_pos.y))
     {
         hovering_over_gui.0 = true;
     }

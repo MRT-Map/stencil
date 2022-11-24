@@ -52,7 +52,6 @@ pub fn crosshair_sy(
     } else {
         trace!("Updating crosshair location");
         let (_, mut transform, mut sprite) = ch.single_mut();
-        warn!("{transform:?}");
         *transform = new_transform;
         sprite.custom_size = new_custom_size;
     }

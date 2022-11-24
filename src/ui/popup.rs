@@ -77,6 +77,7 @@ impl Popup {
             move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
+                    .resizable(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
@@ -105,6 +106,7 @@ impl Popup {
             move || {
                 egui::Window::new(title.to_owned())
                     .collapsible(false)
+                    .resizable(false)
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
@@ -126,6 +128,7 @@ impl Popup {
     }
 }
 
+#[tracing::instrument(skip_all)]
 pub fn popup_handler(
     mut ctx: ResMut<EguiContext>,
     mut event_reader: EventReader<Arc<Popup>>,
@@ -135,10 +138,11 @@ pub fn popup_handler(
     mouse_pos: Res<MousePos>,
 ) {
     for popup in event_reader.iter() {
+        info!(popup.id, "Showing popup");
         show.insert(popup.id.to_owned(), (popup.to_owned(), true));
     }
     let ctx = ctx.ctx_mut();
-    for (_, (popup, showed)) in show.iter_mut() {
+    for (id, (popup, showed)) in show.iter_mut() {
         let response: egui::InnerResponse<Option<()>> = (popup.window)()
             .show(ctx, |ui| {
                 (popup.ui)(&popup.state, ui, &mut event_writer, showed)
@@ -151,6 +155,9 @@ pub fn popup_handler(
                 .contains(Pos2::from(mouse_pos.to_array()))
         {
             hovering_over_gui.0 = true;
+        }
+        if !*showed {
+            info!(?id, "Closing popup")
         }
     }
     show.retain(|_, (_, a)| *a);

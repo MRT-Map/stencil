@@ -11,6 +11,7 @@ use itertools::Itertools;
 
 use crate::{misc::Action, ui::popup::Popup};
 
+#[tracing::instrument(skip_all)]
 pub fn file_explorer(
     ui: &mut egui::Ui,
     current_path: &mut PathBuf,
@@ -26,6 +27,7 @@ pub fn file_explorer(
         })
         .unwrap_or_default();
     if ui.button("Back").clicked() {
+        info!("Moving back one level");
         *current_path = current_path
             .parent()
             .unwrap_or(current_path.as_path())
@@ -50,8 +52,10 @@ pub fn file_explorer(
                                 let old_checked = checked;
                                 ui.checkbox(&mut checked, "");
                                 if checked && checked != old_checked {
+                                    info!(?files_not_dir, "Adding files to chosen file list");
                                     chosen_files.append(&mut files_not_dir);
                                 } else if checked != old_checked {
+                                    info!(?files_not_dir, "Removing files from chosen file list");
                                     **chosen_files =
                                         chosen_files.difference(&files_not_dir).cloned().collect()
                                 }
@@ -71,8 +75,10 @@ pub fn file_explorer(
                                         let mut checked = chosen_files.contains(&file);
                                         ui.checkbox(&mut checked, "");
                                         if checked {
+                                            info!(?file, "Adding file to chosen file list");
                                             chosen_files.insert(file.to_owned());
                                         } else {
+                                            info!(?file, "Removing file from chosen file list");
                                             chosen_files.remove(&file);
                                         }
                                     } else {
@@ -96,6 +102,7 @@ pub fn file_explorer(
                                             )
                                             .clicked()
                                         {
+                                            info!(?file, "Navigating to folder");
                                             *current_path = file;
                                         }
                                     } else if file.to_string_lossy().ends_with(".pla2.msgpack") {
@@ -125,6 +132,7 @@ pub fn file_explorer(
         });
 }
 
+#[tracing::instrument(skip_all)]
 pub fn open_multiple_files(
     id: impl std::fmt::Display + Sync + Send + 'static,
     popup: &mut EventWriter<Arc<Popup>>,
@@ -151,6 +159,8 @@ pub fn open_multiple_files(
             file_explorer(ui, current_path, Some(chosen_files));
             ui.horizontal(|ui| {
                 if ui.button("Select").clicked() {
+                    info!("Files selected");
+                    debug!(?chosen_files);
                     ew.send(Action {
                         id: id.to_string(),
                         payload: Box::new(Some(chosen_files.to_owned())),
@@ -158,6 +168,7 @@ pub fn open_multiple_files(
                     *shown = false;
                 }
                 if ui.button("Cancel").clicked() {
+                    info!("Operation cancelled");
                     ew.send(Action {
                         id: id.to_string(),
                         payload: Box::new(Option::<BTreeSet<PathBuf>>::None),
@@ -173,6 +184,7 @@ pub fn open_multiple_files(
     ))
 }
 
+#[tracing::instrument(skip_all)]
 pub fn save_single_dir(
     id: impl std::fmt::Display + Sync + Send + 'static,
     popup: &mut EventWriter<Arc<Popup>>,
@@ -186,6 +198,8 @@ pub fn save_single_dir(
             file_explorer(ui, current_path, None);
             ui.horizontal(|ui| {
                 if ui.button("Select").clicked() {
+                    info!("Folder selected");
+                    debug!(?current_path);
                     ew.send(Action {
                         id: id.to_string(),
                         payload: Box::new(Some(current_path.to_owned())),
@@ -193,6 +207,7 @@ pub fn save_single_dir(
                     *shown = false;
                 }
                 if ui.button("Cancel").clicked() {
+                    info!("Operation cancelled");
                     ew.send(Action {
                         id: id.to_string(),
                         payload: Box::new(Option::<PathBuf>::None),

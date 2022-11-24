@@ -52,6 +52,7 @@ pub fn load_ns_asy(
         } else if event.id == "load_ns2" {
             let (file, existing_namespaces): &(PathBuf, Arc<BTreeSet<String>>) =
                 event.payload.downcast_ref().unwrap();
+            info!(?file, "Reading file");
             let bytes = match std::fs::read(file) {
                 Ok(bytes) => bytes,
                 Err(err) => {

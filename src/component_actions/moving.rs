@@ -51,6 +51,7 @@ pub fn move_component_sy(
             if hovered.is_some() {
                 *orig = Some((*mouse_pos_world, transform.translation));
             }
+            info!("Started move");
         } else if let MouseEvent::RightRelease(_) = event {
             if let Some((orig_mouse_pos_world, _)) = *orig {
                 for node in pla.nodes.iter_mut() {
@@ -59,6 +60,7 @@ pub fn move_component_sy(
                         .as_ivec2()
                 }
             }
+            info!("Ended move");
             *orig = None;
         }
     }
