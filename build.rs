@@ -101,11 +101,11 @@ fn inner() -> Result<()> {
 fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
         if let Err(e) = inner() {
-            println!("cargo:warning=Error: {e:?}");
+            p!("Error: {e:?}");
             panic!()
         }
     }) {
-        println!("cargo:warning=Error: {e:?}");
+        p!("Error: {e:?}");
         panic!()
     }
 }

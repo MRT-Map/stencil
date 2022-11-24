@@ -37,7 +37,6 @@ impl TileCoord {
 
     #[allow(unreachable_code)]
     pub fn url(&self) -> String {
-        //return "".into();
         let z = 2.0f64.powi((8 - self.z) as i32);
         let xy = IVec2::new(self.x, self.y).as_dvec2();
 

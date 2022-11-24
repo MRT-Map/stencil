@@ -56,7 +56,6 @@ fn main() {
                 .disable::<AssetPlugin>()
         })
         .add_plugins(DefaultPickingPlugins)
-        //.add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(MousePosPlugin)
         .add_plugin(EguiPlugin)

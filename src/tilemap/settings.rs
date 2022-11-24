@@ -5,6 +5,7 @@ use bevy_egui::egui;
 
 use crate::{misc::Action, ui::popup::Popup};
 
+#[allow(dead_code)]
 pub enum TileSettingsAct {
     Open,
     Update,

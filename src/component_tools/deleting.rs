@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
-use native_dialog::{MessageDialog, MessageType};
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
@@ -18,14 +17,7 @@ pub fn delete_component_sy(
 ) {
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
-            let pla = query.iter().find(|(_, a)| a == e).unwrap().0;
-            if pla.nodes.len() > 5 && !MessageDialog::default() // TODO remove this when undo/redo is implemented
-                    .set_title("This component has more than 5 nodes, are you sure you want to delete?")
-                    .set_text("We have not implemented undoing and redoing yet so your progress may be lost!")
-                    .set_type(MessageType::Warning)
-                    .show_confirm().unwrap() {
-                continue
-            }
+            let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
             actions.send(Box::new(UndoRedoAct::one_history(History {
                 component_id: *e,
