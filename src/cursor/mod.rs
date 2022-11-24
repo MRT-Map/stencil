@@ -52,6 +52,7 @@ pub fn crosshair_sy(
     } else {
         trace!("Updating crosshair location");
         let (_, mut transform, mut sprite) = ch.single_mut();
+        warn!("{transform:?}");
         *transform = new_transform;
         sprite.custom_size = new_custom_size;
     }
@@ -70,30 +71,30 @@ pub fn cursor_icon_sy(
     } else {
         EditorState::Loading
     };
-    if matches!(state, EditorState::CreatingComponent(_)) {
-        windows
-            .primary_mut()
-            .set_cursor_visibility(hovering_over_gui.0);
-        return;
-    } else {
-        windows.primary_mut().set_cursor_visibility(true);
-        if hovering_over_gui.0 {
-            return;
-        }
-    }
-    windows.primary_mut().set_cursor_icon(match state {
-        EditorState::Loading => CursorIcon::Wait,
-        EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
-            if !hovered_comp.is_empty() {
-                CursorIcon::Hand
-            } else if buttons.pressed(MouseButton::Left) {
-                CursorIcon::Grabbing
-            } else {
-                CursorIcon::Grab
+    for window in windows.iter_mut() {
+        if matches!(state, EditorState::CreatingComponent(_)) {
+            window.set_cursor_visibility(hovering_over_gui.0);
+            continue;
+        } else {
+            window.set_cursor_visibility(true);
+            if hovering_over_gui.0 {
+                continue;
             }
         }
-        EditorState::CreatingComponent(_) => unreachable!(),
-    });
+        window.set_cursor_icon(match state {
+            EditorState::Loading => CursorIcon::Wait,
+            EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
+                if !hovered_comp.is_empty() {
+                    CursorIcon::Hand
+                } else if buttons.pressed(MouseButton::Left) {
+                    CursorIcon::Grabbing
+                } else {
+                    CursorIcon::Grab
+                }
+            }
+            EditorState::CreatingComponent(_) => unreachable!(),
+        });
+    }
 }
 
 pub struct CursorPlugin;

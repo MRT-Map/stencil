@@ -10,7 +10,7 @@ license = "GPL-3.0-only"
 
 [dependencies]
 bevy_web_asset = "0.5.0"
-bevy_mouse_tracking_plugin = { git = "https://github.com/JoJoJet/bevy-mouse-tracking.git", branch = "09" }
+bevy_mouse_tracking_plugin = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", branch = "09" }
 bevy_prototype_lyon = "0.7.1"
 iyes_loopless = "0.9.1"
 bevy_egui = "0.17.1"
