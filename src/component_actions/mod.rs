@@ -2,6 +2,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 pub mod moving;
 pub mod selecting;
+pub mod undo_redo;
 
 pub struct ComponentActionPlugins;
 
@@ -10,5 +11,6 @@ impl PluginGroup for ComponentActionPlugins {
         PluginGroupBuilder::start::<Self>()
             .add(moving::MoveComponentPlugin)
             .add(selecting::SelectComponentPlugin)
+            .add(undo_redo::UndoRedoPlugin)
     }
 }

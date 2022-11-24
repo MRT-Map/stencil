@@ -18,7 +18,6 @@ use crate::{
     ui::HoveringOverGui,
 };
 
-#[allow(clippy::type_complexity)]
 pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub id: String,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
@@ -81,13 +80,9 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, ew, show| {
+            move |_, ui, _, show| {
                 ui.label(text.to_owned());
                 if ui.button("Close").clicked() {
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(()),
-                    });
                     *show = false;
                 }
             },
@@ -98,7 +93,7 @@ impl Popup {
         id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-        payload: impl Any + Sync + Send + Clone,
+        action: impl Any + Sync + Send + Clone,
     ) -> Arc<Self> {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
@@ -113,10 +108,7 @@ impl Popup {
             move |_, ui, ew, show| {
                 ui.label(text.to_owned());
                 if ui.button("Yes").clicked() {
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(payload.to_owned()),
-                    });
+                    ew.send(Box::new(action.to_owned()));
                     *show = false;
                 }
                 if ui.button("No").clicked() {

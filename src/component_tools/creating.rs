@@ -5,9 +5,12 @@ use iyes_loopless::prelude::*;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
-    component_actions::selecting::{deselect, DeselectQuery},
+    component_actions::{
+        selecting::{deselect, DeselectQuery},
+        undo_redo::{History, UndoRedoAct},
+    },
     cursor::mouse_events::MouseEvent,
-    misc::EditorState,
+    misc::{Action, EditorState},
     pla2::{
         bundle::{ComponentBundle, CreatedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
@@ -46,6 +49,7 @@ pub fn create_point_sy(
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
     prev_namespace_used: Res<PrevNamespaceUsed>,
+    mut actions: EventWriter<Action>,
 ) {
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
@@ -61,7 +65,13 @@ pub fn create_point_sy(
             debug!("Placing new point at {:?}", mouse_pos_world);
             new_point.update_shape(&skin);
             deselect(&mut commands, &deselect_query);
-            commands.spawn(new_point);
+            let pla = new_point.data.to_owned();
+            let entity = commands.spawn(new_point).id();
+            actions.send(Box::new(UndoRedoAct::one_history(History {
+                component_id: entity,
+                before: None,
+                after: Some(pla),
+            })));
         }
     }
 }
@@ -75,6 +85,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     mouse_pos_world: Res<MousePosWorld>,
     prev_namespace_used: Res<PrevNamespaceUsed>,
     keys: Res<Input<KeyCode>>,
+    mut actions: EventWriter<Action>,
 ) {
     let ty = if IS_AREA {
         ComponentType::Area
@@ -138,12 +149,24 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 {
                     debug!("Ended on same point, completing area");
                     data.nodes.pop();
-                    clear_created_component(&mut commands, &mut set, &skin, &prev_namespace_used.0);
+                    clear_created_component(
+                        &mut commands,
+                        &mut set,
+                        &skin,
+                        &prev_namespace_used.0,
+                        &mut actions,
+                    );
                 }
             }
         } else if let MouseEvent::RightClick(_) = event {
             debug!("Completing line/area");
-            clear_created_component(&mut commands, &mut set, &skin, &prev_namespace_used.0);
+            clear_created_component(
+                &mut commands,
+                &mut set,
+                &skin,
+                &prev_namespace_used.0,
+                &mut actions,
+            );
         }
     }
 }
@@ -154,6 +177,7 @@ pub fn clear_created_component(
     created_query: &mut CreatedQuery,
     skin: &Res<Skin>,
     prev_namespace_used: &String,
+    actions: &mut EventWriter<Action>,
 ) {
     for (mut data, entity) in created_query.iter_mut() {
         debug!(?entity, "Clearing CreatedComponent marker");
@@ -167,6 +191,11 @@ pub fn clear_created_component(
                 .remove::<ShapeBundle>()
                 .insert(data.get_shape(skin, false))
                 .remove::<CreatedComponent>();
+            actions.send(Box::new(UndoRedoAct::one_history(History {
+                component_id: entity,
+                before: None,
+                after: Some(data.to_owned()),
+            })));
         }
     }
 }

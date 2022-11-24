@@ -1,7 +1,20 @@
+use std::{collections::BTreeSet, path::PathBuf, sync::Arc};
+
 use bevy::prelude::*;
+
+use crate::pla2::component::{MCCoords, PlaComponent};
 
 pub mod load_ns;
 pub mod save_ns;
+
+pub enum LoadSaveAct {
+    Load,
+    Load1(Option<BTreeSet<PathBuf>>),
+    Load2(PathBuf, Arc<BTreeSet<String>>),
+    Load3(Vec<PlaComponent<MCCoords>>),
+    Save,
+    Save1(Option<PathBuf>),
+}
 
 pub struct LoadSavePlugin;
 

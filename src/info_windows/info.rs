@@ -3,11 +3,11 @@ use std::sync::{Arc, Mutex};
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-use crate::{misc::Action, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 pub fn info_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if event.id == "info" {
+        if let Some(InfoWindowsAct::Info) = event.downcast_ref() {
             popup.send(Popup::new(
                 "info_popup",
                 || {

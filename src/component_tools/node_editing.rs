@@ -5,8 +5,9 @@ use itertools::Itertools;
 use iyes_loopless::{condition::ConditionSet, prelude::AppLooplessStateExt};
 
 use crate::{
+    component_actions::undo_redo::{History, UndoRedoAct},
     cursor::mouse_events::MouseEvent,
-    misc::{CustomStage, EditorState},
+    misc::{Action, CustomStage, EditorState},
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
@@ -16,13 +17,13 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Orig {
+    pub old_pla: PlaComponent<EditorCoords>,
     pub mouse_pos_world: MousePosWorld,
     pub node_pos_world: IVec2,
     pub node_list_pos: usize,
     pub was_new: bool,
 }
 
-#[allow(clippy::type_complexity)]
 #[tracing::instrument(skip_all)]
 pub fn edit_nodes_sy(
     mut selected: Query<(&mut PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
@@ -31,6 +32,7 @@ pub fn edit_nodes_sy(
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
+    mut actions: EventWriter<Action>,
 ) {
     let (mut pla, entity) = if let Ok(query_data) = selected.get_single_mut() {
         query_data
@@ -50,7 +52,6 @@ pub fn edit_nodes_sy(
     for event in mouse.iter() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             #[derive(Debug, Eq, PartialEq, Hash)]
-            #[allow(dead_code)]
             enum Pos {
                 Existing(usize),
                 NewBefore(usize),
@@ -101,6 +102,7 @@ pub fn edit_nodes_sy(
                 }
             };
             *orig = Some(Orig {
+                old_pla: pla.to_owned(),
                 mouse_pos_world: *mouse_pos_world,
                 node_pos_world: world_pos,
                 node_list_pos: list_pos,
@@ -125,7 +127,13 @@ pub fn edit_nodes_sy(
         }
     }
     if clear_orig {
-        *orig = None;
+        if let Some(orig) = orig.take() {
+            actions.send(Box::new(UndoRedoAct::one_history(History {
+                component_id: entity,
+                before: Some(orig.old_pla),
+                after: Some(pla.to_owned()),
+            })));
+        }
     }
 }
 

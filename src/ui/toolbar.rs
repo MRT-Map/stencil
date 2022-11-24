@@ -3,12 +3,11 @@ use bevy_egui::{egui, EguiContext};
 
 use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
-    misc::{Action, EditorState},
+    misc::{Action, ChangeStateAct, EditorState},
     pla2::{component::ComponentType, skin::Skin},
     ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
 };
 
-#[allow(clippy::too_many_arguments)]
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut _commands: Commands,
@@ -33,11 +32,9 @@ pub fn ui_sy(
                             &mut _created_query,
                             &_skin,
                             &_prev_namespace_used.0,
+                            &mut _actions,
                         );
-                        _actions.send(Action {
-                            id: "change_state".into(),
-                            payload: Box::new($next_state),
-                        });
+                        _actions.send(Box::new(ChangeStateAct($next_state)));
                     }
                 };
             }

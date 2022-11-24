@@ -4,11 +4,11 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
-use crate::{misc::Action, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if event.id == "changelog" {
+        if let Some(InfoWindowsAct::Changelog) = event.downcast_ref() {
             popup.send(Popup::new(
                 "changelog",
                 || {

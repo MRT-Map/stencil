@@ -5,7 +5,7 @@ use bevy_egui::egui;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use crate::{misc::Action, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct CargoLicenseEntry {
@@ -28,7 +28,7 @@ static LICENSES: Lazy<Vec<CargoLicenseEntry>> = Lazy::new(|| {
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if event.id == "licenses" {
+        if let Some(InfoWindowsAct::Licenses) = event.downcast_ref() {
             popup.send(Popup::new(
                 "info_popup",
                 || {

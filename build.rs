@@ -79,7 +79,7 @@ fn inner() -> Result<()> {
                 texts.push(text);
             }
             if texts.is_empty() {
-                p!("No licenses detected for crate {} {}", a.name, a.version)
+                //p!("No licenses detected for crate {} {}", a.name, a.version)
             }
             a.license_text = Some(texts);
             Ok(a)

@@ -5,6 +5,14 @@ pub mod info;
 pub mod licenses;
 pub mod quit;
 
+#[derive(Clone)]
+pub enum InfoWindowsAct {
+    Changelog,
+    Info,
+    Licenses,
+    Quit(bool),
+}
+
 pub struct InfoWindowsPlugin;
 
 impl Plugin for InfoWindowsPlugin {

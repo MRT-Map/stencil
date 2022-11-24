@@ -12,7 +12,6 @@ use crate::{
     },
 };
 
-#[allow(clippy::too_many_arguments)]
 #[tracing::instrument(skip_all)]
 pub fn selector_sy(
     mut commands: Commands,
@@ -24,6 +23,7 @@ pub fn selector_sy(
         &state.0,
         EditorState::CreatingComponent(_) | EditorState::DeletingComponent
     ) {
+        mouse.clear();
         return;
     }
     for event in mouse.iter() {

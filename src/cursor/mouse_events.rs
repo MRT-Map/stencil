@@ -52,7 +52,6 @@ pub fn right_click_handler_sy(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 #[tracing::instrument(skip_all)]
 pub fn left_click_handler_sy(
     mut commands: Commands,

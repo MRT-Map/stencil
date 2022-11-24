@@ -5,7 +5,10 @@ use bevy::{
 use bevy_egui::{egui, egui::Align, EguiContext};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
-use crate::{misc::Action, ui::HoveringOverGui};
+use crate::{
+    component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
+    load_save::LoadSaveAct, misc::Action, tilemap::settings::TileSettingsAct, ui::HoveringOverGui,
+};
 
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
@@ -17,17 +20,11 @@ pub fn ui_sy(
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
-                ($ui:ident, $ew:ident, $label:literal, $id:literal, $payload:expr) => {
+                ($ui:ident, $ew:ident, $label:literal, $action:expr) => {
                     if $ui.button($label).clicked() {
                         info!(label = $label, "Clicked menu item");
-                        $ew.send(Action {
-                            id: $id.into(),
-                            payload: Box::new($payload),
-                        })
+                        $ew.send(Box::new($action))
                     }
-                };
-                ($ui:ident, $ew:ident, $label:literal, $id:literal) => {
-                    button!($ui, $ew, $label, $id, ())
                 };
             }
 
@@ -35,21 +32,22 @@ pub fn ui_sy(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
                 |ui| {
-                    button!(ui, event_writer, "Info", "info");
-                    button!(ui, event_writer, "Changelog", "changelog");
-                    button!(ui, event_writer, "Licenses", "licenses");
-                    button!(ui, event_writer, "Quit", "quit");
+                    button!(ui, event_writer, "Info", InfoWindowsAct::Info);
+                    button!(ui, event_writer, "Changelog", InfoWindowsAct::Changelog);
+                    button!(ui, event_writer, "Licenses", InfoWindowsAct::Licenses);
+                    button!(ui, event_writer, "Quit", InfoWindowsAct::Quit(false));
                 },
             );
             egui::menu::menu_button(ui, "File", |ui| {
-                button!(ui, event_writer, "Load namespace", "load_ns");
-                button!(ui, event_writer, "Save namespaces", "save_ns");
+                button!(ui, event_writer, "Load namespace", LoadSaveAct::Load);
+                button!(ui, event_writer, "Save namespaces", LoadSaveAct::Save);
             });
             egui::menu::menu_button(ui, "Edit", |ui| {
-                ui.label("Coming soon");
+                button!(ui, event_writer, "Undo", UndoRedoAct::Undo);
+                button!(ui, event_writer, "Redo", UndoRedoAct::Redo);
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
-                button!(ui, event_writer, "Tilemap", "tile_settings");
+                button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
             });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(

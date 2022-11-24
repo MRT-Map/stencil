@@ -136,6 +136,7 @@ pub fn file_explorer(
 pub fn open_multiple_files(
     id: impl std::fmt::Display + Sync + Send + 'static,
     popup: &mut EventWriter<Arc<Popup>>,
+    action_fn: impl FnOnce(Option<BTreeSet<PathBuf>>) -> Action + Send + Sync + Copy + 'static,
 ) {
     popup.send(Popup::new(
         id.to_string(),
@@ -161,18 +162,12 @@ pub fn open_multiple_files(
                 if ui.button("Select").clicked() {
                     info!("Files selected");
                     debug!(?chosen_files);
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(Some(chosen_files.to_owned())),
-                    });
+                    ew.send(action_fn(Some(chosen_files.to_owned())));
                     *shown = false;
                 }
                 if ui.button("Cancel").clicked() {
                     info!("Operation cancelled");
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(Option::<BTreeSet<PathBuf>>::None),
-                    });
+                    ew.send(action_fn(None));
                     *shown = false;
                 }
             });
@@ -188,6 +183,7 @@ pub fn open_multiple_files(
 pub fn save_single_dir(
     id: impl std::fmt::Display + Sync + Send + 'static,
     popup: &mut EventWriter<Arc<Popup>>,
+    action_fn: impl FnOnce(Option<PathBuf>) -> Action + Send + Sync + Copy + 'static,
 ) {
     popup.send(Popup::new(
         id.to_string(),
@@ -200,18 +196,12 @@ pub fn save_single_dir(
                 if ui.button("Select").clicked() {
                     info!("Folder selected");
                     debug!(?current_path);
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(Some(current_path.to_owned())),
-                    });
+                    ew.send(action_fn(Some(current_path.to_owned())));
                     *shown = false;
                 }
                 if ui.button("Cancel").clicked() {
                     info!("Operation cancelled");
-                    ew.send(Action {
-                        id: id.to_string(),
-                        payload: Box::new(Option::<PathBuf>::None),
-                    });
+                    ew.send(action_fn(None));
                     *shown = false;
                 }
             });

@@ -5,9 +5,14 @@ use bevy_egui::egui;
 
 use crate::{misc::Action, ui::popup::Popup};
 
+pub enum TileSettingsAct {
+    Open,
+    Update,
+}
+
 pub fn tile_settings_msy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if event.id == "tile_settings" {
+        if let Some(TileSettingsAct::Open) = event.downcast_ref() {
             popup.send(Popup::new(
                 "tile_settings_win",
                 || {
@@ -23,7 +28,7 @@ pub fn tile_settings_msy(mut actions: EventReader<Action>, mut popup: EventWrite
                 },
                 Mutex::new(Box::new(())),
             ))
-        } else if event.id == "update_tile_settings" {
+        } else if let Some(TileSettingsAct::Update) = event.downcast_ref() {
         }
     }
 }

@@ -1,9 +1,10 @@
-use std::{collections::BTreeSet, path::PathBuf, sync::Arc};
+use std::{collections::BTreeSet, sync::Arc};
 
 use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
+    load_save::LoadSaveAct,
     misc::Action,
     pla2::{
         bundle::ComponentBundle,
@@ -23,18 +24,9 @@ pub fn load_ns_asy(
 ) {
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().iter() {
-        if event.id == "load_ns" {
-            open_multiple_files("load_ns1", &mut popup);
-        } else if event.id == "load_ns1" {
-            let files: &BTreeSet<PathBuf> = if let Some(files) = event
-                .payload
-                .downcast_ref::<Option<BTreeSet<PathBuf>>>()
-                .unwrap()
-            {
-                files
-            } else {
-                continue;
-            };
+        if let Some(LoadSaveAct::Load) = event.downcast_ref() {
+            open_multiple_files("load_ns1", &mut popup, |a| Box::new(LoadSaveAct::Load1(a)));
+        } else if let Some(LoadSaveAct::Load1(Some(files))) = event.downcast_ref() {
             let existing_namespaces: Arc<BTreeSet<String>> = Arc::new(
                 existing_comps
                     .iter()
@@ -44,14 +36,12 @@ pub fn load_ns_asy(
                     .collect::<BTreeSet<_>>(),
             );
             for file in files {
-                send_queue.push(Action {
-                    id: "load_ns2".into(),
-                    payload: Box::new((file.to_owned(), existing_namespaces.to_owned())),
-                })
+                send_queue.push(Box::new(LoadSaveAct::Load2(
+                    file.to_owned(),
+                    existing_namespaces.to_owned(),
+                )))
             }
-        } else if event.id == "load_ns2" {
-            let (file, existing_namespaces): &(PathBuf, Arc<BTreeSet<String>>) =
-                event.payload.downcast_ref().unwrap();
+        } else if let Some(LoadSaveAct::Load2(file, existing_namespaces)) = event.downcast_ref() {
             info!(?file, "Reading file");
             let bytes = match std::fs::read(file) {
                 Ok(bytes) => bytes,
@@ -86,12 +76,8 @@ pub fn load_ns_asy(
                     continue;
                 }
             }
-            send_queue.push(Action {
-                id: "load_ns3".into(),
-                payload: Box::new(content),
-            });
-        } else if event.id == "load_ns3" {
-            let content: &Vec<PlaComponent<MCCoords>> = event.payload.downcast_ref().unwrap();
+            send_queue.push(Box::new(LoadSaveAct::Load3(content)));
+        } else if let Some(LoadSaveAct::Load3(content)) = event.downcast_ref() {
             if content.is_empty() {
                 popup.send(Popup::base_alert(
                     format!("load_ns_success_{}_empty", content[0].namespace),

@@ -1,4 +1,4 @@
-use std::{any::Any, fmt::Display};
+use std::any::Any;
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::NextState;
@@ -15,23 +15,13 @@ pub enum EditorState {
     DeletingComponent,
 }
 
-pub struct Action<P: Send + Sync + ?Sized = dyn Any + Send + Sync> {
-    pub id: String,
-    pub payload: Box<P>,
-}
-impl Action {
-    pub fn new(id: impl Display) -> Self {
-        Self {
-            id: id.to_string(),
-            payload: Box::new(()),
-        }
-    }
-}
+pub type Action = Box<dyn Any + Send + Sync>;
+
+pub struct ChangeStateAct(pub EditorState);
 
 pub fn state_changer_asy(mut commands: Commands, mut actions: EventReader<Action>) {
     for event in actions.iter() {
-        if event.id == "change_state" {
-            let state: &EditorState = event.payload.downcast_ref().unwrap();
+        if let Some(ChangeStateAct(state)) = event.downcast_ref() {
             info!(?state, "Changing state");
             commands.insert_resource(NextState(*state))
         }
