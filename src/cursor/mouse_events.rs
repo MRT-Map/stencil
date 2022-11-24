@@ -4,8 +4,8 @@ use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 use iyes_loopless::condition::ConditionSet;
 
 use crate::{
-    misc::EditorState,
-    ui::{HoveringOverGui, UiStage},
+    misc::{CustomStage, EditorState},
+    ui::HoveringOverGui,
 };
 
 #[derive(Component)]
@@ -117,15 +117,13 @@ pub fn left_click_handler_sy(
 pub struct MouseEventsPlugin;
 impl Plugin for MouseEventsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MouseEvent>()
-            .add_stage_after(UiStage, "cursor_events", SystemStage::parallel())
-            .add_system_set_to_stage(
-                "cursor_events",
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .with_system(left_click_handler_sy)
-                    .with_system(right_click_handler_sy)
-                    .into(),
-            );
+        app.add_event::<MouseEvent>().add_system_set_to_stage(
+            CustomStage::Cursor,
+            ConditionSet::new()
+                .run_not_in_state(EditorState::Loading)
+                .with_system(left_click_handler_sy)
+                .with_system(right_click_handler_sy)
+                .into(),
+        );
     }
 }

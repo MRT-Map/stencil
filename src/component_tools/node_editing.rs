@@ -6,13 +6,12 @@ use iyes_loopless::{condition::ConditionSet, prelude::AppLooplessStateExt};
 
 use crate::{
     cursor::mouse_events::MouseEvent,
-    misc::EditorState,
+    misc::{CustomStage, EditorState},
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::UiStage,
 };
 
 #[derive(Debug)]
@@ -244,7 +243,7 @@ impl Plugin for EditNodePlugin {
         )
         .add_exit_system(EditorState::EditingNodes, remove_handles_sy)
         .add_system_set_to_stage(
-            UiStage,
+            CustomStage::Ui,
             ConditionSet::new()
                 .run_in_state(EditorState::EditingNodes)
                 .with_system(show_handles_sy)

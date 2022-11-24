@@ -3,7 +3,9 @@ use bevy_mouse_tracking_plugin::MousePosWorld;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    cursor::mouse_events::HoveredComponent, misc::EditorState, tilemap::zoom::Zoom,
+    cursor::mouse_events::HoveredComponent,
+    misc::{CustomStage, EditorState},
+    tilemap::zoom::Zoom,
     ui::HoveringOverGui,
 };
 
@@ -100,8 +102,13 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set_to_stage(
-            CoreStage::PreUpdate,
+        app.add_stage_after(
+            CustomStage::Ui,
+            CustomStage::Cursor,
+            SystemStage::parallel(),
+        )
+        .add_system_set_to_stage(
+            CustomStage::Cursor,
             ConditionSet::new()
                 .with_system(cursor_icon_sy)
                 .with_system(crosshair_sy)

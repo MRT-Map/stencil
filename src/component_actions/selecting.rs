@@ -4,13 +4,12 @@ use iyes_loopless::prelude::*;
 
 use crate::{
     cursor::mouse_events::MouseEvent,
-    misc::EditorState,
+    misc::{CustomStage, EditorState},
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::UiStage,
 };
 
 #[allow(clippy::too_many_arguments)]
@@ -84,7 +83,7 @@ impl Plugin for SelectComponentPlugin {
                 .into(),
         )
         .add_system_set_to_stage(
-            UiStage,
+            CustomStage::Ui,
             ConditionSet::new()
                 .run_not_in_state(EditorState::Loading)
                 .with_system(highlight_selected_sy)

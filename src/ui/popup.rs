@@ -14,8 +14,8 @@ use bevy_egui::{
 use bevy_mouse_tracking_plugin::MousePos;
 
 use crate::{
-    misc::Action,
-    ui::{HoveringOverGui, UiStage},
+    misc::{Action, CustomStage},
+    ui::HoveringOverGui,
 };
 
 #[allow(clippy::type_complexity)]
@@ -168,6 +168,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
-            .add_system_to_stage(UiStage, popup_handler.before("ui_menu"));
+            .add_system_to_stage(CustomStage::Ui, popup_handler.before("ui_menu"));
     }
 }

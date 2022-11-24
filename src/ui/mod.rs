@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use iyes_loopless::condition::ConditionSet;
 
-use crate::{misc::EditorState, ui::component_panel::PrevNamespaceUsed};
+use crate::{
+    misc::{CustomStage, EditorState},
+    ui::component_panel::PrevNamespaceUsed,
+};
 
 pub mod component_panel;
 pub mod file_explorer;
@@ -12,13 +15,6 @@ pub mod toolbar;
 #[derive(Default, Resource)]
 pub struct HoveringOverGui(pub bool);
 
-pub struct UiStage;
-impl StageLabel for UiStage {
-    fn as_str(&self) -> &'static str {
-        "ui"
-    }
-}
-
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -26,12 +22,12 @@ impl Plugin for UiPlugin {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<PrevNamespaceUsed>()
             .add_stage_before(
-                CoreStage::PreUpdate,
-                UiStage,
+                CoreStage::Update,
+                CustomStage::Ui,
                 SystemStage::single_threaded(),
             )
             .add_system_set_to_stage(
-                UiStage,
+                CustomStage::Ui,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_menu")
@@ -40,7 +36,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system_set_to_stage(
-                UiStage,
+                CustomStage::Ui,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_component_panel")
@@ -50,7 +46,7 @@ impl Plugin for UiPlugin {
                     .into(),
             )
             .add_system_set_to_stage(
-                UiStage,
+                CustomStage::Ui,
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)
                     .label("ui_toolbar")

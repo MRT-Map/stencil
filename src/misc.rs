@@ -37,3 +37,17 @@ pub fn state_changer_asy(mut commands: Commands, mut actions: EventReader<Action
         }
     }
 }
+
+#[derive(Copy, Clone, Debug)]
+pub enum CustomStage {
+    Ui,
+    Cursor,
+}
+impl StageLabel for CustomStage {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::Ui => "ui",
+            Self::Cursor => "cursor",
+        }
+    }
+}
