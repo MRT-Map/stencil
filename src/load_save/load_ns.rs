@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
+    component_actions::undo_redo::{History, UndoRedoAct},
     load_save::LoadSaveAct,
     misc::Action,
     pla2::{
@@ -71,7 +72,7 @@ pub fn load_ns_asy(
                         "load_ns3",
                         format!("The namespace {} is already loaded.", first.namespace),
                         "Do you want to override this namespace?",
-                        content,
+                        LoadSaveAct::Load3(content),
                     ));
                     continue;
                 }
@@ -85,11 +86,21 @@ pub fn load_ns_asy(
                     format!("{} has no components", content[0].namespace),
                 ))
             }
-            for comp in content {
-                let mut bundle = ComponentBundle::new(comp.to_editor_coords());
-                bundle.update_shape(&skin);
-                commands.spawn(bundle);
-            }
+            let histories = content
+                .iter()
+                .map(|comp| {
+                    let comp = comp.to_editor_coords();
+                    let mut bundle = ComponentBundle::new(comp.to_owned());
+                    bundle.update_shape(&skin);
+                    let entity = commands.spawn(bundle).id();
+                    History {
+                        component_id: entity,
+                        before: None,
+                        after: Some(comp),
+                    }
+                })
+                .collect();
+            send_queue.push(Box::new(UndoRedoAct::NewHistory(histories)));
             popup.send(Popup::base_alert(
                 format!("load_ns_success_{}", content[0].namespace),
                 "Loaded",

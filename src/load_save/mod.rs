@@ -7,6 +7,7 @@ use crate::pla2::component::{MCCoords, PlaComponent};
 pub mod load_ns;
 pub mod save_ns;
 
+#[derive(Clone)]
 pub enum LoadSaveAct {
     Load,
     Load1(Option<BTreeSet<PathBuf>>),
