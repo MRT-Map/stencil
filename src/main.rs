@@ -31,13 +31,22 @@ mod ui;
 fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
+
+    #[cfg(not(debug_assertions))]
+    {
+        let mut zip_file = zip::ZipArchive::new(std::io::Cursor::new(include_bytes!(concat!(
+            env!("OUT_DIR"),
+            "/assets.zip"
+        ))))
+        .unwrap();
+        let mut dir = std::env::current_exe().unwrap();
+        dir.pop();
+        dir.push("assets");
+        zip_file.extract(dir).unwrap();
+    }
+
     App::new()
-        .add_plugin(WebAssetPlugin {
-            asset_plugin: AssetPlugin {
-                //asset_folder: "".to_string(),
-                ..default()
-            }
-        })
+        .add_plugin(WebAssetPlugin::default())
         .add_plugins({
             DefaultPlugins
                 .set(WindowPlugin {

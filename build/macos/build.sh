@@ -7,7 +7,6 @@ cargo +nightly bundle --release
 
 mkdir "$dir/app"
 cp -R "$dir/../../target/release/bundle/osx/stencil2.app" "$dir/app/stencil2.app"
-cp -R "$dir/../../assets" "$dir/app/stencil2.app/Contents/MacOS/assets"
 ln -s "/Applications" "$dir/app"
 hdiutil create stencil2.dmg -volname stencil2 -srcfolder "$dir/app" -ov
 unlink "$dir/app/Applications"

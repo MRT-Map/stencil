@@ -1,4 +1,6 @@
 use std::{
+    fs::File,
+    io::Write,
     path::PathBuf,
     process::{Command, Stdio},
 };
@@ -8,6 +10,7 @@ use futures::{executor::block_on, future::join_all};
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use zip::{write::FileOptions, ZipWriter};
 
 macro_rules! p {
     ($($tt:tt)+) => {
@@ -26,7 +29,7 @@ pub struct CargoLicenseEntry {
     license_text: Option<Vec<String>>,
 }
 
-fn inner() -> Result<()> {
+fn gather_licenses() -> Result<()> {
     Command::new("cargo")
         .args(["install", "cargo-license"])
         .spawn()?
@@ -93,8 +96,42 @@ fn inner() -> Result<()> {
         },
         rmp_serde::to_vec(&data)?,
     )?;
+    Ok(())
+}
 
-    print!("cargo:rerun-if-changed=build.rs");
+fn zip_assets() -> Result<()> {
+    let buf = File::create({
+        let mut path = PathBuf::try_from(std::env::var("OUT_DIR")?)?;
+        path.push("assets.zip");
+        path
+    })?;
+    let mut zip_file = ZipWriter::new(buf);
+    let options = FileOptions::default();
+    for file in {
+        let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+        path.push("assets");
+        path
+    }
+    .read_dir()?
+    {
+        let file = file?.path();
+        zip_file.start_file(file.file_name().unwrap().to_string_lossy(), options)?;
+        let contents = std::fs::read(file)?;
+        zip_file.write_all(&contents)?;
+    }
+    zip_file.finish()?;
+    Ok(())
+}
+
+fn inner() -> Result<()> {
+    gather_licenses()?;
+    if std::env::var("PROFILE")? == "release" {
+        zip_assets()?;
+    }
+
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=assets");
+
     Ok(())
 }
 
@@ -102,6 +139,7 @@ fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
         if let Err(e) = inner() {
             p!("Error: {e:?}");
+            p!("{:?}", e.backtrace());
             panic!()
         }
     }) {
