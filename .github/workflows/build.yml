@@ -34,10 +34,12 @@ jobs:
       run: brew install michaeleisel/zld/zld
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Install nightly
-      run: rustup toolchain install nightly
+      run: rustup toolchain install nightly; rustup default nightly
     - name: Install dependencies
       run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       if: ${{ matrix.os == 'ubuntu-latest' }}
+    - name: Install cargo-license
+      run: cargo +nightly install cargo-license
     - name: Build
       run: cargo +nightly build --release
     - name: Upload binaries
