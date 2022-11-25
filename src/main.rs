@@ -22,6 +22,7 @@ use crate::{
 mod component_actions;
 mod component_tools;
 mod cursor;
+mod error_handling;
 mod info_windows;
 mod load_save;
 mod misc;
@@ -31,6 +32,8 @@ mod tilemap;
 mod ui;
 
 fn main() {
+    std::panic::set_hook(Box::new(error_handling::panic));
+
     tracing_subscriber::fmt()
         .event_format(tracing_subscriber::fmt::format().compact())
         .with_env_filter(
@@ -40,7 +43,7 @@ fn main() {
             bevy_asset::asset_server=error,\
             surf::middleware::logger::native=off,\
             isahc::handler=error,\
-            stencil2=trace",
+            stencil2=debug",
             )
             .unwrap(),
         )

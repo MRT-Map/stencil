@@ -25,6 +25,7 @@ tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 
 surf = "2.3.2"
 
+backtrace = "0.3.19"
 hex_color = { version = "2.0.0", features = ["serde"] }
 futures-lite = "1.12.0"
 itertools = "0.10.5"
