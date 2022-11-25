@@ -95,4 +95,5 @@ pub fn show_tiles_sy(
             ));
         }
     }
+    server.free_unused_assets();
 }
