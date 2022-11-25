@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use zoom::Zoom;
 
-use crate::{misc::EditorState, ui::HoveringOverGui};
+use crate::{misc::EditorState, tilemap::settings::INIT_TILE_SETTINGS, ui::HoveringOverGui};
 
 pub mod bundle;
 pub mod mouse_nav;
@@ -15,7 +15,8 @@ pub mod zoom;
 pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Zoom(7.0))
+        app.insert_resource(Zoom(INIT_TILE_SETTINGS.init_zoom))
+            .insert_resource(INIT_TILE_SETTINGS.to_owned())
             .add_system_set(
                 ConditionSet::new()
                     .run_not_in_state(EditorState::Loading)

@@ -5,7 +5,7 @@ use iyes_loopless::prelude::*;
 use crate::{
     cursor::mouse_events::HoveredComponent,
     misc::{CustomStage, EditorState},
-    tilemap::zoom::Zoom,
+    tilemap::{settings::TileSettings, zoom::Zoom},
     ui::HoveringOverGui,
 };
 
@@ -23,6 +23,7 @@ pub fn crosshair_sy(
     server: Res<AssetServer>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
+    tile_settings: Res<TileSettings>,
 ) {
     if let Some(state) = state {
         if !matches!(state.0, EditorState::CreatingComponent(_)) {
@@ -36,7 +37,9 @@ pub fn crosshair_sy(
         return;
     }
     let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
-    let new_custom_size = Some(Vec2::splat(2f32.powf(8f32 - zoom.0) * 16f32));
+    let new_custom_size = Some(Vec2::splat(
+        2f32.powf((tile_settings.max_tile_zoom as f32) - zoom.0) * 16f32,
+    ));
     if ch.is_empty() {
         debug!("Spawning crosshair");
         commands

@@ -55,7 +55,6 @@ pub fn file_explorer(
                                     info!(?files_not_dir, "Adding files to chosen file list");
                                     chosen_files.append(&mut files_not_dir);
                                 } else if checked != old_checked {
-                                    info!(?files_not_dir, "Removing files from chosen file list");
                                     **chosen_files =
                                         chosen_files.difference(&files_not_dir).cloned().collect()
                                 }

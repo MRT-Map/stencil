@@ -1,6 +1,6 @@
 use bevy::{prelude::*, sprite::Anchor};
 
-use crate::tilemap::{tile_coord::TileCoord, zoom::Zoom};
+use crate::tilemap::{settings::TileSettings, tile_coord::TileCoord, zoom::Zoom};
 
 #[derive(Component)]
 pub struct Tile;
@@ -15,8 +15,12 @@ pub struct TileBundle {
 }
 
 impl TileBundle {
-    pub fn from_tile_coord(coord: TileCoord, server: &Res<AssetServer>) -> Self {
-        let custom_size = Vec2::splat(Zoom(coord.z as f32).map_size() as f32);
+    pub fn from_tile_coord(
+        coord: TileCoord,
+        server: &Res<AssetServer>,
+        tile_settings: &TileSettings,
+    ) -> Self {
+        let custom_size = Vec2::splat(Zoom(coord.z as f32).map_size(tile_settings) as f32);
         trace!(coord = coord.to_string(), "Loading tile");
         Self {
             _t: Tile,
@@ -27,10 +31,12 @@ impl TileBundle {
                     anchor: Anchor::TopLeft,
                     ..default()
                 },
-                texture: server.load(&*coord.url()) as Handle<Image>,
+                texture: server.load(&*coord.url(tile_settings)) as Handle<Image>,
                 transform: Transform::from_translation(Vec3::new(
-                    coord.x as f32 * Zoom(coord.z as f32).map_size() as f32 - 0.5f32,
-                    coord.y as f32 * Zoom(coord.z as f32).map_size() as f32 + 32f32 + 0.5f32,
+                    coord.x as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32 - 0.5f32,
+                    coord.y as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32
+                        + tile_settings.max_zoom_range as f32
+                        + 0.5f32,
                     0.0,
                 )),
                 ..default()
