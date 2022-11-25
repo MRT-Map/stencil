@@ -4,6 +4,8 @@ use bevy_mouse_tracking_plugin::MousePos;
 use itertools::Itertools;
 
 use crate::{
+    component_actions::undo_redo::{History, UndoRedoAct},
+    misc::Action,
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
@@ -23,6 +25,7 @@ pub fn ui_sy(
     skin: Res<Skin>,
     mouse_pos: Res<MousePos>,
     mut prev_namespace_used: ResMut<PrevNamespaceUsed>,
+    mut actions: EventWriter<Action>,
 ) {
     let panel = egui::SidePanel::left("component_data")
         .default_width(200.0)
@@ -32,6 +35,7 @@ pub fn ui_sy(
                 return;
             }
             let (entity, mut component_data) = selected.single_mut();
+            let old_data = component_data.to_owned();
             ui.heading("Edit component data");
             ui.end_row();
             ui.horizontal(|ui| {
@@ -95,6 +99,13 @@ pub fn ui_sy(
                     .map(|a| format!("{}, {}", a.0.x, -a.0.y))
                     .join("\n"),
             );
+            if *component_data != old_data {
+                actions.send(Box::new(UndoRedoAct::one_history(History {
+                    component_id: entity,
+                    before: Some(old_data),
+                    after: Some(component_data.to_owned()),
+                })));
+            }
         });
     if panel.response.hovered()
         || panel

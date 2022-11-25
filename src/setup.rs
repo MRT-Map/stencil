@@ -18,7 +18,7 @@ impl Plugin for SetupPlugin {
             .add_event::<Action>()
             .add_system(get_skin_sy)
             .add_system(state_changer_asy)
-            .add_system(ack_panic_sy)
+            .add_startup_system(ack_panic_sy)
             .add_exit_system(EditorState::Loading, setup_sy);
     }
 }

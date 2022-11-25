@@ -16,7 +16,7 @@ fn hex_to_color(hex: &HexColor) -> Color {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, Component)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Component)]
 pub struct PlaComponent<T: Coords> {
     pub namespace: String,
     pub id: String,

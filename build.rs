@@ -48,38 +48,72 @@ fn gather_licenses() -> Result<()> {
                 a.license_text = Some(vec![include_str!("LICENSE").to_string()]);
                 return Ok(a)
             }
-            let res = surf::get(format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version))
-                .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
-                .body_string()
-                .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-            let files = if &*a.name == "widestring" {
-                vec![
-                    "LICENSES/Apache-2.0.txt",
-                    "LICENSES/MIT.txt"
-                ]
-            } else {
-                Regex::new(r#"<span class="text">(.*?)</span>"#)?.captures_iter(&res)
-                .map(|a| {
-                    Ok(a.get(1).ok_or_else(|| anyhow!("Regex is broken"))?.as_str())
-                })
-                .filter_ok(|a| a.to_lowercase().starts_with("licence")
-                || a.to_lowercase().starts_with("license")
-                || a.to_lowercase().ends_with("licence")
-                || a.to_lowercase().ends_with("license"))
-                .collect::<Result<Vec<_>>>()?
-            };
             let mut texts = vec![];
-            for file in files {
-                let res = surf::get(format!("https://docs.rs/crate/{}/{}/source/{}", a.name, a.version, file))
+            let mut list = vec![
+                (
+                    false,
+                    format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
+                    Regex::new(r#"<span class="text">(.*?)</span>"#)?,
+                    format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
+                    Regex::new(r#"(?s)<span class="syntax-text (?:syntax-plain|syntax-html syntax-markdown)">(.*?)</span>"#)?
+                )
+            ];
+            if let Some(repository) = &a.repository {
+                if repository.starts_with("https://github.com") || repository.starts_with("http://github.com") {
+                    list.push((
+                        true,
+                        repository.to_owned(),
+                        Regex::new(r#"title="(.*?)""#)?,
+                        format!("{}{}", repository.replace("github.com", "raw.githubusercontent.com"),
+                                if repository.ends_with('/') {""} else {"/"}),
+                        Regex::new(r#"(?s)(.*)"#)?,
+                        ));
+                }
+            }
+            for (is_gh, url1, re1, url2, re2) in list {
+                let res = surf::get(url1)
                     .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
                     .body_string()
                     .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-                let text = html_escape::decode_html_entities(Regex::new(r#"(?s)<span class="syntax-text (?:syntax-plain|syntax-html syntax-markdown)">(.*?)</span>"#)?
-                    .captures(&res)
-                    .ok_or_else(|| anyhow!("No text found {} {}", a.name, file))?
-                    .get(1).ok_or_else(|| anyhow!("Regex is broken"))?
-                    .as_str().trim()).to_string();
-                texts.push(text);
+                let files = if &*a.name == "widestring" {
+                    vec![
+                        "LICENSES/Apache-2.0.txt",
+                        "LICENSES/MIT.txt"
+                    ]
+                } else {
+                    re1.captures_iter(&res)
+                        .map(|a| {
+                            Ok(a.get(1).ok_or_else(|| anyhow!("Regex is broken"))?.as_str())
+                        })
+                        .filter_ok(|a| a.to_lowercase().starts_with("licence")
+                            || a.to_lowercase().starts_with("license")
+                            || a.to_lowercase().ends_with("licence")
+                            || a.to_lowercase().ends_with("license"))
+                        .collect::<Result<Vec<_>>>()?
+                };
+                let branch = if is_gh {
+                    Regex::new("data-menu-button>(.*?)</span>")?.captures(&res)
+                        .and_then(|cap| cap.get(1))
+                        .map(|m| m.as_str())
+                        .unwrap_or_default()
+                } else {""};
+                for file in files {
+                    let res = surf::get(if is_gh {
+                        format!("{url2}{branch}/{file}")
+                    } else {format!("{url2}{file}")})
+                        .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
+                        .body_string()
+                        .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
+                    let text = html_escape::decode_html_entities(re2
+                        .captures(&res)
+                        .ok_or_else(|| anyhow!("No text found {} {}", a.name, file))?
+                        .get(1).ok_or_else(|| anyhow!("Regex is broken"))?
+                        .as_str().trim()).to_string();
+                    texts.push(text);
+                }
+                if !texts.is_empty() {
+                    break
+                }
             }
             if texts.is_empty() {
                 //p!("No licenses detected for crate {} {}", a.name, a.version)

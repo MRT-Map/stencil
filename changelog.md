@@ -1,3 +1,13 @@
+# v2.0.0-beta.4
+* Added license page
+* Fixed text boxes not being editable and immediately losing focus
+* Undo / redo functionality
+  * native-dialog is no longer a dependency
+* Asset folder is now bundled together with the executable and unloaded before bevy starts
+* Tile settings, initial zoom and tilemap is now editable
+* Better panic handling
+* Log output to file
+
 # v2.0.0-beta.3
 * For lines and areas, clicking on the last node placed will remove the node
 * Move popups (except one temporary one) to a new internal popup system
