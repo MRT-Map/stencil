@@ -10,11 +10,13 @@ use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use bevy_web_asset::WebAssetPlugin;
+use tracing::Level;
+use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
 
 use crate::{
     component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
     cursor::CursorPlugin, info_windows::InfoWindowsPlugin, load_save::LoadSavePlugin,
-    setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
+    misc::DATA_DIR, setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
 };
 
 mod component_actions;
@@ -29,6 +31,32 @@ mod tilemap;
 mod ui;
 
 fn main() {
+    tracing_subscriber::fmt()
+        .event_format(tracing_subscriber::fmt::format().compact())
+        .with_env_filter(
+            EnvFilter::try_new(
+                "info,\
+            wgpu_core::device=warn,\
+            bevy_asset::asset_server=error,\
+            surf::middleware::logger::native=off,\
+            isahc::handler=error,\
+            stencil2=trace",
+            )
+            .unwrap(),
+        )
+        .with_writer(std::io::stdout.with_max_level(Level::DEBUG).and(
+            tracing_appender::rolling::hourly(
+                {
+                    let mut dir = DATA_DIR.to_owned();
+                    dir.push("logs");
+                    dir
+                },
+                "log",
+            ),
+        ))
+        .init();
+    info!("Logger initialised");
+
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
 
@@ -58,10 +86,7 @@ fn main() {
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())
-                .set(LogPlugin {
-                    filter: "bevy_asset::asset_server=error,surf::middleware::logger::native=off,isahc::handler=error,stencil2=debug".into(),
-                    level: bevy::log::Level::WARN,
-                })
+                .disable::<LogPlugin>()
                 .disable::<AssetPlugin>()
         })
         .add_plugins(DefaultPickingPlugins)
