@@ -11,13 +11,14 @@ use crate::{
     EventReader,
 };
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn save_ns_asy(
     mut actions: EventReader<Action>,
     query: Query<&PlaComponent<EditorCoords>>,
     mut popup: EventWriter<Arc<Popup>>,
 ) {
     for event in actions.iter() {
-        if let Some(LoadSaveAct::Save) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(LoadSaveAct::Save)) {
             save_single_dir("save_ns1", &mut popup, |a| Box::new(LoadSaveAct::Save1(a)));
         } else if let Some(LoadSaveAct::Save1(Some(dir))) = event.downcast_ref() {
             let comps = query.iter().collect::<Vec<_>>();
@@ -34,7 +35,7 @@ pub fn save_ns_asy(
                 files
                     .entry(&comp.namespace)
                     .or_default()
-                    .push(comp.to_mc_coords())
+                    .push(comp.to_mc_coords());
             }
             for (ns, comps) in &files {
                 info!(?ns, "Saving namespace");
@@ -46,7 +47,7 @@ pub fn save_ns_asy(
                 "save_ns_success",
                 "Components saved!",
                 format!("Namespaces: {}", files.keys().join(", ")),
-            ))
+            ));
         }
     }
 }

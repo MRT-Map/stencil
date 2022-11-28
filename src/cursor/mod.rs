@@ -38,7 +38,7 @@ pub fn crosshair_sy(
     }
     let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
     let new_custom_size = Some(Vec2::splat(
-        2f32.powf((tile_settings.max_tile_zoom as f32) - zoom.0) * 16f32,
+        ((tile_settings.max_tile_zoom as f32) - zoom.0).exp2() * 16f32,
     ));
     if ch.is_empty() {
         debug!("Spawning crosshair");
@@ -79,11 +79,10 @@ pub fn cursor_icon_sy(
         if matches!(state, EditorState::CreatingComponent(_)) {
             window.set_cursor_visibility(hovering_over_gui.0);
             continue;
-        } else {
-            window.set_cursor_visibility(true);
-            if hovering_over_gui.0 {
-                continue;
-            }
+        }
+        window.set_cursor_visibility(true);
+        if hovering_over_gui.0 {
+            continue;
         }
         window.set_cursor_icon(match state {
             EditorState::Loading => CursorIcon::Wait,

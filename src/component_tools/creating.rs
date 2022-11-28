@@ -99,6 +99,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
         let mouse_pos_world = mouse_pos_world.xy();
         let next_point =
             if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
+                #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
                 let closest_angle_vec = ANGLE_VECTORS
                     .into_iter()
                     .chain(ANGLE_VECTORS.iter().map(|a| -*a))

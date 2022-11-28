@@ -46,7 +46,7 @@ pub fn right_click_handler_sy(
         if let Some(prev) = *prev_mouse_pos {
             if (*prev - **mouse_pos).length_squared() <= CLICK_MAX_OFFSET && !hovering_over_gui.0 {
                 debug!("RightClick detected");
-                event_writer.send(MouseEvent::RightClick(*mouse_pos_world))
+                event_writer.send(MouseEvent::RightClick(*mouse_pos_world));
             }
         }
     }
@@ -109,7 +109,7 @@ pub fn left_click_handler_sy(
     event_writer.send(MouseEvent::LeftRelease(*selected_entity, *mouse_pos_world));
     if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && !hovering_over_gui.0 {
         debug!(e = ?selected_entity, "LeftClick detected");
-        event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world))
+        event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
     }
 }
 

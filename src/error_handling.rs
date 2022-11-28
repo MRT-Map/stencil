@@ -65,7 +65,7 @@ pub fn ack_panic_sy(mut popup: EventWriter<Arc<Popup>>) {
         Ok(content) => content,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return,
-            e => panic!("{:?}", e),
+            _e => panic!("{_e:?}"),
         },
     };
     std::fs::remove_file(&to_show_file).unwrap();

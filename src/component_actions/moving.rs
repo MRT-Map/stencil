@@ -38,10 +38,7 @@ pub fn move_component_sy(
         mouse.clear();
         return;
     }
-    let (entity, mut transform, mut pla, hovered) =
-        if let Ok(query_data) = selected.get_single_mut() {
-            query_data
-        } else {
+    let Ok((entity, mut transform, mut pla, hovered)) = selected.get_single_mut() else {
             mouse.clear();
             return;
         };
@@ -60,10 +57,10 @@ pub fn move_component_sy(
         } else if let MouseEvent::RightRelease(_) = event {
             if let Some((orig_mouse_pos_world, _)) = *orig {
                 let old_pla = pla.to_owned();
-                for node in pla.nodes.iter_mut() {
+                for node in &mut pla.nodes {
                     node.0 += (mouse_pos_world.xy() - orig_mouse_pos_world.xy())
                         .round()
-                        .as_ivec2()
+                        .as_ivec2();
                 }
                 actions.send(Box::new(UndoRedoAct::one_history(History {
                     component_id: entity,

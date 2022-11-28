@@ -32,8 +32,8 @@ pub fn get_shown_tiles(
         y: t_top,
         ..
     } = TileCoord::from_world_coords(
-        c_left as f64,
-        c_top as f64,
+        f64::from(c_left),
+        f64::from(c_top),
         zoom.min(tile_settings.max_tile_zoom),
         tile_settings,
     );
@@ -42,8 +42,8 @@ pub fn get_shown_tiles(
         y: t_bottom,
         ..
     } = TileCoord::from_world_coords(
-        c_right as f64,
-        c_bottom as f64,
+        f64::from(c_right),
+        f64::from(c_bottom),
         zoom.min(tile_settings.max_tile_zoom),
         tile_settings,
     );
@@ -82,15 +82,16 @@ pub fn show_tiles_sy(
     if !tracker.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
         for (entity, tile_coord) in query.iter_mut() {
-            if (zoom.0 <= tile_settings.max_tile_zoom as f32 && tile_coord.z > zoom.0.round() as i8)
-                || (zoom.0 > tile_settings.max_tile_zoom as f32
+            if (zoom.0 <= f32::from(tile_settings.max_tile_zoom)
+                && tile_coord.z > zoom.0.round() as i8)
+                || (zoom.0 > f32::from(tile_settings.max_tile_zoom)
                     && tile_coord.z != tile_settings.max_tile_zoom)
-                || (zoom.0 > tile_settings.max_tile_zoom as f32 && {
+                || (zoom.0 > f32::from(tile_settings.max_tile_zoom) && {
                     let (tl, tt, tr, tb) = tile_coord.get_edges(&tile_settings);
                     tr < ml || tl > mr || tb < mt || tt > mb
                 })
                 || (tile_coord.z <= (tile_settings.max_tile_zoom - 1)
-                    && zoom.0 <= (tile_settings.max_tile_zoom as f32)
+                    && zoom.0 <= f32::from(tile_settings.max_tile_zoom)
                     && !shown_tiles.contains(tile_coord))
             {
                 trace!("Hiding {tile_coord}");

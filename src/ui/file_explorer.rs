@@ -31,7 +31,7 @@ pub fn file_explorer(
         *current_path = current_path
             .parent()
             .unwrap_or(current_path.as_path())
-            .into()
+            .into();
     }
     StripBuilder::new(ui)
         .size(Size::relative(0.75))
@@ -56,7 +56,7 @@ pub fn file_explorer(
                                     chosen_files.append(&mut files_not_dir);
                                 } else if checked != old_checked {
                                     **chosen_files =
-                                        chosen_files.difference(&files_not_dir).cloned().collect()
+                                        chosen_files.difference(&files_not_dir).cloned().collect();
                                 }
                             }
                         });
@@ -127,7 +127,7 @@ pub fn file_explorer(
                             });
                         }
                     });
-            })
+            });
         });
 }
 
@@ -175,7 +175,7 @@ pub fn open_multiple_files(
             dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")),
             BTreeSet::<PathBuf>::new(),
         ))),
-    ))
+    ));
 }
 
 #[tracing::instrument(skip_all)]
@@ -208,5 +208,5 @@ pub fn save_single_dir(
         Mutex::new(Box::new(
             dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")),
         )),
-    ))
+    ));
 }

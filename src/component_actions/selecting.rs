@@ -29,7 +29,7 @@ pub fn selector_sy(
     for event in mouse.iter() {
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
-                select_entity(&mut commands, &deselect_query, e);
+                select_entity(&mut commands, &deselect_query, *e);
             } else {
                 info!("Selected nothing, deselecting");
                 deselect(&mut commands, &deselect_query);
@@ -66,10 +66,10 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
     }
 }
 
-pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, entity: &Entity) {
+pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, entity: Entity) {
     info!(?entity, "Selecting entity");
     deselect(commands, deselect_query);
-    commands.entity(*entity).insert(SelectedComponent);
+    commands.entity(entity).insert(SelectedComponent);
 }
 
 pub struct SelectComponentPlugin;

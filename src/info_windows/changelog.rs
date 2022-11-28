@@ -8,7 +8,7 @@ use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if let Some(InfoWindowsAct::Changelog) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(InfoWindowsAct::Changelog)) {
             popup.send(Popup::new(
                 "changelog",
                 || {

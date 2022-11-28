@@ -111,7 +111,7 @@ pub enum SkinComponent {
     },
 }
 impl SkinComponent {
-    pub fn get_type(&self) -> ComponentType {
+    pub const fn get_type(&self) -> ComponentType {
         match self {
             Self::Point { .. } => ComponentType::Point,
             Self::Line { .. } => ComponentType::Line,

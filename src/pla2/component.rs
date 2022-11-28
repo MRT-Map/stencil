@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::pla2::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent};
 
-fn hex_to_color(hex: &HexColor) -> Color {
+fn hex_to_color(hex: HexColor) -> Color {
     Color::Rgba {
-        red: hex.r as f32 / 255.0,
-        green: hex.g as f32 / 255.0,
-        blue: hex.b as f32 / 255.0,
+        red: f32::from(hex.r) / 255.0,
+        green: f32::from(hex.g) / 255.0,
+        blue: f32::from(hex.b) / 255.0,
         alpha: 1.0,
     }
 }
@@ -153,7 +153,7 @@ impl PlaComponent<EditorCoords> {
                 DrawMode::Fill(FillMode::color(if selected {
                     Color::YELLOW
                 } else if let Some(hex) = self.front_colour(skin) {
-                    hex_to_color(hex)
+                    hex_to_color(*hex)
                 } else {
                     Color::WHITE
                 })),
@@ -183,7 +183,7 @@ impl PlaComponent<EditorCoords> {
                         fill_mode: FillMode::color(if selected {
                             *Color::YELLOW.clone().set_a(0.5)
                         } else if let Some(hex) = self.front_colour(skin) {
-                            *hex_to_color(hex).set_a(0.25)
+                            *hex_to_color(*hex).set_a(0.25)
                         } else {
                             Color::NONE
                         }),
@@ -191,7 +191,7 @@ impl PlaComponent<EditorCoords> {
                             color: if selected {
                                 Color::YELLOW
                             } else if let Some(hex) = self.back_colour(skin) {
-                                hex_to_color(hex)
+                                hex_to_color(*hex)
                             } else {
                                 Color::NONE
                             },
@@ -203,7 +203,7 @@ impl PlaComponent<EditorCoords> {
                         color: if selected {
                             Color::YELLOW
                         } else if let Some(hex) = self.front_colour(skin) {
-                            hex_to_color(hex)
+                            hex_to_color(*hex)
                         } else {
                             Color::WHITE
                         },
@@ -216,9 +216,8 @@ impl PlaComponent<EditorCoords> {
                         .iter()
                         .enumerate()
                         .find(|(_, a)| **a == self.ty)
-                        .map(|a| a.0)
-                        .unwrap_or(0);
-                    self.layer as f32 + 20.0 + order as f32 * f32::EPSILON
+                        .map_or(0, |a| a.0);
+                    (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
                 }),
             )
         }

@@ -33,6 +33,7 @@ impl UndoRedoAct {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn undo_redo_asy(
     mut commands: Commands,
     mut actions: EventReader<Action>,
@@ -48,10 +49,10 @@ pub fn undo_redo_asy(
             let histories = histories
                 .iter()
                 .map(|history| {
-                    let component_id = ids
-                        .entry(history.component_id)
-                        .or_insert_with(|| Arc::new(RwLock::new(history.component_id)))
-                        .clone();
+                    let component_id = Arc::clone(
+                        ids.entry(history.component_id)
+                            .or_insert_with(|| Arc::new(RwLock::new(history.component_id))),
+                    );
                     debug!(?history.component_id, "Added entry to undo stack");
                     History {
                         component_id,
@@ -62,7 +63,7 @@ pub fn undo_redo_asy(
                 .collect();
             redo_stack.clear();
             undo_stack.push(histories);
-        } else if let Some(UndoRedoAct::Undo) = event.downcast_ref() {
+        } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Undo)) {
             let Some(mut histories) = undo_stack.pop() else {
                 continue
             };
@@ -75,7 +76,7 @@ pub fn undo_redo_asy(
                             .insert(before.get_shape(&skin, false))
                             .id();
                         *history.component_id.write().unwrap() = entity;
-                        ids.insert(entity, history.component_id.clone());
+                        ids.insert(entity, Arc::clone(&history.component_id));
                     } else {
                         debug!(?history.component_id, "Undoing edit");
                         let entity = *history.component_id.read().unwrap();
@@ -92,7 +93,7 @@ pub fn undo_redo_asy(
                 }
             }
             redo_stack.push(histories);
-        } else if let Some(UndoRedoAct::Redo) = event.downcast_ref() {
+        } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Redo)) {
             let Some(mut histories) = redo_stack.pop() else {
                 continue
             };
@@ -105,7 +106,7 @@ pub fn undo_redo_asy(
                             .insert(after.get_shape(&skin, false))
                             .id();
                         *history.component_id.write().unwrap() = entity;
-                        ids.insert(entity, history.component_id.clone());
+                        ids.insert(entity, Arc::clone(&history.component_id));
                     } else {
                         debug!(?history.component_id, "Redoing edit");
                         let entity = *history.component_id.read().unwrap();

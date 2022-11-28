@@ -34,9 +34,7 @@ pub fn edit_nodes_sy(
     skin: Res<Skin>,
     mut actions: EventWriter<Action>,
 ) {
-    let (mut pla, entity) = if let Ok(query_data) = selected.get_single_mut() {
-        query_data
-    } else {
+    let Ok((mut pla, entity)) = selected.get_single_mut() else {
         return;
     };
     if let Some(orig) = &*orig {
@@ -79,11 +77,10 @@ pub fn edit_nodes_sy(
                     }
                     .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
                 );
-            let (list_pos, world_pos) = if let Some(h) = handles.min_by_key(|(_, pos)| {
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // TODO figure out how to fix this
+            let Some((list_pos, world_pos)) = handles.min_by_key(|(_, pos)| {
                 mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
-            }) {
-                h
-            } else {
+            }) else {
                 warn!(?entity, "Component has no points");
                 continue;
             };
@@ -107,10 +104,10 @@ pub fn edit_nodes_sy(
                 node_pos_world: world_pos,
                 node_list_pos: list_pos,
                 was_new,
-            })
+            });
         } else if let MouseEvent::RightRelease(_) = event {
             info!(?entity, "Ending movement of node");
-            clear_orig = true
+            clear_orig = true;
         } else if let MouseEvent::RightClick(_) = event {
             if let Some(orig) = &*orig {
                 if !orig.was_new && pla.get_type(&skin) != Some(ComponentType::Point) {
@@ -118,7 +115,7 @@ pub fn edit_nodes_sy(
                     pla.nodes.remove(orig.node_list_pos);
                     if pla.nodes.len() < 2 {
                         info!(?entity, "Deleting entity");
-                        commands.entity(entity).despawn_recursive()
+                        commands.entity(entity).despawn_recursive();
                     } else {
                         commands.entity(entity).insert(pla.get_shape(&skin, true));
                     }
@@ -140,13 +137,13 @@ pub fn edit_nodes_sy(
 pub fn update_handles(
     commands: &mut Commands,
     pla: &PlaComponent<EditorCoords>,
-    e: &Entity,
+    e: Entity,
     skin: &Skin,
     mouse_pos_world: &MousePosWorld,
 ) {
     trace!("Updating handles");
     commands
-        .entity(*e)
+        .entity(e)
         .insert(pla.get_shape(skin, true))
         .despawn_descendants();
     let children = pla
@@ -181,7 +178,7 @@ pub fn update_handles(
         .map(|bundle| commands.spawn(bundle).id())
         .collect::<Vec<_>>();
     trace!("Pushing first set of children");
-    commands.entity(*e).push_children(&children);
+    commands.entity(e).push_children(&children);
     let more_children = if pla.get_type(skin) == Some(ComponentType::Area) {
         pla.nodes
             .iter()
@@ -220,9 +217,10 @@ pub fn update_handles(
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     trace!("Pushing second set of children");
-    commands.entity(*e).push_children(&more_children);
+    commands.entity(e).push_children(&more_children);
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn show_handles_sy(
     selected: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     mut commands: Commands,
@@ -230,10 +228,11 @@ pub fn show_handles_sy(
     mouse_pos_world: Res<MousePosWorld>,
 ) {
     for (pla, e) in selected.iter() {
-        update_handles(&mut commands, pla, &e, &skin, &mouse_pos_world)
+        update_handles(&mut commands, pla, e, &skin, &mouse_pos_world);
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut commands: Commands) {
     for e in selected.iter() {
         commands.entity(e).despawn_descendants();

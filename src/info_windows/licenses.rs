@@ -28,7 +28,7 @@ static LICENSES: Lazy<Vec<CargoLicenseEntry>> = Lazy::new(|| {
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
-        if let Some(InfoWindowsAct::Licenses) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(InfoWindowsAct::Licenses)) {
             popup.send(Popup::new(
                 "info_popup",
                 || {
@@ -79,8 +79,8 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc
                     }
                 },
                 Mutex::new(Box::new((
-                    "stencil2".to_string(),
-                    env!("CARGO_PKG_VERSION").to_string(),
+                    "stencil2".to_owned(),
+                    env!("CARGO_PKG_VERSION").to_owned(),
                 ))),
             ));
         }

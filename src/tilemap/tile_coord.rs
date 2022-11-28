@@ -26,8 +26,8 @@ impl Display for TileCoord {
 impl TileCoord {
     pub fn from_world_coords(x: f64, y: f64, z: i8, tile_settings: &TileSettings) -> Self {
         Self {
-            x: (x / Zoom(z as f32).world_size(tile_settings) as f64) as i32,
-            y: (y / Zoom(z as f32).world_size(tile_settings) as f64) as i32,
+            x: (x / f64::from(Zoom(z as f32).world_size(tile_settings))) as i32,
+            y: (y / f64::from(Zoom(z as f32).world_size(tile_settings))) as i32,
             z,
         }
     }
@@ -49,7 +49,7 @@ impl TileCoord {
 
         let num_in_group = xy * z;
 
-        let mut zzz = "".to_string();
+        let mut zzz = String::new();
         let mut i = tile_settings.max_tile_zoom;
         while i > self.z {
             zzz += "z";
@@ -57,11 +57,11 @@ impl TileCoord {
         }
 
         if !zzz.is_empty() {
-            zzz += "_"
+            zzz += "_";
         };
         format!(
-            "{}/{}_{}/{}{}_{}.png",
-            tile_settings.url, group.x, group.y, zzz, num_in_group.x, num_in_group.y
+            "{}/{}_{}/{zzz}{}_{}.png",
+            tile_settings.url, group.x, group.y, num_in_group.x, num_in_group.y
         )
     }
 

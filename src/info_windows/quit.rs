@@ -9,6 +9,7 @@ use crate::{
     ui::popup::Popup,
 };
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn quit_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut popup: EventWriter<Arc<Popup>>,
@@ -17,7 +18,7 @@ pub fn quit_asy(
 ) {
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().iter() {
-        if let Some(InfoWindowsAct::Quit(false)) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(InfoWindowsAct::Quit(false))) {
             if components.is_empty() || cfg!(debug_assertions) {
                 send_queue.push(Box::new(InfoWindowsAct::Quit(true)));
             } else {
@@ -26,16 +27,16 @@ pub fn quit_asy(
                     "Are you sure you want to exit?",
                     "You may have unsaved changes",
                     InfoWindowsAct::Quit(true),
-                ))
+                ));
             };
-        } else if let Some(InfoWindowsAct::Quit(true)) = event.downcast_ref() {
+        } else if matches!(event.downcast_ref(), Some(InfoWindowsAct::Quit(true))) {
             {
-                exit.send(AppExit)
+                exit.send(AppExit);
             }
         }
     }
 
     for action in send_queue {
-        actions.p1().send(action)
+        actions.p1().send(action);
     }
 }

@@ -20,7 +20,7 @@ impl TileBundle {
         server: &Res<AssetServer>,
         tile_settings: &TileSettings,
     ) -> Self {
-        let custom_size = Vec2::splat(Zoom(coord.z as f32).map_size(tile_settings) as f32);
+        let custom_size = Vec2::splat(Zoom(f32::from(coord.z)).map_size(tile_settings) as f32);
         trace!(coord = coord.to_string(), "Loading tile");
         Self {
             _t: Tile,
@@ -33,10 +33,14 @@ impl TileBundle {
                 },
                 texture: server.load(&*coord.path(tile_settings)) as Handle<Image>,
                 transform: Transform::from_translation(Vec3::new(
-                    coord.x as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32 - 0.5f32,
-                    coord.y as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32
-                        + tile_settings.max_zoom_range as f32
-                        + 0.5f32,
+                    (coord.x as f32).mul_add(
+                        Zoom(f32::from(coord.z)).map_size(tile_settings) as f32,
+                        -0.5f32,
+                    ),
+                    (coord.y as f32).mul_add(
+                        Zoom(f32::from(coord.z)).map_size(tile_settings) as f32,
+                        tile_settings.max_zoom_range as f32,
+                    ) + 0.5f32,
                     0.0,
                 )),
                 ..default()

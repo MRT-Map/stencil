@@ -12,14 +12,14 @@ use crate::pla2::component::ComponentType;
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let mut dir = dirs::data_dir().unwrap_or_else(|| std::env::current_dir().unwrap());
     dir.push("stencil2");
-    let _ = std::fs::create_dir(&dir);
+    let _ = std::fs::create_dir_all(&dir);
     dir
 });
 
 pub fn data_dir(next: impl AsRef<Path>) -> PathBuf {
     let mut path = DATA_DIR.to_owned();
     path.push(next);
-    let _ = std::fs::create_dir(&path);
+    let _ = std::fs::create_dir_all(&path);
     path
 }
 
@@ -41,7 +41,7 @@ pub fn state_changer_asy(mut commands: Commands, mut actions: EventReader<Action
     for event in actions.iter() {
         if let Some(ChangeStateAct(state)) = event.downcast_ref() {
             info!(?state, "Changing state");
-            commands.insert_resource(NextState(*state))
+            commands.insert_resource(NextState(*state));
         }
     }
 }

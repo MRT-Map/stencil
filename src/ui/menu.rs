@@ -28,6 +28,7 @@ pub fn ui_sy(
                 };
             }
 
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
@@ -55,8 +56,7 @@ pub fn ui_sy(
                     diagnostics
                         .get(FrameTimeDiagnosticsPlugin::FPS)
                         .and_then(|diagnostic| diagnostic.average())
-                        .map(|fps| format!("{:.2}", fps))
-                        .unwrap_or_else(|| "???".into()),
+                        .map_or_else(|| "???".into(), |fps| format!("{:.2}", fps)),
                 ));
                 ui.separator();
                 ui.label(format!(

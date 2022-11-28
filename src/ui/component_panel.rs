@@ -17,6 +17,7 @@ use crate::{
 #[derive(Default, Resource)]
 pub struct PrevNamespaceUsed(pub String);
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
@@ -79,7 +80,7 @@ pub fn ui_sy(
             ui.end_row();
             let mut tags = component_data.tags.join(",");
             ui.add(egui::TextEdit::singleline(&mut tags).hint_text("Tags"));
-            component_data.tags = tags.split(',').map(|t| t.trim().to_string()).collect();
+            component_data.tags = tags.split(',').map(|t| t.trim().to_owned()).collect();
             ui.end_row();
             ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
             ui.end_row();

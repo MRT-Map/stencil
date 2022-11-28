@@ -16,6 +16,7 @@ use crate::{
     EventReader,
 };
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn load_ns_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut popup: EventWriter<Arc<Popup>>,
@@ -25,7 +26,7 @@ pub fn load_ns_asy(
 ) {
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().iter() {
-        if let Some(LoadSaveAct::Load) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(LoadSaveAct::Load)) {
             open_multiple_files("load_ns1", &mut popup, |a| Box::new(LoadSaveAct::Load1(a)));
         } else if let Some(LoadSaveAct::Load1(Some(files))) = event.downcast_ref() {
             let existing_namespaces: Arc<BTreeSet<String>> = Arc::new(
@@ -40,7 +41,7 @@ pub fn load_ns_asy(
                 send_queue.push(Box::new(LoadSaveAct::Load2(
                     file.to_owned(),
                     existing_namespaces.to_owned(),
-                )))
+                )));
             }
         } else if let Some(LoadSaveAct::Load2(file, existing_namespaces)) = event.downcast_ref() {
             info!(?file, "Reading file");
@@ -84,7 +85,7 @@ pub fn load_ns_asy(
                     format!("load_ns_success_{}_empty", content[0].namespace),
                     "Loaded with no components",
                     format!("{} has no components", content[0].namespace),
-                ))
+                ));
             }
             let histories = content
                 .iter()
@@ -105,10 +106,10 @@ pub fn load_ns_asy(
                 format!("load_ns_success_{}", content[0].namespace),
                 "Loaded",
                 format!("Successfully loaded {}", content[0].namespace),
-            ))
+            ));
         }
     }
     for action in send_queue {
-        actions.p1().send(action)
+        actions.p1().send(action);
     }
 }

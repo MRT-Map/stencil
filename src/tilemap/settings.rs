@@ -53,7 +53,7 @@ pub fn tile_settings_msy(
     mut tile_settings: ResMut<TileSettings>,
 ) {
     for event in actions.iter() {
-        if let Some(TileSettingsAct::Open) = event.downcast_ref() {
+        if matches!(event.downcast_ref(), Some(TileSettingsAct::Open)) {
             popup.send(Popup::new(
                 "tile_settings_win",
                 || {
@@ -93,7 +93,7 @@ pub fn tile_settings_msy(
                     }
                 },
                 Mutex::new(Box::new(tile_settings.to_owned())),
-            ))
+            ));
         } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
             *tile_settings = new_settings.to_owned();
             std::fs::write(
