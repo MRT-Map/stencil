@@ -6,12 +6,12 @@ use crate::tilemap::settings::TileSettings;
 pub struct Zoom(pub f32);
 
 impl Zoom {
-    pub fn map_size(&self, tile_settings: &TileSettings) -> f64 {
-        2f64.powf((tile_settings.max_tile_zoom as f32 - self.0) as f64)
+    pub fn map_size(self, tile_settings: &TileSettings) -> f64 {
+        f64::from(f32::from(tile_settings.max_tile_zoom) - self.0).exp2()
             * tile_settings.max_zoom_range
     }
-    pub fn world_size(&self, tile_settings: &TileSettings) -> i32 {
-        (2f64.powf((tile_settings.max_tile_zoom as f32 - self.0) as f64)
+    pub fn world_size(self, tile_settings: &TileSettings) -> i32 {
+        (f64::from(f32::from(tile_settings.max_tile_zoom) - self.0).exp2()
             * tile_settings.max_zoom_range) as i32
     }
 }

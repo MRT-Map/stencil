@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContext};
@@ -10,6 +10,7 @@ use crate::{
     load_save::LoadSaveAct, misc::Action, tilemap::settings::TileSettingsAct, ui::HoveringOverGui,
 };
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
     mut ctx: ResMut<EguiContext>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
@@ -55,8 +56,8 @@ pub fn ui_sy(
                     "FPS: {}",
                     diagnostics
                         .get(FrameTimeDiagnosticsPlugin::FPS)
-                        .and_then(|diagnostic| diagnostic.average())
-                        .map_or_else(|| "???".into(), |fps| format!("{:.2}", fps)),
+                        .and_then(Diagnostic::average)
+                        .map_or_else(|| "???".into(), |fps| format!("{fps:.2}")),
                 ));
                 ui.separator();
                 ui.label(format!(

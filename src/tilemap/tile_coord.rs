@@ -26,23 +26,23 @@ impl Display for TileCoord {
 impl TileCoord {
     pub fn from_world_coords(x: f64, y: f64, z: i8, tile_settings: &TileSettings) -> Self {
         Self {
-            x: (x / f64::from(Zoom(z as f32).world_size(tile_settings))) as i32,
-            y: (y / f64::from(Zoom(z as f32).world_size(tile_settings))) as i32,
+            x: (x / f64::from(Zoom(f32::from(z)).world_size(tile_settings))) as i32,
+            y: (y / f64::from(Zoom(f32::from(z)).world_size(tile_settings))) as i32,
             z,
         }
     }
 
     pub fn get_edges(&self, tile_settings: &TileSettings) -> (f32, f32, f32, f32) {
         (
-            self.x as f32 * Zoom(self.z as f32).world_size(tile_settings) as f32,
-            self.y as f32 * Zoom(self.z as f32).world_size(tile_settings) as f32,
-            (self.x + 1) as f32 * Zoom(self.z as f32).world_size(tile_settings) as f32,
-            (self.y + 1) as f32 * Zoom(self.z as f32).world_size(tile_settings) as f32,
+            self.x as f32 * Zoom(f32::from(self.z)).world_size(tile_settings) as f32,
+            self.y as f32 * Zoom(f32::from(self.z)).world_size(tile_settings) as f32,
+            (self.x + 1) as f32 * Zoom(f32::from(self.z)).world_size(tile_settings) as f32,
+            (self.y + 1) as f32 * Zoom(f32::from(self.z)).world_size(tile_settings) as f32,
         )
     }
 
     pub fn url(&self, tile_settings: &TileSettings) -> String {
-        let z = 2.0f64.powi((tile_settings.max_tile_zoom - self.z) as i32);
+        let z = 2.0f64.powi(i32::from(tile_settings.max_tile_zoom - self.z));
         let xy = IVec2::new(self.x, self.y).as_dvec2();
 
         let group = (xy * z / tile_settings.max_zoom_range).floor().as_ivec2();

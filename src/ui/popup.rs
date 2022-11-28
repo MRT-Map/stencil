@@ -32,7 +32,7 @@ pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
 
 impl<T: Send + Sync + ?Sized> Hash for Popup<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.id.hash(state)
+        self.id.hash(state);
     }
 }
 
@@ -137,7 +137,7 @@ pub fn popup_handler(
     for (id, (popup, showed)) in show.iter_mut() {
         let response: egui::InnerResponse<Option<()>> = (popup.window)()
             .show(ctx, |ui| {
-                (popup.ui)(&popup.state, ui, &mut event_writer, showed)
+                (popup.ui)(&popup.state, ui, &mut event_writer, showed);
             })
             .unwrap();
         if response.response.hovered()
@@ -149,7 +149,7 @@ pub fn popup_handler(
             hovering_over_gui.0 = true;
         }
         if !*showed {
-            info!(?id, "Closing popup")
+            info!(?id, "Closing popup");
         }
     }
     show.retain(|_, (_, a)| *a);

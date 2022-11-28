@@ -33,9 +33,7 @@ pub fn mouse_drag_sy(
             if !mouse_pos.is_changed() {
                 return;
             }
-            let win_wh = if let Some(win_wh) = get_window_width_height(&windows, camera) {
-                win_wh
-            } else {
+            let Some(win_wh) = get_window_width_height(&windows, camera) else {
                 return;
             };
             let map_wh = get_map_width_height(camera, &transform);
@@ -79,7 +77,7 @@ pub fn mouse_zoom_sy(
             zoom.0 += u;
             trace!("Zoom changed from {orig_scale} to {}", zoom.0);
 
-            ort_proj.scale = 2f32.powf((tile_settings.max_tile_zoom as f32 - 1.0) - zoom.0);
+            ort_proj.scale = ((f32::from(tile_settings.max_tile_zoom) - 1.0) - zoom.0).exp2();
 
             let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = mouse_pos_world.single();

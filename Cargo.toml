@@ -5,6 +5,8 @@ edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"
+repository = "https://github.com/mrt-map/stencil2"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
