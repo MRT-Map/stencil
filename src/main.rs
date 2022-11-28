@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![allow(clippy::type_complexity, clippy::too_many_arguments)]
 
+use std::io::Cursor;
+
 use bevy::{
     asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogPlugin, prelude::*,
     window::WindowMode,
@@ -12,11 +14,12 @@ use bevy_prototype_lyon::prelude::ShapePlugin;
 use bevy_web_asset::WebAssetPlugin;
 use tracing::Level;
 use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
+use zip::ZipArchive;
 
 use crate::{
     component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
     cursor::CursorPlugin, info_windows::InfoWindowsPlugin, load_save::LoadSavePlugin,
-    misc::DATA_DIR, setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
+    misc::data_dir, setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
 };
 
 mod component_actions;
@@ -47,37 +50,32 @@ fn main() {
             )
             .unwrap(),
         )
-        .with_writer(std::io::stdout.with_max_level(Level::DEBUG).and(
-            tracing_appender::rolling::hourly(
-                {
-                    let mut dir = DATA_DIR.to_owned();
-                    dir.push("logs");
-                    dir
-                },
-                "log",
-            ),
-        ))
+        .with_writer(
+            std::io::stdout
+                .with_max_level(Level::DEBUG)
+                .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
+        )
         .init();
     info!("Logger initialised");
 
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
 
-    #[cfg(not(debug_assertions))]
-    {
-        let mut zip_file = zip::ZipArchive::new(std::io::Cursor::new(include_bytes!(concat!(
-            env!("OUT_DIR"),
-            "/assets.zip"
-        ))))
-        .unwrap();
-        let mut dir = std::env::current_exe().unwrap();
-        dir.pop();
-        dir.push("assets");
-        zip_file.extract(dir).unwrap();
-    }
+    let mut zip_file = ZipArchive::new(Cursor::new(include_bytes!(concat!(
+        env!("OUT_DIR"),
+        "/assets.zip"
+    ))))
+    .unwrap();
+    let dir = data_dir("../build/assets");
+    zip_file.extract(&dir).unwrap();
 
     App::new()
-        .add_plugin(WebAssetPlugin::default())
+        .add_plugin(WebAssetPlugin {
+            asset_plugin: AssetPlugin {
+                asset_folder: dir.to_string_lossy().to_string(),
+                ..default()
+            },
+        })
         .add_plugins({
             DefaultPlugins
                 .set(WindowPlugin {

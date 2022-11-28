@@ -1,4 +1,7 @@
-use std::{any::Any, path::PathBuf};
+use std::{
+    any::Any,
+    path::{Path, PathBuf},
+};
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::NextState;
@@ -12,6 +15,13 @@ pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let _ = std::fs::create_dir(&dir);
     dir
 });
+
+pub fn data_dir(next: impl AsRef<Path>) -> PathBuf {
+    let mut path = DATA_DIR.to_owned();
+    path.push(next);
+    let _ = std::fs::create_dir(&path);
+    path
+}
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {

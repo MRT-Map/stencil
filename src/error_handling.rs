@@ -4,17 +4,11 @@ use bevy::prelude::EventWriter;
 use itertools::Itertools;
 use tracing::{error, warn};
 
-use crate::{misc::DATA_DIR, ui::popup::Popup};
+use crate::{misc::data_dir, ui::popup::Popup};
 
 pub fn panic(panic: &PanicInfo) {
     error!("Caught panic: {panic:?}");
-    let (log1, log2) = if let Ok(read_dir) = {
-        let mut dir = DATA_DIR.to_owned();
-        dir.push("logs");
-        dir
-    }
-    .read_dir()
-    {
+    let (log1, log2) = if let Ok(read_dir) = data_dir("logs").read_dir() {
         let mut list = read_dir.filter_map(|a| Some(a.ok()?.path())).sorted().rev();
         (list.next(), list.next())
     } else {
@@ -27,12 +21,7 @@ pub fn panic(panic: &PanicInfo) {
         .and_then(|log2| std::fs::read_to_string(log2).ok())
         .unwrap_or_default();
     let backtrace = Backtrace::force_capture();
-    let panics_dir = {
-        let mut dir = DATA_DIR.to_owned();
-        dir.push("panics");
-        dir
-    };
-    let _ = std::fs::create_dir(&panics_dir);
+    let panics_dir = data_dir("panics");
     let panic_file = {
         let mut file = panics_dir.to_owned();
         file.push(format!(
@@ -66,11 +55,7 @@ pub fn panic(panic: &PanicInfo) {
 
 #[tracing::instrument(skip_all)]
 pub fn ack_panic_sy(mut popup: EventWriter<Arc<Popup>>) {
-    let panics_dir = {
-        let mut dir = DATA_DIR.to_owned();
-        dir.push("panics");
-        dir
-    };
+    let panics_dir = data_dir("panics");
     let to_show_file = {
         let mut file = panics_dir;
         file.push(".to_show");

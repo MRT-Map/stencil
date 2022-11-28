@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use surf::Url;
 
 use crate::{
-    misc::{Action, DATA_DIR},
+    misc::{data_dir, Action},
     ui::popup::Popup,
 };
 
@@ -29,10 +29,8 @@ impl Default for TileSettings {
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(|| {
-    let mut path = DATA_DIR.to_owned();
-    path.push("tile_settings.msgpack");
-    match std::fs::read(path) {
+pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
+    Lazy::new(|| match std::fs::read(data_dir("tile_settings.msgpack")) {
         Ok(bytes) => {
             info!("Found tile settings file");
             rmp_serde::from_slice(&bytes).unwrap()
@@ -41,8 +39,7 @@ pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(|| {
             info!("Couldn't find or open tile settings file: {e:?}");
             TileSettings::default()
         }
-    }
-});
+    });
 
 #[allow(dead_code)]
 pub enum TileSettingsAct {
@@ -99,9 +96,11 @@ pub fn tile_settings_msy(
             ))
         } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
             *tile_settings = new_settings.to_owned();
-            let mut path = DATA_DIR.to_owned();
-            path.push("tile_settings.msgpack");
-            std::fs::write(path, rmp_serde::to_vec(new_settings).unwrap()).unwrap();
+            std::fs::write(
+                data_dir("tile_settings.msgpack"),
+                rmp_serde::to_vec(new_settings).unwrap(),
+            )
+            .unwrap();
         }
     }
 }

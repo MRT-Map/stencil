@@ -159,9 +159,7 @@ fn zip_assets() -> Result<()> {
 
 fn inner() -> Result<()> {
     gather_licenses()?;
-    if std::env::var("PROFILE")? == "release" {
-        zip_assets()?;
-    }
+    zip_assets()?;
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=assets");
