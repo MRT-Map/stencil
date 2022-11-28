@@ -1,10 +1,16 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    path::PathBuf,
+};
 
 use bevy::prelude::*;
 
-use crate::tilemap::{settings::TileSettings, zoom::Zoom};
+use crate::{
+    misc::data_dir,
+    tilemap::{settings::TileSettings, zoom::Zoom},
+};
 
-#[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
     pub x: i32,
     pub y: i32,
@@ -57,5 +63,15 @@ impl TileCoord {
             "{}/{}_{}/{}{}_{}.png",
             tile_settings.url, group.x, group.y, zzz, num_in_group.x, num_in_group.y
         )
+    }
+
+    pub fn path(&self, tile_settings: &TileSettings) -> PathBuf {
+        let mut path = data_dir("tile-cache");
+        path.push(&tile_settings.url);
+        path.push(self.z.to_string());
+        path.push(self.x.to_string());
+        let _ = std::fs::create_dir_all(&path);
+        path.push(format!("{}.png", self.y));
+        path
     }
 }

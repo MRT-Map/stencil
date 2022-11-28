@@ -31,7 +31,7 @@ impl TileBundle {
                     anchor: Anchor::TopLeft,
                     ..default()
                 },
-                texture: server.load(&*coord.url(tile_settings)) as Handle<Image>,
+                texture: server.load(&*coord.path(tile_settings)) as Handle<Image>,
                 transform: Transform::from_translation(Vec3::new(
                     coord.x as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32 - 0.5f32,
                     coord.y as f32 * Zoom(coord.z as f32).map_size(tile_settings) as f32

@@ -7,7 +7,7 @@ use tracing::{error, warn};
 use crate::{misc::data_dir, ui::popup::Popup};
 
 pub fn panic(panic: &PanicInfo) {
-    error!("Caught panic: {panic:?}");
+    error!("Caught panic: {panic:#}");
     let (log1, log2) = if let Ok(read_dir) = data_dir("logs").read_dir() {
         let mut list = read_dir.filter_map(|a| Some(a.ok()?.path())).sorted().rev();
         (list.next(), list.next())

@@ -11,7 +11,6 @@ use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
-use bevy_web_asset::WebAssetPlugin;
 use tracing::Level;
 use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
 use zip::ZipArchive;
@@ -69,12 +68,12 @@ fn main() {
     let dir = data_dir("../build/assets");
     zip_file.extract(&dir).unwrap();
 
+    let _ = std::fs::remove_dir_all(data_dir("tile-cache"));
+
     App::new()
-        .add_plugin(WebAssetPlugin {
-            asset_plugin: AssetPlugin {
-                asset_folder: dir.to_string_lossy().to_string(),
-                ..default()
-            },
+        .add_plugin(AssetPlugin {
+            asset_folder: dir.to_string_lossy().to_string(),
+            ..default()
         })
         .add_plugins({
             DefaultPlugins
