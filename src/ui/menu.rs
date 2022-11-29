@@ -36,7 +36,9 @@ pub fn ui_sy(
                 |ui| {
                     button!(ui, event_writer, "Info", InfoWindowsAct::Info);
                     button!(ui, event_writer, "Changelog", InfoWindowsAct::Changelog);
+                    button!(ui, event_writer, "Manual", InfoWindowsAct::Manual);
                     button!(ui, event_writer, "Licenses", InfoWindowsAct::Licenses);
+                    ui.separator();
                     button!(ui, event_writer, "Quit", InfoWindowsAct::Quit(false));
                 },
             );

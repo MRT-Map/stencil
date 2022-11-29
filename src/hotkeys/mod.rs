@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_egui::EguiContext;
 use bimap::BiHashMap;
 use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -84,9 +85,10 @@ pub fn hotkey_sy(
     mut actions: EventWriter<Action>,
     hotkey_settings: Res<HotkeySettings>,
     keys: Res<Input<KeyCode>>,
+    mut ctx: ResMut<EguiContext>,
 ) {
     for (action, key) in &hotkey_settings.0 {
-        if keys.just_released(*key) {
+        if keys.just_released(*key) && ctx.ctx_mut().memory().focus().is_none() {
             info!(?action, ?key, "Processing hotkey");
             actions.send(action.action());
         }

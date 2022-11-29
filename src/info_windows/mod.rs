@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod changelog;
 pub mod info;
 pub mod licenses;
+pub mod manual;
 pub mod quit;
 
 #[derive(Clone)]
@@ -10,6 +11,7 @@ pub enum InfoWindowsAct {
     Changelog,
     Info,
     Licenses,
+    Manual,
     Quit(bool),
 }
 
@@ -20,6 +22,7 @@ impl Plugin for InfoWindowsPlugin {
         app.add_system(quit::quit_asy)
             .add_system(info::info_asy)
             .add_system(changelog::changelog_asy)
+            .add_system(manual::manual_asy)
             .add_system(licenses::licenses_asy);
     }
 }

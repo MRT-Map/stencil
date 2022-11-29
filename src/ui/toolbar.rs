@@ -5,7 +5,7 @@ use iyes_loopless::prelude::*;
 use crate::{
     misc::{Action, ChangeStateAct, EditorState},
     pla2::component::ComponentType,
-    ui::{component_panel::PrevNamespaceUsed, HoveringOverGui},
+    ui::HoveringOverGui,
 };
 
 #[allow(clippy::needless_pass_by_value)]
