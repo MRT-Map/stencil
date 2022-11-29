@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "description": "Map editor for MRT Map data",
+  "homepage": "http://github.com/mrt-map/stencil2",
+  "license": "GPL-3.0-Only",
+  "bin": [
+    [
+      "stencil2-windows",
+      "stencil2"
+    ]
+  ],
+  "checkver": {
+    "github": "https://github.com/mrt-map/stencil2"
+  },
+  "autoupdate": {
+    "url": "https://github.com/MRT-Map/stencil2/releases/download/v$version/stencil2-windows"
+  }
+}

@@ -82,4 +82,3 @@ lto = true
 name = "stencil2"
 identifier = "io.github.mrt-map.stencil2"
 icon = ["build/macos/AppIcon.iconset/*.png"]
-resources = ["assets/"]

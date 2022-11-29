@@ -1,0 +1,19 @@
+# Maintainer: 7d <i.third.7d@protonmail.com>
+pkgname=stencil2
+pkgver=2.0.0
+pkgrel=1
+depends=('curl')
+arch=('i686' 'x86_64' 'armv6h' 'armv7h')
+pkgdesc="Map editor for MRT Map data"
+license=('GPL3')
+changelog="changelog.md"
+
+build() {
+    return 0
+}
+
+package() {
+    cd $pkgdir || return 1
+    curl "https://github.com/MRT-Map/stencil2/releases/download/v$pkgver/stencil2-ubuntu" -Lo stencil2
+    chmod +x stencil2
+}
