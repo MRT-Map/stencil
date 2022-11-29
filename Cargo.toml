@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.0.0-beta.4"
+version = "2.0.0"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
@@ -11,7 +11,7 @@ repository = "https://github.com/mrt-map/stencil2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_mouse_tracking_plugin = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", branch = "09" }
+bevy_mouse_tracking_plugin = "0.5.0"
 bevy_prototype_lyon = "0.7.1"
 iyes_loopless = "0.9.1"
 bevy_egui = "0.17.1"

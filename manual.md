@@ -12,6 +12,7 @@ Correct as of 29/11/22
 - Click `Area` on the toolbar or press `6` on the keyboard for areas.
 - Left-click on the map where you want the line/area to start. This is your first node.
 - Continue left-clicking to place more nodes and continue the line/area.
+  - Hold down the left `alt` key for angle-snapping.
 - If you had made a mistake with the previous node, left-click on the previous node to remove it.
 - Right-click to complete the line/area at the last node placed.
   - For areas, left-clicking on the first node completes it too.

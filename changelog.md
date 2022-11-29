@@ -1,3 +1,8 @@
+# v2.0.0
+* Added hotkeys
+* Fix errors loading tilemap
+* Added manual
+
 # v2.0.0-beta.4
 * Added license page
 * Fixed text boxes not being editable and immediately losing focus
