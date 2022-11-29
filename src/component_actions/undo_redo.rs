@@ -33,7 +33,7 @@ impl UndoRedoAct {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
 pub fn undo_redo_asy(
     mut commands: Commands,
     mut actions: EventReader<Action>,

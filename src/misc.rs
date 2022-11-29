@@ -6,8 +6,13 @@ use std::{
 use bevy::prelude::*;
 use iyes_loopless::prelude::NextState;
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 
-use crate::pla2::component::ComponentType;
+use crate::{
+    component_tools::creating::{clear_created_component, CreatedQuery},
+    pla2::{component::ComponentType, skin::Skin},
+    ui::component_panel::PrevNamespaceUsed,
+};
 
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let mut dir = dirs::data_dir().unwrap_or_else(|| std::env::current_dir().unwrap());
@@ -23,7 +28,7 @@ pub fn data_dir(next: impl AsRef<Path>) -> PathBuf {
     path
 }
 
-#[derive(Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {
     #[default]
     Loading,
@@ -37,12 +42,32 @@ pub type Action = Box<dyn Any + Send + Sync>;
 
 pub struct ChangeStateAct(pub EditorState);
 
-pub fn state_changer_asy(mut commands: Commands, mut actions: EventReader<Action>) {
-    for event in actions.iter() {
+#[allow(clippy::needless_pass_by_value)]
+pub fn state_changer_asy(
+    mut commands: Commands,
+    mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
+    mut created_query: CreatedQuery,
+    skin: Res<Skin>,
+    prev_namespace_used: Res<PrevNamespaceUsed>,
+) {
+    let mut new_state = None;
+    let mut reader = actions.p0();
+    for event in reader.iter() {
         if let Some(ChangeStateAct(state)) = event.downcast_ref() {
-            info!(?state, "Changing state");
-            commands.insert_resource(NextState(*state));
+            new_state = Some(*state);
         }
+    }
+    if let Some(state) = new_state {
+        info!(?state, "Changing state");
+        let mut writer = actions.p1();
+        clear_created_component(
+            &mut commands,
+            &mut created_query,
+            &skin,
+            &prev_namespace_used.0,
+            &mut writer,
+        );
+        commands.insert_resource(NextState(state));
     }
 }
 

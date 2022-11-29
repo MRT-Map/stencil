@@ -160,14 +160,16 @@ use zip::ZipArchive;
 
 use crate::{
     component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
-    cursor::CursorPlugin, info_windows::InfoWindowsPlugin, load_save::LoadSavePlugin,
-    misc::data_dir, setup::SetupPlugin, tilemap::RenderingPlugin, ui::UiPlugin,
+    cursor::CursorPlugin, hotkeys::HotkeyPlugin, info_windows::InfoWindowsPlugin,
+    load_save::LoadSavePlugin, misc::data_dir, setup::SetupPlugin, tilemap::RenderingPlugin,
+    ui::UiPlugin,
 };
 
 mod component_actions;
 mod component_tools;
 mod cursor;
 mod error_handling;
+mod hotkeys;
 mod info_windows;
 mod load_save;
 mod misc;
@@ -245,5 +247,6 @@ fn main() {
         .add_plugins(ComponentActionPlugins)
         .add_plugin(LoadSavePlugin)
         .add_plugin(InfoWindowsPlugin)
+        .add_plugin(HotkeyPlugin)
         .run();
 }
