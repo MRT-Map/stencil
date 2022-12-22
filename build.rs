@@ -55,7 +55,7 @@ fn gather_licenses() -> Result<()> {
                     format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
                     Regex::new(r#"<span class="text">(.*?)</span>"#)?,
                     format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
-                    Regex::new(r#"(?s)<span class="syntax-text (?:syntax-plain|syntax-html syntax-markdown)">(.*?)</span>"#)?
+                    Regex::new(r#"(?s)<span class="(?:syntax-text syntax-plain|syntax-text syntax-html syntax-markdown|syntax-source syntax-diff)">(.*?)</span>"#)?
                 )
             ];
             if let Some(repository) = &a.repository {

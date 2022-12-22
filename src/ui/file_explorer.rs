@@ -6,7 +6,7 @@ use std::{
 
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
-use egui_extras::{Size, StripBuilder, TableBuilder};
+use egui_extras::{Column, Size, StripBuilder, TableBuilder};
 use itertools::Itertools;
 
 use crate::{misc::Action, ui::popup::Popup};
@@ -39,9 +39,9 @@ pub fn file_explorer(
             strip.cell(|ui| {
                 TableBuilder::new(ui)
                     .striped(true)
-                    .column(Size::relative(0.05).at_least(0.05))
-                    .column(Size::remainder())
-                    .scroll(true)
+                    .column(Column::auto().at_least(0.05))
+                    .column(Column::remainder())
+                    .vscroll(true)
                     .header(20.0, |mut header| {
                         header.col(|ui| {
                             if let Some(chosen_files) = &mut chosen_files {
@@ -74,10 +74,14 @@ pub fn file_explorer(
                                         let mut checked = chosen_files.contains(&file);
                                         ui.checkbox(&mut checked, "");
                                         if checked {
-                                            info!(?file, "Adding file to chosen file list");
+                                            if !chosen_files.contains(&file) {
+                                                info!(?file, "Adding file to chosen file list");
+                                            }
                                             chosen_files.insert(file.to_owned());
                                         } else {
-                                            info!(?file, "Removing file from chosen file list");
+                                            if chosen_files.contains(&file) {
+                                                info!(?file, "Removing file from chosen file list");
+                                            }
                                             chosen_files.remove(&file);
                                         }
                                     } else {
