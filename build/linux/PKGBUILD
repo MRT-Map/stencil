@@ -10,7 +10,7 @@ changelog="../../changelog.md"
 url="https://github.com/mrt-map/stencil2"
 
 build() {
-  curl "$url/releases/download/v$pkgver-beta.4/stencil2-ubuntu" -Lo $pkgname
+  curl "$url/releases/download/v$pkgver/stencil2-ubuntu" -Lo $pkgname
 }
 
 package() {
