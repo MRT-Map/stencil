@@ -3,17 +3,16 @@ pkgname=stencil2
 pkgver=2.0.0
 pkgrel=1
 depends=('curl')
-arch=('i686' 'x86_64' 'armv6h' 'armv7h')
+arch=('x86_64')
 pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
-changelog="changelog.md"
+changelog="../../changelog.md"
+url="https://github.com/mrt-map/stencil2"
 
 build() {
-    return 0
+  curl "$url/releases/download/v$pkgver-beta.4/stencil2-ubuntu" -Lo $pkgname
 }
 
 package() {
-    cd $pkgdir || return 1
-    curl "https://github.com/MRT-Map/stencil2/releases/download/v$pkgver/stencil2-ubuntu" -Lo stencil2
-    chmod +x stencil2
+  install -Dm755 $pkgname "$pkgdir/usr/bin/$pkgname"
 }

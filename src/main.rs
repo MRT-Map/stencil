@@ -210,7 +210,7 @@ fn main() {
         "/assets.zip"
     ))))
     .unwrap();
-    let dir = data_dir("../build/assets");
+    let dir = data_dir("assets");
     zip_file.extract(&dir).unwrap();
 
     let _ = std::fs::remove_dir_all(data_dir("tile-cache"));
