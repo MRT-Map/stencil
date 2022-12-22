@@ -14,27 +14,34 @@ Still WIP!
     * Run `cargo +nightly install --git https://github.com/MRT-Map/stencil2`
     * Launch stencil2 with `stencil2`
 * **Windows**
-  * Command Line (Invoke-WebRequest)
+  * Scoop (untested)
+    * `scoop install "https://raw.githubusercontent.com/MRT-Map/stencil2/master/build/windows/scoop.json"`
+  * Command Line (Invoke-WebRequest) (unrecommended)
     * Run `Invoke-WebRequest -Uri "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-windows" -OutFile "stencil2.exe"`
       * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
     * Launch Stencil from File Explorer
   * msi (soon)
-  * scoop, chocolatey etc (soon)
 * **MacOS**
   * As .dmg
     * Download the .dmg file in the assets folder of the latest GitHub release
     * Open the .dmg file and drag the application into the folder
     * Launch stencil2
-  * Command Line (curl)
+  * Homebrew
+    * `brew install mrt-map/mrt-map/stencil2`
+  * Command Line (curl) (unrecommended)
     * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-macos" -Lo stencil2`
       * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
     * Run `chmod +x stencil2`
     * Launch stencil2 with `./stencil2`
-  * brew (soon)
 * **Linux**
-  * Command Line (curl)
+  * .deb
+    * soon
+  * via PKGBUILD (Arch et al)
+    * Create a new folder name and `cd` into it
+    * `curl "https://raw.githubusercontent.com/MRT-Map/stencil2/master/build/linux/PKGBUILD" -Lo PKGBUILD`
+    * `makepkg -si`
+  * Command Line (curl) (unrecommended)
     * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-ubuntu" -Lo stencil2`
       * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
     * Run `chmod +x stencil2`
     * Launch stencil2 with `./stencil2`
-  * snap, .deb, flatpak, appimage etc (soon)
