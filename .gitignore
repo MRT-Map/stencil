@@ -1043,5 +1043,4 @@ abstract.record*
 secring.*
 
 ### Other
-*.wxs
 .idea/
