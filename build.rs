@@ -75,7 +75,7 @@ fn gather_licenses() -> Result<()> {
                     .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
                     .body_string()
                     .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-                let files = if &*a.name == "widestring" {
+                let files = if &*a.name == "widestring" || &*a.name == "half" {
                     vec![
                         "LICENSES/Apache-2.0.txt",
                         "LICENSES/MIT.txt"
