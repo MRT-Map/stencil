@@ -28,6 +28,10 @@ pub fn data_dir(next: impl AsRef<Path>) -> PathBuf {
     path
 }
 
+pub fn data_file(next: impl AsRef<Path>) -> PathBuf {
+    DATA_DIR.join(next)
+}
+
 #[derive(Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {
     #[default]

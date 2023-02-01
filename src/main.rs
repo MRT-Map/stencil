@@ -159,9 +159,15 @@ use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
 use zip::ZipArchive;
 
 use crate::{
-    component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
-    cursor::CursorPlugin, hotkeys::HotkeyPlugin, info_windows::InfoWindowsPlugin,
-    load_save::LoadSavePlugin, misc::data_dir, setup::SetupPlugin, tilemap::RenderingPlugin,
+    component_actions::ComponentActionPlugins,
+    component_tools::ComponentToolPlugins,
+    cursor::CursorPlugin,
+    hotkeys::HotkeyPlugin,
+    info_windows::InfoWindowsPlugin,
+    load_save::LoadSavePlugin,
+    misc::{data_dir, data_file},
+    setup::SetupPlugin,
+    tilemap::RenderingPlugin,
     ui::UiPlugin,
 };
 
@@ -204,6 +210,11 @@ fn main() {
 
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
+
+    if data_file("tile_settings.msgpack").is_dir() {
+        // TODO remove on next release
+        let _ = std::fs::remove_dir_all(data_file("tile_settings.msgpack"));
+    }
 
     let mut zip_file = ZipArchive::new(Cursor::new(include_bytes!(concat!(
         env!("OUT_DIR"),
