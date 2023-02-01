@@ -27,7 +27,7 @@ jobs:
       run: cargo +nightly install cargo-license
 
     - name: Xcode select
-      run: sudo xcode-select -s /Applications/Xcode_12.5.1.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Install zld
       run: brew install michaeleisel/zld/zld
