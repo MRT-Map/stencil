@@ -16,40 +16,29 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: stencil2
-            asset_name: stencil2-ubuntu
           - os: windows-latest
-            artifact_name: stencil2.exe
-            asset_name: stencil2-windows
           - os: macos-latest
-            artifact_name: stencil2
-            asset_name: stencil2-macos
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - name: Install nightly
+      run: rustup toolchain install nightly; rustup default nightly
+    - name: Install cargo-license
+      run: cargo +nightly install cargo-license
+
     - name: Xcode select
       run: sudo xcode-select -s /Applications/Xcode_12.5.1.app/Contents/Developer
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Install zld
       run: brew install michaeleisel/zld/zld
       if: ${{ matrix.os == 'macos-latest' }}
-    - name: Install nightly
-      run: rustup toolchain install nightly; rustup default nightly
     - name: Install dependencies
       run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       if: ${{ matrix.os == 'ubuntu-latest' }}
-    - name: Install cargo-license
-      run: cargo +nightly install cargo-license
+
     - name: Build
       run: cargo +nightly build --release
-    - name: Upload binaries
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/release/${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.asset_name }}
-        tag: ${{ github.ref }}
-      if: ${{ github.event.action != 'workflow_dispatch' }}
+
     - name: Create dmg
       run: sh build/macos/build.sh
       if: ${{ matrix.os == 'macos-latest' }}
@@ -58,9 +47,33 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: stencil2.dmg
-        asset_name: stencil2.dmg
         tag: ${{ github.ref }}
       if: ${{ matrix.os == 'macos-latest' }}
+
+    - name: Create deb
+      run: sh build/linux/deb.sh
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+    - name: Upload deb
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/bundle/deb/stencil2*.deb
+        file_glob: true
+        tag: ${{ github.ref }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+
+    - name: Create msi
+      run: .\build\windows\build.ps1
+      if: ${{ matrix.os == 'windows-latest' }}
+    - name: Upload msi
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target\wix\stencil2*.msi
+        file_glob: true
+        tag: ${{ github.ref }}
+      if: ${{ matrix.os == 'windows-latest' }}
+
     - name: VirusTotal Scan
       uses: crazy-max/ghaction-virustotal@v3
       with:

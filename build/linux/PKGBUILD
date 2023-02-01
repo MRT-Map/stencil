@@ -3,21 +3,26 @@ pkgname=stencil2
 pkgver=2.0.1
 pkgrel=1
 depends=('curl')
-makedepends=('git', 'rustup')
-arch=('x86_64')
+makedepends=('rustup')
+arch=('x86_64' 'aarch64' 'armv7')
 pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
-changelog="../../changelog.md"
 url="https://github.com/mrt-map/stencil2"
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('b80c6a7f0b1280faf18d239800effb865857ce2281ed7940dc0b3ed4fb1e598a')
 
 build() {
-  git clone --depth 1 --branch v$pkgver "$url.git"
-  cd stencil2
+  cd "$pkgname-$pkgver"
   rustup toolchain install nightly
   cargo +nightly build --release
-  cp "./target/release/stencil2 ../stencil2-exec"
 }
 
 package() {
-  install -Dm755 stencil2-exec "$pkgdir/usr/bin/$pkgname"
+  cd "$pkgname-$pkgver"
+  install -Dm755 target/release/$pkgname "$pkgdir/usr/bin/$pkgname"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+post_remove() {
+    rm -r "~/.local/share/stencil2"
 }

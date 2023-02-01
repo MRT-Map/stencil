@@ -75,7 +75,7 @@ fn gather_licenses() -> Result<()> {
                     .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
                     .body_string()
                     .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-                let files = if &*a.name == "widestring" {
+                let files = if &*a.name == "widestring" || &*a.name == "half" {
                     vec![
                         "LICENSES/Apache-2.0.txt",
                         "LICENSES/MIT.txt"
@@ -149,6 +149,16 @@ fn zip_assets() -> Result<()> {
 fn inner() -> Result<()> {
     gather_licenses()?;
     zip_assets()?;
+
+    if std::env::var("TARGET")?.contains("windows") {
+        embed_resource::compile({
+            let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+            path.push("build");
+            path.push("windows");
+            path.push("icon.rc");
+            path
+        });
+    }
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=assets");

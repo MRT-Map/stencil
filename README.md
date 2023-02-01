@@ -2,10 +2,7 @@
 
 ![image](https://user-images.githubusercontent.com/61975820/197353273-73204a75-7ee3-410c-9d96-3a1d77fd8786.png)
 
-
 The better stencil. Map editor for MRT Map data
-
-Still WIP!
 
 ## Installation
 * **Universal**
@@ -16,33 +13,23 @@ Still WIP!
 * **Windows**
   * Scoop (untested)
     * `scoop install "https://raw.githubusercontent.com/MRT-Map/stencil2/master/build/windows/scoop.json"`
-  * Command Line (Invoke-WebRequest) (not recommended)
-    * Run `Invoke-WebRequest -Uri "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-windows" -OutFile "stencil2.exe"`
-      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
-    * Launch Stencil from File Explorer
-  * msi (soon)
+  * msi
+    * Download the .msi file in the assets folder of the latest GitHub release
+    * Open the .msi file and follow the instructions
+    * Launch stencil2 in file explorer in either `[Drive]:\Program Files\stencil2\bin` or `[Drive]:\Program Files (x86)\stencil2\bin`
+    * Remember to pin it to start/taskbar if it isn't indexed in the search bar ;)
 * **MacOS**
-  * As .dmg
+  * dmg
     * Download the .dmg file in the assets folder of the latest GitHub release
     * Open the .dmg file and drag the application into the folder
     * Launch stencil2
   * Homebrew
-    * `brew install mrt-map/mrt-map/stencil2`
-  * Command Line (curl) (not recommended)
-    * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-macos" -Lo stencil2`
-      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
-    * Run `chmod +x stencil2`
-    * Launch stencil2 with `./stencil2`
+    * `brew install --cask mrt-map/mrt-map/stencil2`
 * **Linux**
-  * .deb
+  * deb
     * Download the .deb file in the assets folder of the latest GitHub release
-    * Use the .deb file to install stencil2 (TODO)
+    * Extract & install the file... TODO write instructions
   * via PKGBUILD (Arch et al)
     * Create a new folder name and `cd` into it
     * `curl "https://raw.githubusercontent.com/MRT-Map/stencil2/master/build/linux/PKGBUILD" -Lo PKGBUILD`
-    * `makepkg -si`
-  * Command Line (curl) (not recommended)
-    * Run `curl "https://github.com/MRT-Map/stencil2/releases/download/<version>/stencil2-ubuntu" -Lo stencil2`
-      * where `<version>` is the version number (with `v`) (eg `v2.0.0`)
-    * Run `chmod +x stencil2`
-    * Launch stencil2 with `./stencil2`
+    * `makepkg -si
