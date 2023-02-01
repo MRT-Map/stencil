@@ -22,32 +22,20 @@ pub fn panic(panic: &PanicInfo) {
         .unwrap_or_default();
     let backtrace = Backtrace::force_capture();
     let panics_dir = data_dir("panics");
-    let panic_file = {
-        let mut file = panics_dir.to_owned();
-        file.push(format!(
-            "panic-{}.txt",
-            SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-        ));
-        file
-    };
+    let panic_file = panics_dir.join(format!(
+        "panic-{}.txt",
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    ));
     let _ = std::fs::write(
-        {
-            let mut file = panics_dir.to_owned();
-            file.push(&panic_file);
-            file
-        },
+        panics_dir.join(&panic_file),
         format!("{panic:#}\n\n{backtrace}\n\n{log2_contents}\n\n{log1_contents}"),
     )
     .map_err(|e| warn!("Unable to write crash log: {e:?}"));
     let _ = std::fs::write(
-        {
-            let mut file = panics_dir;
-            file.push(".to_show");
-            file
-        },
+        panics_dir.join(".to_show"),
         panic_file.to_string_lossy().to_string(),
     )
     .map_err(|e| warn!("Unable to write .to_show: {e:?}"));
@@ -56,11 +44,7 @@ pub fn panic(panic: &PanicInfo) {
 #[tracing::instrument(skip_all)]
 pub fn ack_panic_sy(mut popup: EventWriter<Arc<Popup>>) {
     let panics_dir = data_dir("panics");
-    let to_show_file = {
-        let mut file = panics_dir;
-        file.push(".to_show");
-        file
-    };
+    let to_show_file = panics_dir.join(".to_show");
     let panic_file = match std::fs::read_to_string(&to_show_file) {
         Ok(content) => content,
         Err(e) => match e.kind() {

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use surf::Url;
 
 use crate::{
-    misc::{data_dir, Action},
+    misc::{data_file, Action},
     ui::popup::Popup,
 };
 
@@ -30,7 +30,7 @@ impl Default for TileSettings {
 }
 
 pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
-    Lazy::new(|| match std::fs::read(data_dir("tile_settings.msgpack")) {
+    Lazy::new(|| match std::fs::read(data_file("tile_settings.msgpack")) {
         Ok(bytes) => {
             info!("Found tile settings file");
             rmp_serde::from_slice(&bytes).unwrap()
@@ -97,7 +97,7 @@ pub fn tile_settings_msy(
         } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
             *tile_settings = new_settings.to_owned();
             std::fs::write(
-                data_dir("tile_settings.msgpack"),
+                data_file("tile_settings.msgpack"),
                 rmp_serde::to_vec(new_settings).unwrap(),
             )
             .unwrap();

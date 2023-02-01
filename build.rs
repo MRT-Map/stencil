@@ -123,30 +123,19 @@ fn gather_licenses() -> Result<()> {
         }))).into_iter().collect::<Result<Vec<_>>>().map_err(|e| anyhow!("Error: {e}"))?;
 
     std::fs::write(
-        {
-            let mut path = PathBuf::try_from(std::env::var("OUT_DIR")?)?;
-            path.push("licenses.msgpack");
-            path
-        },
+        PathBuf::try_from(std::env::var("OUT_DIR")?)?.join("licenses.msgpack"),
         rmp_serde::to_vec(&data)?,
     )?;
     Ok(())
 }
 
 fn zip_assets() -> Result<()> {
-    let buf = File::create({
-        let mut path = PathBuf::try_from(std::env::var("OUT_DIR")?)?;
-        path.push("assets.zip");
-        path
-    })?;
+    let buf = File::create(PathBuf::try_from(std::env::var("OUT_DIR")?)?.join("assets.zip"))?;
     let mut zip_file = ZipWriter::new(buf);
     let options = FileOptions::default();
-    for file in {
-        let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
-        path.push("assets");
-        path
-    }
-    .read_dir()?
+    for file in PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?
+        .join("assets")
+        .read_dir()?
     {
         let file = file?.path();
         zip_file.start_file(file.file_name().unwrap().to_string_lossy(), options)?;

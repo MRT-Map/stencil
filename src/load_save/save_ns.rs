@@ -39,8 +39,7 @@ pub fn save_ns_asy(
             }
             for (ns, comps) in &files {
                 info!(?ns, "Saving namespace");
-                let mut fp = dir.to_owned();
-                fp.push(PathBuf::from(format!("{ns}.pla2.msgpack")));
+                let fp = dir.join(PathBuf::from(format!("{ns}.pla2.msgpack")));
                 std::fs::write(fp, rmp_serde::to_vec_named(comps).unwrap()).unwrap();
             }
             popup.send(Popup::base_alert(

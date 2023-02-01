@@ -66,12 +66,11 @@ impl TileCoord {
     }
 
     pub fn path(&self, tile_settings: &TileSettings) -> PathBuf {
-        let mut path = data_dir("tile-cache");
-        path.push(&tile_settings.url);
-        path.push(self.z.to_string());
-        path.push(self.x.to_string());
+        let path = data_dir("tile-cache")
+            .join(&tile_settings.url)
+            .join(self.z.to_string())
+            .join(self.x.to_string());
         let _ = std::fs::create_dir_all(&path);
-        path.push(format!("{}.png", self.y));
-        path
+        path.join(format!("{}.png", self.y))
     }
 }

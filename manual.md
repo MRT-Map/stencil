@@ -1,4 +1,4 @@
-# Stencil 2.0.0 Manual
+# Stencil 2.0.1 Manual
 Correct as of 29/11/22
 
 ## Editing Components
