@@ -1,3 +1,6 @@
+# v2.0.01
+* Fix file where tile settings are stored being created as a folder instead of a file
+
 # v2.0.0
 * Added hotkeys
 * Fix errors loading tilemap
