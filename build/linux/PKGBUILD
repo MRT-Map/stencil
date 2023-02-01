@@ -9,7 +9,7 @@ pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
 url="https://github.com/mrt-map/stencil2"
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('dbf6e34c15235eeffc8eac92a169b98729a7b499a1d9a2e1dcb4c7a50236bab6')
+sha256sums=('293f97ffe5ac03206f3b22b604391eb7ab2609cc5eeae61c97478a7db979008e')
 
 build() {
   cd "$pkgname-$pkgver"
