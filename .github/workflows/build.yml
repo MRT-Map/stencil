@@ -22,7 +22,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install nightly
-      run: rustup toolchain install nightly; rustup default nightly
+      run: rustup toolchain install nightly
+    - name: Set nightly to default
+      run: rustup default nightly
     - name: Install cargo-license
       run: cargo +nightly install cargo-license
 
