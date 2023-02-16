@@ -1,6 +1,4 @@
-use bevy::prelude::*;
-use bevy::window::WindowId;
-use bevy::winit::WinitWindows;
+use bevy::{prelude::*, window::WindowId, winit::WinitWindows};
 use bevy_mod_picking::PickingCameraBundle;
 use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
 use iyes_loopless::prelude::*;
@@ -38,7 +36,11 @@ fn setup_sy(mut commands: Commands, windows: NonSend<WinitWindows>) {
     let primary = windows.get_window(WindowId::primary()).unwrap();
 
     let (icon_rgba, icon_width, icon_height) = {
-        let image = image::load_from_memory(include_bytes!("../build/macos/AppIcon.iconset/icon_512x512@2x.png")).unwrap().into_rgba8();
+        let image = image::load_from_memory(include_bytes!(
+            "../build/macos/AppIcon.iconset/icon_512x512@2x.png"
+        ))
+        .unwrap()
+        .into_rgba8();
         let (width, height) = image.dimensions();
         let rgba = image.into_raw();
         (rgba, width, height)

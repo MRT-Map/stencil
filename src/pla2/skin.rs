@@ -14,7 +14,7 @@ use crate::{misc::EditorState, pla2::component::ComponentType, ui::popup::Popup}
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {
     pub size: u32,
-    pub font: HashMap<String, String>,
+    pub font: HashMap<String, Vec<String>>,
     pub background: HexColor,
 }
 
