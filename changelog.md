@@ -1,4 +1,7 @@
-# v2.0.01
+# v2.0.2
+* Fix skin not loading properly due to change in format of `font` field
+
+# v2.0.1
 * Fix file where tile settings are stored being created as a folder instead of a file
 
 # v2.0.0
