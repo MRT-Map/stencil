@@ -1,6 +1,6 @@
 # Maintainer: 7d <i.third.7d@protonmail.com>
 pkgname=stencil2
-pkgver=2.0.1
+pkgver=2.0.2
 pkgrel=1
 depends=('curl')
 makedepends=('rustup')
