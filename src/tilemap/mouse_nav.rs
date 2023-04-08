@@ -1,7 +1,8 @@
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
-    math::Vec3Swizzles,
+    math::{Affine3A, Vec3A, Vec3Swizzles},
     prelude::*,
+    window::PrimaryWindow,
 };
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosWorld};
 
@@ -21,7 +22,7 @@ pub fn mouse_drag_sy(
     mut camera_origin_pos: Local<Option<Vec2>>,
     mouse_pos: Res<MousePos>,
     mut camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
-    windows: Res<Windows>,
+    windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     hovering_over_gui: Res<HoveringOverGui>,
 ) {
     if hovering_over_gui.0 {
@@ -40,8 +41,8 @@ pub fn mouse_drag_sy(
 
             let d = map_wh / win_wh * (**mouse_pos - *origin_pos);
             trace!("Mouse moved {d:?} from origin");
-            transform.translation_mut().x = camera_origin_pos.unwrap().x - d.x;
-            transform.translation_mut().y = camera_origin_pos.unwrap().y - d.y;
+            transform.translation().x = camera_origin_pos.unwrap().x - d.x;
+            transform.translation().y = camera_origin_pos.unwrap().y - d.y;
         } else {
             *mouse_origin_pos = Some(*mouse_pos.into_inner());
             *camera_origin_pos = Some(transform.translation().truncate());
@@ -82,8 +83,8 @@ pub fn mouse_zoom_sy(
             let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = mouse_pos_world.single();
             trace!("View moved by {d:?}");
-            transform.translation_mut().x = new_mouse_pos.x - d.x;
-            transform.translation_mut().y = new_mouse_pos.y - d.y;
+            transform.translation().x = new_mouse_pos.x - d.x;
+            transform.translation().y = new_mouse_pos.y - d.y;
         }
     }
 }

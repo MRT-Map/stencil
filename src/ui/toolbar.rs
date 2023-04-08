@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
-use iyes_loopless::prelude::*;
+use bevy_egui::{egui, EguiContext, EguiContexts};
 
 use crate::{
     misc::{Action, ChangeStateAct, EditorState},
@@ -10,8 +9,8 @@ use crate::{
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    state: Res<CurrentState<EditorState>>,
-    mut ctx: ResMut<EguiContext>,
+    state: Res<State<EditorState>>,
+    mut ctx: EguiContexts,
     mut actions: EventWriter<Action>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
 ) {
@@ -32,12 +31,9 @@ pub fn ui_sy(
 
             ui.separator();
             ui.label("Create...");
-            button!(
-                "Point",
-                EditorState::CreatingComponent(ComponentType::Point)
-            );
-            button!("Line", EditorState::CreatingComponent(ComponentType::Line));
-            button!("Area", EditorState::CreatingComponent(ComponentType::Area));
+            button!("Point", EditorState::CreatingPoint);
+            button!("Line", EditorState::CreatingLine);
+            button!("Area", EditorState::CreatingArea);
         });
     });
     if panel.response.hovered() {

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Pos2, EguiContext};
+use bevy_egui::{egui, egui::Pos2, EguiContext, EguiContexts};
 use bevy_mouse_tracking_plugin::MousePos;
 use itertools::Itertools;
 
@@ -14,12 +14,12 @@ use crate::{
     ui::HoveringOverGui,
 };
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, Clone)]
 pub struct PrevNamespaceUsed(pub String);
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut commands: Commands,

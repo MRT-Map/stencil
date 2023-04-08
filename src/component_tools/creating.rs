@@ -1,7 +1,6 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
-use iyes_loopless::prelude::*;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
@@ -204,24 +203,9 @@ pub fn clear_created_component(
 pub struct CreateComponentPlugin;
 impl Plugin for CreateComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_in_state(EditorState::CreatingComponent(ComponentType::Line))
-                .with_system(create_component_sy::<false>)
-                .into(),
-        )
-        .add_system_set(
-            ConditionSet::new()
-                .run_in_state(EditorState::CreatingComponent(ComponentType::Area))
-                .with_system(create_component_sy::<true>)
-                .into(),
-        )
-        .add_system_set(
-            ConditionSet::new()
-                .run_in_state(EditorState::CreatingComponent(ComponentType::Point))
-                .with_system(create_point_sy)
-                .into(),
-        );
+        app.add_system(create_component_sy::<false>.run_if(in_state(EditorState::CreatingLine)))
+            .add_system(create_component_sy::<true>.run_if(in_state(EditorState::CreatingArea)))
+            .add_system(create_point_sy.run_if(in_state(EditorState::CreatingPoint)));
     }
 }
 

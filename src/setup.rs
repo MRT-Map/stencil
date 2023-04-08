@@ -1,7 +1,6 @@
-use bevy::{prelude::*, window::WindowId, winit::WinitWindows};
+use bevy::{prelude::*, window::PrimaryWindow, winit::WinitWindows};
 use bevy_mod_picking::PickingCameraBundle;
 use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
-use iyes_loopless::prelude::*;
 use winit::window::Icon;
 
 use crate::{
@@ -14,26 +13,30 @@ pub struct SetupPlugin;
 
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
-        app.add_loopless_state(EditorState::Loading)
+        app.add_state::<EditorState>()
             .init_resource::<Skin>()
             .add_event::<Action>()
             .add_system(get_skin_sy)
             .add_system(state_changer_asy)
             .add_startup_system(ack_panic_sy)
-            .add_exit_system(EditorState::Loading, setup_sy);
+            .add_system(setup_sy.in_schedule(OnExit(EditorState::Loading)));
     }
 }
 
-fn setup_sy(mut commands: Commands, windows: NonSend<WinitWindows>) {
+fn setup_sy(
+    mut commands: Commands,
+    windows: NonSend<WinitWindows>,
+    primary_id: Query<Entity, With<PrimaryWindow>>,
+) {
     commands
         .spawn(Camera2dBundle::new_with_far(1e5))
         .insert(MainCamera)
         .insert(UiCameraConfig { show_ui: true })
         .insert(PickingCameraBundle::default())
-        .add_world_tracking();
+        .add(InitWorldTracking);
 
     // https://bevy-cheatbook.github.io/window/icon.html
-    let primary = windows.get_window(WindowId::primary()).unwrap();
+    let primary = windows.get_window(primary_id.single()).unwrap();
 
     let (icon_rgba, icon_width, icon_height) = {
         let image = image::load_from_memory(include_bytes!(

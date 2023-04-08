@@ -2,7 +2,7 @@ use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::Align, EguiContext};
+use bevy_egui::{egui, egui::Align, EguiContext, EguiContexts};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 use crate::{
@@ -12,7 +12,7 @@ use crate::{
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<Diagnostics>,

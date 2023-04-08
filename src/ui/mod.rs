@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use iyes_loopless::condition::ConditionSet;
 
 use crate::{
-    misc::{CustomStage, EditorState},
+    misc::{CustomSet, EditorState},
     ui::component_panel::PrevNamespaceUsed,
 };
 
@@ -12,51 +11,28 @@ pub mod menu;
 pub mod popup;
 pub mod toolbar;
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct HoveringOverGui(pub bool);
 
 pub struct UiPlugin;
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+struct UiSet;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<PrevNamespaceUsed>()
-            .add_stage_before(
-                CoreStage::Update,
-                CustomStage::Ui,
-                SystemStage::single_threaded(),
+            .configure_set(CustomSet::Ui.before(CoreSet::Update))
+            .configure_set(
+                UiSet
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(CustomSet::Ui),
             )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_menu")
-                    .before("ui_component_panel")
-                    .with_system(menu::ui_sy)
-                    .into(),
-            )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_component_panel")
-                    .after("ui_menu")
-                    .before("ui_toolbar")
-                    .with_system(component_panel::ui_sy)
-                    .into(),
-            )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_toolbar")
-                    .after("ui_component_panel")
-                    .with_system(toolbar::ui_sy)
-                    .into(),
-            )
-            .add_system_to_stage(
-                CoreStage::Last,
-                |mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false,
+            .add_systems((menu::ui_sy, component_panel::ui_sy, toolbar::ui_sy).in_set(UiSet))
+            .add_system(
+                (|mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false)
+                    .in_base_set(CoreSet::Last),
             )
             .add_plugin(popup::PopupPlugin);
     }

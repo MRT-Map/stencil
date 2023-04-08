@@ -1,6 +1,5 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::MousePosWorld;
-use iyes_loopless::{condition::ConditionSet, prelude::CurrentState};
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
@@ -27,14 +26,9 @@ pub fn move_component_sy(
     mut mouse: EventReader<MouseEvent>,
     mut actions: EventWriter<Action>,
     mouse_pos_world: Res<MousePosWorld>,
-    state: Res<CurrentState<EditorState>>,
+    state: Res<State<EditorState>>,
 ) {
-    if matches!(
-        &state.0,
-        EditorState::CreatingComponent(_)
-            | EditorState::DeletingComponent
-            | EditorState::EditingNodes
-    ) {
+    if state.0.component_type().is_some() {
         mouse.clear();
         return;
     }
@@ -77,11 +71,6 @@ pub fn move_component_sy(
 pub struct MoveComponentPlugin;
 impl Plugin for MoveComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(move_component_sy)
-                .into(),
-        );
+        app.add_system(move_component_sy.run_if(not(in_state(EditorState::Loading))));
     }
 }

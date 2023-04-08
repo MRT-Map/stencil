@@ -4,7 +4,6 @@ use std::{
 };
 
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 
 use crate::{
     misc::{Action, EditorState},
@@ -130,11 +129,6 @@ pub fn undo_redo_asy(
 pub struct UndoRedoPlugin;
 impl Plugin for UndoRedoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(undo_redo_asy)
-                .into(),
-        );
+        app.add_system(undo_redo_asy.run_if(not(in_state(EditorState::Loading))));
     }
 }

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 use zoom::Zoom;
 
 use crate::{misc::EditorState, tilemap::settings::INIT_TILE_SETTINGS, ui::HoveringOverGui};
@@ -12,25 +11,28 @@ pub mod tile_coord;
 pub mod utils;
 pub mod zoom;
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+enum RenderingSet {
+    Mouse,
+    Tiles,
+}
+
 pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Zoom(INIT_TILE_SETTINGS.init_zoom))
             .insert_resource(INIT_TILE_SETTINGS.to_owned())
-            .add_system_set(
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .run_if_not(|hovering_over_gui: Res<HoveringOverGui>| hovering_over_gui.0)
-                    .with_system(mouse_nav::mouse_drag_sy)
-                    .with_system(mouse_nav::mouse_zoom_sy)
-                    .into(),
+            .configure_set(
+                RenderingSet::Mouse
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .run_if(not(resource_exists_and_equals(HoveringOverGui(true)))),
             )
-            .add_system_set(
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .with_system(tile::show_tiles_sy)
-                    .with_system(settings::tile_settings_msy)
-                    .into(),
+            .configure_set(RenderingSet::Tiles.run_if(not(in_state(EditorState::Loading))))
+            .add_systems(
+                (mouse_nav::mouse_drag_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),
+            )
+            .add_systems(
+                (tile::show_tiles_sy, settings::tile_settings_msy).in_set(RenderingSet::Tiles),
             );
     }
 }

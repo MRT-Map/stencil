@@ -1,10 +1,17 @@
-use bevy::{prelude::*, render::camera::RenderTarget};
+use bevy::{
+    prelude::*,
+    render::camera::RenderTarget,
+    window::{PrimaryWindow, WindowRef},
+};
 
-pub fn get_window_width_height(windows: &Res<Windows>, camera: &Camera) -> Option<Vec2> {
-    let wnd = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id)?
+pub fn get_window_width_height(
+    windows: &Query<(Entity, &Window, Option<&PrimaryWindow>)>,
+    camera: &Camera,
+) -> Option<Vec2> {
+    let wnd = if let RenderTarget::Window(WindowRef::Entity(entity)) = camera.target {
+        windows.iter().find(|(e, _, _)| *e == entity)?.1
     } else {
-        windows.get_primary()?
+        windows.iter().find(|(_, _, p)| p.is_some())?.1
     };
 
     Some(Vec2::new(wnd.width(), wnd.height()))

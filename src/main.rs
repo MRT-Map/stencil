@@ -234,11 +234,11 @@ fn main() {
         .add_plugins({
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: "Stencil".into(),
                         mode: WindowMode::BorderlessFullscreen,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())

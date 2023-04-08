@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::PickableBundle;
-use bevy_prototype_lyon::entity::ShapeBundle;
+use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
 use crate::pla2::{
     component::{EditorCoords, PlaComponent},
@@ -12,7 +12,7 @@ pub struct ComponentBundle {
     pub data: PlaComponent<EditorCoords>,
 
     #[bundle]
-    pub shape: ShapeBundle,
+    pub shape: (ShapeBundle, Fill, Stroke),
     #[bundle]
     pub pickable: PickableBundle,
 }
@@ -21,7 +21,11 @@ impl ComponentBundle {
     pub fn new(data: PlaComponent<EditorCoords>) -> Self {
         Self {
             data,
-            shape: ShapeBundle::default(),
+            shape: (
+                ShapeBundle::default(),
+                Fill::color(Color::NONE),
+                Stroke::color(Color::NONE),
+            ),
             pickable: PickableBundle::default(),
         }
     }

@@ -6,10 +6,10 @@ linker = "clang"
 rustflags = ["-C", "link-arg=-fuse-ld=lld", "-Zshare-generics=y"]
 
 [target.x86_64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld", "-Zshare-generics=y"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/opt/llvm/bin/ld64.lld", "-Zshare-generics=y"]
 
 [target.aarch64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=y"]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/opt/llvm/bin/ld64.lld", "-Zshare-generics=y"]
 
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"

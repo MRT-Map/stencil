@@ -151,13 +151,16 @@ fn inner() -> Result<()> {
     zip_assets()?;
 
     if std::env::var("TARGET")?.contains("windows") {
-        embed_resource::compile({
-            let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
-            path.push("build");
-            path.push("windows");
-            path.push("icon.rc");
-            path
-        });
+        embed_resource::compile(
+            {
+                let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+                path.push("build");
+                path.push("windows");
+                path.push("icon.rc");
+                path
+            },
+            embed_resource::NONE,
+        );
     }
 
     println!("cargo:rerun-if-changed=build.rs");

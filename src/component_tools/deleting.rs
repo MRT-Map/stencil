@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
@@ -33,6 +32,6 @@ pub struct DeleteComponentPlugin;
 
 impl Plugin for DeleteComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(delete_component_sy.run_in_state(EditorState::DeletingComponent));
+        app.add_system(delete_component_sy.run_if(in_state(EditorState::DeletingComponent)));
     }
 }
