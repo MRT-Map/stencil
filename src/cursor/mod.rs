@@ -35,7 +35,8 @@ pub fn crosshair_sy(
     } else {
         return;
     }
-    let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
+    let translation = mouse_pos_world.round().xy();
+    let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
         (f32::from(tile_settings.max_tile_zoom) - zoom.0).exp2() * 16f32,
     ));

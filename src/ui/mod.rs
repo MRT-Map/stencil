@@ -29,7 +29,11 @@ impl Plugin for UiPlugin {
                     .run_if(not(in_state(EditorState::Loading)))
                     .in_base_set(CustomSet::Ui),
             )
-            .add_systems((menu::ui_sy, component_panel::ui_sy, toolbar::ui_sy).in_set(UiSet))
+            .add_systems(
+                (menu::ui_sy, component_panel::ui_sy, toolbar::ui_sy)
+                    .chain()
+                    .in_set(UiSet),
+            )
             .add_system(
                 (|mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false)
                     .in_base_set(CoreSet::Last),

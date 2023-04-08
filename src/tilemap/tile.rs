@@ -18,10 +18,7 @@ use crate::tilemap::{
 };
 
 pub fn get_shown_tiles(
-    q_camera: &Query<
-        (&Camera, &GlobalTransform, ChangeTrackers<GlobalTransform>),
-        impl ReadOnlyWorldQuery,
-    >,
+    q_camera: &Query<(&Camera, &Transform, ChangeTrackers<Transform>), impl ReadOnlyWorldQuery>,
     zoom: i8,
     tile_settings: &TileSettings,
 ) -> Vec<TileCoord> {
@@ -66,7 +63,7 @@ pub static SEMAPHORE: Semaphore = Semaphore::new(128);
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
-    q_camera: Query<(&Camera, &GlobalTransform, ChangeTrackers<GlobalTransform>), With<MainCamera>>,
+    q_camera: Query<(&Camera, &Transform, ChangeTrackers<Transform>), With<MainCamera>>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,

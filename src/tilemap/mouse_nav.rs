@@ -21,7 +21,7 @@ pub fn mouse_drag_sy(
     mut mouse_origin_pos: Local<Option<MousePos>>,
     mut camera_origin_pos: Local<Option<Vec2>>,
     mouse_pos: Res<MousePos>,
-    mut camera: Query<(&Camera, &mut GlobalTransform), With<MainCamera>>,
+    mut camera: Query<(&Camera, &mut Transform), With<MainCamera>>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     hovering_over_gui: Res<HoveringOverGui>,
 ) {
@@ -41,11 +41,11 @@ pub fn mouse_drag_sy(
 
             let d = map_wh / win_wh * (**mouse_pos - *origin_pos);
             trace!("Mouse moved {d:?} from origin");
-            transform.translation().x = camera_origin_pos.unwrap().x - d.x;
-            transform.translation().y = camera_origin_pos.unwrap().y - d.y;
+            transform.translation.x = camera_origin_pos.unwrap().x - d.x;
+            transform.translation.y = camera_origin_pos.unwrap().y - d.y;
         } else {
             *mouse_origin_pos = Some(*mouse_pos.into_inner());
-            *camera_origin_pos = Some(transform.translation().truncate());
+            *camera_origin_pos = Some(transform.translation.truncate());
         }
     } else {
         *mouse_origin_pos = None;
@@ -56,7 +56,7 @@ pub fn mouse_drag_sy(
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom_sy(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut camera: Query<(&mut OrthographicProjection, &mut GlobalTransform), With<MainCamera>>,
+    mut camera: Query<(&mut OrthographicProjection, &mut Transform), With<MainCamera>>,
     mut zoom: ResMut<Zoom>,
     hovering_over_gui: Res<HoveringOverGui>,
     mouse_pos_world: Query<&MousePosWorld>,
@@ -72,7 +72,7 @@ pub fn mouse_zoom_sy(
             MouseScrollUnit::Pixel => ev.y * 0.0125,
         };
         if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
-            let orig = transform.translation().xy();
+            let orig = transform.translation.xy();
             let orig_scale = ort_proj.scale;
             let orig_mouse_pos = mouse_pos_world.single();
             zoom.0 += u;
@@ -83,8 +83,8 @@ pub fn mouse_zoom_sy(
             let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = mouse_pos_world.single();
             trace!("View moved by {d:?}");
-            transform.translation().x = new_mouse_pos.x - d.x;
-            transform.translation().y = new_mouse_pos.y - d.y;
+            transform.translation.x = new_mouse_pos.x - d.x;
+            transform.translation.y = new_mouse_pos.y - d.y;
         }
     }
 }
