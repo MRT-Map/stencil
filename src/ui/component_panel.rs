@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Pos2, EguiContext, EguiContexts};
+use bevy_egui::{egui, egui::Pos2, EguiContexts};
 use bevy_mouse_tracking_plugin::MousePos;
 use itertools::Itertools;
 

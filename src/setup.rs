@@ -23,6 +23,7 @@ impl Plugin for SetupPlugin {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn setup_sy(
     mut commands: Commands,
     windows: NonSend<WinitWindows>,

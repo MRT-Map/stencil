@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use bevy_egui::{
     egui,
     egui::{Pos2, WidgetText},
-    EguiContext, EguiContexts,
+    EguiContexts,
 };
 use bevy_mouse_tracking_plugin::MousePos;
 

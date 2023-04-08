@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{EguiContext, EguiContexts};
+use bevy_egui::EguiContexts;
 use bimap::BiHashMap;
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +8,6 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::{Action, ChangeStateAct, EditorState},
-    pla2::component::ComponentType,
     tilemap::settings::TileSettingsAct,
 };
 

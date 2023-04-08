@@ -44,7 +44,7 @@ pub enum EditorState {
 }
 impl EditorState {
     #[must_use]
-    pub fn component_type(self) -> Option<ComponentType> {
+    pub const fn component_type(self) -> Option<ComponentType> {
         match self {
             Self::CreatingArea => Some(ComponentType::Area),
             Self::CreatingLine => Some(ComponentType::Line),

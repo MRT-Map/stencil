@@ -84,7 +84,7 @@ pub fn cursor_icon_sy(
         if hovering_over_gui.0 {
             continue;
         }
-        window.cursor.icon = (match state {
+        window.cursor.icon = match state {
             EditorState::Loading => CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if !hovered_comp.is_empty() {
@@ -98,7 +98,7 @@ pub fn cursor_icon_sy(
             EditorState::CreatingLine | EditorState::CreatingArea | EditorState::CreatingPoint => {
                 unreachable!()
             }
-        });
+        };
     }
 }
 

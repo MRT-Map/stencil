@@ -2,10 +2,7 @@ use bevy::prelude::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent};
 use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 
-use crate::{
-    misc::{CustomSet, EditorState},
-    ui::HoveringOverGui,
-};
+use crate::{misc::EditorState, ui::HoveringOverGui};
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]

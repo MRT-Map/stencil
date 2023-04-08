@@ -2,7 +2,7 @@ use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::Align, EguiContext, EguiContexts};
+use bevy_egui::{egui, egui::Align, EguiContexts};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 use crate::{

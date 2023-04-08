@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 
 use crate::{
     misc::{Action, ChangeStateAct, EditorState},
-    pla2::component::ComponentType,
     ui::HoveringOverGui,
 };
 

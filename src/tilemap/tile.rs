@@ -18,12 +18,12 @@ use crate::tilemap::{
 };
 
 pub fn get_shown_tiles(
-    q_camera: &Query<(&Camera, &Transform, ChangeTrackers<Transform>), impl ReadOnlyWorldQuery>,
+    q_camera: &Query<(&Camera, Ref<Transform>), impl ReadOnlyWorldQuery>,
     zoom: i8,
     tile_settings: &TileSettings,
 ) -> Vec<TileCoord> {
-    let (camera, transform, _) = q_camera.single();
-    let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, transform);
+    let (camera, transform) = q_camera.single();
+    let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, &transform);
     let TileCoord {
         x: t_left,
         y: t_top,
@@ -63,7 +63,7 @@ pub static SEMAPHORE: Semaphore = Semaphore::new(128);
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
-    q_camera: Query<(&Camera, &Transform, ChangeTrackers<Transform>), With<MainCamera>>,
+    q_camera: Query<(&Camera, Ref<Transform>), With<MainCamera>>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
@@ -74,10 +74,10 @@ pub fn show_tiles_sy(
         return;
     }
 
-    let (camera, transform, tracker) = q_camera.single();
+    let (camera, transform) = q_camera.single();
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, &tile_settings);
-    if !tracker.is_changed() {
-        let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
+    if !transform.is_changed() {
+        let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
         for (entity, tile_coord) in query.iter_mut() {
             if (zoom.0 <= f32::from(tile_settings.max_tile_zoom)
                 && tile_coord.z > zoom.0.round() as i8)
