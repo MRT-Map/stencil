@@ -8,6 +8,7 @@ use bevy::{
 };
 use bevy_mouse_tracking_plugin::MainCamera;
 use futures_lite::future;
+use image::{GrayImage, Luma};
 
 use crate::tilemap::{
     bundle::{Tile, TileBundle},
@@ -76,6 +77,7 @@ pub fn show_tiles_sy(
 
     let (camera, transform) = q_camera.single();
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, &tile_settings);
+    let thread_pool = AsyncComputeTaskPool::get();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
         for (entity, tile_coord) in query.iter_mut() {
@@ -112,13 +114,25 @@ pub fn show_tiles_sy(
                         &tile_settings,
                     ));
                 } else if !pending_tiles.contains_key(tile_coord) {
-                    let thread_pool = AsyncComputeTaskPool::get();
                     let url = tile_coord.url(&tile_settings);
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(&tile_settings);
                     let new_task = thread_pool.spawn(async move {
                         let guard = SEMAPHORE.acquire().await;
-                        let bytes = surf::get(url).recv_bytes().await?;
+                        let bytes = if std::env::var("NO_DOWNLOAD").is_ok() {
+                            GrayImage::from_pixel(
+                                1,
+                                1,
+                                Luma::from([if (tile_coord.x + tile_coord.y) % 2 == 0 {
+                                    150
+                                } else {
+                                    200
+                                }]),
+                            )
+                            .into_raw()
+                        } else {
+                            surf::get(url).recv_bytes().await?
+                        };
                         drop(guard);
                         async_fs::write(path, &bytes).await?;
                         Ok(bytes)
@@ -143,7 +157,9 @@ pub fn show_tiles_sy(
         }
     }
     for remove in &to_remove {
-        pending_tiles.remove(remove);
+        if let Some(a) = pending_tiles.remove(remove) {
+            thread_pool.spawn(a.cancel()).detach();
+        }
     }
     server.free_unused_assets();
 }
