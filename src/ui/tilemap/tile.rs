@@ -10,7 +10,7 @@ use bevy_mouse_tracking_plugin::MainCamera;
 use futures_lite::future;
 use image::{GrayImage, ImageFormat, Luma, Rgba, RgbaImage};
 
-use crate::tilemap::{
+use crate::tile::{
     bundle::{Tile, TileBundle},
     settings::TileSettings,
     tile_coord::TileCoord,

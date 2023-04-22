@@ -2,10 +2,12 @@ use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 use crate::{
-    cursor::mouse_events::HoveredComponent,
-    misc::{CustomSet, EditorState},
-    tilemap::{settings::TileSettings, zoom::Zoom},
-    ui::HoveringOverGui,
+    misc::EditorState,
+    tile::{settings::TileSettings, zoom::Zoom},
+    ui::{
+        cursor::mouse_events::{HoveredComponent, MouseEvent},
+        HoveringOverGui, UiSet,
+    },
 };
 
 pub mod mouse_events;
@@ -106,8 +108,15 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_set(CustomSet::Cursor.before(CoreSet::Update))
-            .add_systems((cursor_icon_sy, crosshair_sy).in_base_set(CustomSet::Cursor))
-            .add_plugin(mouse_events::MouseEventsPlugin);
+        app.add_systems(
+            (
+                cursor_icon_sy,
+                crosshair_sy,
+                mouse_events::left_click_handler_sy,
+                mouse_events::right_click_handler_sy,
+            )
+                .in_set(UiSet::Mouse),
+        )
+        .add_event::<MouseEvent>();
     }
 }

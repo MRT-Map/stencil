@@ -6,8 +6,11 @@ use bevy_egui::{egui, egui::Align, EguiContexts};
 use bevy_mouse_tracking_plugin::MousePosWorld;
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct, misc::Action, tilemap::settings::TileSettingsAct, ui::HoveringOverGui,
+    component_actions::undo_redo::UndoRedoAct,
+    info_windows::InfoWindowsAct,
+    load_save::LoadSaveAct,
+    misc::Action,
+    ui::{tilemap::settings::TileSettingsAct, HoveringOverGui},
 };
 
 #[allow(clippy::needless_pass_by_value)]

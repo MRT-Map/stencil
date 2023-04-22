@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
     pla2::{component::ComponentType, skin::Skin},
-    ui::component_panel::PrevNamespaceUsed,
+    ui::panel::component_panel::PrevNamespaceUsed,
 };
 
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
@@ -85,11 +85,4 @@ pub fn state_changer_asy(
         );
         commands.insert_resource(NextState(Some(state)));
     }
-}
-
-#[derive(SystemSet, Copy, Clone, Debug, PartialEq, Eq, Hash)]
-#[system_set(base)]
-pub enum CustomSet {
-    Ui,
-    Cursor,
 }

@@ -108,15 +108,3 @@ pub fn left_click_handler_sy(
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
     }
 }
-
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-struct MouseEventsSet;
-
-pub struct MouseEventsPlugin;
-impl Plugin for MouseEventsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<MouseEvent>()
-            .configure_set(MouseEventsSet.run_if(not(in_state(EditorState::Loading))))
-            .add_systems((left_click_handler_sy, right_click_handler_sy).in_set(MouseEventsSet));
-    }
-}

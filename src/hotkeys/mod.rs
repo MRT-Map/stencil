@@ -8,7 +8,7 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::{Action, ChangeStateAct, EditorState},
-    tilemap::settings::TileSettingsAct,
+    ui::tilemap::settings::TileSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]

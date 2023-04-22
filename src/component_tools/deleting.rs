@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
-    cursor::mouse_events::MouseEvent,
     misc::{Action, EditorState},
     pla2::component::{EditorCoords, PlaComponent},
+    ui::cursor::mouse_events::MouseEvent,
 };
 
 #[tracing::instrument(skip_all)]

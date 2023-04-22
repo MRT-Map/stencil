@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
-    tilemap::{
+    tile::{
         settings::TileSettings,
         utils::{get_map_width_height, get_window_width_height},
         zoom::Zoom,

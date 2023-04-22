@@ -14,8 +14,8 @@ use bevy_egui::{
 use bevy_mouse_tracking_plugin::MousePos;
 
 use crate::{
-    misc::{Action, CustomSet},
-    ui::{menu, HoveringOverGui},
+    misc::Action,
+    ui::{HoveringOverGui, UiSet},
 };
 
 pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
@@ -160,6 +160,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
-            .add_system(popup_handler.in_base_set(CustomSet::Ui).before(menu::ui_sy));
+            .add_system(popup_handler.in_set(UiSet::Popups));
     }
 }

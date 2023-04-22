@@ -5,13 +5,13 @@ use itertools::Itertools;
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
-    cursor::mouse_events::MouseEvent,
-    misc::{Action, CustomSet, EditorState},
+    misc::{Action, EditorState},
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 
 #[derive(Debug)]
@@ -248,7 +248,7 @@ impl Plugin for EditNodePlugin {
             .add_system(
                 show_handles_sy
                     .run_if(in_state(EditorState::EditingNodes))
-                    .in_base_set(CustomSet::Ui),
+                    .after(UiBaseSet),
             );
     }
 }

@@ -8,14 +8,13 @@ use crate::{
         selecting::{deselect, DeselectQuery},
         undo_redo::{History, UndoRedoAct},
     },
-    cursor::mouse_events::MouseEvent,
     misc::{Action, EditorState},
     pla2::{
         bundle::{ComponentBundle, CreatedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::component_panel::PrevNamespaceUsed,
+    ui::{cursor::mouse_events::MouseEvent, panel::component_panel::PrevNamespaceUsed},
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [

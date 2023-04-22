@@ -2,13 +2,13 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
-    cursor::mouse_events::MouseEvent,
-    misc::{CustomSet, EditorState},
+    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 
 #[tracing::instrument(skip_all)]
@@ -75,7 +75,7 @@ impl Plugin for SelectComponentPlugin {
             .add_system(
                 highlight_selected_sy
                     .run_if(not(in_state(EditorState::Loading)))
-                    .in_base_set(CustomSet::Ui),
+                    .after(UiBaseSet),
             );
     }
 }
