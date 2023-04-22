@@ -11,7 +11,7 @@ use bevy_egui::{
     egui::{Pos2, WidgetText},
     EguiContexts,
 };
-use bevy_mouse_tracking_plugin::MousePos;
+use bevy_mouse_tracking::MousePos;
 
 use crate::{
     misc::Action,

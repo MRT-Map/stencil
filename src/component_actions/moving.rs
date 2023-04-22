@@ -1,5 +1,5 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},

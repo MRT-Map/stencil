@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent};
-use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
+use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::{misc::EditorState, ui::HoveringOverGui};
 

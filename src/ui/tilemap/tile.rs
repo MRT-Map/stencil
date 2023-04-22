@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
     tasks::{AsyncComputeTaskPool, Task},
 };
-use bevy_mouse_tracking_plugin::MainCamera;
+use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{GrayImage, ImageFormat, Luma, Rgba, RgbaImage};
 

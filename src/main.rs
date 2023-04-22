@@ -152,7 +152,7 @@ use bevy::{
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
-use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
+use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use tracing::Level;
 use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};

@@ -1,5 +1,5 @@
 use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     misc::EditorState,

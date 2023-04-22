@@ -1,5 +1,5 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_mouse_tracking::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distributions::{Alphanumeric, DistString};
 

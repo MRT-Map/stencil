@@ -11,7 +11,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_mouse_tracking_plugin = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", branch = "bevy-0-10" }
+bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", branch = "bevy-0-10", package = "bevy_mouse_tracking_plugin" }
 bevy_prototype_lyon = "0.8.0"
 bevy_egui = "0.20.3"
 egui_commonmark = "0.7.2"

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::Pos2, EguiContexts};
-use bevy_mouse_tracking_plugin::MousePos;
+use bevy_mouse_tracking::MousePos;
 use itertools::Itertools;
 
 use crate::{

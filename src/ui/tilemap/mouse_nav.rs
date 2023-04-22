@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
     window::PrimaryWindow,
 };
-use bevy_mouse_tracking_plugin::{MainCamera, MousePos, MousePosWorld};
+use bevy_mouse_tracking::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
     tile::{

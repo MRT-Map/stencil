@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow, winit::WinitWindows};
 use bevy_mod_picking::PickingCameraBundle;
-use bevy_mouse_tracking_plugin::{prelude::*, MainCamera};
+use bevy_mouse_tracking::{prelude::*, MainCamera};
 use winit::window::Icon;
 
 use crate::{
