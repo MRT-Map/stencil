@@ -172,12 +172,12 @@ fn inner() -> Result<()> {
 fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
         if let Err(e) = inner() {
-            p!("Error: {e:?}");
+            p!("Error: {e:#?}");
             p!("{:?}", e.backtrace());
             panic!()
         }
     }) {
-        p!("Error: {e:?}");
+        p!("Error: {e:#?}");
         panic!()
     }
 }

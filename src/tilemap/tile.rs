@@ -8,7 +8,7 @@ use bevy::{
 };
 use bevy_mouse_tracking_plugin::MainCamera;
 use futures_lite::future;
-use image::{GrayImage, Luma};
+use image::{GrayImage, ImageFormat, Luma, Rgba, RgbaImage};
 
 use crate::tilemap::{
     bundle::{Tile, TileBundle},
@@ -69,7 +69,7 @@ pub fn show_tiles_sy(
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
     tile_settings: Res<TileSettings>,
-    mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<Vec<u8>>>>>,
+    mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<()>>>>,
 ) {
     if q_camera.is_empty() {
         return;
@@ -118,24 +118,22 @@ pub fn show_tiles_sy(
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(&tile_settings);
                     let new_task = thread_pool.spawn(async move {
-                        let guard = SEMAPHORE.acquire().await;
-                        let bytes = if std::env::var("NO_DOWNLOAD").is_ok() {
-                            GrayImage::from_pixel(
-                                1,
-                                1,
-                                Luma::from([if (tile_coord.x + tile_coord.y) % 2 == 0 {
-                                    150
-                                } else {
-                                    200
-                                }]),
-                            )
-                            .into_raw()
+                        if std::env::var("NO_DOWNLOAD").is_ok() {
+                            let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
+                                150
+                            } else {
+                                200
+                            };
+                            RgbaImage::from_pixel(1, 1, Rgba::from([col, col, col, 255]))
+                                .save_with_format(path, ImageFormat::Png)?;
                         } else {
-                            surf::get(url).recv_bytes().await?
+                            let guard = SEMAPHORE.acquire().await;
+                            let bytes = surf::get(url).recv_bytes().await?;
+                            async_fs::write(path, &bytes).await?;
+                            drop(guard);
                         };
-                        drop(guard);
-                        async_fs::write(path, &bytes).await?;
-                        Ok(bytes)
+
+                        Ok(())
                     });
                     pending_tiles.insert(tile_coord, new_task);
                 }
