@@ -27,6 +27,8 @@ jobs:
       run: rustup default nightly
     - name: Install cargo-license
       run: cargo +nightly install cargo-license
+    - name: Activate config.toml
+      run: mv .cargo/_config.toml .cargo/config.toml
 
     - name: Xcode select
       run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
