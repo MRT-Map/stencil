@@ -6,7 +6,6 @@ use bevy::{
 };
 use futures_lite::future;
 use hex_color::HexColor;
-use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{misc::EditorState, pla2::component::ComponentType, ui::popup::Popup};
@@ -155,7 +154,7 @@ pub fn get_skin_sy(
             Some(Ok(skin)) => {
                 info!("Retrieved");
                 commands.insert_resource(skin);
-                commands.insert_resource(NextState(EditorState::Idle));
+                commands.insert_resource(NextState(Some(EditorState::Idle)));
                 *task_s = Step::Complete;
             }
             Some(Err(err)) => {

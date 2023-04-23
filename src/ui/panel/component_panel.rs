@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Pos2, EguiContext};
-use bevy_mouse_tracking_plugin::MousePos;
+use bevy_egui::{egui, EguiContexts};
+use bevy_mouse_tracking::MousePos;
 use itertools::Itertools;
 
 use crate::{
@@ -14,12 +14,12 @@ use crate::{
     ui::HoveringOverGui,
 };
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, Clone)]
 pub struct PrevNamespaceUsed(pub String);
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut commands: Commands,
@@ -108,12 +108,5 @@ pub fn ui_sy(
                 })));
             }
         });
-    if panel.response.hovered()
-        || panel
-            .response
-            .rect
-            .contains(Pos2::new(mouse_pos.x, mouse_pos.y))
-    {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

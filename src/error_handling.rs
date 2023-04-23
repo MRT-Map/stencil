@@ -1,6 +1,6 @@
 use std::{backtrace::Backtrace, io::ErrorKind, panic::PanicInfo, sync::Arc, time::SystemTime};
 
-use bevy::prelude::EventWriter;
+use bevy::prelude::*;
 use itertools::Itertools;
 use tracing::{error, warn};
 

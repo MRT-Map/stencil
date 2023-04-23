@@ -1,18 +1,17 @@
 use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_mouse_tracking::MousePosWorld;
 use bevy_prototype_lyon::{prelude::*, shapes::Circle};
 use itertools::Itertools;
-use iyes_loopless::{condition::ConditionSet, prelude::AppLooplessStateExt};
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
-    cursor::mouse_events::MouseEvent,
-    misc::{Action, CustomStage, EditorState},
+    misc::{Action, EditorState},
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 
 #[derive(Debug)]
@@ -159,20 +158,21 @@ pub fn update_handles(
         })
         .map(|coord| {
             let weight = pla.weight(skin).unwrap_or(2) as f32;
-            GeometryBuilder::build_as(
-                &Circle {
-                    radius: weight * 0.5,
-                    center: if pla.get_type(skin) == Some(ComponentType::Point) {
-                        Vec2::ZERO
-                    } else {
-                        coord.as_vec2()
-                    },
+            (
+                ShapeBundle {
+                    path: GeometryBuilder::build_as(&Circle {
+                        radius: weight * 0.5,
+                        center: if pla.get_type(skin) == Some(ComponentType::Point) {
+                            Vec2::ZERO
+                        } else {
+                            coord.as_vec2()
+                        },
+                    }),
+                    transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                    ..default()
                 },
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(Color::WHITE),
-                    outline_mode: StrokeMode::new(Color::GRAY, weight * 0.5),
-                },
-                Transform::from_xyz(0.0, 0.0, 100.0),
+                Fill::color(Color::WHITE),
+                Stroke::new(Color::GRAY, weight * 0.5),
             )
         })
         .map(|bundle| commands.spawn(bundle).id())
@@ -202,16 +202,17 @@ pub fn update_handles(
     })
     .map(|coord| {
         let weight = pla.weight(skin).unwrap_or(2) as f32;
-        GeometryBuilder::build_as(
-            &Circle {
-                radius: weight * 0.25,
-                center: coord.as_vec2(),
+        (
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&Circle {
+                    radius: weight * 0.25,
+                    center: coord.as_vec2(),
+                }),
+                transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                ..default()
             },
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::WHITE),
-                outline_mode: StrokeMode::new(Color::GRAY, weight * 0.25),
-            },
-            Transform::from_xyz(0.0, 0.0, 100.0),
+            Fill::color(Color::WHITE),
+            Stroke::new(Color::GRAY, weight * 0.25),
         )
     })
     .map(|bundle| commands.spawn(bundle).id())
@@ -242,19 +243,12 @@ pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut c
 pub struct EditNodePlugin;
 impl Plugin for EditNodePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_in_state(EditorState::EditingNodes)
-                .with_system(edit_nodes_sy)
-                .into(),
-        )
-        .add_exit_system(EditorState::EditingNodes, remove_handles_sy)
-        .add_system_set_to_stage(
-            CustomStage::Ui,
-            ConditionSet::new()
-                .run_in_state(EditorState::EditingNodes)
-                .with_system(show_handles_sy)
-                .into(),
-        );
+        app.add_system(edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)))
+            .add_system(remove_handles_sy.in_schedule(OnExit(EditorState::EditingNodes)))
+            .add_system(
+                show_handles_sy
+                    .run_if(in_state(EditorState::EditingNodes))
+                    .after(UiBaseSet),
+            );
     }
 }

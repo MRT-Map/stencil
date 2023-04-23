@@ -2,21 +2,25 @@ use bevy::{
     diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::Align, EguiContext};
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_egui::{egui, egui::Align, EguiContexts};
+use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct, misc::Action, tilemap::settings::TileSettingsAct, ui::HoveringOverGui,
+    component_actions::undo_redo::UndoRedoAct,
+    info_windows::InfoWindowsAct,
+    load_save::LoadSaveAct,
+    misc::Action,
+    ui::{tilemap::settings::TileSettingsAct, HoveringOverGui},
 };
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<Diagnostics>,
     mouse_pos_world: Res<MousePosWorld>,
+    mouse_pos: Res<MousePos>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -70,7 +74,5 @@ pub fn ui_sy(
             })
         });
     });
-    if panel.response.hovered() {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

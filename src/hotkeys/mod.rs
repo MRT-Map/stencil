@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use bevy_egui::EguiContext;
+use bevy_egui::EguiContexts;
 use bimap::BiHashMap;
-use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -9,8 +8,7 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::{Action, ChangeStateAct, EditorState},
-    pla2::component::ComponentType,
-    tilemap::settings::TileSettingsAct,
+    ui::tilemap::settings::TileSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -54,17 +52,15 @@ impl Default for HotkeySettings {
                     KeyCode::Key3,
                 ),
                 (
-                    HotkeyActions::ChangeState(EditorState::CreatingComponent(
-                        ComponentType::Point,
-                    )),
+                    HotkeyActions::ChangeState(EditorState::CreatingPoint),
                     KeyCode::Key4,
                 ),
                 (
-                    HotkeyActions::ChangeState(EditorState::CreatingComponent(ComponentType::Line)),
+                    HotkeyActions::ChangeState(EditorState::CreatingLine),
                     KeyCode::Key5,
                 ),
                 (
-                    HotkeyActions::ChangeState(EditorState::CreatingComponent(ComponentType::Area)),
+                    HotkeyActions::ChangeState(EditorState::CreatingArea),
                     KeyCode::Key6,
                 ),
                 (HotkeyActions::Undo, KeyCode::U),
@@ -85,10 +81,10 @@ pub fn hotkey_sy(
     mut actions: EventWriter<Action>,
     hotkey_settings: Res<HotkeySettings>,
     keys: Res<Input<KeyCode>>,
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
 ) {
     for (action, key) in &hotkey_settings.0 {
-        if keys.just_released(*key) && ctx.ctx_mut().memory().focus().is_none() {
+        if keys.just_released(*key) && ctx.ctx_mut().memory(|a| a.focus().is_none()) {
             info!(?action, ?key, "Processing hotkey");
             actions.send(action.action());
         }
@@ -100,11 +96,6 @@ pub struct HotkeyPlugin;
 impl Plugin for HotkeyPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(HotkeySettings::default())
-            .add_system_set(
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .with_system(hotkey_sy)
-                    .into(),
-            );
+            .add_system(hotkey_sy.run_if(not(in_state(EditorState::Loading))));
     }
 }

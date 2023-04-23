@@ -1,12 +1,13 @@
 use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
-use bevy_mouse_tracking_plugin::MousePosWorld;
-use iyes_loopless::prelude::*;
+use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
-    cursor::mouse_events::HoveredComponent,
-    misc::{CustomStage, EditorState},
-    tilemap::{settings::TileSettings, zoom::Zoom},
-    ui::HoveringOverGui,
+    misc::EditorState,
+    tile::{settings::TileSettings, zoom::Zoom},
+    ui::{
+        cursor::mouse_events::{HoveredComponent, MouseEvent},
+        HoveringOverGui, UiSet,
+    },
 };
 
 pub mod mouse_events;
@@ -18,7 +19,7 @@ pub struct Crosshair;
 #[tracing::instrument(skip_all)]
 pub fn crosshair_sy(
     mut commands: Commands,
-    state: Option<Res<CurrentState<EditorState>>>,
+    state: Option<Res<State<EditorState>>>,
     mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
     server: Res<AssetServer>,
     zoom: Res<Zoom>,
@@ -26,7 +27,7 @@ pub fn crosshair_sy(
     tile_settings: Res<TileSettings>,
 ) {
     if let Some(state) = state {
-        if !matches!(state.0, EditorState::CreatingComponent(_)) {
+        if state.0.component_type().is_none() {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
                 commands.entity(e).despawn_recursive();
@@ -36,7 +37,8 @@ pub fn crosshair_sy(
     } else {
         return;
     }
-    let new_transform = Transform::from_translation(mouse_pos_world.round().xy().extend(100.0));
+    let translation = mouse_pos_world.round().xy();
+    let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
         (f32::from(tile_settings.max_tile_zoom) - zoom.0).exp2() * 16f32,
     ));
@@ -65,8 +67,8 @@ pub fn crosshair_sy(
 #[tracing::instrument(skip_all)]
 pub fn cursor_icon_sy(
     buttons: Res<Input<MouseButton>>,
-    mut windows: ResMut<Windows>,
-    state: Option<Res<CurrentState<EditorState>>>,
+    mut windows: Query<&mut Window>,
+    state: Option<Res<State<EditorState>>>,
     hovering_over_gui: Res<HoveringOverGui>,
     hovered_comp: Query<(), With<HoveredComponent>>,
 ) {
@@ -75,16 +77,16 @@ pub fn cursor_icon_sy(
     } else {
         EditorState::Loading
     };
-    for window in windows.iter_mut() {
-        if matches!(state, EditorState::CreatingComponent(_)) {
-            window.set_cursor_visibility(hovering_over_gui.0);
+    for mut window in windows.iter_mut() {
+        if state.component_type().is_some() {
+            window.cursor.visible = hovering_over_gui.0;
             continue;
         }
-        window.set_cursor_visibility(true);
+        window.cursor.visible = true;
         if hovering_over_gui.0 {
             continue;
         }
-        window.set_cursor_icon(match state {
+        window.cursor.icon = match state {
             EditorState::Loading => CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if !hovered_comp.is_empty() {
@@ -95,8 +97,10 @@ pub fn cursor_icon_sy(
                     CursorIcon::Grab
                 }
             }
-            EditorState::CreatingComponent(_) => unreachable!(),
-        });
+            EditorState::CreatingLine | EditorState::CreatingArea | EditorState::CreatingPoint => {
+                unreachable!()
+            }
+        };
     }
 }
 
@@ -104,18 +108,15 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_stage_after(
-            CustomStage::Ui,
-            CustomStage::Cursor,
-            SystemStage::parallel(),
+        app.add_systems(
+            (
+                cursor_icon_sy,
+                crosshair_sy,
+                mouse_events::left_click_handler_sy,
+                mouse_events::right_click_handler_sy,
+            )
+                .in_set(UiSet::Mouse),
         )
-        .add_system_set_to_stage(
-            CustomStage::Cursor,
-            ConditionSet::new()
-                .with_system(cursor_icon_sy)
-                .with_system(crosshair_sy)
-                .into(),
-        )
-        .add_plugin(mouse_events::MouseEventsPlugin);
+        .add_event::<MouseEvent>();
     }
 }

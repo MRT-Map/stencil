@@ -1,19 +1,19 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
-use iyes_loopless::prelude::*;
+use bevy_egui::{egui, EguiContexts};
+use bevy_mouse_tracking::MousePos;
 
 use crate::{
     misc::{Action, ChangeStateAct, EditorState},
-    pla2::component::ComponentType,
     ui::HoveringOverGui,
 };
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
-    state: Res<CurrentState<EditorState>>,
-    mut ctx: ResMut<EguiContext>,
+    state: Res<State<EditorState>>,
+    mut ctx: EguiContexts,
     mut actions: EventWriter<Action>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
+    mouse_pos: Res<MousePos>,
 ) {
     let mut new_state = state.0;
     let panel = egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
@@ -32,17 +32,12 @@ pub fn ui_sy(
 
             ui.separator();
             ui.label("Create...");
-            button!(
-                "Point",
-                EditorState::CreatingComponent(ComponentType::Point)
-            );
-            button!("Line", EditorState::CreatingComponent(ComponentType::Line));
-            button!("Area", EditorState::CreatingComponent(ComponentType::Area));
+            button!("Point", EditorState::CreatingPoint);
+            button!("Line", EditorState::CreatingLine);
+            button!("Area", EditorState::CreatingArea);
         });
     });
-    if panel.response.hovered() {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
     if new_state != state.0 {
         actions.send(Box::new(ChangeStateAct(new_state)));
     }

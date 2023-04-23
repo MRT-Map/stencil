@@ -152,28 +152,26 @@ use bevy::{
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
-use bevy_mouse_tracking_plugin::prelude::MousePosPlugin;
+use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use tracing::Level;
 use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
+use ui::tilemap::RenderingPlugin;
 use zip::ZipArchive;
 
 use crate::{
     component_actions::ComponentActionPlugins,
     component_tools::ComponentToolPlugins,
-    cursor::CursorPlugin,
     hotkeys::HotkeyPlugin,
     info_windows::InfoWindowsPlugin,
     load_save::LoadSavePlugin,
     misc::{data_dir, data_file},
     setup::SetupPlugin,
-    tilemap::RenderingPlugin,
     ui::UiPlugin,
 };
 
 mod component_actions;
 mod component_tools;
-mod cursor;
 mod error_handling;
 mod hotkeys;
 mod info_windows;
@@ -181,7 +179,7 @@ mod load_save;
 mod misc;
 mod pla2;
 mod setup;
-mod tilemap;
+mod tile;
 mod ui;
 
 fn main() {
@@ -234,11 +232,11 @@ fn main() {
         .add_plugins({
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: "Stencil".into(),
                         mode: WindowMode::BorderlessFullscreen,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())
@@ -252,7 +250,6 @@ fn main() {
         .add_plugin(ShapePlugin)
         .add_plugin(SetupPlugin)
         .add_plugin(UiPlugin)
-        .add_plugin(CursorPlugin)
         .add_plugin(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)

@@ -1,63 +1,82 @@
 use bevy::prelude::*;
-use iyes_loopless::condition::ConditionSet;
+use bevy_egui::egui::{Pos2, Response};
+use bevy_mouse_tracking::MousePos;
 
-use crate::{
-    misc::{CustomStage, EditorState},
-    ui::component_panel::PrevNamespaceUsed,
-};
+use crate::misc::EditorState;
 
-pub mod component_panel;
+pub mod cursor;
 pub mod file_explorer;
-pub mod menu;
+pub mod panel;
 pub mod popup;
-pub mod toolbar;
+pub mod tilemap;
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct HoveringOverGui(pub bool);
 
+impl HoveringOverGui {
+    pub fn egui(&mut self, response: &Response, mouse_pos: MousePos) {
+        if response.hovered() || response.rect.contains(Pos2::from(mouse_pos.to_array())) {
+            self.0 = true;
+        }
+    }
+}
+
 pub struct UiPlugin;
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+pub struct UiBaseSet;
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+pub enum UiSet {
+    Popups,
+    Panels,
+    Tiles,
+    Mouse,
+    Reset,
+}
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
-            .init_resource::<PrevNamespaceUsed>()
-            .add_stage_before(
-                CoreStage::Update,
-                CustomStage::Ui,
-                SystemStage::single_threaded(),
+            .configure_set(UiBaseSet.before(CoreSet::Update))
+            .configure_set(
+                UiSet::Popups
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(UiBaseSet),
             )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_menu")
-                    .before("ui_component_panel")
-                    .with_system(menu::ui_sy)
-                    .into(),
+            .configure_set(
+                UiSet::Panels
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(UiBaseSet)
+                    .after(UiSet::Popups),
             )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_component_panel")
-                    .after("ui_menu")
-                    .before("ui_toolbar")
-                    .with_system(component_panel::ui_sy)
-                    .into(),
+            .configure_set(
+                UiSet::Tiles
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(UiBaseSet)
+                    .after(UiSet::Panels),
             )
-            .add_system_set_to_stage(
-                CustomStage::Ui,
-                ConditionSet::new()
-                    .run_not_in_state(EditorState::Loading)
-                    .label("ui_toolbar")
-                    .after("ui_component_panel")
-                    .with_system(toolbar::ui_sy)
-                    .into(),
+            .configure_set(
+                UiSet::Mouse
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(UiBaseSet)
+                    .after(UiSet::Tiles),
             )
-            .add_system_to_stage(
-                CoreStage::Last,
-                |mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false,
-            )
-            .add_plugin(popup::PopupPlugin);
+            .configure_set(UiSet::Reset.in_base_set(UiBaseSet).after(UiSet::Mouse))
+            .add_plugin(popup::PopupPlugin)
+            .add_plugin(panel::PanelPlugin)
+            .add_plugin(cursor::CursorPlugin)
+            .add_system(reset_hovering_over_gui_sy.in_set(UiSet::Reset));
+    }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+pub fn reset_hovering_over_gui_sy(
+    mut hovering_over_gui: ResMut<HoveringOverGui>,
+    buttons: Res<Input<MouseButton>>,
+) {
+    if !buttons.any_pressed([MouseButton::Left, MouseButton::Middle, MouseButton::Right]) {
+        hovering_over_gui.0 = false;
     }
 }

@@ -143,84 +143,101 @@ impl PlaComponent<EditorCoords> {
             attributes: self.attributes.to_owned(),
         }
     }
-    pub fn get_shape(&self, skin: &Skin, selected: bool) -> ShapeBundle {
+    pub fn get_shape(&self, skin: &Skin, selected: bool) -> (ShapeBundle, Fill, Stroke) {
         if self.get_type(skin) == Some(ComponentType::Point) {
-            GeometryBuilder::build_as(
-                &shapes::Rectangle {
-                    extents: Vec2::splat(2.0),
-                    origin: RectangleOrigin::Center,
+            return (
+                ShapeBundle {
+                    path: GeometryBuilder::build_as(&shapes::Rectangle {
+                        extents: Vec2::splat(2.0),
+                        origin: RectangleOrigin::Center,
+                    }),
+                    transform: Transform::from_xyz(
+                        self.nodes[0].0.x as f32,
+                        self.nodes[0].0.y as f32,
+                        10.0,
+                    ),
+                    ..default()
                 },
-                DrawMode::Fill(FillMode::color(if selected {
+                Fill::color(if selected {
                     Color::YELLOW
                 } else if let Some(hex) = self.front_colour(skin) {
                     hex_to_color(*hex)
                 } else {
                     Color::WHITE
-                })),
-                Transform::from_xyz(self.nodes[0].0.x as f32, self.nodes[0].0.y as f32, 10.0),
+                }),
+                Stroke::color(Color::NONE),
+            );
+        }
+        let options = StrokeOptions::default()
+            .with_start_cap(LineCap::Round)
+            .with_end_cap(LineCap::Round)
+            .with_line_join(LineJoin::Round)
+            .with_line_width(self.weight(skin).unwrap_or(2) as f32);
+        let path = GeometryBuilder::build_as(&{
+            let mut pb = PathBuilder::new();
+            for coord in &self.nodes {
+                pb.line_to(coord.0.as_vec2());
+            }
+            if self.get_type(skin) == Some(ComponentType::Area) {
+                if let Some(coord) = self.nodes.first() {
+                    pb.line_to(coord.0.as_vec2());
+                }
+            }
+            pb.build()
+        });
+        let (fill, stroke) = if self.get_type(skin) == Some(ComponentType::Area) {
+            (
+                Fill::color(if selected {
+                    *Color::YELLOW.clone().set_a(0.5)
+                } else if let Some(hex) = self.front_colour(skin) {
+                    *hex_to_color(*hex).set_a(0.25)
+                } else {
+                    Color::NONE
+                }),
+                Stroke {
+                    color: if selected {
+                        Color::YELLOW
+                    } else if let Some(hex) = self.back_colour(skin) {
+                        hex_to_color(*hex)
+                    } else {
+                        Color::NONE
+                    },
+                    options,
+                },
             )
         } else {
-            let options = StrokeOptions::default()
-                .with_start_cap(LineCap::Round)
-                .with_end_cap(LineCap::Round)
-                .with_line_join(LineJoin::Round)
-                .with_line_width(self.weight(skin).unwrap_or(2) as f32);
-            GeometryBuilder::build_as(
-                &{
-                    let mut pb = PathBuilder::new();
-                    for coord in &self.nodes {
-                        pb.line_to(coord.0.as_vec2());
-                    }
-                    if self.get_type(skin) == Some(ComponentType::Area) {
-                        if let Some(coord) = self.nodes.first() {
-                            pb.line_to(coord.0.as_vec2());
-                        }
-                    }
-                    pb.build()
+            (
+                Fill::color(Color::NONE),
+                Stroke {
+                    color: if selected {
+                        Color::YELLOW
+                    } else if let Some(hex) = self.front_colour(skin) {
+                        hex_to_color(*hex)
+                    } else {
+                        Color::WHITE
+                    },
+                    options,
                 },
-                if self.get_type(skin) == Some(ComponentType::Area) {
-                    DrawMode::Outlined {
-                        fill_mode: FillMode::color(if selected {
-                            *Color::YELLOW.clone().set_a(0.5)
-                        } else if let Some(hex) = self.front_colour(skin) {
-                            *hex_to_color(*hex).set_a(0.25)
-                        } else {
-                            Color::NONE
-                        }),
-                        outline_mode: StrokeMode {
-                            color: if selected {
-                                Color::YELLOW
-                            } else if let Some(hex) = self.back_colour(skin) {
-                                hex_to_color(*hex)
-                            } else {
-                                Color::NONE
-                            },
-                            options,
-                        },
-                    }
-                } else {
-                    DrawMode::Stroke(StrokeMode {
-                        color: if selected {
-                            Color::YELLOW
-                        } else if let Some(hex) = self.front_colour(skin) {
-                            hex_to_color(*hex)
-                        } else {
-                            Color::WHITE
-                        },
-                        options,
-                    })
-                },
-                Transform::from_xyz(0.0, 0.0, {
-                    let order = skin
-                        .order
-                        .iter()
-                        .enumerate()
-                        .find(|(_, a)| **a == self.ty)
-                        .map_or(0, |a| a.0);
-                    (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
-                }),
             )
-        }
+        };
+        let transform = Transform::from_xyz(0.0, 0.0, {
+            let order = skin
+                .order
+                .iter()
+                .enumerate()
+                .find(|(_, a)| **a == self.ty)
+                .map_or(0, |a| a.0);
+            (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
+        });
+        (
+            ShapeBundle {
+                path,
+                transform,
+                ..default()
+            },
+            fill,
+            stroke,
+        )
     }
 }
 

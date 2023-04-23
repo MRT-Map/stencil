@@ -7,7 +7,7 @@ use bevy::prelude::*;
 
 use crate::{
     misc::data_dir,
-    tilemap::{settings::TileSettings, zoom::Zoom},
+    tile::{settings::TileSettings, zoom::Zoom},
 };
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]

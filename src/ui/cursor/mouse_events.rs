@@ -1,12 +1,8 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent};
-use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
-use iyes_loopless::condition::ConditionSet;
+use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
-use crate::{
-    misc::{CustomStage, EditorState},
-    ui::HoveringOverGui,
-};
+use crate::ui::HoveringOverGui;
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
@@ -110,19 +106,5 @@ pub fn left_click_handler_sy(
     if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && !hovering_over_gui.0 {
         debug!(e = ?selected_entity, "LeftClick detected");
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
-    }
-}
-
-pub struct MouseEventsPlugin;
-impl Plugin for MouseEventsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<MouseEvent>().add_system_set_to_stage(
-            CustomStage::Cursor,
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(left_click_handler_sy)
-                .with_system(right_click_handler_sy)
-                .into(),
-        );
     }
 }

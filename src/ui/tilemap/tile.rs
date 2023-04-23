@@ -6,10 +6,11 @@ use bevy::{
     prelude::*,
     tasks::{AsyncComputeTaskPool, Task},
 };
-use bevy_mouse_tracking_plugin::MainCamera;
+use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
+use image::{ImageFormat, Rgba, RgbaImage};
 
-use crate::tilemap::{
+use crate::tile::{
     bundle::{Tile, TileBundle},
     settings::TileSettings,
     tile_coord::TileCoord,
@@ -18,15 +19,12 @@ use crate::tilemap::{
 };
 
 pub fn get_shown_tiles(
-    q_camera: &Query<
-        (&Camera, &GlobalTransform, ChangeTrackers<GlobalTransform>),
-        impl ReadOnlyWorldQuery,
-    >,
+    q_camera: &Query<(&Camera, Ref<Transform>), impl ReadOnlyWorldQuery>,
     zoom: i8,
     tile_settings: &TileSettings,
 ) -> Vec<TileCoord> {
-    let (camera, transform, _) = q_camera.single();
-    let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, transform);
+    let (camera, transform) = q_camera.single();
+    let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, &transform);
     let TileCoord {
         x: t_left,
         y: t_top,
@@ -66,21 +64,22 @@ pub static SEMAPHORE: Semaphore = Semaphore::new(128);
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
-    q_camera: Query<(&Camera, &GlobalTransform, ChangeTrackers<GlobalTransform>), With<MainCamera>>,
+    q_camera: Query<(&Camera, Ref<Transform>), With<MainCamera>>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
     tile_settings: Res<TileSettings>,
-    mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<Vec<u8>>>>>,
+    mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<()>>>>,
 ) {
     if q_camera.is_empty() {
         return;
     }
 
-    let (camera, transform, tracker) = q_camera.single();
+    let (camera, transform) = q_camera.single();
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, &tile_settings);
-    if !tracker.is_changed() {
-        let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, transform);
+    let thread_pool = AsyncComputeTaskPool::get();
+    if !transform.is_changed() {
+        let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
         for (entity, tile_coord) in query.iter_mut() {
             if (zoom.0 <= f32::from(tile_settings.max_tile_zoom)
                 && tile_coord.z > zoom.0.round() as i8)
@@ -115,16 +114,26 @@ pub fn show_tiles_sy(
                         &tile_settings,
                     ));
                 } else if !pending_tiles.contains_key(tile_coord) {
-                    let thread_pool = AsyncComputeTaskPool::get();
                     let url = tile_coord.url(&tile_settings);
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(&tile_settings);
                     let new_task = thread_pool.spawn(async move {
-                        let guard = SEMAPHORE.acquire().await;
-                        let bytes = surf::get(url).recv_bytes().await?;
-                        drop(guard);
-                        async_fs::write(path, &bytes).await?;
-                        Ok(bytes)
+                        if std::env::var("NO_DOWNLOAD").is_ok() {
+                            let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
+                                150
+                            } else {
+                                200
+                            };
+                            RgbaImage::from_pixel(1, 1, Rgba::from([col, col, col, 255]))
+                                .save_with_format(path, ImageFormat::Png)?;
+                        } else {
+                            let guard = SEMAPHORE.acquire().await;
+                            let bytes = surf::get(url).recv_bytes().await?;
+                            async_fs::write(path, &bytes).await?;
+                            drop(guard);
+                        };
+
+                        Ok(())
                     });
                     pending_tiles.insert(tile_coord, new_task);
                 }
@@ -146,7 +155,9 @@ pub fn show_tiles_sy(
         }
     }
     for remove in &to_remove {
-        pending_tiles.remove(remove);
+        if let Some(a) = pending_tiles.remove(remove) {
+            thread_pool.spawn(a.cancel()).detach();
+        }
     }
     server.free_unused_assets();
 }

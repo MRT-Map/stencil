@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.0.2"
+version = "2.0.3"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
@@ -11,54 +11,53 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_mouse_tracking_plugin = "0.5.3"
-bevy_prototype_lyon = "0.7.2"
-iyes_loopless = "0.9.1"
-bevy_egui = "0.19.0"
-egui_commonmark = "0.6.0"
-egui_extras = "0.20.0"
-bevy_mod_picking = "0.11.0"
+bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", branch = "bevy-0-10", package = "bevy_mouse_tracking_plugin" }
+bevy_prototype_lyon = "0.8.0"
+bevy_egui = "0.20.3"
+egui_commonmark = "0.7.2"
+egui_extras = "0.21.0"
+bevy_mod_picking = "0.12.0"
 
 tracing = "0.1.37"
 tracing-appender = "0.2.2"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 
 surf = "2.3.2"
 async-fs = "1.6.0"
-async-lock = "2.6.0"
-futures-lite = "1.12.0"
+async-lock = "2.7.0"
+futures-lite = "1.13.0"
 
 backtrace = "0.3.67"
 hex_color = { version = "2.0.0", features = ["serde"] }
 itertools = "0.10.5"
-serde = { version = "1.0.152", features = ["derive"] }
+serde = { version = "1.0.160", features = ["derive"] }
 rmp-serde = "1.1.1"
 rand = "0.8.5"
-dirs = "4.0.0"
-once_cell = "1.17.0"
-zip = "0.6.3"
-bimap = { version = "0.6.2", features = ["serde"] }
-image = "0.24.5"
-winit = "0.27.5"
+dirs = "5.0.0"
+once_cell = "1.17.1"
+zip = "0.6.4"
+bimap = { version = "0.6.3", features = ["serde"] }
+image = "0.24.6"
+winit = "0.28.3"
 
 [target."cfg(wasm)".dependencies]
 console_error_panic_hook = "0.1.7"
 
 [build-dependencies]
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1.0.91"
-anyhow = { version = "1.0.68", features = ["backtrace"] }
-futures = "0.3.26"
+serde = { version = "1.0.160", features = ["derive"] }
+serde_json = "1.0.96"
+anyhow = { version = "1.0.70", features = ["backtrace"] }
+futures = "0.3.28"
 surf = "2.3.2"
-regex = "1.7.1"
+regex = "1.8.1"
 rmp-serde = "1.1.1"
 itertools = "0.10.5"
 html-escape = "0.2.13"
-zip = "0.6.3"
-embed-resource = "1.8.0"
+zip = "0.6.4"
+embed-resource = "2.1.1"
 
 [dependencies.bevy]
-version = "0.9.1"
+version = "0.10.1"
 default-features = false
 features = [
     "bevy_sprite",

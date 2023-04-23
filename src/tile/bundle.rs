@@ -1,6 +1,6 @@
 use bevy::{prelude::*, sprite::Anchor};
 
-use crate::tilemap::{settings::TileSettings, tile_coord::TileCoord, zoom::Zoom};
+use crate::tile::{settings::TileSettings, tile_coord::TileCoord, zoom::Zoom};
 
 #[derive(Component)]
 pub struct Tile;

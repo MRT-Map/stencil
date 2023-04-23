@@ -1,28 +1,24 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
-use iyes_loopless::prelude::*;
 
 use crate::{
-    cursor::mouse_events::MouseEvent,
-    misc::{CustomStage, EditorState},
+    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 
 #[tracing::instrument(skip_all)]
 pub fn selector_sy(
     mut commands: Commands,
-    state: Res<CurrentState<EditorState>>,
+    state: Res<State<EditorState>>,
     mut mouse: EventReader<MouseEvent>,
     deselect_query: DeselectQuery,
 ) {
-    if matches!(
-        &state.0,
-        EditorState::CreatingComponent(_) | EditorState::DeletingComponent
-    ) {
+    if state.0.component_type().is_some() || state.0 == EditorState::DeletingComponent {
         mouse.clear();
         return;
     }
@@ -40,12 +36,12 @@ pub fn selector_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn highlight_selected_sy(
-    state: Res<CurrentState<EditorState>>,
+    state: Res<State<EditorState>>,
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
     skin: Res<Skin>,
 ) {
-    if matches!(&state.0, EditorState::CreatingComponent(_)) {
+    if state.0.component_type().is_some() {
         return;
     }
     for (data, entity) in query.iter() {
@@ -75,20 +71,12 @@ pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, en
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                //.after(PickingSystem::Events)
-                .with_system(selector_sy)
-                .into(),
-        )
-        .add_system_set_to_stage(
-            CustomStage::Ui,
-            ConditionSet::new()
-                .run_not_in_state(EditorState::Loading)
-                .with_system(highlight_selected_sy)
-                .into(),
-        );
+        app.add_system(selector_sy.run_if(not(in_state(EditorState::Loading))))
+            .add_system(
+                highlight_selected_sy
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .after(UiBaseSet),
+            );
     }
 }
 

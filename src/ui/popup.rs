@@ -6,16 +6,12 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{
-    egui,
-    egui::{Pos2, WidgetText},
-    EguiContext,
-};
-use bevy_mouse_tracking_plugin::MousePos;
+use bevy_egui::{egui, egui::WidgetText, EguiContexts};
+use bevy_mouse_tracking::MousePos;
 
 use crate::{
-    misc::{Action, CustomStage},
-    ui::HoveringOverGui,
+    misc::Action,
+    ui::{HoveringOverGui, UiSet},
 };
 
 pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
@@ -122,7 +118,7 @@ impl Popup {
 
 #[tracing::instrument(skip_all)]
 pub fn popup_handler(
-    mut ctx: ResMut<EguiContext>,
+    mut ctx: EguiContexts,
     mut event_reader: EventReader<Arc<Popup>>,
     mut event_writer: EventWriter<Action>,
     mut show: Local<HashMap<String, (Arc<Popup>, bool)>>,
@@ -140,14 +136,7 @@ pub fn popup_handler(
                 (popup.ui)(&popup.state, ui, &mut event_writer, showed);
             })
             .unwrap();
-        if response.response.hovered()
-            || response
-                .response
-                .rect
-                .contains(Pos2::from(mouse_pos.to_array()))
-        {
-            hovering_over_gui.0 = true;
-        }
+        hovering_over_gui.egui(&response.response, *mouse_pos);
         if !*showed {
             info!(?id, "Closing popup");
         }
@@ -160,6 +149,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Arc<Popup>>()
-            .add_system_to_stage(CustomStage::Ui, popup_handler.before("ui_menu"));
+            .add_system(popup_handler.in_set(UiSet::Popups));
     }
 }

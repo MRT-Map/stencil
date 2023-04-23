@@ -4,14 +4,13 @@ use std::{
 };
 
 use bevy::prelude::*;
-use iyes_loopless::prelude::NextState;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
     pla2::{component::ComponentType, skin::Skin},
-    ui::component_panel::PrevNamespaceUsed,
+    ui::panel::component_panel::PrevNamespaceUsed,
 };
 
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
@@ -32,14 +31,27 @@ pub fn data_file(next: impl AsRef<Path>) -> PathBuf {
     DATA_DIR.join(next)
 }
 
-#[derive(Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum EditorState {
     #[default]
     Loading,
     Idle,
-    CreatingComponent(ComponentType),
+    CreatingPoint,
+    CreatingLine,
+    CreatingArea,
     EditingNodes,
     DeletingComponent,
+}
+impl EditorState {
+    #[must_use]
+    pub const fn component_type(self) -> Option<ComponentType> {
+        match self {
+            Self::CreatingArea => Some(ComponentType::Area),
+            Self::CreatingLine => Some(ComponentType::Line),
+            Self::CreatingPoint => Some(ComponentType::Point),
+            _ => None,
+        }
+    }
 }
 
 pub type Action = Box<dyn Any + Send + Sync>;
@@ -71,20 +83,6 @@ pub fn state_changer_asy(
             &prev_namespace_used.0,
             &mut writer,
         );
-        commands.insert_resource(NextState(state));
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum CustomStage {
-    Ui,
-    Cursor,
-}
-impl StageLabel for CustomStage {
-    fn as_str(&self) -> &'static str {
-        match self {
-            Self::Ui => "ui",
-            Self::Cursor => "cursor",
-        }
+        commands.insert_resource(NextState(Some(state)));
     }
 }
