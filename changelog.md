@@ -1,3 +1,9 @@
+# v2.0.3
+* Update bevy
+* Fix tilemap also moving when window is moving
+* Fix tiles not loading fast enough... hopefully
+* Option to show checkerboard instead of downloading tiles through environment variable
+
 # v2.0.2
 * Fix skin not loading properly due to change in format of `font` field
 
