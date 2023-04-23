@@ -6,11 +6,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{
-    egui,
-    egui::{Pos2, WidgetText},
-    EguiContexts,
-};
+use bevy_egui::{egui, egui::WidgetText, EguiContexts};
 use bevy_mouse_tracking::MousePos;
 
 use crate::{

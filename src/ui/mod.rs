@@ -71,6 +71,7 @@ impl Plugin for UiPlugin {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn reset_hovering_over_gui_sy(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     buttons: Res<Input<MouseButton>>,
