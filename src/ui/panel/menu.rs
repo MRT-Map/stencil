@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContexts};
-use bevy_mouse_tracking::MousePosWorld;
+use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
@@ -20,6 +20,7 @@ pub fn ui_sy(
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<Diagnostics>,
     mouse_pos_world: Res<MousePosWorld>,
+    mouse_pos: Res<MousePos>,
 ) {
     let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -73,7 +74,5 @@ pub fn ui_sy(
             })
         });
     });
-    if panel.response.hovered() {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

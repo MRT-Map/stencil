@@ -140,14 +140,7 @@ pub fn popup_handler(
                 (popup.ui)(&popup.state, ui, &mut event_writer, showed);
             })
             .unwrap();
-        if response.response.hovered()
-            || response
-                .response
-                .rect
-                .contains(Pos2::from(mouse_pos.to_array()))
-        {
-            hovering_over_gui.0 = true;
-        }
+        hovering_over_gui.egui(&response.response, *mouse_pos);
         if !*showed {
             info!(?id, "Closing popup");
         }

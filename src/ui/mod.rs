@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy_egui::egui::{Pos2, Response};
+use bevy_mouse_tracking::MousePos;
 
 use crate::misc::EditorState;
 
@@ -10,6 +12,14 @@ pub mod tilemap;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct HoveringOverGui(pub bool);
+
+impl HoveringOverGui {
+    pub fn egui(&mut self, response: &Response, mouse_pos: MousePos) {
+        if response.hovered() || response.rect.contains(Pos2::from(mouse_pos.to_array())) {
+            self.0 = true;
+        }
+    }
+}
 
 pub struct UiPlugin;
 
@@ -57,9 +67,15 @@ impl Plugin for UiPlugin {
             .add_plugin(popup::PopupPlugin)
             .add_plugin(panel::PanelPlugin)
             .add_plugin(cursor::CursorPlugin)
-            .add_system(
-                (|mut hovering_over_gui: ResMut<HoveringOverGui>| hovering_over_gui.0 = false)
-                    .in_set(UiSet::Reset),
-            );
+            .add_system(reset_hovering_over_gui_sy.in_set(UiSet::Reset));
+    }
+}
+
+pub fn reset_hovering_over_gui_sy(
+    mut hovering_over_gui: ResMut<HoveringOverGui>,
+    buttons: Res<Input<MouseButton>>,
+) {
+    if !buttons.any_pressed([MouseButton::Left, MouseButton::Middle, MouseButton::Right]) {
+        hovering_over_gui.0 = false;
     }
 }

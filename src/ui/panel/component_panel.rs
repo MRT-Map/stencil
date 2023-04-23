@@ -108,12 +108,5 @@ pub fn ui_sy(
                 })));
             }
         });
-    if panel.response.hovered()
-        || panel
-            .response
-            .rect
-            .contains(Pos2::new(mouse_pos.x, mouse_pos.y))
-    {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
+use bevy_mouse_tracking::MousePos;
 
 use crate::{
     misc::{Action, ChangeStateAct, EditorState},
@@ -12,6 +13,7 @@ pub fn ui_sy(
     mut ctx: EguiContexts,
     mut actions: EventWriter<Action>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
+    mouse_pos: Res<MousePos>,
 ) {
     let mut new_state = state.0;
     let panel = egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
@@ -35,9 +37,7 @@ pub fn ui_sy(
             button!("Area", EditorState::CreatingArea);
         });
     });
-    if panel.response.hovered() {
-        hovering_over_gui.0 = true;
-    }
+    hovering_over_gui.egui(&panel.response, *mouse_pos);
     if new_state != state.0 {
         actions.send(Box::new(ChangeStateAct(new_state)));
     }
