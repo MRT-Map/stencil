@@ -23,6 +23,30 @@ pub enum MouseEvent {
 }
 
 #[tracing::instrument(skip_all)]
+pub fn hover_handler_sy(
+    mut commands: Commands,
+    mut hovered_entity: Local<Option<Entity>>,
+    mut event_reader_over: EventReader<PointerEvent<Over>>,
+    mut event_reader_out: EventReader<PointerEvent<Out>>,
+    mut event_writer: EventWriter<MouseEvent>,
+) {
+    for _ in event_reader_out.iter() {
+        let Some(target) = hovered_entity.take() else {break;};
+        trace!(?target, "HoverLeave detected");
+        event_writer.send(MouseEvent::HoverLeave(target));
+        if let Some(mut commands) = commands.get_entity(target) {
+            commands.remove::<HoveredComponent>();
+        }
+    }
+    for e in event_reader_over.iter() {
+        trace!(?e.target, "HoverOver detected");
+        *hovered_entity = Some(e.target);
+        event_writer.send(MouseEvent::HoverOver(e.target));
+        commands.entity(e.target).insert(HoveredComponent);
+    }
+}
+
+#[tracing::instrument(skip_all)]
 pub fn right_click_handler_sy(
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
@@ -50,15 +74,11 @@ pub fn right_click_handler_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn left_click_handler_sy(
-    mut commands: Commands,
     mut event_reader_down: EventReader<PointerEvent<Down>>,
-    mut event_reader_over: EventReader<PointerEvent<Over>>,
-    mut event_reader_out: EventReader<PointerEvent<Out>>,
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
     buttons: Res<Input<MouseButton>>,
     mut selected_entity: Local<Option<Entity>>,
-    mut hovered_entity: Local<Option<Entity>>,
     mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
@@ -76,20 +96,7 @@ pub fn left_click_handler_sy(
             pressed_on_comp = true;
         }
     }
-    for _ in event_reader_out.iter() {
-        let Some(target) = hovered_entity.take() else {break;};
-        trace!(?target, "HoverLeave detected");
-        event_writer.send(MouseEvent::HoverLeave(target));
-        if let Some(mut commands) = commands.get_entity(target) {
-            commands.remove::<HoveredComponent>();
-        }
-    }
-    for e in event_reader_over.iter() {
-        trace!(?e.target, "HoverOver detected");
-        *hovered_entity = Some(e.target);
-        event_writer.send(MouseEvent::HoverOver(e.target));
-        commands.entity(e.target).insert(HoveredComponent);
-    }
+
     if buttons.just_pressed(MouseButton::Left) && !pressed_on_comp {
         debug!(e = ?Option::<Entity>::None, "LeftPress detected");
         *prev_mouse_pos = Some(*mouse_pos);
