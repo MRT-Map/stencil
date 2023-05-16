@@ -1,3 +1,8 @@
+# v2.0.4
+* Fix textboxes losing focus (again)
+* Changed backend of `surf` (http request lib) from `curl` to `async-h1` (it may or may not help render tiles in Windows?)
+* Spantrace in panic files
+
 # v2.0.3
 * Update bevy
 * Fix tilemap also moving when window is moving

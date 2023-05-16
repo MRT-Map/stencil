@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.0.3"
+version = "2.0.4"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
