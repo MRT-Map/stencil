@@ -40,3 +40,4 @@ The better stencil. Map editor for MRT Map data
     * Create a new folder name and `cd` into it
     * `curl "https://raw.githubusercontent.com/MRT-Map/stencil2/master/build/linux/PKGBUILD" -Lo PKGBUILD`
     * `makepkg -si
+    * Note: cargo-license will also be installed; this can be uninstalled after stencil2 installation
