@@ -143,20 +143,26 @@ pub fn show_tiles_sy(
 
     let mut to_remove = vec![];
     for (tile_coord, task) in pending_tiles.iter_mut() {
-        if let Some(bytes) = future::block_on(future::poll_once(task)) {
-            if bytes.is_ok() && shown_tiles.contains(tile_coord) {
+        if !shown_tiles.contains(tile_coord) {
+            to_remove.push((*tile_coord, true));
+            continue;
+        }
+        if task.is_finished() {
+            if matches!(future::block_on(task), Ok(())) {
                 commands.spawn(TileBundle::from_tile_coord(
                     *tile_coord,
                     &server,
                     &tile_settings,
                 ));
-            }
-            to_remove.push(*tile_coord);
+            };
+            to_remove.push((*tile_coord, false));
         }
     }
-    for remove in &to_remove {
-        if let Some(a) = pending_tiles.remove(remove) {
-            thread_pool.spawn(a.cancel()).detach();
+    for (remove, cancel) in to_remove {
+        if let Some(a) = pending_tiles.remove(&remove) {
+            if cancel {
+                thread_pool.spawn(a.cancel()).detach();
+            }
         }
     }
     server.free_unused_assets();

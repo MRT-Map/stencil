@@ -1,8 +1,11 @@
-use std::{backtrace::Backtrace, io::ErrorKind, panic::PanicInfo, sync::Arc, time::SystemTime};
+use std::{io::ErrorKind, panic::PanicInfo, sync::Arc, time::SystemTime};
 
+use backtrace::Backtrace;
 use bevy::prelude::*;
+use color_backtrace::BacktracePrinter;
 use itertools::Itertools;
 use tracing::{error, warn};
+use tracing_error::SpanTrace;
 
 use crate::{misc::data_dir, ui::popup::Popup};
 
@@ -20,7 +23,15 @@ pub fn panic(panic: &PanicInfo) {
     let log2_contents = log2
         .and_then(|log2| std::fs::read_to_string(log2).ok())
         .unwrap_or_default();
-    let backtrace = Backtrace::force_capture();
+    let backtrace = Backtrace::new();
+    let span_trace = SpanTrace::capture();
+    error!(
+        "Backtrace:\n{}",
+        BacktracePrinter::new()
+            .format_trace_to_string(&backtrace)
+            .unwrap_or_default()
+    );
+    error!("Span trace:\n{}", color_spantrace::colorize(&span_trace));
     let panics_dir = data_dir("panics");
     let panic_file = panics_dir.join(format!(
         "panic-{}.txt",
@@ -31,7 +42,9 @@ pub fn panic(panic: &PanicInfo) {
     ));
     let _ = std::fs::write(
         panics_dir.join(&panic_file),
-        format!("{panic:#}\n\n{backtrace}\n\n{log2_contents}\n\n{log1_contents}"),
+        format!(
+            "{panic:#}\n\n{backtrace:#?}\n\n{span_trace:#?}\n\n{log2_contents}\n\n{log1_contents}"
+        ),
     )
     .map_err(|e| warn!("Unable to write crash log: {e:?}"));
     let _ = std::fs::write(

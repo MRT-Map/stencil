@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow, winit::WinitWindows};
-use bevy_mod_picking::PickingCameraBundle;
+use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{prelude::*, MainCamera};
 use winit::window::Icon;
 
@@ -33,7 +33,7 @@ fn setup_sy(
         .spawn(Camera2dBundle::new_with_far(1e5))
         .insert(MainCamera)
         .insert(UiCameraConfig { show_ui: true })
-        .insert(PickingCameraBundle::default())
+        .insert(RaycastPickCamera::default())
         .add(InitWorldTracking);
 
     // https://bevy-cheatbook.github.io/window/icon.html

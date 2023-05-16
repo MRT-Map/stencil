@@ -154,8 +154,15 @@ use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
+use color_backtrace::{default_output_stream, BacktracePrinter};
 use tracing::Level;
-use tracing_subscriber::{fmt::writer::MakeWriterExt, EnvFilter};
+use tracing_error::ErrorLayer;
+use tracing_subscriber::{
+    fmt::{writer::MakeWriterExt, MakeWriter},
+    layer::SubscriberExt,
+    util::SubscriberInitExt,
+    EnvFilter,
+};
 use ui::tilemap::RenderingPlugin;
 use zip::ZipArchive;
 
@@ -185,9 +192,15 @@ mod ui;
 fn main() {
     std::panic::set_hook(Box::new(error_handling::panic));
 
-    tracing_subscriber::fmt()
-        .event_format(tracing_subscriber::fmt::format().compact())
-        .with_env_filter(
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::fmt::layer().compact().with_writer(
+                std::io::stdout
+                    .with_max_level(Level::DEBUG)
+                    .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
+            ),
+        )
+        .with(
             EnvFilter::try_new(
                 "info,\
             wgpu_core::device=warn,\
@@ -198,11 +211,7 @@ fn main() {
             )
             .unwrap(),
         )
-        .with_writer(
-            std::io::stdout
-                .with_max_level(Level::DEBUG)
-                .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
-        )
+        .with(ErrorLayer::default())
         .init();
     info!("Logger initialised");
 
@@ -244,7 +253,7 @@ fn main() {
                 .disable::<AssetPlugin>()
         })
         .add_plugins(DefaultPickingPlugins)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin)
         .add_plugin(MousePosPlugin)
         .add_plugin(EguiPlugin)
         .add_plugin(ShapePlugin)

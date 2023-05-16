@@ -16,11 +16,13 @@ bevy_prototype_lyon = "0.8.0"
 bevy_egui = "0.20.3"
 egui_commonmark = "0.7.2"
 egui_extras = "0.21.0"
-bevy_mod_picking = "0.13.0"
+bevy_mod_picking = { version = "0.13.0", default-features = false, features = ["backend_raycast"]  }
 
 tracing = "0.1.37"
 tracing-appender = "0.2.2"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+color-spantrace = "0.2.0"
+tracing-error = "0.2.0"
 
 surf = "2.3.2"
 async-fs = "1.6.0"
@@ -28,6 +30,8 @@ async-lock = "2.7.0"
 futures-lite = "1.13.0"
 
 backtrace = "0.3.67"
+color-backtrace = "0.5.1"
+
 hex_color = { version = "2.0.0", features = ["serde"] }
 itertools = "0.10.5"
 serde = { version = "1.0.163", features = ["derive"] }
