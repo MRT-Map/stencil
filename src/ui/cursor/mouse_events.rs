@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_mod_picking::{HoverEvent, PickingEvent};
+use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::ui::HoveringOverGui;
@@ -20,6 +20,30 @@ pub enum MouseEvent {
     RightPress(MousePosWorld),
     RightRelease(MousePosWorld),
     RightClick(MousePosWorld),
+}
+
+#[tracing::instrument(skip_all)]
+pub fn hover_handler_sy(
+    mut commands: Commands,
+    mut hovered_entity: Local<Option<Entity>>,
+    mut event_reader_over: EventReader<PointerEvent<Over>>,
+    mut event_reader_out: EventReader<PointerEvent<Out>>,
+    mut event_writer: EventWriter<MouseEvent>,
+) {
+    for _ in event_reader_out.iter() {
+        let Some(target) = hovered_entity.take() else {break;};
+        trace!(?target, "HoverLeave detected");
+        event_writer.send(MouseEvent::HoverLeave(target));
+        if let Some(mut commands) = commands.get_entity(target) {
+            commands.remove::<HoveredComponent>();
+        }
+    }
+    for e in event_reader_over.iter() {
+        trace!(?e.target, "HoverOver detected");
+        *hovered_entity = Some(e.target);
+        event_writer.send(MouseEvent::HoverOver(e.target));
+        commands.entity(e.target).insert(HoveredComponent);
+    }
 }
 
 #[tracing::instrument(skip_all)]
@@ -50,8 +74,7 @@ pub fn right_click_handler_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn left_click_handler_sy(
-    mut commands: Commands,
-    mut event_reader: EventReader<PickingEvent>,
+    mut event_reader_down: EventReader<PointerEvent<Down>>,
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
     buttons: Res<Input<MouseButton>>,
@@ -61,36 +84,26 @@ pub fn left_click_handler_sy(
     mouse_pos_world: Res<MousePosWorld>,
 ) {
     let mut pressed_on_comp = false;
-    for event in event_reader.iter() {
-        if let PickingEvent::Clicked(e) = event {
-            if !hovering_over_gui.0 {
-                debug!(?e, "Press detected");
-                *selected_entity = Some(*e);
-                *prev_mouse_pos = Some(*mouse_pos);
-                event_writer.send(MouseEvent::LeftPress(Some(*e), *mouse_pos_world));
-                pressed_on_comp = true;
+    if !hovering_over_gui.0 {
+        for e in event_reader_down.iter() {
+            if e.button != PointerButton::Primary {
+                continue;
             }
-        } else if let PickingEvent::Hover(ev) = event {
-            match ev {
-                HoverEvent::JustEntered(e) => {
-                    trace!(?e, "HoverOver detected");
-                    event_writer.send(MouseEvent::HoverOver(*e));
-                    commands.entity(*e).insert(HoveredComponent);
-                }
-                HoverEvent::JustLeft(e) => {
-                    trace!(?e, "HoverLeave detected");
-                    event_writer.send(MouseEvent::HoverLeave(*e));
-                    commands.entity(*e).remove::<HoveredComponent>();
-                }
-            };
+            debug!(?e.target, "LeftPress detected");
+            *selected_entity = Some(e.target);
+            *prev_mouse_pos = Some(*mouse_pos);
+            event_writer.send(MouseEvent::LeftPress(Some(e.target), *mouse_pos_world));
+            pressed_on_comp = true;
         }
     }
+
     if buttons.just_pressed(MouseButton::Left) && !pressed_on_comp {
         debug!(e = ?Option::<Entity>::None, "LeftPress detected");
         *prev_mouse_pos = Some(*mouse_pos);
         *selected_entity = None;
         event_writer.send(MouseEvent::LeftPress(None, *mouse_pos_world));
     }
+
     if !buttons.just_released(MouseButton::Left) {
         return;
     }
@@ -107,4 +120,5 @@ pub fn left_click_handler_sy(
         debug!(e = ?selected_entity, "LeftClick detected");
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
     }
+    *selected_entity = None;
 }

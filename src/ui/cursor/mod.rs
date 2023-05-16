@@ -114,6 +114,7 @@ impl Plugin for CursorPlugin {
                 crosshair_sy,
                 mouse_events::left_click_handler_sy,
                 mouse_events::right_click_handler_sy,
+                mouse_events::hover_handler_sy,
             )
                 .in_set(UiSet::Mouse),
         )

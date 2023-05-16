@@ -8,7 +8,7 @@ use crate::{
         selecting::{deselect, DeselectQuery},
         undo_redo::{History, UndoRedoAct},
     },
-    misc::{Action, EditorState},
+    misc::{state_changer_asy, Action, EditorState},
     pla2::{
         bundle::{ComponentBundle, CreatedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
@@ -90,8 +90,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     } else {
         ComponentType::Line
     };
-    if !set.is_empty() {
-        let (data, entity) = set.single_mut();
+    if let Ok((data, entity)) = set.get_single_mut() {
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
@@ -202,9 +201,17 @@ pub fn clear_created_component(
 pub struct CreateComponentPlugin;
 impl Plugin for CreateComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(create_component_sy::<false>.run_if(in_state(EditorState::CreatingLine)))
-            .add_system(create_component_sy::<true>.run_if(in_state(EditorState::CreatingArea)))
-            .add_system(create_point_sy.run_if(in_state(EditorState::CreatingPoint)));
+        app.add_system(
+            create_component_sy::<false>
+                .run_if(in_state(EditorState::CreatingLine))
+                .before(state_changer_asy),
+        )
+        .add_system(
+            create_component_sy::<true>
+                .run_if(in_state(EditorState::CreatingArea))
+                .before(state_changer_asy),
+        )
+        .add_system(create_point_sy.run_if(in_state(EditorState::CreatingPoint)));
     }
 }
 
