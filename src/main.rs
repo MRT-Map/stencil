@@ -154,14 +154,10 @@ use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
-use color_backtrace::{default_output_stream, BacktracePrinter};
 use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
-    fmt::{writer::MakeWriterExt, MakeWriter},
-    layer::SubscriberExt,
-    util::SubscriberInitExt,
-    EnvFilter,
+    fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
 use ui::tilemap::RenderingPlugin;
 use zip::ZipArchive;

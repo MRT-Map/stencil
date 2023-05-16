@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bevy_egui::egui::{Pos2, Response};
+use bevy_egui::{
+    egui::{Id, Pos2, Response},
+    EguiContexts,
+};
 use bevy_mouse_tracking::MousePos;
 
 use crate::misc::EditorState;
@@ -21,6 +24,9 @@ impl HoveringOverGui {
     }
 }
 
+#[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
+pub struct Focus(pub Option<Id>);
+
 pub struct UiPlugin;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -29,6 +35,7 @@ pub struct UiBaseSet;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum UiSet {
+    Init,
     Popups,
     Panels,
     Tiles,
@@ -39,11 +46,18 @@ pub enum UiSet {
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
+            .init_resource::<Focus>()
             .configure_set(UiBaseSet.before(CoreSet::Update))
+            .configure_set(
+                UiSet::Init
+                    .run_if(not(in_state(EditorState::Loading)))
+                    .in_base_set(UiBaseSet),
+            )
             .configure_set(
                 UiSet::Popups
                     .run_if(not(in_state(EditorState::Loading)))
-                    .in_base_set(UiBaseSet),
+                    .in_base_set(UiBaseSet)
+                    .after(UiSet::Init),
             )
             .configure_set(
                 UiSet::Panels
@@ -67,8 +81,24 @@ impl Plugin for UiPlugin {
             .add_plugin(popup::PopupPlugin)
             .add_plugin(panel::PanelPlugin)
             .add_plugin(cursor::CursorPlugin)
-            .add_system(reset_hovering_over_gui_sy.in_set(UiSet::Reset));
+            .add_system(reset_hovering_over_gui_sy.in_set(UiSet::Reset))
+            .add_system(init_focus.in_set(UiSet::Init))
+            .add_system(save_focus.in_set(UiSet::Reset));
     }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
+    let ctx = ctx.ctx_mut();
+    if let Some(f) = focus.0 {
+        ctx.memory_mut(|a| a.request_focus(f));
+    }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
+    let ctx = ctx.ctx_mut();
+    focus.0 = ctx.memory(bevy_egui::egui::Memory::focus);
 }
 
 #[allow(clippy::needless_pass_by_value)]
