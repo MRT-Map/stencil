@@ -59,8 +59,6 @@ pub fn get_shown_tiles(
         .collect()
 }
 
-pub static SEMAPHORE: Semaphore = Semaphore::new(128);
-
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
@@ -127,10 +125,8 @@ pub fn show_tiles_sy(
                             RgbaImage::from_pixel(1, 1, Rgba::from([col, col, col, 255]))
                                 .save_with_format(path, ImageFormat::Png)?;
                         } else {
-                            let guard = SEMAPHORE.acquire().await;
                             let bytes = surf::get(url).recv_bytes().await?;
                             async_fs::write(path, &bytes).await?;
-                            drop(guard);
                         };
 
                         Ok(())
