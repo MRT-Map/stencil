@@ -1,6 +1,10 @@
+# v2.0.5
+* URLs in tile cache are now escaped to fit Windows file-naming restrictions (especially `:`)
+
 # v2.0.4
 * Fix textboxes losing focus (again)
-* Changed backend of `surf` (http request lib) from `curl` to `async-h1` (it may or may not help render tiles in Windows?)
+* ~~Changed backend of `surf` (http request lib) from `curl` to `async-h1` (it may or may not help render tiles in Windows?)~~
+  * note from v2.0.5: this change was apparently not done; the actual change screwed up the tilemap
 * Spantrace in panic files
 
 # v2.0.3
