@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use async_lock::Semaphore;
 use bevy::{
     ecs::query::ReadOnlyWorldQuery,
     prelude::*,

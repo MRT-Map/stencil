@@ -4,11 +4,15 @@ use std::{
 };
 
 use bevy::prelude::*;
+use lazy_regex::{lazy_regex, Regex};
+use once_cell::sync::Lazy;
 
 use crate::{
     misc::data_dir,
     tile::{settings::TileSettings, zoom::Zoom},
 };
+
+pub static URL_REPLACER: Lazy<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -67,7 +71,7 @@ impl TileCoord {
 
     pub fn path(&self, tile_settings: &TileSettings) -> PathBuf {
         let path = data_dir("tile-cache")
-            .join(&tile_settings.url)
+            .join(URL_REPLACER.replace_all(&tile_settings.url, "").as_ref())
             .join(self.z.to_string())
             .join(self.x.to_string());
         let _ = std::fs::create_dir_all(&path);
