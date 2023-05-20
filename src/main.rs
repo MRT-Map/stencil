@@ -197,16 +197,14 @@ fn main() {
             ),
         )
         .with(
-            EnvFilter::try_new(if std::env::var("LOG_ALL").is_ok() {
-                "trace"
-            } else {
+            if let Ok(l) = EnvFilter::try_from_default_env() {l} else { EnvFilter::try_new(
                 "info,\
             wgpu_core::device=warn,\
             bevy_asset::asset_server=error,\
             surf::middleware::logger::native=off,\
             isahc::handler=error,\
             stencil2=debug"
-            })
+            )
             .unwrap(),
         )
         .with(ErrorLayer::default())
