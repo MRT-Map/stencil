@@ -205,7 +205,7 @@ fn main() {
             isahc::handler=error,\
             stencil2=debug"
             )
-            .unwrap(),
+            .unwrap()},
         )
         .with(ErrorLayer::default())
         .init();
