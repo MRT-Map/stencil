@@ -15,7 +15,7 @@ bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", 
 bevy_prototype_lyon = "0.8.0"
 bevy_egui = "0.20.3"
 egui_commonmark = "0.7.2"
-egui_extras = "0.21.0"
+egui_extras = "0.22.0"
 bevy_mod_picking = { version = "0.13.0", default-features = false, features = ["backend_raycast"]  }
 
 tracing = "0.1.37"
