@@ -241,7 +241,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Stencil".into(),
-                        mode: WindowMode::BorderlessFullscreen,
+                        mode: WindowMode::Windowed,
                         ..default()
                     }),
                     ..default()
