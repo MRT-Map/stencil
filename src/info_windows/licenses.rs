@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use license_retriever::{license_retriever_data, LicenseRetriever};
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
 
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
