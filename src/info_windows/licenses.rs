@@ -2,29 +2,14 @@ use std::sync::{Arc, Mutex};
 
 use bevy::prelude::*;
 use bevy_egui::egui;
+use license_retriever::{license_retriever_data, LicenseRetriever};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
-#[derive(Deserialize, Serialize, Clone)]
-pub struct CargoLicenseEntry {
-    name: String,
-    version: String,
-    authors: Option<String>,
-    repository: Option<String>,
-    license: Option<String>,
-    license_file: Option<String>,
-    license_text: Option<Vec<String>>,
-}
-
-static LICENSES: Lazy<Vec<CargoLicenseEntry>> = Lazy::new(|| {
-    rmp_serde::from_slice(include_bytes!(concat!(
-        env!("OUT_DIR"),
-        "/licenses.msgpack"
-    )))
-    .unwrap()
-});
+static LICENSES: Lazy<LicenseRetriever> =
+    Lazy::new(|| license_retriever_data!("licenses").unwrap());
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
@@ -44,24 +29,23 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc
                     egui::ComboBox::from_label("Library")
                         .selected_text(format!("{} {}", selection.0, selection.1))
                         .show_ui(ui, |ui| {
-                            LICENSES.iter().for_each(|entry| {
+                            LICENSES.iter().for_each(|(package, _)| {
                                 ui.selectable_value(
                                     selection,
-                                    (entry.name.to_owned(), entry.version.to_owned()),
-                                    format!("{} {}", entry.name, entry.version),
+                                    (package.name.to_owned(), package.version.to_string()),
+                                    format!("{} {}", package.name, package.version),
                                 );
                             });
                         });
-                    let entry = LICENSES
+                    let (entry, licenses) = LICENSES
                         .iter()
-                        .find(|a| a.name == selection.0 && a.version == selection.1)
+                        .find(|(p, _)| {
+                            p.name == selection.0 && p.version.to_string() == selection.1
+                        })
                         .unwrap()
                         .to_owned();
                     ui.heading(format!("{} v{}", entry.name, entry.version));
-                    ui.label(format!(
-                        "by: {}",
-                        entry.authors.unwrap_or_else(|| "unknown".into())
-                    ));
+                    ui.label(format!("by: {}", entry.authors.join(", ")));
                     ui.label(format!(
                         "is licensed under: {}",
                         entry.license.unwrap_or_else(|| "unknown".into())
@@ -69,7 +53,7 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc
                     if let Some(repo) = entry.repository {
                         ui.hyperlink(repo);
                     }
-                    for text in entry.license_text.unwrap_or_default() {
+                    for text in licenses.as_ref() {
                         ui.separator();
                         ui.label(text);
                     }

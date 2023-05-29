@@ -196,17 +196,19 @@ fn main() {
                     .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
             ),
         )
-        .with(
-            if let Ok(l) = EnvFilter::try_from_default_env() {l} else { EnvFilter::try_new(
+        .with(if let Ok(l) = EnvFilter::try_from_default_env() {
+            l
+        } else {
+            EnvFilter::try_new(
                 "info,\
             wgpu_core::device=warn,\
             bevy_asset::asset_server=error,\
             surf::middleware::logger::native=off,\
             isahc::handler=error,\
-            stencil2=debug"
+            stencil2=debug",
             )
-            .unwrap()},
-        )
+            .unwrap()
+        })
         .with(ErrorLayer::default())
         .init();
     info!("Logger initialised");
