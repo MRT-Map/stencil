@@ -220,16 +220,13 @@ fn zip_assets() -> Result<()> {
 
 fn embed_resource() -> Result<()> {
     if std::env::var("TARGET")?.contains("windows") {
-        embed_resource::compile(
-            {
-                let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
-                path.push("build");
-                path.push("windows");
-                path.push("icon.rc");
-                path
-            },
-            embed_resource::NONE,
-        );
+        let root_dir = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+        let icons_dir = root_dir.join("icons");
+        std::fs::copy(icons_dir.join("icon.rc"), root_dir.join("icon.rc"))?;
+        std::fs::copy(icons_dir.join("icon.ico"), root_dir.join("icon.ico"))?;
+        embed_resource::compile("icon.rc", embed_resource::NONE);
+        std::fs::remove_file(root_dir.join("icon.rc"))?;
+        std::fs::remove_file(root_dir.join("icon.ico"))?;
     }
     Ok(())
 }

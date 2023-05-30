@@ -44,7 +44,7 @@ jobs:
       run: cargo +nightly build --release
 
     - name: Create dmg
-      run: sh build/macos/build.sh
+      run: sh build/macos/dmg.sh
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Upload dmg
       uses: svenstaro/upload-release-action@v2

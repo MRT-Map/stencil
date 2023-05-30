@@ -40,11 +40,9 @@ fn setup_sy(
     let primary = windows.get_window(primary_id.single()).unwrap();
 
     let (icon_rgba, icon_width, icon_height) = {
-        let image = image::load_from_memory(include_bytes!(
-            "../build/macos/AppIcon.iconset/icon_512x512@2x.png"
-        ))
-        .unwrap()
-        .into_rgba8();
+        let image = image::load_from_memory(include_bytes!("../icons/icon_512x512@2x.png"))
+            .unwrap()
+            .into_rgba8();
         let (width, height) = image.dimensions();
         let rgba = image.into_raw();
         (rgba, width, height)

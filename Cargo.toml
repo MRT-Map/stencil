@@ -80,4 +80,4 @@ lto = true
 [package.metadata.bundle]
 name = "stencil2"
 identifier = "io.github.mrt-map.stencil2"
-icon = ["build/macos/AppIcon.iconset/*.png"]
+icon = ["icons/*.png"]
