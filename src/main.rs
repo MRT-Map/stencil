@@ -73,7 +73,6 @@
     clippy::missing_const_for_fn,
     clippy::missing_enforced_import_renames,
     clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
     clippy::must_use_candidate,
     clippy::mut_mut,
     clippy::naive_bytecount,
