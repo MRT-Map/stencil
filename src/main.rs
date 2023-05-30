@@ -213,9 +213,6 @@ fn main() {
         .init();
     info!("Logger initialised");
 
-    #[cfg(target_arch = "wasm32")]
-    console_error_panic_hook::set_once();
-
     if data_file("tile_settings.msgpack").is_dir() {
         // TODO remove on next release
         let _ = std::fs::remove_dir_all(data_file("tile_settings.msgpack"));

@@ -12,11 +12,190 @@ macro_rules! p {
 
 fn gather_licenses() -> Result<()> {
     let config = Config::default()
-        .override_license_text(
-            "widestring",
-            ["LICENSES/Apache-2.0.txt", "LICENSES/MIT.txt"],
+        .panic_if_no_license_found()
+        .override_license_url(
+            "accesskit",
+            [
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE-MIT",
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE.chromium",
+            ],
         )
-        .override_license_text("half", ["LICENSES/Apache-2.0.txt", "LICENSES/MIT.txt"])
+        .copy_license("accesskit_consumer", "accesskit")
+        .copy_license("accesskit_macos", "accesskit")
+        .copy_license("accesskit_windows", "accesskit")
+        .copy_license("accesskit_winit", "accesskit")
+        .copy_license("bevy_mouse_tracking_plugin", "block")
+        .copy_license("bevy_picking_core", "bevy_mod_picking")
+        .copy_license("bevy_picking_input", "bevy_mod_picking")
+        .copy_license("bevy_picking_raycast", "bevy_mod_picking")
+        .override_license_url(
+            "block",
+            ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt"],
+        )
+        .override_license_url(
+            "block-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .copy_license("block2", "block-sys")
+        .override_license_url(
+            "cesu8",
+            ["https://raw.githubusercontent.com/emk/cesu8-rs/master/COPYRIGHT-RUST.txt"],
+        )
+        .override_license_url(
+            "clipboard-win",
+            ["https://raw.githubusercontent.com/DoumanAsh/clipboard-win/master/LICENSE"],
+        )
+        .override_license_url(
+            "codespan-reporting",
+            ["https://raw.githubusercontent.com/brendanzab/codespan/master/LICENSE"],
+        )
+        .override_license_url(
+            "color-spantrace",
+            [
+                "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-MIT",
+            ],
+        )
+        .override_license_url(
+            "core-graphics-types",
+            [
+                "https://raw.githubusercontent.com/servo/core-foundation-rs/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/servo/core-foundation-rs/master/LICENSE-APACHE",
+            ],
+        )
+        .copy_license("crunchy", "block")
+        .override_license_url(
+            "d3d12",
+            [
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt",
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Apache-2.0.txt",
+            ],
+        )
+        .copy_license("dispatch", "block")
+        .copy_license("ecolor", "egui")
+        .override_license_url(
+            "egui",
+            [
+                "https://raw.githubusercontent.com/emilk/egui/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/emilk/egui/master/LICENSE-MIT",
+            ],
+        )
+        .copy_license("egui_extras", "egui")
+        .copy_license("emath", "egui")
+        .copy_license("encase_derive", "encase")
+        .copy_license("encase_derive_impl", "encase")
+        .copy_license("epaint", "egui")
+        .override_license_url(
+            "error-code",
+            ["https://github.com/DoumanAsh/error-code/blob/master/LICENSE"],
+        )
+        .copy_license("fdeflate", "d3d12")
+        .copy_license("fxhash", "d3d12")
+        .override_license_url(
+            "gloo-timers",
+            [
+                "https://raw.githubusercontent.com/rustwasm/gloo/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/rustwasm/gloo/master/LICENSE-APACHE",
+            ],
+        )
+        .override_license_url(
+            "gpu-alloc",
+            ["https://github.com/zakarumych/gpu-alloc/blob/master/COPYING"],
+        )
+        .copy_license("gpu-alloc-types", "gpu-alloc")
+        .override_license_url(
+            "gpu-descriptor",
+            ["https://github.com/zakarumych/gpu-descriptor/blob/master/COPYING"],
+        )
+        .copy_license("gpu-descriptor-types", "gpu-descriptor")
+        .override_license_url(
+            "half",
+            [
+                "https://docs.rs/crate/half/latest/source/LICENSES/MIT.txt",
+                "https://docs.rs/crate/half/latest/source/LICENSES/Apache-2.0.txt",
+            ],
+        )
+        .override_license_url(
+            "hassle-rs",
+            ["https://raw.githubusercontent.com/Traverse-Research/hassle-rs/main/LICENSE"],
+        )
+        .override_license_url(
+            "hexf-parse",
+            ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
+        )
+        .copy_license("lazy-regex-proc_macros", "lazy-regex")
+        .ignore("license-retriever")
+        .override_license_url(
+            "lyon_algorithms",
+            [
+                "https://raw.githubusercontent.com/nical/lyon/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/nical/lyon/master/LICENSE-MIT",
+            ],
+        )
+        .copy_license("lyon_geom", "lyon_algorithms")
+        .copy_license("lyon_path", "lyon_algorithms")
+        .copy_license("lyon_tessellation", "lyon_algorithms")
+        .override_license_url(
+            "malloc_buf",
+            ["https://raw.githubusercontent.com/SSheldon/malloc_buf/master/LICENSE"],
+        )
+        .override_license_url(
+            "ndk",
+            [
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-APACHE",
+            ],
+        )
+        .copy_license("ndk-context", "ndk")
+        .copy_license("ndk-sys", "ndk")
+        .copy_license("objc-foundation", "block")
+        .copy_license("objc-sys", "block-sys")
+        .copy_license("objc2-encode", "block-sys")
+        .copy_license("objc_exception", "block")
+        .copy_license("objc_id", "block")
+        .copy_license("profiling-procmacros", "profiling")
+        .override_license_url(
+            "siphasher",
+            ["https://raw.githubusercontent.com/jedisct1/rust-siphash/master/COPYING"],
+        )
+        .override_license_url(
+            "spirv",
+            ["https://raw.githubusercontent.com/gfx-rs/rspirv/master/LICENSE"],
+        )
+        .copy_license("stdweb-derive", "stdweb")
+        .copy_license("stdweb-internal-macros", "stdweb")
+        .copy_license("stdweb-internal-runtime", "stdweb")
+        .override_license_url(
+            "str-buf",
+            ["https://raw.githubusercontent.com/DoumanAsh/str-buf/master/LICENSE"],
+        )
+        .override_license_url(
+            "svg_fmt",
+            ["https://raw.githubusercontent.com/nical/rust_debug/master/LICENSE"],
+        )
+        .override_license_url(
+            "taffy",
+            ["https://raw.githubusercontent.com/DioxusLabs/taffy/main/LICENSE.md"],
+        )
+        .override_license_url(
+            "valuable",
+            ["https://raw.githubusercontent.com/tokio-rs/valuable/master/LICENSE"],
+        )
+        .override_license_url(
+            "widestring",
+            [
+                "https://docs.rs/crate/widestring/latest/source/LICENSES/Apache-2.0.txt",
+                "https://docs.rs/crate/widestring/latest/source/LICENSES/MIT.txt",
+            ],
+        )
+        .copy_license("winapi-i686-pc-windows-gnu", "winapi")
+        .copy_license("winapi-wsapoll", "d3d12")
+        .copy_license("winapi-x86_64-pc-windows-gnu", "winapi")
+        .override_license_url(
+            "zune-inflate",
+            ["https://raw.githubusercontent.com/etemesi254/zune-image/main/LICENSE.md"],
+        )
         .override_license_text("stencil2", [include_str!("LICENSE")]);
     LicenseRetriever::from_config(&config)?.save_in_out_dir("licenses")?;
     Ok(())
