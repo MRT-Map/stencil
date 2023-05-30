@@ -23,6 +23,7 @@ pub enum HotkeyActions {
     Quit,
 }
 impl HotkeyActions {
+    #[must_use]
     pub fn action(self) -> Action {
         match self {
             Self::ChangeState(state) => Box::new(ChangeStateAct(state)),

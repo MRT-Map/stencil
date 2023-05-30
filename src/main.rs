@@ -1,5 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![allow(clippy::type_complexity, clippy::too_many_arguments)]
+#![allow(
+    clippy::type_complexity,
+    clippy::too_many_arguments,
+    clippy::missing_panics_doc
+)]
 #![warn(
     clippy::as_underscore,
     clippy::bool_to_int_with_if,
@@ -144,8 +148,6 @@
     clippy::wildcard_dependencies
 )]
 
-use std::io::Cursor;
-
 use bevy::{
     asset::AssetPlugin,
     diagnostic::FrameTimeDiagnosticsPlugin,
@@ -167,17 +169,11 @@ use tracing_subscriber::{
     fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
 use ui::tilemap::RenderingPlugin;
-use zip::ZipArchive;
 
 use crate::{
-    component_actions::ComponentActionPlugins,
-    component_tools::ComponentToolPlugins,
-    hotkeys::HotkeyPlugin,
-    info_windows::InfoWindowsPlugin,
-    init::InitPlugin,
-    load_save::LoadSavePlugin,
-    misc::{data_dir, data_file},
-    ui::UiPlugin,
+    component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
+    hotkeys::HotkeyPlugin, info_windows::InfoWindowsPlugin, init::InitPlugin,
+    load_save::LoadSavePlugin, misc::data_dir, ui::UiPlugin,
 };
 
 pub mod component_actions;

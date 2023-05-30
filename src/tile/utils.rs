@@ -4,6 +4,7 @@ use bevy::{
     window::{PrimaryWindow, WindowRef},
 };
 
+#[must_use]
 pub fn get_window_width_height(
     windows: &Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     camera: &Camera,
@@ -17,12 +18,14 @@ pub fn get_window_width_height(
     Some(Vec2::new(wnd.width(), wnd.height()))
 }
 
+#[must_use]
 pub fn get_map_width_height(camera: &Camera, transform: &Transform) -> Vec2 {
     let (left, top, right, bottom) = get_map_coords_of_edges(camera, transform);
     Vec2::new(right - left, bottom - top)
 }
 
 // https://bevy-cheatbook.github.io/cookbook/cursor2world.html
+#[must_use]
 pub fn get_map_coords_of_edges(camera: &Camera, transform: &Transform) -> (f32, f32, f32, f32) {
     let ndc_tl = Vec2::new(0.0, 0.0) - Vec2::ONE;
     let ndc_br = Vec2::new(2.0, 2.0) - Vec2::ONE;

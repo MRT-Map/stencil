@@ -1,10 +1,6 @@
-use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, prelude::*, window::PrimaryWindow,
-    winit::WinitWindows,
-};
+use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{prelude::*, MainCamera};
-use winit::window::Icon;
 
 use crate::state::LoadingState;
 

@@ -33,6 +33,7 @@ pub struct PlaComponent<T: Coords> {
 
 #[allow(dead_code)]
 impl<T: Coords> PlaComponent<T> {
+    #[must_use]
     pub fn new(ty: ComponentType) -> Self {
         Self {
             ty: format!(
@@ -46,9 +47,11 @@ impl<T: Coords> PlaComponent<T> {
             ..default()
         }
     }
+    #[must_use]
     pub fn get_type(&self, skin: &Skin) -> Option<ComponentType> {
         Some(skin.types.get(self.ty.as_str())?.get_type())
     }
+    #[must_use]
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
         let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
@@ -77,6 +80,7 @@ impl<T: Coords> PlaComponent<T> {
                 .last(),
         }
     }
+    #[must_use]
     pub fn back_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
         let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
@@ -97,6 +101,7 @@ impl<T: Coords> PlaComponent<T> {
                 .last(),
         }
     }
+    #[must_use]
     pub fn weight(&self, skin: &Skin) -> Option<u32> {
         let type_layers = skin.types.get(self.ty.as_str())?;
         match type_layers {
@@ -114,6 +119,7 @@ impl<T: Coords> PlaComponent<T> {
 }
 
 impl PlaComponent<MCCoords> {
+    #[must_use]
     pub fn to_editor_coords(&self) -> PlaComponent<EditorCoords> {
         PlaComponent {
             namespace: self.namespace.to_owned(),
@@ -130,6 +136,7 @@ impl PlaComponent<MCCoords> {
 }
 
 impl PlaComponent<EditorCoords> {
+    #[must_use]
     pub fn to_mc_coords(&self) -> PlaComponent<MCCoords> {
         PlaComponent {
             namespace: self.namespace.to_owned(),
@@ -143,6 +150,7 @@ impl PlaComponent<EditorCoords> {
             attributes: self.attributes.to_owned(),
         }
     }
+    #[must_use]
     pub fn get_shape(&self, skin: &Skin, selected: bool) -> (ShapeBundle, Fill, Stroke) {
         if self.get_type(skin) == Some(ComponentType::Point) {
             return (

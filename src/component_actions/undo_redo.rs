@@ -28,6 +28,7 @@ pub enum UndoRedoAct {
     Redo,
 }
 impl UndoRedoAct {
+    #[must_use]
     pub fn one_history(history: History<Entity>) -> Self {
         Self::NewHistory(vec![history])
     }
