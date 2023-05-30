@@ -6,7 +6,6 @@ pub mod spawn_camera;
 pub mod unzip_assets;
 
 use bevy::prelude::*;
-use bevy_asset_loader::prelude::*;
 use load_skin::get_skin_sy;
 
 use crate::{
