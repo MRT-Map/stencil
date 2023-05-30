@@ -3,18 +3,20 @@ use std::sync::{Arc, Mutex};
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::TextureId, EguiContexts};
 
-use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
+use crate::{
+    info_windows::InfoWindowsAct, init::load_assets::ImageAssets, misc::Action, ui::popup::Popup,
+};
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn info_asy(
     mut actions: EventReader<Action>,
     mut popup: EventWriter<Arc<Popup>>,
-    server: Res<AssetServer>,
+    images: Res<ImageAssets>,
     mut ctx: EguiContexts,
     mut texture: Local<Option<TextureId>>,
 ) {
     let texture = texture
-        .get_or_insert_with(|| ctx.add_image(server.load("stencil-text.png")))
+        .get_or_insert_with(|| ctx.add_image(images.stencil_text.to_owned()))
         .to_owned();
     for event in actions.iter() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {

@@ -1,14 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
-use bevy::{
-    prelude::*,
-    tasks::{AsyncComputeTaskPool, Task},
-};
-use futures_lite::future;
+use bevy::prelude::*;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
-use crate::{misc::EditorState, pla2::component::ComponentType, ui::popup::Popup};
+use crate::pla2::component::ComponentType;
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {
@@ -110,6 +106,7 @@ pub enum SkinComponent {
     },
 }
 impl SkinComponent {
+    #[must_use]
     pub const fn get_type(&self) -> ComponentType {
         match self {
             Self::Point { .. } => ComponentType::Point,
@@ -124,49 +121,4 @@ pub struct Skin {
     pub info: SkinInfo,
     pub order: Vec<String>,
     pub types: HashMap<String, SkinComponent>,
-}
-
-#[derive(Default)]
-pub enum Step<T> {
-    #[default]
-    Uninitialised,
-    Pending(Task<T>),
-    Complete,
-}
-
-pub fn get_skin_sy(
-    mut commands: Commands,
-    mut task_s: Local<Step<surf::Result<Skin>>>,
-    mut popup: EventWriter<Arc<Popup>>,
-) {
-    match &mut *task_s {
-        Step::Uninitialised => {
-            let thread_pool = AsyncComputeTaskPool::get();
-            let new_task = thread_pool.spawn(async move {
-                surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
-                    .recv_json::<Skin>().await
-            });
-            info!("Retrieving skin");
-            *task_s = Step::Pending(new_task);
-        }
-        Step::Pending(task) => match future::block_on(future::poll_once(task)) {
-            None => {}
-            Some(Ok(skin)) => {
-                info!("Retrieved");
-                commands.insert_resource(skin);
-                commands.insert_resource(NextState(Some(EditorState::Idle)));
-                *task_s = Step::Complete;
-            }
-            Some(Err(err)) => {
-                error!(?err, "Unable to retrieve skin");
-                popup.send(Popup::base_alert(
-                    "quit1",
-                    "Unable to load skin",
-                    format!("Make sure you are connected to the internet.\nError: {err}"),
-                ));
-                *task_s = Step::Complete;
-            }
-        },
-        Step::Complete => {}
-    }
 }

@@ -6,12 +6,13 @@ use std::{
 use bevy::prelude::*;
 
 use crate::{
-    misc::{Action, EditorState},
+    misc::Action,
     pla2::{
         bundle::{ComponentBundle, SelectedComponent},
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    state::EditorState,
 };
 
 #[derive(Clone, Debug)]

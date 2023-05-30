@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
-    misc::EditorState,
     pla2::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 

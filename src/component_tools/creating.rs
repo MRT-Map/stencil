@@ -8,12 +8,13 @@ use crate::{
         selecting::{deselect, DeselectQuery},
         undo_redo::{History, UndoRedoAct},
     },
-    misc::{state_changer_asy, Action, EditorState},
+    misc::Action,
     pla2::{
         bundle::{ComponentBundle, CreatedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    state::{state_changer_asy, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::component_panel::PrevNamespaceUsed},
 };
 

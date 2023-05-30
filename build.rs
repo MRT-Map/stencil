@@ -196,6 +196,10 @@ fn gather_licenses() -> Result<()> {
             "zune-inflate",
             ["https://raw.githubusercontent.com/etemesi254/zune-image/main/LICENSE.md"],
         )
+        .override_license_url(
+            "xi-unicode",
+            ["https://github.com/xi-editor/xi-editor/blob/master/LICENSE"],
+        )
         .override_license_text("stencil2", [include_str!("LICENSE")]);
     LicenseRetriever::from_config(&config)?.save_in_out_dir("licenses")?;
     Ok(())

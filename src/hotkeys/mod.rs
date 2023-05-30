@@ -7,7 +7,8 @@ use crate::{
     component_actions::undo_redo::UndoRedoAct,
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
-    misc::{Action, ChangeStateAct, EditorState},
+    misc::Action,
+    state::{ChangeStateAct, EditorState},
     ui::tilemap::settings::TileSettingsAct,
 };
 
