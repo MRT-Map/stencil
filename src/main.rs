@@ -169,10 +169,13 @@ use tracing_subscriber::{
 };
 use ui::tilemap::RenderingPlugin;
 
+#[cfg(target_os = "linux")]
+use crate::window_settings::settings::LinuxWindow;
 use crate::{
     component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
     hotkeys::HotkeyPlugin, info_windows::InfoWindowsPlugin, init::InitPlugin,
     load_save::LoadSavePlugin, misc::data_dir, ui::UiPlugin,
+    window_settings::settings::INIT_WINDOW_SETTINGS,
 };
 
 pub mod component_actions;
@@ -187,6 +190,7 @@ pub mod pla2;
 pub mod state;
 pub mod tile;
 pub mod ui;
+pub mod window_settings;
 
 fn init_logger() {
     tracing_subscriber::registry()
@@ -220,13 +224,20 @@ fn main() {
     init_logger();
     info!("Logger initialised");
 
+    #[cfg(target_os = "linux")]
+    match INIT_WINDOW_SETTINGS.display_server_protocol {
+        LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
+        LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
+        LinuxWindow::Auto => (),
+    }
+
     let mut app = App::new();
     app.add_plugins({
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Stencil".into(),
-                    mode: WindowMode::Windowed,
+                    mode: INIT_WINDOW_SETTINGS.window_mode,
                     ..default()
                 }),
                 ..default()
@@ -238,7 +249,7 @@ fn main() {
             })
             .set(RenderPlugin {
                 wgpu_settings: WgpuSettings {
-                    backends: Some(Backends::all()),
+                    backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
                     ..default()
                 },
             })
