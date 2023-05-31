@@ -15,6 +15,7 @@ fn v2_1_0() {
         if let Ok(t) = rmp_serde::from_slice::<TileSettings>(&b) {
             let _ = t.save();
         }
+        let _ = std::fs::remove_file(data_file("tile_settings.msgpack"));
     }
 }
 

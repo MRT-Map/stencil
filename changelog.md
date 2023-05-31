@@ -1,3 +1,11 @@
+# v2.1.0
+* Added window settings, GPU backend, Linux display server protocol configuration
+* Stencil2 now starts in windowed mode instead of fullscreen
+* Settings files are saved as toml instead of msgpack
+* Moved manual online
+* Now recognises `RUST_LOG` environment variable
+* Now shows more licenses from dependencies
+
 # v2.0.5
 * URLs in tile cache are now escaped to fit Windows file-naming restrictions (especially `:`)
 
