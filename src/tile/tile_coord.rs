@@ -8,7 +8,7 @@ use lazy_regex::{lazy_regex, Regex};
 use once_cell::sync::Lazy;
 
 use crate::{
-    misc::{cache_dir, data_dir},
+    misc::cache_dir,
     tile::{settings::TileSettings, zoom::Zoom},
 };
 

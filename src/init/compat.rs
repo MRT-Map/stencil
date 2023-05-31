@@ -1,10 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    misc::{data_dir, data_path},
-    state::LoadingState,
-    tile::settings::TileSettings,
-};
+use crate::{misc::data_path, state::LoadingState, tile::settings::TileSettings};
 
 fn v2_0_1() {
     info!("Running compatibility upgrades from v2.0.1");

@@ -34,7 +34,7 @@ impl TileSettings {
             }
             Err(e) => {
                 info!("Couldn't find or open tile settings file: {e:?}");
-                let s = TileSettings::default();
+                let s = Self::default();
                 let _ = s.save();
                 Ok(s)
             }
@@ -43,13 +43,13 @@ impl TileSettings {
     pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
         info!("Saving tile settings file");
         let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml";
-        let serialized = toml::to_string_pretty(self).map_err(|a| Either::Right(a))?;
+        let serialized = toml::to_string_pretty(self).map_err(Either::Right)?;
 
         std::fs::write(
             data_path("tile_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
         )
-        .map_err(|a| Either::Left(a))
+        .map_err(Either::Left)
     }
 }
 

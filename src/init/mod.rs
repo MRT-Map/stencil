@@ -10,7 +10,7 @@ use load_skin::get_skin_sy;
 
 use crate::{
     error_handling::ack_panic_sy,
-    misc::{cache_dir, cache_path, data_dir, Action},
+    misc::{cache_path, Action},
     pla2::skin::Skin,
     state::{state_changer_asy, EditorState, LoadingState},
 };

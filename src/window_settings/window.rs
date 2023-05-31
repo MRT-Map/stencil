@@ -79,7 +79,7 @@ pub fn window_settings_msy(
             ));
         } else if let Some(WindowSettingsAct::Update(new_settings)) = event.downcast_ref() {
             *window_settings = new_settings.to_owned();
-            new_settings.save().unwrap()
+            new_settings.save().unwrap();
         }
     }
 }

@@ -12,7 +12,7 @@ static LICENSES: Lazy<LicenseRetriever> =
     Lazy::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
 
 #[cfg(debug_assertions)]
-static LICENSES: Lazy<LicenseRetriever> = Lazy::new(|| LicenseRetriever::default());
+static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {

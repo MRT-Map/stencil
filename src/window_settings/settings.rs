@@ -6,6 +6,7 @@ use tracing::info;
 
 use crate::misc::data_path;
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]
 pub struct SerializableBackends {
     pub vulkan: bool,
@@ -34,18 +35,18 @@ impl SerializableBackends {
 
 impl From<SerializableBackends> for Backends {
     fn from(value: SerializableBackends) -> Self {
-        let mut b = Backends::empty();
+        let mut b = Self::empty();
         if value.vulkan {
-            b |= Backends::VULKAN;
+            b |= Self::VULKAN;
         }
         if value.metal {
-            b |= Backends::METAL;
+            b |= Self::METAL;
         }
         if value.dx12 {
-            b |= Backends::DX12;
+            b |= Self::DX12;
         }
         if value.dx11 {
-            b |= Backends::DX11;
+            b |= Self::DX11;
         }
         b
     }
@@ -75,7 +76,7 @@ fn is_default<T: Default + PartialEq>(v: &T) -> bool {
     *v == T::default()
 }
 
-#[derive(Deserialize, Serialize, Clone, Copy, PartialEq, Resource, Default)]
+#[derive(Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Resource, Default)]
 pub struct WindowSettings {
     #[serde(default, skip_serializing_if = "is_default")]
     pub backends: SerializableBackends,
@@ -95,7 +96,7 @@ impl WindowSettings {
             }
             Err(e) => {
                 info!("Couldn't find or open window settings file: {e:?}");
-                let s = WindowSettings::default();
+                let s = Self::default();
                 let _ = s.save();
                 Ok(s)
             }
@@ -104,13 +105,13 @@ impl WindowSettings {
     pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
         info!("Saving window settings file");
         let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#window_settingstoml";
-        let serialized = toml::to_string_pretty(self).map_err(|a| Either::Right(a))?;
+        let serialized = toml::to_string_pretty(self).map_err(Either::Right)?;
 
         std::fs::write(
             data_path("window_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
         )
-        .map_err(|a| Either::Left(a))
+        .map_err(Either::Left)
     }
 }
 
