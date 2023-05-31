@@ -7,6 +7,8 @@ authors = ["7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"
 repository = "https://github.com/mrt-map/stencil2"
 readme = "README.md"
+keywords = ["stencil", "stencil2", "mrt-map", "mrt mapping services"]
+categories = ["games"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
