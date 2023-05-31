@@ -15,9 +15,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          #- os: ubuntu-latest
           - os: windows-latest
-          - os: macos-latest
+          #- os: macos-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -67,6 +67,7 @@ jobs:
     - name: Create msi
       run: .\build\windows\build.ps1
       if: ${{ matrix.os == 'windows-latest' }}
+    - run: cd wix; dir; cd ..
     - name: Upload msi
       uses: svenstaro/upload-release-action@v2
       with:
