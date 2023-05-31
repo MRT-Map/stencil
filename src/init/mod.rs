@@ -38,8 +38,8 @@ impl Plugin for InitPlugin {
 }
 
 fn done_sy(mut commands: Commands) {
-    info!("Removing previous tile cache");
-    let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
+    //info!("Removing previous tile cache");
+    //let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState(Some(EditorState::Idle)));
