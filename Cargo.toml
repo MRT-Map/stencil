@@ -50,6 +50,7 @@ color-backtrace = "0.5.1"
 
 serde = { version = "1.0.163", features = ["derive"] }
 rmp-serde = "1.1.1"
+toml = "0.7.4"
 
 dirs = "5.0.1"
 zip = "0.6.6"

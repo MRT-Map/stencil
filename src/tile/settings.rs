@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use itertools::Either;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -24,14 +25,30 @@ impl Default for TileSettings {
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
-    Lazy::new(|| match std::fs::read(data_file("tile_settings.msgpack")) {
-        Ok(bytes) => {
-            info!("Found tile settings file");
-            rmp_serde::from_slice(&bytes).unwrap()
+impl TileSettings {
+    pub fn load() -> Result<Self, toml::de::Error> {
+        match std::fs::read_to_string(data_file("tile_settings.toml")) {
+            Ok(str) => {
+                info!("Found tile settings file");
+                toml::from_str(&str)
+            }
+            Err(e) => {
+                info!("Couldn't find or open tile settings file: {e:?}");
+                Ok(TileSettings::default())
+            }
         }
-        Err(e) => {
-            info!("Couldn't find or open tile settings file: {e:?}");
-            TileSettings::default()
-        }
-    });
+    }
+    pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
+        info!("Saving tile settings file");
+        let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml";
+        let serialized = toml::to_string_pretty(self).map_err(|a| Either::Right(a))?;
+
+        std::fs::write(
+            data_file("tile_settings.toml"),
+            format!("{prefix_text}\n\n{serialized}"),
+        )
+        .map_err(|a| Either::Left(a))
+    }
+}
+
+pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(|| TileSettings::load().unwrap());

@@ -65,11 +65,7 @@ pub fn tile_settings_msy(
             ));
         } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
             *tile_settings = new_settings.to_owned();
-            std::fs::write(
-                data_file("tile_settings.msgpack"),
-                rmp_serde::to_vec(new_settings).unwrap(),
-            )
-            .unwrap();
+            new_settings.save().unwrap()
         }
     }
 }
