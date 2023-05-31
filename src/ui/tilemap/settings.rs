@@ -5,7 +5,7 @@ use bevy_egui::{egui, egui::Color32};
 use surf::Url;
 
 use crate::{
-    misc::{data_dir, data_file, Action},
+    misc::{data_path, Action},
     tile::settings::TileSettings,
     ui::popup::Popup,
 };
@@ -37,7 +37,7 @@ pub fn tile_settings_msy(
                     if ui.add_enabled(*tile_settings != TileSettings::default(), egui::Button::new("Reset")).clicked() {
                         *tile_settings = TileSettings::default();
                     }
-                    ui.colored_label(Color32::YELLOW, format!("Tile settings can also be edited at: {}", data_dir("tile_settings.toml").to_string_lossy()));
+                    ui.colored_label(Color32::YELLOW, format!("Tile settings can also be edited at: {}", data_path("tile_settings.toml").to_string_lossy()));
                     ui.separator();
                     ui.add(egui::Slider::new(&mut tile_settings.init_zoom, -10.0..=10.0)
                         .text("Initial zoom"));

@@ -152,11 +152,7 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,
-    render::{
-        settings::{Backends, WgpuSettings},
-        RenderPlugin,
-    },
-    window::WindowMode,
+    render::{settings::WgpuSettings, RenderPlugin},
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;

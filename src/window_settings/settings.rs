@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::data_file;
+use crate::misc::data_path;
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]
 pub struct SerializableBackends {
@@ -88,7 +88,7 @@ pub struct WindowSettings {
 
 impl WindowSettings {
     pub fn load() -> Result<Self, toml::de::Error> {
-        match std::fs::read_to_string(data_file("window_settings.toml")) {
+        match std::fs::read_to_string(data_path("window_settings.toml")) {
             Ok(str) => {
                 info!("Found window settings file");
                 toml::from_str(&str)
@@ -107,7 +107,7 @@ impl WindowSettings {
         let serialized = toml::to_string_pretty(self).map_err(|a| Either::Right(a))?;
 
         std::fs::write(
-            data_file("window_settings.toml"),
+            data_path("window_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
         )
         .map_err(|a| Either::Left(a))

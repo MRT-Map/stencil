@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::data_file;
+use crate::misc::data_path;
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Resource)]
 pub struct TileSettings {
@@ -27,7 +27,7 @@ impl Default for TileSettings {
 
 impl TileSettings {
     pub fn load() -> Result<Self, toml::de::Error> {
-        match std::fs::read_to_string(data_file("tile_settings.toml")) {
+        match std::fs::read_to_string(data_path("tile_settings.toml")) {
             Ok(str) => {
                 info!("Found tile settings file");
                 toml::from_str(&str)
@@ -46,7 +46,7 @@ impl TileSettings {
         let serialized = toml::to_string_pretty(self).map_err(|a| Either::Right(a))?;
 
         std::fs::write(
-            data_file("tile_settings.toml"),
+            data_path("tile_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
         )
         .map_err(|a| Either::Left(a))

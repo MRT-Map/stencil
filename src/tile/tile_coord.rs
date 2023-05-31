@@ -8,7 +8,7 @@ use lazy_regex::{lazy_regex, Regex};
 use once_cell::sync::Lazy;
 
 use crate::{
-    misc::data_dir,
+    misc::{cache_dir, data_dir},
     tile::{settings::TileSettings, zoom::Zoom},
 };
 
@@ -73,7 +73,7 @@ impl TileCoord {
     }
 
     pub fn path(&self, tile_settings: &TileSettings) -> PathBuf {
-        let path = data_dir("tile-cache")
+        let path = cache_dir("tile-cache")
             .join(URL_REPLACER.replace_all(&tile_settings.url, "").as_ref())
             .join(self.z.to_string())
             .join(self.x.to_string());

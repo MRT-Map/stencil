@@ -2,12 +2,11 @@ use std::sync::{Arc, Mutex};
 
 use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::{egui, egui::Color32};
-use surf::Url;
 
 #[cfg(target_os = "linux")]
 use crate::window_settings::settings::LinuxWindow;
 use crate::{
-    misc::{data_dir, data_file, Action},
+    misc::{data_path, Action},
     ui::popup::Popup,
     window_settings::settings::WindowSettings,
 };
@@ -39,7 +38,7 @@ pub fn window_settings_msy(
                     if ui.add_enabled(*window_settings != WindowSettings::default(), egui::Button::new("Reset")).clicked() {
                         *window_settings = WindowSettings::default();
                     }
-                    ui.colored_label(Color32::YELLOW, format!("Window settings can also be edited at: {}", data_dir("window_settings.toml").to_string_lossy()));
+                    ui.colored_label(Color32::YELLOW, format!("Window settings can also be edited at: {}", data_path("window_settings.toml").to_string_lossy()));
                     ui.label("Changes will come into affect on the next launch of Stencil2");
                     ui.label("If Stencil2 crashes the next time after changing anything here, you will have to edit the TOML file manually, good luck :)");
                     ui.separator();

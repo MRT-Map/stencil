@@ -10,7 +10,7 @@ use load_skin::get_skin_sy;
 
 use crate::{
     error_handling::ack_panic_sy,
-    misc::{data_dir, Action},
+    misc::{cache_dir, cache_path, data_dir, Action},
     pla2::skin::Skin,
     state::{state_changer_asy, EditorState, LoadingState},
 };
@@ -39,7 +39,7 @@ impl Plugin for InitPlugin {
 
 fn done_sy(mut commands: Commands) {
     info!("Removing previous tile cache");
-    let _ = std::fs::remove_dir_all(data_dir("tile-cache"));
+    let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState(Some(EditorState::Idle)));
