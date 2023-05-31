@@ -67,7 +67,7 @@ jobs:
     - name: Create msi
       run: .\build\windows\build.ps1
       if: ${{ matrix.os == 'windows-latest' }}
-    - run: cd wix; dir; cd ..
+    - run: tree; cd target\wix; dir; cd ..
     - name: Upload msi
       uses: svenstaro/upload-release-action@v2
       with:
