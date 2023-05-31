@@ -5,7 +5,7 @@ use bevy_egui::{egui, egui::Color32};
 use surf::Url;
 
 use crate::{
-    misc::{data_file, Action},
+    misc::{data_dir, data_file, Action},
     tile::settings::TileSettings,
     ui::popup::Popup,
 };
@@ -32,10 +32,13 @@ pub fn tile_settings_msy(
                 },
                 |state, ui, ew, shown| {
                     let mut state = state.lock().unwrap();
+                    let mut invalid = false;
                     let tile_settings: &mut TileSettings = state.downcast_mut().unwrap();
                     if ui.add_enabled(*tile_settings != TileSettings::default(), egui::Button::new("Reset")).clicked() {
                         *tile_settings = TileSettings::default();
                     }
+                    ui.colored_label(Color32::YELLOW, format!("Tile settings can also be edited at: {}", data_dir("tile_settings.toml").to_string_lossy()));
+                    ui.separator();
                     ui.add(egui::Slider::new(&mut tile_settings.init_zoom, -10.0..=10.0)
                         .text("Initial zoom"));
                     ui.label("How zoomed in the map is when the app is first opened. Larger values mean more zoomed in");
@@ -50,10 +53,11 @@ pub fn tile_settings_msy(
                     ui.add(egui::TextEdit::singleline(&mut tile_settings.url).hint_text("Base URL"));
                     if let Err(e) = Url::try_from(&*tile_settings.url) {
                         ui.colored_label(Color32::RED, format!("Invalid URL: {e:?}"));
+                        invalid = true;
                     }
                     ui.label("The base URL of the tile source");
                     ui.separator();
-                    if ui.button("Save").clicked() {
+                    if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
                         ew.send(Box::new(TileSettingsAct::Update(tile_settings.to_owned())));
                         *shown = false;
                     }

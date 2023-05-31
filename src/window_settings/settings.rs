@@ -25,6 +25,13 @@ impl Default for SerializableBackends {
     }
 }
 
+impl SerializableBackends {
+    #[must_use]
+    pub const fn is_none(self) -> bool {
+        !(self.vulkan || self.metal || self.dx11 || self.dx12)
+    }
+}
+
 impl From<SerializableBackends> for Backends {
     fn from(value: SerializableBackends) -> Self {
         let mut b = Backends::empty();
@@ -88,7 +95,9 @@ impl WindowSettings {
             }
             Err(e) => {
                 info!("Couldn't find or open window settings file: {e:?}");
-                Ok(WindowSettings::default())
+                let s = WindowSettings::default();
+                let _ = s.save();
+                Ok(s)
             }
         }
     }

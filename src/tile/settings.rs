@@ -34,7 +34,9 @@ impl TileSettings {
             }
             Err(e) => {
                 info!("Couldn't find or open tile settings file: {e:?}");
-                Ok(TileSettings::default())
+                let s = TileSettings::default();
+                let _ = s.save();
+                Ok(s)
             }
         }
     }

@@ -172,10 +172,15 @@ use ui::tilemap::RenderingPlugin;
 #[cfg(target_os = "linux")]
 use crate::window_settings::settings::LinuxWindow;
 use crate::{
-    component_actions::ComponentActionPlugins, component_tools::ComponentToolPlugins,
-    hotkeys::HotkeyPlugin, info_windows::InfoWindowsPlugin, init::InitPlugin,
-    load_save::LoadSavePlugin, misc::data_dir, ui::UiPlugin,
-    window_settings::settings::INIT_WINDOW_SETTINGS,
+    component_actions::ComponentActionPlugins,
+    component_tools::ComponentToolPlugins,
+    hotkeys::HotkeyPlugin,
+    info_windows::InfoWindowsPlugin,
+    init::InitPlugin,
+    load_save::LoadSavePlugin,
+    misc::data_dir,
+    ui::UiPlugin,
+    window_settings::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
 pub mod component_actions;
@@ -270,5 +275,6 @@ fn main() {
         .add_plugin(LoadSavePlugin)
         .add_plugin(InfoWindowsPlugin)
         .add_plugin(HotkeyPlugin)
+        .add_plugin(WindowSettingsPlugin)
         .run();
 }
