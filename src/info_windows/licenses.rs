@@ -2,13 +2,17 @@ use std::sync::{Arc, Mutex};
 
 use bevy::prelude::*;
 use bevy_egui::egui;
-use license_retriever::{license_retriever_data, LicenseRetriever};
+use license_retriever::LicenseRetriever;
 use once_cell::sync::Lazy;
 
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
+#[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =
-    Lazy::new(|| license_retriever_data!("licenses").unwrap());
+    Lazy::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
+
+#[cfg(debug_assertions)]
+static LICENSES: Lazy<LicenseRetriever> = Lazy::new(|| LicenseRetriever::default());
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
     for event in actions.iter() {
@@ -25,6 +29,10 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc
                 |state, ui, _, shown| {
                     let mut state = state.lock().unwrap();
                     let selection: &mut (String, String) = state.downcast_mut().unwrap();
+                    if cfg!(debug_assertions) {
+                        *shown = false;
+                        return;
+                    }
                     egui::ComboBox::from_label("Library")
                         .selected_text(format!("{} {}", selection.0, selection.1))
                         .show_ui(ui, |ui| {
