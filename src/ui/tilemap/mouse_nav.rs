@@ -8,11 +8,10 @@ use bevy_mouse_tracking::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
     tile::{
-        settings::TileSettings,
         utils::{get_map_width_height, get_window_width_height},
         zoom::Zoom,
     },
-    ui::HoveringOverGui,
+    ui::{tilemap::settings::TileSettings, HoveringOverGui},
 };
 
 #[tracing::instrument(skip_all)]

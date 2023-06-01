@@ -4,9 +4,10 @@ use bevy_mouse_tracking::MousePosWorld;
 use crate::{
     init::load_assets::ImageAssets,
     state::EditorState,
-    tile::{settings::TileSettings, zoom::Zoom},
+    tile::zoom::Zoom,
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
+        tilemap::settings::TileSettings,
         HoveringOverGui, UiSet,
     },
 };

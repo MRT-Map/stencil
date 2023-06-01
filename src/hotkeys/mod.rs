@@ -9,7 +9,7 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
-    ui::tilemap::settings::TileSettingsAct,
+    ui::tilemap::settings_window::TileSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]

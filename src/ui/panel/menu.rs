@@ -10,7 +10,7 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::Action,
-    ui::{tilemap::settings::TileSettingsAct, HoveringOverGui},
+    ui::{tilemap::settings_window::TileSettingsAct, HoveringOverGui},
     window_settings::window::WindowSettingsAct,
 };
 

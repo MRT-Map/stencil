@@ -1,75 +1,119 @@
-use std::sync::{Arc, Mutex};
-
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Color32};
-use surf::Url;
+use itertools::Either;
+use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use tracing::info;
 
-use crate::{
-    misc::{data_path, Action},
-    tile::settings::TileSettings,
-    ui::popup::Popup,
-};
+use crate::misc::data_path;
 
-#[allow(dead_code)]
-pub enum TileSettingsAct {
-    Open,
-    Update(TileSettings),
+macro_rules! field {
+    ($f:ident, $f2:ident, $i:ident, $t:ty) => {
+        #[allow(clippy::float_cmp)]
+        fn $f(v: &$t) -> bool {
+            *v == TileSettings::default().$i
+        }
+        fn $f2() -> $t {
+            TileSettings::default().$i
+        }
+    };
+}
+field!(init_zoom_is_default, default_init_zoom, init_zoom, f32);
+field!(url_is_default, default_url, url, String);
+field!(
+    max_tile_zoom_is_default,
+    default_max_tile_zoom,
+    max_tile_zoom,
+    i8
+);
+field!(
+    max_zoom_range_is_default,
+    default_max_zoom_range,
+    max_zoom_range,
+    f64
+);
+field!(
+    max_get_requests_is_default,
+    default_max_get_requests,
+    max_get_requests,
+    usize
+);
+field!(
+    clear_cache_on_startup_is_default,
+    default_clear_cache_on_startup,
+    clear_cache_on_startup,
+    bool
+);
+
+#[derive(Deserialize, Serialize, Clone, PartialEq, Resource)]
+pub struct TileSettings {
+    #[serde(
+        default = "default_init_zoom",
+        skip_serializing_if = "init_zoom_is_default"
+    )]
+    pub init_zoom: f32,
+    #[serde(default = "default_url", skip_serializing_if = "url_is_default")]
+    pub url: String,
+    #[serde(
+        default = "default_max_tile_zoom",
+        skip_serializing_if = "max_tile_zoom_is_default"
+    )]
+    pub max_tile_zoom: i8,
+    #[serde(
+        default = "default_max_zoom_range",
+        skip_serializing_if = "max_zoom_range_is_default"
+    )]
+    pub max_zoom_range: f64,
+    #[serde(
+        default = "default_max_get_requests",
+        skip_serializing_if = "max_get_requests_is_default"
+    )]
+    pub max_get_requests: usize,
+    #[serde(
+        default = "default_clear_cache_on_startup",
+        skip_serializing_if = "clear_cache_on_startup_is_default"
+    )]
+    pub clear_cache_on_startup: bool,
 }
 
-pub fn tile_settings_msy(
-    mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
-    mut tile_settings: ResMut<TileSettings>,
-) {
-    for event in actions.iter() {
-        if matches!(event.downcast_ref(), Some(TileSettingsAct::Open)) {
-            popup.send(Popup::new(
-                "tile_settings_win",
-                || {
-                    egui::Window::new("Tilemap Settings")
-                        .resizable(true)
-                        .collapsible(true)
-                },
-                |state, ui, ew, shown| {
-                    let mut state = state.lock().unwrap();
-                    let mut invalid = false;
-                    let tile_settings: &mut TileSettings = state.downcast_mut().unwrap();
-                    if ui.add_enabled(*tile_settings != TileSettings::default(), egui::Button::new("Reset")).clicked() {
-                        *tile_settings = TileSettings::default();
-                    }
-                    ui.colored_label(Color32::YELLOW, format!("Tile settings can also be edited at: {}", data_path("tile_settings.toml").to_string_lossy()));
-                    ui.separator();
-                    ui.add(egui::Slider::new(&mut tile_settings.init_zoom, -10.0..=10.0)
-                        .text("Initial zoom"));
-                    ui.label("How zoomed in the map is when the app is first opened. Larger values mean more zoomed in");
-                    ui.separator();
-                    ui.label("Unless you're using a different tilemap, you shouldn't need to change anything below here");
-                    ui.add(egui::Slider::new(&mut tile_settings.max_tile_zoom, -5..=15)
-                        .text("Maximum tile zoom"));
-                    ui.label("...I don't know how to explain this");
-                    ui.add(egui::Slider::new(&mut tile_settings.max_zoom_range, 1.0..=256.0)
-                        .text("Maximum tile zoom range"));
-                    ui.label("In tiles of the highest zoom level, the distance across its width / height that each tile represents");
-                    ui.add(egui::TextEdit::singleline(&mut tile_settings.url).hint_text("Base URL"));
-                    if let Err(e) = Url::try_from(&*tile_settings.url) {
-                        ui.colored_label(Color32::RED, format!("Invalid URL: {e:?}"));
-                        invalid = true;
-                    }
-                    ui.label("The base URL of the tile source");
-                    ui.separator();
-                    if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
-                        ew.send(Box::new(TileSettingsAct::Update(tile_settings.to_owned())));
-                        *shown = false;
-                    }
-                    if ui.button("Cancel").clicked() {
-                        *shown = false;
-                    }
-                },
-                Mutex::new(Box::new(tile_settings.to_owned())),
-            ));
-        } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
-            *tile_settings = new_settings.to_owned();
-            new_settings.save().unwrap();
+impl Default for TileSettings {
+    fn default() -> Self {
+        Self {
+            init_zoom: 7.0,
+            url: "https://dynmap.minecartrapidtransit.net/tiles/new/flat".into(),
+            max_tile_zoom: 8,
+            max_zoom_range: 32.0,
+            max_get_requests: 50,
+            clear_cache_on_startup: false,
         }
     }
 }
+
+impl TileSettings {
+    pub fn load() -> Result<Self, toml::de::Error> {
+        match std::fs::read_to_string(data_path("tile_settings.toml")) {
+            Ok(str) => {
+                info!("Found tile settings file");
+                toml::from_str(&str)
+            }
+            Err(e) => {
+                info!("Couldn't find or open tile settings file: {e:?}");
+                let s = Self::default();
+                let _ = s.save();
+                Ok(s)
+            }
+        }
+    }
+    pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
+        info!("Saving tile settings file");
+        let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml";
+        let serialized = toml::to_string_pretty(self).map_err(Either::Right)?;
+
+        std::fs::write(
+            data_path("tile_settings.toml"),
+            format!("{prefix_text}\n\n{serialized}"),
+        )
+        .map_err(Either::Left)
+    }
+}
+
+pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(|| TileSettings::load().unwrap());

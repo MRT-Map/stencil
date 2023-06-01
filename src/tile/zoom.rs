@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::tile::settings::TileSettings;
+use crate::ui::tilemap::settings::TileSettings;
 
 #[derive(Copy, Clone, Debug, Resource)]
 pub struct Zoom(pub f32);
