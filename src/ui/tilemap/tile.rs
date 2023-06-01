@@ -17,6 +17,7 @@ use crate::tile::{
     zoom::Zoom,
 };
 
+#[must_use]
 pub fn get_shown_tiles(
     q_camera: &Query<(&Camera, Ref<Transform>), impl ReadOnlyWorldQuery>,
     zoom: i8,

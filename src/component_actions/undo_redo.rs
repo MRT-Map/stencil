@@ -6,12 +6,13 @@ use std::{
 use bevy::prelude::*;
 
 use crate::{
-    misc::{Action, EditorState},
+    misc::Action,
     pla2::{
         bundle::{ComponentBundle, SelectedComponent},
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    state::EditorState,
 };
 
 #[derive(Clone, Debug)]
@@ -27,12 +28,17 @@ pub enum UndoRedoAct {
     Redo,
 }
 impl UndoRedoAct {
+    #[must_use]
     pub fn one_history(history: History<Entity>) -> Self {
         Self::NewHistory(vec![history])
     }
 }
 
-#[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
+#[allow(
+    clippy::needless_pass_by_value,
+    clippy::cognitive_complexity,
+    clippy::implicit_hasher
+)]
 pub fn undo_redo_asy(
     mut commands: Commands,
     mut actions: EventReader<Action>,

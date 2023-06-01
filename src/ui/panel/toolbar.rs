@@ -3,7 +3,8 @@ use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MousePos;
 
 use crate::{
-    misc::{Action, ChangeStateAct, EditorState},
+    misc::Action,
+    state::{ChangeStateAct, EditorState},
     ui::HoveringOverGui,
 };
 

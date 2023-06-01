@@ -11,6 +11,7 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     ui::{tilemap::settings::TileSettingsAct, HoveringOverGui},
+    window_settings::window::WindowSettingsAct,
 };
 
 #[allow(clippy::needless_pass_by_value)]
@@ -56,6 +57,7 @@ pub fn ui_sy(
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
+                button!(ui, event_writer, "Window", WindowSettingsAct::Open);
             });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(

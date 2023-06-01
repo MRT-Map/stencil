@@ -5,12 +5,13 @@ use itertools::Itertools;
 
 use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
-    misc::{Action, EditorState},
+    misc::Action,
     pla2::{
         bundle::SelectedComponent,
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 

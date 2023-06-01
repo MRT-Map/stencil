@@ -18,6 +18,7 @@ pub struct ComponentBundle {
 }
 
 impl ComponentBundle {
+    #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>) -> Self {
         Self {
             data,

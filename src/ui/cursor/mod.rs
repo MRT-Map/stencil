@@ -2,7 +2,8 @@ use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
-    misc::EditorState,
+    init::load_assets::ImageAssets,
+    state::EditorState,
     tile::{settings::TileSettings, zoom::Zoom},
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
@@ -21,7 +22,7 @@ pub fn crosshair_sy(
     mut commands: Commands,
     state: Option<Res<State<EditorState>>>,
     mut ch: Query<(Entity, &mut Transform, &mut Sprite), With<Crosshair>>,
-    server: Res<AssetServer>,
+    images: Res<ImageAssets>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
     tile_settings: Res<TileSettings>,
@@ -46,7 +47,7 @@ pub fn crosshair_sy(
         debug!("Spawning crosshair");
         commands
             .spawn(SpriteBundle {
-                texture: server.load("crosshair.png"),
+                texture: images.crosshair.to_owned(),
                 transform: new_transform,
                 sprite: Sprite {
                     custom_size: new_custom_size,

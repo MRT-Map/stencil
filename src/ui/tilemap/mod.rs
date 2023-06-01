@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    misc::EditorState,
+    state::EditorState,
     tile::{settings::INIT_TILE_SETTINGS, zoom::Zoom},
     ui::{HoveringOverGui, UiSet},
 };

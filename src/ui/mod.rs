@@ -5,7 +5,7 @@ use bevy_egui::{
 };
 use bevy_mouse_tracking::MousePos;
 
-use crate::misc::EditorState;
+use crate::state::EditorState;
 
 pub mod cursor;
 pub mod file_explorer;

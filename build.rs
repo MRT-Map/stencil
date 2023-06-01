@@ -1,15 +1,7 @@
-use std::{
-    fs::File,
-    io::Write,
-    path::PathBuf,
-    process::{Command, Stdio},
-};
+use std::{fs::File, io::Write, path::PathBuf};
 
-use anyhow::{anyhow, Result};
-use futures::{executor::block_on, future::join_all};
-use itertools::Itertools;
-use regex::Regex;
-use serde::{Deserialize, Serialize};
+use anyhow::Result;
+use license_retriever::{Config, LicenseRetriever};
 use zip::{write::FileOptions, ZipWriter};
 
 macro_rules! p {
@@ -18,114 +10,198 @@ macro_rules! p {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct CargoLicenseEntry {
-    name: String,
-    version: String,
-    authors: Option<String>,
-    repository: Option<String>,
-    license: Option<String>,
-    license_file: Option<String>,
-    license_text: Option<Vec<String>>,
-}
-
 fn gather_licenses() -> Result<()> {
-    Command::new("cargo")
-        .args(["install", "cargo-license"])
-        .spawn()?
-        .wait()?;
-    let raw = Command::new("cargo")
-        .args(["license", "--json"])
-        .stdout(Stdio::piped())
-        .spawn()?
-        .wait_with_output()?
-        .stdout;
-    let data: Vec<CargoLicenseEntry> = serde_json::from_slice(&raw)?;
-
-    let data = block_on(join_all(data.into_iter()
-        .map(|mut a| async move {
-            if &*a.name == "stencil2" {
-                a.license_text = Some(vec![include_str!("LICENSE").to_string()]);
-                return Ok(a)
-            }
-            let mut texts = vec![];
-            let mut list = vec![
-                (
-                    false,
-                    format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
-                    Regex::new(r#"<span class="text">(.*?)</span>"#)?,
-                    format!("https://docs.rs/crate/{}/{}/source/", a.name, a.version),
-                    Regex::new(r#"(?s)<span class="(?:syntax-text syntax-plain|syntax-text syntax-html syntax-markdown|syntax-source syntax-diff)">(.*?)</span>"#)?
-                )
-            ];
-            if let Some(repository) = &a.repository {
-                if repository.starts_with("https://github.com") || repository.starts_with("http://github.com") {
-                    list.push((
-                        true,
-                        repository.to_owned(),
-                        Regex::new(r#"title="(.*?)""#)?,
-                        format!("{}{}", repository.replace("github.com", "raw.githubusercontent.com"),
-                                if repository.ends_with('/') {""} else {"/"}),
-                        Regex::new(r#"(?s)(.*)"#)?,
-                        ));
-                }
-            }
-            for (is_gh, url1, re1, url2, re2) in list {
-                let res = surf::get(url1)
-                    .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
-                    .body_string()
-                    .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-                let files = if &*a.name == "widestring" || &*a.name == "half" {
-                    vec![
-                        "LICENSES/Apache-2.0.txt",
-                        "LICENSES/MIT.txt"
-                    ]
-                } else {
-                    re1.captures_iter(&res)
-                        .map(|a| {
-                            Ok(a.get(1).ok_or_else(|| anyhow!("Regex is broken"))?.as_str())
-                        })
-                        .filter_ok(|a| a.to_lowercase().starts_with("licence")
-                            || a.to_lowercase().starts_with("license")
-                            || a.to_lowercase().ends_with("licence")
-                            || a.to_lowercase().ends_with("license"))
-                        .collect::<Result<Vec<_>>>()?
-                };
-                let branch = if is_gh {
-                    Regex::new("data-menu-button>(.*?)</span>")?.captures(&res)
-                        .and_then(|cap| cap.get(1))
-                        .map(|m| m.as_str())
-                        .unwrap_or_default()
-                } else {""};
-                for file in files {
-                    let res = surf::get(if is_gh {
-                        format!("{url2}{branch}/{file}")
-                    } else {format!("{url2}{file}")})
-                        .await.map_err(|e| anyhow!("Error accessing source: {e}"))?
-                        .body_string()
-                        .await.map_err(|e| anyhow!("Error parsing as string: {e}"))?;
-                    let text = html_escape::decode_html_entities(re2
-                        .captures(&res)
-                        .ok_or_else(|| anyhow!("No text found {} {}", a.name, file))?
-                        .get(1).ok_or_else(|| anyhow!("Regex is broken"))?
-                        .as_str().trim()).to_string();
-                    texts.push(text);
-                }
-                if !texts.is_empty() {
-                    break
-                }
-            }
-            if texts.is_empty() {
-                //p!("No licenses detected for crate {} {}", a.name, a.version)
-            }
-            a.license_text = Some(texts);
-            Ok(a)
-        }))).into_iter().collect::<Result<Vec<_>>>().map_err(|e| anyhow!("Error: {e}"))?;
-
-    std::fs::write(
-        PathBuf::try_from(std::env::var("OUT_DIR")?)?.join("licenses.msgpack"),
-        rmp_serde::to_vec(&data)?,
-    )?;
+    let config = Config::default()
+        .panic_if_no_license_found()
+        .override_license_url(
+            "accesskit",
+            [
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE-MIT",
+                "https://raw.githubusercontent.com/AccessKit/accesskit/main/LICENSE.chromium",
+            ],
+        )
+        .copy_license("accesskit_consumer", "accesskit")
+        .copy_license("accesskit_macos", "accesskit")
+        .copy_license("accesskit_windows", "accesskit")
+        .copy_license("accesskit_winit", "accesskit")
+        .copy_license("bevy_mouse_tracking_plugin", "block")
+        .copy_license("bevy_picking_core", "bevy_mod_picking")
+        .copy_license("bevy_picking_input", "bevy_mod_picking")
+        .copy_license("bevy_picking_raycast", "bevy_mod_picking")
+        .override_license_url(
+            "block",
+            ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt"],
+        )
+        .override_license_url(
+            "block-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .copy_license("block2", "block-sys")
+        .override_license_url(
+            "cesu8",
+            ["https://raw.githubusercontent.com/emk/cesu8-rs/master/COPYRIGHT-RUST.txt"],
+        )
+        .override_license_url(
+            "clipboard-win",
+            ["https://raw.githubusercontent.com/DoumanAsh/clipboard-win/master/LICENSE"],
+        )
+        .override_license_url(
+            "codespan-reporting",
+            ["https://raw.githubusercontent.com/brendanzab/codespan/master/LICENSE"],
+        )
+        .override_license_url(
+            "color-spantrace",
+            [
+                "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-MIT",
+            ],
+        )
+        .override_license_url(
+            "core-graphics-types",
+            [
+                "https://raw.githubusercontent.com/servo/core-foundation-rs/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/servo/core-foundation-rs/master/LICENSE-APACHE",
+            ],
+        )
+        .copy_license("crunchy", "block")
+        .override_license_url(
+            "d3d12",
+            [
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt",
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Apache-2.0.txt",
+            ],
+        )
+        .copy_license("dispatch", "block")
+        .copy_license("ecolor", "egui")
+        .override_license_url(
+            "egui",
+            [
+                "https://raw.githubusercontent.com/emilk/egui/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/emilk/egui/master/LICENSE-MIT",
+            ],
+        )
+        .copy_license("egui_extras", "egui")
+        .copy_license("emath", "egui")
+        .copy_license("encase_derive", "encase")
+        .copy_license("encase_derive_impl", "encase")
+        .copy_license("epaint", "egui")
+        .override_license_url(
+            "error-code",
+            ["https://github.com/DoumanAsh/error-code/blob/master/LICENSE"],
+        )
+        .copy_license("fdeflate", "d3d12")
+        .copy_license("fxhash", "d3d12")
+        .override_license_url(
+            "gloo-timers",
+            [
+                "https://raw.githubusercontent.com/rustwasm/gloo/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/rustwasm/gloo/master/LICENSE-APACHE",
+            ],
+        )
+        .override_license_url(
+            "gpu-alloc",
+            ["https://github.com/zakarumych/gpu-alloc/blob/master/COPYING"],
+        )
+        .copy_license("gpu-alloc-types", "gpu-alloc")
+        .override_license_url(
+            "gpu-descriptor",
+            ["https://github.com/zakarumych/gpu-descriptor/blob/master/COPYING"],
+        )
+        .copy_license("gpu-descriptor-types", "gpu-descriptor")
+        .override_license_url(
+            "half",
+            [
+                "https://docs.rs/crate/half/latest/source/LICENSES/MIT.txt",
+                "https://docs.rs/crate/half/latest/source/LICENSES/Apache-2.0.txt",
+            ],
+        )
+        .override_license_url(
+            "hassle-rs",
+            ["https://raw.githubusercontent.com/Traverse-Research/hassle-rs/main/LICENSE"],
+        )
+        .override_license_url(
+            "hexf-parse",
+            ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
+        )
+        .copy_license("lazy-regex-proc_macros", "lazy-regex")
+        .ignore("license-retriever")
+        .override_license_url(
+            "lyon_algorithms",
+            [
+                "https://raw.githubusercontent.com/nical/lyon/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/nical/lyon/master/LICENSE-MIT",
+            ],
+        )
+        .copy_license("lyon_geom", "lyon_algorithms")
+        .copy_license("lyon_path", "lyon_algorithms")
+        .copy_license("lyon_tessellation", "lyon_algorithms")
+        .override_license_url(
+            "malloc_buf",
+            ["https://raw.githubusercontent.com/SSheldon/malloc_buf/master/LICENSE"],
+        )
+        .override_license_url(
+            "ndk",
+            [
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-APACHE",
+            ],
+        )
+        .copy_license("ndk-context", "ndk")
+        .copy_license("ndk-sys", "ndk")
+        .copy_license("objc-foundation", "block")
+        .copy_license("objc-sys", "block-sys")
+        .copy_license("objc2-encode", "block-sys")
+        .copy_license("objc_exception", "block")
+        .copy_license("objc_id", "block")
+        .copy_license("profiling-procmacros", "profiling")
+        .override_license_url(
+            "siphasher",
+            ["https://raw.githubusercontent.com/jedisct1/rust-siphash/master/COPYING"],
+        )
+        .override_license_url(
+            "spirv",
+            ["https://raw.githubusercontent.com/gfx-rs/rspirv/master/LICENSE"],
+        )
+        .copy_license("stdweb-derive", "stdweb")
+        .copy_license("stdweb-internal-macros", "stdweb")
+        .copy_license("stdweb-internal-runtime", "stdweb")
+        .override_license_url(
+            "str-buf",
+            ["https://raw.githubusercontent.com/DoumanAsh/str-buf/master/LICENSE"],
+        )
+        .override_license_url(
+            "svg_fmt",
+            ["https://raw.githubusercontent.com/nical/rust_debug/master/LICENSE"],
+        )
+        .override_license_url(
+            "taffy",
+            ["https://raw.githubusercontent.com/DioxusLabs/taffy/main/LICENSE.md"],
+        )
+        .override_license_url(
+            "valuable",
+            ["https://raw.githubusercontent.com/tokio-rs/valuable/master/LICENSE"],
+        )
+        .override_license_url(
+            "widestring",
+            [
+                "https://docs.rs/crate/widestring/latest/source/LICENSES/Apache-2.0.txt",
+                "https://docs.rs/crate/widestring/latest/source/LICENSES/MIT.txt",
+            ],
+        )
+        .copy_license("winapi-i686-pc-windows-gnu", "winapi")
+        .copy_license("winapi-wsapoll", "d3d12")
+        .copy_license("winapi-x86_64-pc-windows-gnu", "winapi")
+        .override_license_url(
+            "zune-inflate",
+            ["https://raw.githubusercontent.com/etemesi254/zune-image/main/LICENSE.md"],
+        )
+        .override_license_url(
+            "xi-unicode",
+            ["https://github.com/xi-editor/xi-editor/blob/master/LICENSE"],
+        )
+        .override_license_text("stencil2", [include_str!("LICENSE")]);
+    LicenseRetriever::from_config(&config)?.save_in_out_dir("licenses")?;
     Ok(())
 }
 
@@ -146,22 +222,25 @@ fn zip_assets() -> Result<()> {
     Ok(())
 }
 
-fn inner() -> Result<()> {
-    gather_licenses()?;
-    zip_assets()?;
-
+fn embed_resource() -> Result<()> {
     if std::env::var("TARGET")?.contains("windows") {
-        embed_resource::compile(
-            {
-                let mut path = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
-                path.push("build");
-                path.push("windows");
-                path.push("icon.rc");
-                path
-            },
-            embed_resource::NONE,
-        );
+        let root_dir = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+        let icons_dir = root_dir.join("icons");
+        std::fs::copy(icons_dir.join("icon.rc"), root_dir.join("icon.rc"))?;
+        std::fs::copy(icons_dir.join("icon.ico"), root_dir.join("icon.ico"))?;
+        embed_resource::compile("icon.rc", embed_resource::NONE);
+        std::fs::remove_file(root_dir.join("icon.rc"))?;
+        std::fs::remove_file(root_dir.join("icon.ico"))?;
     }
+    Ok(())
+}
+
+fn inner() -> Result<()> {
+    if std::env::var("PROFILE")? != "debug" {
+        gather_licenses()?;
+    }
+    zip_assets()?;
+    embed_resource()?;
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=assets");
@@ -171,11 +250,12 @@ fn inner() -> Result<()> {
 
 fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
-        if let Err(e) = inner() {
-            p!("Error: {e:#?}");
-            p!("{:?}", e.backtrace());
-            panic!()
-        }
+        inner()
+            .map_err(|a| {
+                p!("Backtrace: {:?}", a.backtrace());
+                a
+            })
+            .unwrap()
     }) {
         p!("Error: {e:#?}");
         panic!()

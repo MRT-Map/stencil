@@ -1,5 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![allow(clippy::type_complexity, clippy::too_many_arguments)]
+#![allow(
+    clippy::type_complexity,
+    clippy::too_many_arguments,
+    clippy::missing_panics_doc
+)]
 #![warn(
     clippy::as_underscore,
     clippy::bool_to_int_with_if,
@@ -68,8 +72,6 @@
     clippy::mismatching_type_param_order,
     clippy::missing_const_for_fn,
     clippy::missing_enforced_import_renames,
-    clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
     clippy::must_use_candidate,
     clippy::mut_mut,
     clippy::naive_bytecount,
@@ -144,11 +146,12 @@
     clippy::wildcard_dependencies
 )]
 
-use std::io::Cursor;
-
 use bevy::{
-    asset::AssetPlugin, diagnostic::FrameTimeDiagnosticsPlugin, log::LogPlugin, prelude::*,
-    window::WindowMode,
+    asset::AssetPlugin,
+    diagnostic::FrameTimeDiagnosticsPlugin,
+    log::LogPlugin,
+    prelude::*,
+    render::{settings::WgpuSettings, RenderPlugin},
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
@@ -160,34 +163,36 @@ use tracing_subscriber::{
     fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
 use ui::tilemap::RenderingPlugin;
-use zip::ZipArchive;
 
+#[cfg(target_os = "linux")]
+use crate::window_settings::settings::LinuxWindow;
 use crate::{
     component_actions::ComponentActionPlugins,
     component_tools::ComponentToolPlugins,
     hotkeys::HotkeyPlugin,
     info_windows::InfoWindowsPlugin,
+    init::InitPlugin,
     load_save::LoadSavePlugin,
-    misc::{data_dir, data_file},
-    setup::SetupPlugin,
+    misc::data_dir,
     ui::UiPlugin,
+    window_settings::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
-mod component_actions;
-mod component_tools;
-mod error_handling;
-mod hotkeys;
-mod info_windows;
-mod load_save;
-mod misc;
-mod pla2;
-mod setup;
-mod tile;
-mod ui;
+pub mod component_actions;
+pub mod component_tools;
+pub mod error_handling;
+pub mod hotkeys;
+pub mod info_windows;
+pub mod init;
+pub mod load_save;
+pub mod misc;
+pub mod pla2;
+pub mod state;
+pub mod tile;
+pub mod ui;
+pub mod window_settings;
 
-fn main() {
-    std::panic::set_hook(Box::new(error_handling::panic));
-
+fn init_logger() {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::fmt::layer().compact().with_writer(
@@ -196,7 +201,9 @@ fn main() {
                     .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
             ),
         )
-        .with(
+        .with(if let Ok(l) = EnvFilter::try_from_default_env() {
+            l
+        } else {
             EnvFilter::try_new(
                 "info,\
             wgpu_core::device=warn,\
@@ -205,55 +212,57 @@ fn main() {
             isahc::handler=error,\
             stencil2=debug",
             )
-            .unwrap(),
-        )
+            .unwrap()
+        })
         .with(ErrorLayer::default())
         .init();
+}
+
+fn main() {
+    std::panic::set_hook(Box::new(error_handling::panic));
+
+    init_logger();
     info!("Logger initialised");
 
-    #[cfg(target_arch = "wasm32")]
-    console_error_panic_hook::set_once();
-
-    if data_file("tile_settings.msgpack").is_dir() {
-        // TODO remove on next release
-        let _ = std::fs::remove_dir_all(data_file("tile_settings.msgpack"));
+    #[cfg(target_os = "linux")]
+    match INIT_WINDOW_SETTINGS.display_server_protocol {
+        LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
+        LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
+        LinuxWindow::Auto => (),
     }
 
-    let mut zip_file = ZipArchive::new(Cursor::new(include_bytes!(concat!(
-        env!("OUT_DIR"),
-        "/assets.zip"
-    ))))
-    .unwrap();
-    let dir = data_dir("assets");
-    zip_file.extract(&dir).unwrap();
-
-    let _ = std::fs::remove_dir_all(data_dir("tile-cache"));
-
-    App::new()
-        .add_plugin(AssetPlugin {
-            asset_folder: dir.to_string_lossy().to_string(),
-            ..default()
-        })
-        .add_plugins({
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Stencil".into(),
-                        mode: WindowMode::BorderlessFullscreen,
-                        ..default()
-                    }),
+    let mut app = App::new();
+    app.add_plugins({
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Stencil".into(),
+                    mode: INIT_WINDOW_SETTINGS.window_mode,
                     ..default()
-                })
-                .set(ImagePlugin::default_nearest())
-                .disable::<LogPlugin>()
-                .disable::<AssetPlugin>()
-        })
-        .add_plugins(DefaultPickingPlugins)
-        .add_plugin(FrameTimeDiagnosticsPlugin)
+                }),
+                ..default()
+            })
+            .set(ImagePlugin::default_nearest())
+            .set(AssetPlugin {
+                asset_folder: data_dir("assets").to_string_lossy().to_string(),
+                ..default()
+            })
+            .set(RenderPlugin {
+                wgpu_settings: WgpuSettings {
+                    backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
+                    ..default()
+                },
+            })
+            .disable::<LogPlugin>()
+    })
+    .add_plugin(FrameTimeDiagnosticsPlugin);
+
+    app.add_plugins(DefaultPickingPlugins)
         .add_plugin(MousePosPlugin)
         .add_plugin(EguiPlugin)
-        .add_plugin(ShapePlugin)
-        .add_plugin(SetupPlugin)
+        .add_plugin(ShapePlugin);
+
+    app.add_plugin(InitPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
@@ -261,5 +270,6 @@ fn main() {
         .add_plugin(LoadSavePlugin)
         .add_plugin(InfoWindowsPlugin)
         .add_plugin(HotkeyPlugin)
+        .add_plugin(WindowSettingsPlugin)
         .run();
 }

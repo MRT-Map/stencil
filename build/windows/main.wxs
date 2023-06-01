@@ -162,7 +162,7 @@
           Add/Remove Programs control panel requires commenting out or
           removing the following `Icon` and `Property` tags.
         -->
-        <Icon Id='ProductICO' SourceFile='.\build\macos\AppIcon.iconset\icon_512x512@2x.png'/>
+        <Icon Id='ProductICO' SourceFile='.\icons\icon.ico'/>
         <Property Id='ARPPRODUCTICON' Value='ProductICO' />
         
         <Property Id='ARPHELPLINK' Value='https://github.com/mrt-map/stencil2'/>

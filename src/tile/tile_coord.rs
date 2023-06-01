@@ -8,7 +8,7 @@ use lazy_regex::{lazy_regex, Regex};
 use once_cell::sync::Lazy;
 
 use crate::{
-    misc::data_dir,
+    misc::cache_dir,
     tile::{settings::TileSettings, zoom::Zoom},
 };
 
@@ -28,6 +28,7 @@ impl Display for TileCoord {
 }
 
 impl TileCoord {
+    #[must_use]
     pub fn from_world_coords(x: f64, y: f64, z: i8, tile_settings: &TileSettings) -> Self {
         Self {
             x: (x / f64::from(Zoom(f32::from(z)).world_size(tile_settings))) as i32,
@@ -36,6 +37,7 @@ impl TileCoord {
         }
     }
 
+    #[must_use]
     pub fn get_edges(&self, tile_settings: &TileSettings) -> (f32, f32, f32, f32) {
         (
             self.x as f32 * Zoom(f32::from(self.z)).world_size(tile_settings) as f32,
@@ -45,6 +47,7 @@ impl TileCoord {
         )
     }
 
+    #[must_use]
     pub fn url(&self, tile_settings: &TileSettings) -> String {
         let z = 2.0f64.powi(i32::from(tile_settings.max_tile_zoom - self.z));
         let xy = IVec2::new(self.x, self.y).as_dvec2();
@@ -70,7 +73,7 @@ impl TileCoord {
     }
 
     pub fn path(&self, tile_settings: &TileSettings) -> PathBuf {
-        let path = data_dir("tile-cache")
+        let path = cache_dir("tile-cache")
             .join(URL_REPLACER.replace_all(&tile_settings.url, "").as_ref())
             .join(self.z.to_string())
             .join(self.x.to_string());
