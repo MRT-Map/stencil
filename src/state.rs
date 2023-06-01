@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, EventReader, EventWriter, NextState, ParamSet, Res, States};
+use bevy::{ecs::schedule::SystemSetConfig, prelude::*};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -89,3 +89,29 @@ pub fn state_changer_asy(
         commands.insert_resource(NextState(Some(state)));
     }
 }
+
+pub trait IntoSystemConfigExt<Marker, Config>: IntoSystemConfig<Marker, Config>
+where
+    Config: IntoSystemConfig<(), Config>,
+{
+    fn run_if_not_loading(self) -> Config {
+        self.into_config()
+            .run_if(not(in_state(EditorState::Loading)))
+    }
+}
+
+impl<T, Config, Marker> IntoSystemConfigExt<Marker, Config> for T
+where
+    T: IntoSystemConfig<Marker, Config>,
+    Config: IntoSystemConfig<(), Config>,
+{
+}
+
+pub trait IntoSystemSetConfigExt: IntoSystemSetConfig {
+    fn run_if_not_loading(self) -> SystemSetConfig {
+        self.into_config()
+            .run_if(not(in_state(EditorState::Loading)))
+    }
+}
+
+impl<T> IntoSystemSetConfigExt for T where T: IntoSystemSetConfig {}

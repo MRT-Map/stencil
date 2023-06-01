@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use async_lock::Semaphore;
 use bevy::{
     ecs::query::ReadOnlyWorldQuery,
     prelude::*,
@@ -8,14 +9,20 @@ use bevy::{
 use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
+use once_cell::sync::Lazy;
 
-use crate::tile::{
-    bundle::{Tile, TileBundle},
-    settings::TileSettings,
-    tile_coord::TileCoord,
-    utils::get_map_coords_of_edges,
-    zoom::Zoom,
+use crate::{
+    tile::{
+        bundle::{Tile, TileBundle},
+        tile_coord::TileCoord,
+        utils::get_map_coords_of_edges,
+        zoom::Zoom,
+    },
+    ui::tilemap::settings::{TileSettings, INIT_TILE_SETTINGS},
 };
+
+static SEMAPHORE: Lazy<Semaphore> =
+    Lazy::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
 pub fn get_shown_tiles(
@@ -125,7 +132,9 @@ pub fn show_tiles_sy(
                             RgbaImage::from_pixel(1, 1, Rgba::from([col, col, col, 255]))
                                 .save_with_format(path, ImageFormat::Png)?;
                         } else {
+                            let lock = SEMAPHORE.acquire().await;
                             let bytes = surf::get(url).recv_bytes().await?;
+                            drop(lock);
                             async_fs::write(path, &bytes).await?;
                         };
 

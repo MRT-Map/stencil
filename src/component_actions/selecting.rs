@@ -7,7 +7,7 @@ use crate::{
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    state::EditorState,
+    state::{EditorState, IntoSystemConfigExt},
     ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
 };
 
@@ -71,12 +71,8 @@ pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, en
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(selector_sy.run_if(not(in_state(EditorState::Loading))))
-            .add_system(
-                highlight_selected_sy
-                    .run_if(not(in_state(EditorState::Loading)))
-                    .after(UiBaseSet),
-            );
+        app.add_system(selector_sy.run_if_not_loading())
+            .add_system(highlight_selected_sy.run_if_not_loading().after(UiBaseSet));
     }
 }
 

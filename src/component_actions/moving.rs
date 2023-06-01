@@ -8,7 +8,7 @@ use crate::{
         bundle::SelectedComponent,
         component::{EditorCoords, PlaComponent},
     },
-    state::EditorState,
+    state::{EditorState, IntoSystemConfigExt},
     ui::cursor::mouse_events::{HoveredComponent, MouseEvent},
 };
 
@@ -72,6 +72,6 @@ pub fn move_component_sy(
 pub struct MoveComponentPlugin;
 impl Plugin for MoveComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(move_component_sy.run_if(not(in_state(EditorState::Loading))));
+        app.add_system(move_component_sy.run_if_not_loading());
     }
 }

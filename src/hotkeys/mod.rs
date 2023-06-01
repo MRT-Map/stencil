@@ -8,8 +8,8 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::Action,
-    state::{ChangeStateAct, EditorState},
-    ui::tilemap::settings::TileSettingsAct,
+    state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
+    ui::tilemap::settings_window::TileSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -98,6 +98,6 @@ pub struct HotkeyPlugin;
 impl Plugin for HotkeyPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(HotkeySettings::default())
-            .add_system(hotkey_sy.run_if(not(in_state(EditorState::Loading))));
+            .add_system(hotkey_sy.run_if_not_loading());
     }
 }

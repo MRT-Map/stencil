@@ -4,13 +4,14 @@ use bevy::{
 };
 
 use crate::{
-    state::EditorState,
-    tile::{settings::INIT_TILE_SETTINGS, zoom::Zoom},
-    ui::{HoveringOverGui, UiSet},
+    state::{EditorState, IntoSystemConfigExt, IntoSystemSetConfigExt},
+    tile::zoom::Zoom,
+    ui::{tilemap::settings::INIT_TILE_SETTINGS, HoveringOverGui, UiSet},
 };
 
 pub mod mouse_nav;
 pub mod settings;
+pub mod settings_window;
 pub mod tile;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -30,12 +31,13 @@ impl Plugin for RenderingPlugin {
                     .run_if(not(resource_exists_and_equals(HoveringOverGui(true))))
                     .in_set(UiSet::Tiles),
             )
-            .configure_set(RenderingSet::Tiles.run_if(not(in_state(EditorState::Loading))))
+            .configure_set(RenderingSet::Tiles.run_if_not_loading())
             .add_systems(
                 (mouse_nav::mouse_drag_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),
             )
             .add_systems(
-                (tile::show_tiles_sy, settings::tile_settings_msy).in_set(RenderingSet::Tiles),
+                (tile::show_tiles_sy, settings_window::tile_settings_msy)
+                    .in_set(RenderingSet::Tiles),
             );
     }
 }

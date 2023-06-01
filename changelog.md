@@ -1,4 +1,9 @@
-# v2.1.0
+# v2.1.1
+* Added back limit to max number of HTTP requests
+* Added an option to clear tile cache on startup
+* All fields in `tile_settings.toml` are now optional too
+
+# v2.1.1
 * Added window settings, GPU backend, Linux display server protocol configuration
 * Stencil2 now starts in windowed mode instead of fullscreen
 * Settings files are saved as toml instead of msgpack
@@ -18,7 +23,7 @@
 
 # v2.0.3
 * Update bevy
-* Fix tilemap also moving when window is moving
+* Fix tilemap also moving when the window is moving
 * Fix tiles not loading fast enough... hopefully
 * Option to show checkerboard instead of downloading tiles through environment variable
 
@@ -39,7 +44,7 @@
 * Undo / redo functionality
   * native-dialog is no longer a dependency
 * Asset folder is now bundled together with the executable and unloaded before bevy starts
-* Tile settings, initial zoom and tilemap is now editable
+* Tile settings, initial zoom, and tilemap are now editable
 * Better panic handling
 * Log output to file
 
@@ -50,7 +55,7 @@
   * mostly because file importing broke on macOS Ventura
 
 # v2.0.0-beta.2
-* Stencil 2 is now distributed as .app in .dmg in macOS
+* Stencil 2 is now distributed as .app in .dmg on macOS
 * Fix crosshair not showing up on Mac builds (maybe other builds too)
 * Shows a confirmation popup when deleting a component of more than 5 nodes
 

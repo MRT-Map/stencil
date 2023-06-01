@@ -5,7 +5,7 @@ use bevy_egui::{
 };
 use bevy_mouse_tracking::MousePos;
 
-use crate::state::EditorState;
+use crate::state::{EditorState, IntoSystemSetConfigExt};
 
 pub mod cursor;
 pub mod file_explorer;
@@ -48,32 +48,28 @@ impl Plugin for UiPlugin {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<Focus>()
             .configure_set(UiBaseSet.before(CoreSet::Update))
-            .configure_set(
-                UiSet::Init
-                    .run_if(not(in_state(EditorState::Loading)))
-                    .in_base_set(UiBaseSet),
-            )
+            .configure_set(UiSet::Init.run_if_not_loading().in_base_set(UiBaseSet))
             .configure_set(
                 UiSet::Popups
-                    .run_if(not(in_state(EditorState::Loading)))
+                    .run_if_not_loading()
                     .in_base_set(UiBaseSet)
                     .after(UiSet::Init),
             )
             .configure_set(
                 UiSet::Panels
-                    .run_if(not(in_state(EditorState::Loading)))
+                    .run_if_not_loading()
                     .in_base_set(UiBaseSet)
                     .after(UiSet::Popups),
             )
             .configure_set(
                 UiSet::Tiles
-                    .run_if(not(in_state(EditorState::Loading)))
+                    .run_if_not_loading()
                     .in_base_set(UiBaseSet)
                     .after(UiSet::Panels),
             )
             .configure_set(
                 UiSet::Mouse
-                    .run_if(not(in_state(EditorState::Loading)))
+                    .run_if_not_loading()
                     .in_base_set(UiBaseSet)
                     .after(UiSet::Tiles),
             )

@@ -10,9 +10,10 @@ use load_skin::get_skin_sy;
 
 use crate::{
     error_handling::ack_panic_sy,
-    misc::Action,
+    misc::{cache_path, Action},
     pla2::skin::Skin,
     state::{state_changer_asy, EditorState, LoadingState},
+    ui::tilemap::settings::INIT_TILE_SETTINGS,
 };
 
 pub struct InitPlugin;
@@ -38,8 +39,10 @@ impl Plugin for InitPlugin {
 }
 
 fn done_sy(mut commands: Commands) {
-    //info!("Removing previous tile cache");
-    //let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
+    if INIT_TILE_SETTINGS.clear_cache_on_startup {
+        info!("Removing previous tile cache");
+        let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
+    }
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState(Some(EditorState::Idle)));

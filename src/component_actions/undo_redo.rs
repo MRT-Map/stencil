@@ -12,7 +12,7 @@ use crate::{
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    state::EditorState,
+    state::{EditorState, IntoSystemConfigExt},
 };
 
 #[derive(Clone, Debug)]
@@ -135,6 +135,6 @@ pub fn undo_redo_asy(
 pub struct UndoRedoPlugin;
 impl Plugin for UndoRedoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(undo_redo_asy.run_if(not(in_state(EditorState::Loading))));
+        app.add_system(undo_redo_asy.run_if_not_loading());
     }
 }
