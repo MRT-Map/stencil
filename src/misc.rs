@@ -1,5 +1,6 @@
 use std::{
     any::Any,
+    ops::Deref,
     path::{Path, PathBuf},
     sync::Arc,
 };
