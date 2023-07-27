@@ -24,17 +24,21 @@ impl Plugin for InitPlugin {
             .add_state::<LoadingState>()
             .init_resource::<Skin>()
             .add_event::<Action>()
-            .add_system(state_changer_asy)
-            .add_startup_system(ack_panic_sy);
-        app.add_system(set_icon::set_icon_sy.in_schedule(OnEnter(LoadingState::SetIcon)))
-            .add_system(
-                unzip_assets::unzip_assets_sy.in_schedule(OnEnter(LoadingState::UnzipAssets)),
+            .add_systems(Update, state_changer_asy)
+            .add_systems(Startup, ack_panic_sy);
+        app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
+            .add_systems(
+                OnEnter(LoadingState::UnzipAssets),
+                unzip_assets::unzip_assets_sy,
             )
-            .add_plugin(load_assets::LoadAssetsPlugin)
-            .add_system(compat::compat_sy.in_schedule(OnEnter(LoadingState::Compat)))
-            .add_system(get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
-            .add_system(spawn_camera::spawn_camera.in_schedule(OnEnter(LoadingState::SpawnCamera)))
-            .add_system(done_sy.in_schedule(OnEnter(LoadingState::Done)));
+            .add_plugins(load_assets::LoadAssetsPlugin)
+            .add_systems(OnEnter(LoadingState::Compat), compat::compat_sy)
+            .add_systems(Update, get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
+            .add_systems(
+                OnEnter(LoadingState::SpawnCamera),
+                spawn_camera::spawn_camera,
+            )
+            .add_systems(OnEnter(LoadingState::Done), done_sy);
     }
 }
 

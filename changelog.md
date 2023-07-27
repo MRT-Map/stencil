@@ -3,7 +3,7 @@
 * Added an option to clear tile cache on startup
 * All fields in `tile_settings.toml` are now optional too
 
-# v2.1.1
+# v2.1.0
 * Added window settings, GPU backend, Linux display server protocol configuration
 * Stencil2 now starts in windowed mode instead of fullscreen
 * Settings files are saved as toml instead of msgpack

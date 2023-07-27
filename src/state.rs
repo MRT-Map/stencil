@@ -1,4 +1,7 @@
-use bevy::{ecs::schedule::SystemSetConfig, prelude::*};
+use bevy::{
+    ecs::schedule::{SystemConfigs, SystemSetConfig},
+    prelude::*,
+};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -90,22 +93,14 @@ pub fn state_changer_asy(
     }
 }
 
-pub trait IntoSystemConfigExt<Marker, Config>: IntoSystemConfig<Marker, Config>
-where
-    Config: IntoSystemConfig<(), Config>,
-{
-    fn run_if_not_loading(self) -> Config {
-        self.into_config()
+pub trait IntoSystemConfigExt<Marker>: IntoSystemConfigs<Marker> {
+    fn run_if_not_loading(self) -> SystemConfigs {
+        self.into_configs()
             .run_if(not(in_state(EditorState::Loading)))
     }
 }
 
-impl<T, Config, Marker> IntoSystemConfigExt<Marker, Config> for T
-where
-    T: IntoSystemConfig<Marker, Config>,
-    Config: IntoSystemConfig<(), Config>,
-{
-}
+impl<T, Marker> IntoSystemConfigExt<Marker> for T where T: IntoSystemConfigs<Marker> {}
 
 pub trait IntoSystemSetConfigExt: IntoSystemSetConfig {
     fn run_if_not_loading(self) -> SystemSetConfig {

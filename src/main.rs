@@ -255,21 +255,21 @@ fn main() {
             })
             .disable::<LogPlugin>()
     })
-    .add_plugin(FrameTimeDiagnosticsPlugin);
+    .add_plugins(FrameTimeDiagnosticsPlugin);
 
     app.add_plugins(DefaultPickingPlugins)
-        .add_plugin(MousePosPlugin)
-        .add_plugin(EguiPlugin)
-        .add_plugin(ShapePlugin);
+        .add_plugins(MousePosPlugin)
+        .add_plugins(EguiPlugin)
+        .add_plugins(ShapePlugin);
 
-    app.add_plugin(InitPlugin)
-        .add_plugin(UiPlugin)
-        .add_plugin(RenderingPlugin)
+    app.add_plugins(InitPlugin)
+        .add_plugins(UiPlugin)
+        .add_plugins(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
-        .add_plugin(LoadSavePlugin)
-        .add_plugin(InfoWindowsPlugin)
-        .add_plugin(HotkeyPlugin)
-        .add_plugin(WindowSettingsPlugin)
+        .add_plugins(LoadSavePlugin)
+        .add_plugins(InfoWindowsPlugin)
+        .add_plugins(HotkeyPlugin)
+        .add_plugins(WindowSettingsPlugin)
         .run();
 }

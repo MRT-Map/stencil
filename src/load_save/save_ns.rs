@@ -15,11 +15,13 @@ use crate::{
 pub fn save_ns_asy(
     mut actions: EventReader<Action>,
     query: Query<&PlaComponent<EditorCoords>>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
 ) {
     for event in actions.iter() {
         if matches!(event.downcast_ref(), Some(LoadSaveAct::Save)) {
-            save_single_dir("save_ns1", &mut popup, |a| Box::new(LoadSaveAct::Save1(a)));
+            save_single_dir("save_ns1", &mut popup, |a| {
+                Action::new(LoadSaveAct::Save1(a))
+            });
         } else if let Some(LoadSaveAct::Save1(Some(dir))) = event.downcast_ref() {
             let comps = query.iter().collect::<Vec<_>>();
             let mut files: HashMap<&String, Vec<PlaComponent<MCCoords>>> = HashMap::new();

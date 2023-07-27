@@ -17,7 +17,7 @@ pub enum TileSettingsAct {
 
 pub fn tile_settings_msy(
     mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     mut tile_settings: ResMut<TileSettings>,
 ) {
     for event in actions.iter() {
@@ -66,7 +66,7 @@ pub fn tile_settings_msy(
                     ui.separator();
 
                     if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
-                        ew.send(Box::new(TileSettingsAct::Update(tile_settings.to_owned())));
+                        ew.send(Action::new(TileSettingsAct::Update(tile_settings.to_owned())));
                         *shown = false;
                     }
                     if ui.button("Cancel").clicked() {

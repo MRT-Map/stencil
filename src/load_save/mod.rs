@@ -21,7 +21,7 @@ pub struct LoadSavePlugin;
 
 impl Plugin for LoadSavePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(load_ns::load_ns_asy)
-            .add_system(save_ns::save_ns_asy);
+        app.add_systems(Update, load_ns::load_ns_asy)
+            .add_systems(Update, save_ns::save_ns_asy);
     }
 }

@@ -66,7 +66,7 @@ pub fn create_point_sy(
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: None,
                 after: Some(pla),
@@ -95,20 +95,21 @@ pub fn create_component_sy<const IS_AREA: bool>(
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
-        let next_point =
-            if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
-                #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
-                let closest_angle_vec = ANGLE_VECTORS
-                    .into_iter()
-                    .chain(ANGLE_VECTORS.iter().map(|a| -*a))
-                    .min_by_key(|v| {
-                        (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
-                    })
-                    .unwrap();
-                (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
-            } else {
-                mouse_pos_world
-            };
+        let next_point = if mouse_pos_world != Vec2::ZERO
+            && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
+        {
+            #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
+            let closest_angle_vec = ANGLE_VECTORS
+                .into_iter()
+                .chain(ANGLE_VECTORS.iter().map(|a| -*a))
+                .min_by_key(|v| {
+                    (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
+                })
+                .unwrap();
+            (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
+        } else {
+            mouse_pos_world
+        };
         data.nodes.push(next_point.round().as_ivec2().into());
         commands.entity(entity).insert(data.get_shape(&skin, false));
     }
@@ -190,7 +191,7 @@ pub fn clear_created_component(
                 .remove::<ShapeBundle>()
                 .insert(data.get_shape(skin, false))
                 .remove::<CreatedComponent>();
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: None,
                 after: Some(data.to_owned()),
@@ -202,17 +203,22 @@ pub fn clear_created_component(
 pub struct CreateComponentPlugin;
 impl Plugin for CreateComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            Update,
             create_component_sy::<false>
                 .run_if(in_state(EditorState::CreatingLine))
                 .before(state_changer_asy),
         )
-        .add_system(
+        .add_systems(
+            Update,
             create_component_sy::<true>
                 .run_if(in_state(EditorState::CreatingArea))
                 .before(state_changer_asy),
         )
-        .add_system(create_point_sy.run_if(in_state(EditorState::CreatingPoint)));
+        .add_systems(
+            Update,
+            create_point_sy.run_if(in_state(EditorState::CreatingPoint)),
+        );
     }
 }
 

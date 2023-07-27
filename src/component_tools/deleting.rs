@@ -19,7 +19,7 @@ pub fn delete_component_sy(
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: *e,
                 before: Some(pla.to_owned()),
                 after: None,
@@ -33,6 +33,9 @@ pub struct DeleteComponentPlugin;
 
 impl Plugin for DeleteComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(delete_component_sy.run_if(in_state(EditorState::DeletingComponent)));
+        app.add_systems(
+            Update,
+            delete_component_sy.run_if(in_state(EditorState::DeletingComponent)),
+        );
     }
 }

@@ -19,7 +19,7 @@ pub enum WindowSettingsAct {
 
 pub fn window_settings_msy(
     mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     mut window_settings: ResMut<WindowSettings>,
 ) {
     for event in actions.iter() {
@@ -68,7 +68,7 @@ pub fn window_settings_msy(
                     }
 
                     if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
-                        ew.send(Box::new(WindowSettingsAct::Update(window_settings.to_owned())));
+                        ew.send(Action::new(WindowSettingsAct::Update(window_settings.to_owned())));
                         *shown = false;
                     }
                     if ui.button("Cancel").clicked() {

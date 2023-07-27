@@ -20,7 +20,7 @@ pub enum Step<T> {
 pub fn get_skin_sy(
     mut commands: Commands,
     mut task_s: Local<Step<surf::Result<Skin>>>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
 ) {
     match &mut *task_s {
         Step::Uninitialised => {

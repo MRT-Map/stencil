@@ -13,7 +13,6 @@ pub struct TileBundle {
     _t: Tile,
     pub coord: TileCoord,
 
-    #[bundle]
     pub sprite: SpriteBundle,
 }
 

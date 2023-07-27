@@ -138,7 +138,7 @@ pub fn file_explorer(
 #[tracing::instrument(skip_all)]
 pub fn open_multiple_files(
     id: impl std::fmt::Display + Sync + Send + 'static,
-    popup: &mut EventWriter<Arc<Popup>>,
+    popup: &mut EventWriter<Popup>,
     action_fn: impl FnOnce(Option<BTreeSet<PathBuf>>) -> Action + Send + Sync + Copy + 'static,
 ) {
     popup.send(Popup::new(
@@ -185,7 +185,7 @@ pub fn open_multiple_files(
 #[tracing::instrument(skip_all)]
 pub fn save_single_dir(
     id: impl std::fmt::Display + Sync + Send + 'static,
-    popup: &mut EventWriter<Arc<Popup>>,
+    popup: &mut EventWriter<Popup>,
     action_fn: impl FnOnce(Option<PathBuf>) -> Action + Send + Sync + Copy + 'static,
 ) {
     popup.send(Popup::new(

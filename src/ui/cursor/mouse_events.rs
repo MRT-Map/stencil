@@ -10,7 +10,7 @@ pub struct HoveredComponent;
 
 pub const CLICK_MAX_OFFSET: f32 = 25.0;
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub enum MouseEvent {
     HoverOver(Entity),
     HoverLeave(Entity),
@@ -26,12 +26,14 @@ pub enum MouseEvent {
 pub fn hover_handler_sy(
     mut commands: Commands,
     mut hovered_entity: Local<Option<Entity>>,
-    mut event_reader_over: EventReader<PointerEvent<Over>>,
-    mut event_reader_out: EventReader<PointerEvent<Out>>,
+    mut event_reader_over: EventReader<Pointer<Over>>,
+    mut event_reader_out: EventReader<Pointer<Out>>,
     mut event_writer: EventWriter<MouseEvent>,
 ) {
     for _ in event_reader_out.iter() {
-        let Some(target) = hovered_entity.take() else {break;};
+        let Some(target) = hovered_entity.take() else {
+            break;
+        };
         trace!(?target, "HoverLeave detected");
         event_writer.send(MouseEvent::HoverLeave(target));
         if let Some(mut commands) = commands.get_entity(target) {
@@ -74,7 +76,7 @@ pub fn right_click_handler_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn left_click_handler_sy(
-    mut event_reader_down: EventReader<PointerEvent<Down>>,
+    mut event_reader_down: EventReader<Pointer<Down>>,
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
     buttons: Res<Input<MouseButton>>,

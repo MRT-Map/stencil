@@ -8,7 +8,7 @@ use crate::{
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
-    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSchedule, UiSet},
 };
 
 #[tracing::instrument(skip_all)]
@@ -18,7 +18,7 @@ pub fn selector_sy(
     mut mouse: EventReader<MouseEvent>,
     deselect_query: DeselectQuery,
 ) {
-    if state.0.component_type().is_some() || state.0 == EditorState::DeletingComponent {
+    if state.component_type().is_some() || *state == EditorState::DeletingComponent {
         mouse.clear();
         return;
     }
@@ -41,7 +41,7 @@ pub fn highlight_selected_sy(
     query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
     skin: Res<Skin>,
 ) {
-    if state.0.component_type().is_some() {
+    if state.component_type().is_some() {
         return;
     }
     for (data, entity) in query.iter() {
@@ -71,8 +71,13 @@ pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, en
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(selector_sy.run_if_not_loading())
-            .add_system(highlight_selected_sy.run_if_not_loading().after(UiBaseSet));
+        app.add_systems(Update, selector_sy.run_if_not_loading())
+            .add_systems(
+                PreUpdate,
+                highlight_selected_sy
+                    .run_if_not_loading()
+                    .after(UiSet::Reset),
+            );
     }
 }
 

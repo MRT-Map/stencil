@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostic, Diagnostics, FrameTimeDiagnosticsPlugin},
+    diagnostic::{Diagnostic, Diagnostics, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContexts};
@@ -19,7 +19,7 @@ pub fn ui_sy(
     mut ctx: EguiContexts,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<Action>,
-    diagnostics: Res<Diagnostics>,
+    diagnostics: Res<DiagnosticsStore>,
     mouse_pos_world: Res<MousePosWorld>,
     mouse_pos: Res<MousePos>,
 ) {
@@ -29,7 +29,7 @@ pub fn ui_sy(
                 ($ui:ident, $ew:ident, $label:literal, $action:expr) => {
                     if $ui.button($label).clicked() {
                         info!(label = $label, "Clicked menu item");
-                        $ew.send(Box::new($action))
+                        $ew.send(Action::new($action))
                     }
                 };
             }

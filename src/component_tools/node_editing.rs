@@ -12,7 +12,7 @@ use crate::{
         skin::Skin,
     },
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSchedule, UiSet},
 };
 
 #[derive(Debug)]
@@ -77,7 +77,8 @@ pub fn edit_nodes_sy(
                     }
                     .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
                 );
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // TODO figure out how to fix this
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            // TODO figure out how to fix this
             let Some((list_pos, world_pos)) = handles.min_by_key(|(_, pos)| {
                 mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
             }) else {
@@ -125,7 +126,7 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = orig.take() {
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: Some(orig.old_pla),
                 after: Some(pla.to_owned()),
@@ -244,12 +245,16 @@ pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut c
 pub struct EditNodePlugin;
 impl Plugin for EditNodePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)))
-            .add_system(remove_handles_sy.in_schedule(OnExit(EditorState::EditingNodes)))
-            .add_system(
-                show_handles_sy
-                    .run_if(in_state(EditorState::EditingNodes))
-                    .after(UiBaseSet),
-            );
+        app.add_systems(
+            Update,
+            edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)),
+        )
+        .add_systems(OnExit(EditorState::EditingNodes), remove_handles_sy)
+        .add_systems(
+            PreUpdate,
+            show_handles_sy
+                .run_if(in_state(EditorState::EditingNodes))
+                .after(UiSet::Reset),
+        );
     }
 }

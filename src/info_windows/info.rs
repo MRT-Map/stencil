@@ -10,7 +10,7 @@ use crate::{
 #[allow(clippy::needless_pass_by_value)]
 pub fn info_asy(
     mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     images: Res<ImageAssets>,
     mut ctx: EguiContexts,
     mut texture: Local<Option<TextureId>>,

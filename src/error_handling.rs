@@ -55,7 +55,7 @@ pub fn panic(panic: &PanicInfo) {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn ack_panic_sy(mut popup: EventWriter<Arc<Popup>>) {
+pub fn ack_panic_sy(mut popup: EventWriter<Popup>) {
     let panics_dir = data_dir("panics");
     let to_show_file = panics_dir.join(".to_show");
     let panic_file = match std::fs::read_to_string(&to_show_file) {

@@ -70,7 +70,7 @@ pub fn undo_redo_asy(
             undo_stack.push(histories);
         } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Undo)) {
             let Some(mut histories) = undo_stack.pop() else {
-                continue
+                continue;
             };
             for history in &mut histories {
                 if let Some(before) = &mut history.before {
@@ -100,7 +100,7 @@ pub fn undo_redo_asy(
             redo_stack.push(histories);
         } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Redo)) {
             let Some(mut histories) = redo_stack.pop() else {
-                continue
+                continue;
             };
             for history in &mut histories {
                 if let Some(after) = &mut history.after {
@@ -135,6 +135,6 @@ pub fn undo_redo_asy(
 pub struct UndoRedoPlugin;
 impl Plugin for UndoRedoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(undo_redo_asy.run_if_not_loading());
+        app.add_systems(Update, undo_redo_asy.run_if_not_loading());
     }
 }

@@ -5,7 +5,7 @@ use bevy_egui::egui;
 
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
-pub fn manual_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
+pub fn manual_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
     for event in actions.iter() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Manual)) {
             popup.send(Popup::new(

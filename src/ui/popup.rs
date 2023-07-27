@@ -2,6 +2,7 @@ use std::{
     any::Any,
     collections::HashMap,
     hash::{Hash, Hasher},
+    ops::{Deref, DerefMut},
     sync::{Arc, Mutex},
 };
 
@@ -14,7 +15,23 @@ use crate::{
     ui::{HoveringOverGui, UiSet},
 };
 
-pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
+#[derive(Event, Hash, PartialEq, Eq, Clone)]
+pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);
+
+impl Deref for Popup {
+    type Target = Arc<PopupInner>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Popup {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+pub struct PopupInner<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub id: String,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
     pub ui: Box<
@@ -26,19 +43,19 @@ pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub state: Mutex<Box<T>>,
 }
 
-impl<T: Send + Sync + ?Sized> Hash for Popup<T> {
+impl<T: Send + Sync + ?Sized> Hash for PopupInner<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
     }
 }
 
-impl<T: Send + Sync + ?Sized> PartialEq<Self> for Popup<T> {
+impl<T: Send + Sync + ?Sized> PartialEq<Self> for PopupInner<T> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl<T: Send + Sync + ?Sized> Eq for Popup<T> {}
+impl<T: Send + Sync + ?Sized> Eq for PopupInner<T> {}
 
 impl Popup {
     pub fn new(
@@ -53,19 +70,19 @@ impl Popup {
             + Send
             + 'static,
         state: Mutex<Box<dyn Any + Send + Sync>>,
-    ) -> Arc<Self> {
-        Arc::new(Self {
+    ) -> Self {
+        Self(Arc::new(PopupInner {
             id: id.to_string(),
             window: Box::new(window),
             ui: Box::new(ui),
             state,
-        })
+        }))
     }
     pub fn base_alert(
         id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-    ) -> Arc<Self> {
+    ) -> Self {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
             id.to_string(),
@@ -89,8 +106,8 @@ impl Popup {
         id: impl std::fmt::Display + Send + Sync + 'static,
         title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
         text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-        action: impl Any + Sync + Send + Clone,
-    ) -> Arc<Self> {
+        action: Action,
+    ) -> Self {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
             id.to_string(),
@@ -104,7 +121,7 @@ impl Popup {
             move |_, ui, ew, show| {
                 ui.label(text.to_owned());
                 if ui.button("Yes").clicked() {
-                    ew.send(Box::new(action.to_owned()));
+                    ew.send(action.to_owned());
                     *show = false;
                 }
                 if ui.button("No").clicked() {
@@ -119,15 +136,15 @@ impl Popup {
 #[tracing::instrument(skip_all)]
 pub fn popup_handler(
     mut ctx: EguiContexts,
-    mut event_reader: EventReader<Arc<Popup>>,
+    mut event_reader: EventReader<Popup>,
     mut event_writer: EventWriter<Action>,
-    mut show: Local<HashMap<String, (Arc<Popup>, bool)>>,
+    mut show: Local<HashMap<String, (Popup, bool)>>,
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mouse_pos: Res<MousePos>,
 ) {
     for popup in event_reader.iter() {
         info!(popup.id, "Showing popup");
-        show.insert(popup.id.to_owned(), (popup.to_owned(), true));
+        show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }
     let ctx = ctx.ctx_mut();
     for (id, (popup, showed)) in show.iter_mut() {
@@ -148,7 +165,7 @@ pub struct PopupPlugin;
 
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<Arc<Popup>>()
-            .add_system(popup_handler.in_set(UiSet::Popups));
+        app.add_event::<Popup>()
+            .add_systems(Update, popup_handler.in_set(UiSet::Popups));
     }
 }

@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_egui::{
     egui::{Id, Pos2, Response},
     EguiContexts,
@@ -29,9 +29,8 @@ pub struct Focus(pub Option<Id>);
 
 pub struct UiPlugin;
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-#[system_set(base)]
-pub struct UiBaseSet;
+#[derive(Debug, Hash, PartialEq, Eq, Clone, ScheduleLabel)]
+pub struct UiSchedule;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum UiSet {
@@ -47,39 +46,33 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<Focus>()
-            .configure_set(UiBaseSet.before(CoreSet::Update))
-            .configure_set(UiSet::Init.run_if_not_loading().in_base_set(UiBaseSet))
+            .init_schedule(UiSchedule)
+            .configure_set(UiSchedule, UiSet::Init.run_if_not_loading())
             .configure_set(
-                UiSet::Popups
-                    .run_if_not_loading()
-                    .in_base_set(UiBaseSet)
-                    .after(UiSet::Init),
+                UiSchedule,
+                UiSet::Popups.run_if_not_loading().after(UiSet::Init),
             )
             .configure_set(
-                UiSet::Panels
-                    .run_if_not_loading()
-                    .in_base_set(UiBaseSet)
-                    .after(UiSet::Popups),
+                UiSchedule,
+                UiSet::Panels.run_if_not_loading().after(UiSet::Popups),
             )
             .configure_set(
-                UiSet::Tiles
-                    .run_if_not_loading()
-                    .in_base_set(UiBaseSet)
-                    .after(UiSet::Panels),
+                UiSchedule,
+                UiSet::Tiles.run_if_not_loading().after(UiSet::Panels),
             )
             .configure_set(
-                UiSet::Mouse
-                    .run_if_not_loading()
-                    .in_base_set(UiBaseSet)
-                    .after(UiSet::Tiles),
+                UiSchedule,
+                UiSet::Mouse.run_if_not_loading().after(UiSet::Tiles),
             )
-            .configure_set(UiSet::Reset.in_base_set(UiBaseSet).after(UiSet::Mouse))
-            .add_plugin(popup::PopupPlugin)
-            .add_plugin(panel::PanelPlugin)
-            .add_plugin(cursor::CursorPlugin)
-            .add_system(reset_hovering_over_gui_sy.in_set(UiSet::Reset))
-            .add_system(init_focus.in_set(UiSet::Init))
-            .add_system(save_focus.in_set(UiSet::Reset));
+            .configure_set(UiSchedule, UiSet::Reset.after(UiSet::Mouse))
+            .add_plugins(popup::PopupPlugin)
+            .add_plugins(panel::PanelPlugin)
+            .add_plugins(cursor::CursorPlugin)
+            .add_systems(Update, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
+            .add_systems(Update, init_focus.in_set(UiSet::Init))
+            .add_systems(Update, save_focus.in_set(UiSet::Reset));
+        let mut order = app.world.resource_mut::<MainScheduleOrder>();
+        order.insert_after(PreUpdate, UiSchedule);
     }
 }
 

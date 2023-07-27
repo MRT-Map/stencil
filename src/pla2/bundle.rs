@@ -11,9 +11,7 @@ use crate::pla2::{
 pub struct ComponentBundle {
     pub data: PlaComponent<EditorCoords>,
 
-    #[bundle]
     pub shape: (ShapeBundle, Fill, Stroke),
-    #[bundle]
     pub pickable: (PickableBundle, RaycastPickTarget),
 }
 
