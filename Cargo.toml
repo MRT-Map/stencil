@@ -7,7 +7,7 @@ authors = ["7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"
 repository = "https://github.com/mrt-map/stencil2"
 readme = "README.md"
-keywords = ["stencil", "stencil2", "mrt-map", "mrt mapping services"]
+keywords = ["stencil", "stencil2", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -51,8 +51,8 @@ async-lock = "2.7.0"
 backtrace = "0.3.68"
 color-backtrace = "0.5.1"
 
-serde = { version = "1.0.171", features = ["derive"] }
-rmp-serde = "1.1.1"
+serde = { version = "1.0.176", features = ["derive"] }
+rmp-serde = "1.1.2"
 toml = "0.7.6"
 
 dirs = "5.0.1"
