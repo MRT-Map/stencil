@@ -41,7 +41,7 @@ pub fn mouse_drag_sy(
             let d = map_wh / win_wh * (**mouse_pos - *origin_pos);
             trace!("Mouse moved {d:?} from origin");
             transform.translation.x = camera_origin_pos.unwrap().x - d.x;
-            transform.translation.y = camera_origin_pos.unwrap().y - d.y;
+            transform.translation.y = camera_origin_pos.unwrap().y + d.y;
         } else {
             *mouse_origin_pos = Some(*mouse_pos.into_inner());
             *camera_origin_pos = Some(transform.translation.truncate());
