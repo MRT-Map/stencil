@@ -142,12 +142,12 @@ pub fn popup_handler(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mouse_pos: Res<MousePos>,
 ) {
-    for popup in event_reader.iter() {
+    for popup in &mut event_reader {
         info!(popup.id, "Showing popup");
         show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }
     let ctx = ctx.ctx_mut();
-    for (id, (popup, showed)) in show.iter_mut() {
+    for (id, (popup, showed)) in &mut show {
         let response: egui::InnerResponse<Option<()>> = (popup.window)()
             .show(ctx, |ui| {
                 (popup.ui)(&popup.state, ui, &mut event_writer, showed);

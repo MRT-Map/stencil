@@ -8,7 +8,7 @@ use crate::{
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
-    ui::{cursor::mouse_events::MouseEvent, UiSchedule, UiSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSet},
 };
 
 #[tracing::instrument(skip_all)]
@@ -22,7 +22,7 @@ pub fn selector_sy(
         mouse.clear();
         return;
     }
-    for event in mouse.iter() {
+    for event in &mut mouse {
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
                 select_entity(&mut commands, &deselect_query, *e);

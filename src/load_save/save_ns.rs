@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::PathBuf};
 
 use bevy::prelude::*;
 use itertools::Itertools;
@@ -17,7 +17,7 @@ pub fn save_ns_asy(
     query: Query<&PlaComponent<EditorCoords>>,
     mut popup: EventWriter<Popup>,
 ) {
-    for event in actions.iter() {
+    for event in &mut actions {
         if matches!(event.downcast_ref(), Some(LoadSaveAct::Save)) {
             save_single_dir("save_ns1", &mut popup, |a| {
                 Action::new(LoadSaveAct::Save1(a))

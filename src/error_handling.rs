@@ -1,4 +1,4 @@
-use std::{io::ErrorKind, panic::PanicInfo, sync::Arc, time::SystemTime};
+use std::{io::ErrorKind, panic::PanicInfo, time::SystemTime};
 
 use backtrace::Backtrace;
 use bevy::prelude::*;

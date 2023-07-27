@@ -74,7 +74,7 @@ pub fn state_changer_asy(
 ) {
     let mut new_state = None;
     let mut reader = actions.p0();
-    for event in reader.iter() {
+    for event in &mut reader {
         if let Some(ChangeStateAct(state)) = event.downcast_ref() {
             new_state = Some(*state);
         }

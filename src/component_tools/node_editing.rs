@@ -12,7 +12,7 @@ use crate::{
         skin::Skin,
     },
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, UiSchedule, UiSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSet},
 };
 
 #[derive(Debug)]
@@ -47,7 +47,7 @@ pub fn edit_nodes_sy(
     }
 
     let mut clear_orig = false;
-    for event in mouse.iter() {
+    for event in &mut mouse {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             #[derive(Debug, Eq, PartialEq, Hash)]
             enum Pos {

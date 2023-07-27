@@ -50,7 +50,7 @@ pub fn create_point_sy(
     prev_namespace_used: Res<PrevNamespaceUsed>,
     mut actions: EventWriter<Action>,
 ) {
-    for event in mouse.iter() {
+    for event in &mut mouse {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             let mut new_point = ComponentBundle::new({
                 let mut point = PlaComponent::new(ComponentType::Point);
@@ -113,7 +113,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
         data.nodes.push(next_point.round().as_ivec2().into());
         commands.entity(entity).insert(data.get_shape(&skin, false));
     }
-    for event in mouse.iter() {
+    for event in &mut mouse {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             let new = mouse_pos_world.xy().round().as_ivec2().into();
             if set.is_empty() {
@@ -179,7 +179,7 @@ pub fn clear_created_component(
     prev_namespace_used: &String,
     actions: &mut EventWriter<Action>,
 ) {
-    for (mut data, entity) in created_query.iter_mut() {
+    for (mut data, entity) in &mut *created_query {
         debug!(?entity, "Clearing CreatedComponent marker");
         if data.nodes.len() == 1 {
             commands.entity(entity).despawn_recursive();

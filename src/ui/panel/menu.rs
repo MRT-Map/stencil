@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostic, Diagnostics, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContexts};

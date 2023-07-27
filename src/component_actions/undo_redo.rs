@@ -12,7 +12,7 @@ use crate::{
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    state::{EditorState, IntoSystemConfigExt},
+    state::IntoSystemConfigExt,
 };
 
 #[derive(Clone, Debug)]
@@ -49,7 +49,7 @@ pub fn undo_redo_asy(
     skin: Res<Skin>,
 ) {
     let selected = selected_entity.get_single().ok();
-    for event in actions.iter() {
+    for event in &mut actions {
         if let Some(UndoRedoAct::NewHistory(histories)) = event.downcast_ref() {
             let histories = histories
                 .iter()

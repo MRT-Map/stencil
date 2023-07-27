@@ -1,8 +1,4 @@
-use std::{
-    collections::BTreeSet,
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use std::{collections::BTreeSet, path::PathBuf, sync::Mutex};
 
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
@@ -136,10 +132,13 @@ pub fn file_explorer(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn open_multiple_files(
-    id: impl std::fmt::Display + Sync + Send + 'static,
+pub fn open_multiple_files<
+    I: std::fmt::Display + Sync + Send + 'static,
+    F: FnOnce(Option<BTreeSet<PathBuf>>) -> Action + Send + Sync + Copy + 'static,
+>(
+    id: I,
     popup: &mut EventWriter<Popup>,
-    action_fn: impl FnOnce(Option<BTreeSet<PathBuf>>) -> Action + Send + Sync + Copy + 'static,
+    action_fn: F,
 ) {
     popup.send(Popup::new(
         id.to_string(),
@@ -183,10 +182,13 @@ pub fn open_multiple_files(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn save_single_dir(
-    id: impl std::fmt::Display + Sync + Send + 'static,
+pub fn save_single_dir<
+    I: std::fmt::Display + Sync + Send + 'static,
+    F: FnOnce(Option<PathBuf>) -> Action + Send + Sync + Copy + 'static,
+>(
+    id: I,
     popup: &mut EventWriter<Popup>,
-    action_fn: impl FnOnce(Option<PathBuf>) -> Action + Send + Sync + Copy + 'static,
+    action_fn: F,
 ) {
     popup.send(Popup::new(
         id.to_string(),

@@ -79,7 +79,7 @@ pub fn cursor_icon_sy(
     } else {
         EditorState::Loading
     };
-    for mut window in windows.iter_mut() {
+    for mut window in &mut windows {
         if state.component_type().is_some() {
             window.cursor.visible = hovering_over_gui.0;
             continue;

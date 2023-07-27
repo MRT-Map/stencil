@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::TextureId, EguiContexts};
@@ -18,7 +18,7 @@ pub fn info_asy(
     let texture = texture
         .get_or_insert_with(|| ctx.add_image(images.stencil_text.to_owned()))
         .to_owned();
-    for event in actions.iter() {
+    for event in &mut actions {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {
             popup.send(Popup::new(
                 "info_popup",

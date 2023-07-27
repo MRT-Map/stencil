@@ -25,8 +25,8 @@ static SEMAPHORE: Lazy<Semaphore> =
     Lazy::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
-pub fn get_shown_tiles(
-    q_camera: &Query<(&Camera, Ref<Transform>), impl ReadOnlyWorldQuery>,
+pub fn get_shown_tiles<R: ReadOnlyWorldQuery>(
+    q_camera: &Query<(&Camera, Ref<Transform>), R>,
     zoom: i8,
     tile_settings: &TileSettings,
 ) -> Vec<TileCoord> {
@@ -54,10 +54,10 @@ pub fn get_shown_tiles(
     );
 
     (t_left - 1..=t_right + 1)
-        .flat_map(|ref x| {
+        .flat_map(|x| {
             (t_top - 1..=t_bottom + 1)
                 .map(|y| TileCoord {
-                    x: *x,
+                    x,
                     y,
                     z: zoom.min(tile_settings.max_tile_zoom),
                 })
@@ -85,7 +85,7 @@ pub fn show_tiles_sy(
     let thread_pool = AsyncComputeTaskPool::get();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
-        for (entity, tile_coord) in query.iter_mut() {
+        for (entity, tile_coord) in &mut query {
             if (zoom.0 <= f32::from(tile_settings.max_tile_zoom)
                 && tile_coord.z > zoom.0.round() as i8)
                 || (zoom.0 > f32::from(tile_settings.max_tile_zoom)
@@ -147,7 +147,7 @@ pub fn show_tiles_sy(
     }
 
     let mut to_remove = vec![];
-    for (tile_coord, task) in pending_tiles.iter_mut() {
+    for (tile_coord, task) in &mut pending_tiles {
         if !shown_tiles.contains(tile_coord) {
             to_remove.push((*tile_coord, true));
             continue;
