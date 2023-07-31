@@ -49,7 +49,7 @@ futures-lite = "1.13.0"
 async-lock = "2.7.0"
 
 backtrace = "0.3.68"
-color-backtrace = "0.5.1"
+color-backtrace = "0.6.0"
 
 serde = { version = "1.0.176", features = ["derive"] }
 rmp-serde = "1.1.2"
