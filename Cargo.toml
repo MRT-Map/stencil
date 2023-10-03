@@ -31,7 +31,7 @@ features = [
 bevy_mouse_tracking = { version = "0.6.0", package = "bevy_mouse_tracking_plugin" }
 bevy_prototype_lyon = "0.9.0"
 bevy_egui = "0.21.0"
-egui_commonmark = "0.7.4"
+egui_commonmark = "0.8.0"
 egui_extras = "0.23.0"
 # TODO change back
 bevy_mod_picking = { git = "https://github.com/iiiii7d/bevy_mod_picking", branch = "bevy-0.11-compatibility", default-features = false, features = ["backend_raycast", "highlight", "selection"] }
