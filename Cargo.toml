@@ -44,7 +44,7 @@ color-spantrace = "0.2.0"
 tracing-error = "0.2.0"
 
 surf = "2.3.2"
-async-fs = "1.6.0"
+async-fs = "2.0.0"
 futures-lite = "1.13.0"
 async-lock = "2.7.0"
 
