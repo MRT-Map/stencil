@@ -46,7 +46,7 @@ tracing-error = "0.2.0"
 surf = "2.3.2"
 async-fs = "2.0.0"
 futures-lite = "1.13.0"
-async-lock = "2.7.0"
+async-lock = "3.0.0"
 
 backtrace = "0.3.68"
 color-backtrace = "0.6.0"
