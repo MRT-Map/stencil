@@ -7,7 +7,7 @@ use crate::init::LoadingState as SLoadingState;
 pub struct ImageAssets {
     #[asset(path = "crosshair.png")]
     pub crosshair: Handle<Image>,
-    #[asset(path = "stencil-text.png")]
+    #[asset(path = "ste-light.png")]
     pub stencil_text: Handle<Image>,
 }
 
