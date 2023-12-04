@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{backends::raycast::RaycastPickable, prelude::*};
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
 use crate::pla2::{
@@ -12,7 +12,7 @@ pub struct ComponentBundle {
     pub data: PlaComponent<EditorCoords>,
 
     pub shape: (ShapeBundle, Fill, Stroke),
-    pub pickable: (PickableBundle, RaycastPickTarget),
+    pub pickable: PickableBundle,
 }
 
 impl ComponentBundle {
@@ -25,7 +25,7 @@ impl ComponentBundle {
                 Fill::color(Color::NONE),
                 Stroke::color(Color::NONE),
             ),
-            pickable: (PickableBundle::default(), RaycastPickTarget::default()),
+            pickable: PickableBundle::default(),
         }
     }
     pub fn update_shape(&mut self, skin: &Skin) {

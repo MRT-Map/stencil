@@ -15,7 +15,7 @@ pub fn delete_component_sy(
     query: Query<(&PlaComponent<EditorCoords>, Entity)>,
     mut actions: EventWriter<Action>,
 ) {
-    for event in &mut mouse {
+    for event in mouse.read() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");

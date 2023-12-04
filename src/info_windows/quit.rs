@@ -15,7 +15,7 @@ pub fn quit_asy(
     components: Query<(), With<PlaComponent<EditorCoords>>>,
 ) {
     let mut send_queue: Vec<Action> = vec![];
-    for event in &mut actions.p0() {
+    for event in actions.p0().read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Quit(false))) {
             if components.is_empty() || cfg!(debug_assertions) {
                 send_queue.push(Action::new(InfoWindowsAct::Quit(true)));

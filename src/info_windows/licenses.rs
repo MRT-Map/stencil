@@ -15,7 +15,7 @@ static LICENSES: Lazy<LicenseRetriever> =
 static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
 pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
-    for event in &mut actions {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Licenses)) {
             popup.send(Popup::new(
                 "info_popup",

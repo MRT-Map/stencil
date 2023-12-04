@@ -25,7 +25,7 @@ pub fn load_ns_asy(
     existing_comps: Query<(&PlaComponent<EditorCoords>, Entity)>,
 ) {
     let mut send_queue: Vec<Action> = vec![];
-    for event in &mut actions.p0() {
+    for event in actions.p0().read() {
         if matches!(event.downcast_ref(), Some(LoadSaveAct::Load)) {
             open_multiple_files("load_ns1", &mut popup, |a| {
                 Action::new(LoadSaveAct::Load1(a))

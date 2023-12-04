@@ -26,13 +26,13 @@ impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Zoom(INIT_TILE_SETTINGS.init_zoom))
             .insert_resource(INIT_TILE_SETTINGS.to_owned())
-            .configure_set(
+            .configure_sets(
                 UiSchedule,
                 RenderingSet::Mouse
                     .run_if(not(resource_exists_and_equals(HoveringOverGui(true))))
                     .in_set(UiSet::Tiles),
             )
-            .configure_set(UiSchedule, RenderingSet::Tiles.run_if_not_loading())
+            .configure_sets(UiSchedule, RenderingSet::Tiles.run_if_not_loading())
             .add_systems(
                 UiSchedule,
                 (mouse_nav::mouse_drag_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),

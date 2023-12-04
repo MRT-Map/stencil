@@ -1,7 +1,5 @@
-use bevy::{
-    prelude::{Commands, EventWriter, Local, NextState},
-    tasks::{AsyncComputeTaskPool, Task},
-};
+use async_executor::{Executor, Task};
+use bevy::prelude::{Commands, EventWriter, Local, NextState};
 use futures_lite::future;
 use tracing::{error, info};
 
@@ -19,11 +17,13 @@ pub fn get_skin_sy(
     mut commands: Commands,
     mut task_s: Local<Step<surf::Result<Skin>>>,
     mut popup: EventWriter<Popup>,
+    mut executor: Local<Option<Executor>>,
 ) {
+    let executor = executor.get_or_insert_with(Executor::new);
     match &mut *task_s {
         Step::Uninitialised => {
-            let thread_pool = AsyncComputeTaskPool::get();
-            let new_task = thread_pool.spawn(async move {
+            let new_task = executor.spawn(async move {
+                println!("afasdghfgkasdf");
                 surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
                     .recv_json::<Skin>().await
             });
@@ -31,7 +31,9 @@ pub fn get_skin_sy(
             *task_s = Step::Pending(new_task);
         }
         Step::Pending(task) => match future::block_on(future::poll_once(task)) {
-            None => {}
+            None => {
+                executor.try_tick();
+            }
             Some(Ok(skin)) => {
                 info!("Retrieved");
                 commands.insert_resource(skin);

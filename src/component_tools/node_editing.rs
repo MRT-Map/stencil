@@ -47,7 +47,7 @@ pub fn edit_nodes_sy(
     }
 
     let mut clear_orig = false;
-    for event in &mut mouse {
+    for event in mouse.read() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             #[derive(Debug, Eq, PartialEq, Hash)]
             enum Pos {
@@ -170,7 +170,7 @@ pub fn update_handles(
                             coord.as_vec2()
                         },
                     }),
-                    transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                    spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
                     ..default()
                 },
                 Fill::color(Color::WHITE),
@@ -210,7 +210,7 @@ pub fn update_handles(
                     radius: weight * 0.25,
                     center: coord.as_vec2(),
                 }),
-                transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
                 ..default()
             },
             Fill::color(Color::WHITE),

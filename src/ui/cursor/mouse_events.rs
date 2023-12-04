@@ -30,7 +30,7 @@ pub fn hover_handler_sy(
     mut event_reader_out: EventReader<Pointer<Out>>,
     mut event_writer: EventWriter<MouseEvent>,
 ) {
-    for _ in &mut event_reader_out {
+    for _ in event_reader_out.read() {
         let Some(target) = hovered_entity.take() else {
             break;
         };
@@ -40,7 +40,7 @@ pub fn hover_handler_sy(
             commands.remove::<HoveredComponent>();
         }
     }
-    for e in &mut event_reader_over {
+    for e in event_reader_over.read() {
         trace!(?e.target, "HoverOver detected");
         *hovered_entity = Some(e.target);
         event_writer.send(MouseEvent::HoverOver(e.target));
@@ -87,7 +87,7 @@ pub fn left_click_handler_sy(
 ) {
     let mut pressed_on_comp = false;
     if !hovering_over_gui.0 {
-        for e in &mut event_reader_down {
+        for e in event_reader_down.read() {
             if e.button != PointerButton::Primary {
                 continue;
             }

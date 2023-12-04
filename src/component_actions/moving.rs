@@ -43,7 +43,7 @@ pub fn move_component_sy(
         transform.translation.y =
             (mouse_pos_world.y - orig_mouse_pos_world.y + orig_select_translation.y).round();
     }
-    for event in &mut mouse {
+    for event in mouse.read() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             if hovered.is_some() {
                 *orig = Some((*mouse_pos_world, transform.translation));

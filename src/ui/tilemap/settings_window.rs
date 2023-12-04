@@ -20,7 +20,7 @@ pub fn tile_settings_msy(
     mut popup: EventWriter<Popup>,
     mut tile_settings: ResMut<TileSettings>,
 ) {
-    for event in &mut actions {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(TileSettingsAct::Open)) {
             popup.send(Popup::new(
                 "tile_settings_win",

@@ -22,7 +22,7 @@ pub fn window_settings_msy(
     mut popup: EventWriter<Popup>,
     mut window_settings: ResMut<WindowSettings>,
 ) {
-    for event in &mut actions {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(WindowSettingsAct::Open)) {
             popup.send(Popup::new(
                 "window_settings_win",

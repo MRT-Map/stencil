@@ -17,7 +17,7 @@ pub fn save_ns_asy(
     query: Query<&PlaComponent<EditorCoords>>,
     mut popup: EventWriter<Popup>,
 ) {
-    for event in &mut actions {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(LoadSaveAct::Save)) {
             save_single_dir("save_ns1", &mut popup, |a| {
                 Action::new(LoadSaveAct::Save1(a))

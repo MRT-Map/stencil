@@ -7,7 +7,7 @@ use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
-    for event in &mut actions {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Changelog)) {
             popup.send(Popup::new(
                 "changelog",

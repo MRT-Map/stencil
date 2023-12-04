@@ -49,7 +49,7 @@ pub fn undo_redo_asy(
     skin: Res<Skin>,
 ) {
     let selected = selected_entity.get_single().ok();
-    for event in &mut actions {
+    for event in actions.read() {
         if let Some(UndoRedoAct::NewHistory(histories)) = event.downcast_ref() {
             let histories = histories
                 .iter()

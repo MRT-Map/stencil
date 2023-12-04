@@ -65,7 +65,7 @@ pub fn mouse_zoom_sy(
         return;
     }
     let (mut ort_proj, mut transform) = camera.single_mut();
-    for ev in &mut scroll_evr {
+    for ev in scroll_evr.read() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125,
             MouseScrollUnit::Pixel => ev.y * 0.0125,

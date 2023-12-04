@@ -22,7 +22,7 @@ pub fn selector_sy(
         mouse.clear();
         return;
     }
-    for event in &mut mouse {
+    for event in mouse.read() {
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
                 select_entity(&mut commands, &deselect_query, *e);

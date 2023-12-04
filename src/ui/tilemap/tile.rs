@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
+use async_executor::{Executor, Task};
 use async_lock::Semaphore;
-use bevy::{
-    ecs::query::ReadOnlyWorldQuery,
-    prelude::*,
-    tasks::{AsyncComputeTaskPool, Task},
-};
+use bevy::{ecs::query::ReadOnlyWorldQuery, prelude::*};
 use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
@@ -75,6 +72,7 @@ pub fn show_tiles_sy(
     server: Res<AssetServer>,
     tile_settings: Res<TileSettings>,
     mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<()>>>>,
+    mut executor: Local<Option<Executor>>,
 ) {
     if q_camera.is_empty() {
         return;
@@ -82,7 +80,8 @@ pub fn show_tiles_sy(
 
     let (camera, transform) = q_camera.single();
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, &tile_settings);
-    let thread_pool = AsyncComputeTaskPool::get();
+    let executor = executor.get_or_insert_with(Executor::new);
+    executor.try_tick();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
         for (entity, tile_coord) in &mut query {
@@ -122,7 +121,7 @@ pub fn show_tiles_sy(
                     let url = tile_coord.url(&tile_settings);
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(&tile_settings);
-                    let new_task = thread_pool.spawn(async move {
+                    let new_task = executor.spawn(async move {
                         if std::env::var("NO_DOWNLOAD").is_ok() {
                             let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
                                 150
@@ -148,6 +147,7 @@ pub fn show_tiles_sy(
 
     let mut to_remove = vec![];
     for (tile_coord, task) in &mut pending_tiles {
+        executor.try_tick();
         if !shown_tiles.contains(tile_coord) {
             to_remove.push((*tile_coord, true));
             continue;
@@ -166,9 +166,9 @@ pub fn show_tiles_sy(
     for (remove, cancel) in to_remove {
         if let Some(a) = pending_tiles.remove(&remove) {
             if cancel {
-                thread_pool.spawn(a.cancel()).detach();
+                executor.spawn(a.cancel()).detach();
             }
         }
     }
-    server.free_unused_assets();
+    //server.free_unused_assets();
 }

@@ -47,24 +47,24 @@ impl Plugin for UiPlugin {
         app.init_resource::<HoveringOverGui>()
             .init_resource::<Focus>()
             .init_schedule(UiSchedule)
-            .configure_set(UiSchedule, UiSet::Init.run_if_not_loading())
-            .configure_set(
+            .configure_sets(UiSchedule, UiSet::Init.run_if_not_loading())
+            .configure_sets(
                 UiSchedule,
                 UiSet::Popups.run_if_not_loading().after(UiSet::Init),
             )
-            .configure_set(
+            .configure_sets(
                 UiSchedule,
                 UiSet::Panels.run_if_not_loading().after(UiSet::Popups),
             )
-            .configure_set(
+            .configure_sets(
                 UiSchedule,
                 UiSet::Tiles.run_if_not_loading().after(UiSet::Panels),
             )
-            .configure_set(
+            .configure_sets(
                 UiSchedule,
                 UiSet::Mouse.run_if_not_loading().after(UiSet::Tiles),
             )
-            .configure_set(UiSchedule, UiSet::Reset.after(UiSet::Mouse))
+            .configure_sets(UiSchedule, UiSet::Reset.after(UiSet::Mouse))
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)

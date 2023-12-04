@@ -159,11 +159,11 @@ impl PlaComponent<EditorCoords> {
                         extents: Vec2::splat(2.0),
                         origin: RectangleOrigin::Center,
                     }),
-                    transform: Transform::from_xyz(
+                    spatial: SpatialBundle::from_transform(Transform::from_xyz(
                         self.nodes[0].0.x as f32,
                         self.nodes[0].0.y as f32,
                         10.0,
-                    ),
+                    )),
                     ..default()
                 },
                 Fill::color(if selected {
@@ -240,7 +240,7 @@ impl PlaComponent<EditorCoords> {
         (
             ShapeBundle {
                 path,
-                transform,
+                spatial: SpatialBundle::from_transform(transform),
                 ..default()
             },
             fill,

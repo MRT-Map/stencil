@@ -142,7 +142,7 @@ pub fn popup_handler(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mouse_pos: Res<MousePos>,
 ) {
-    for popup in &mut event_reader {
+    for popup in event_reader.read() {
         info!(popup.id, "Showing popup");
         show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }

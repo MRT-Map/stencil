@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::schedule::{SystemConfigs, SystemSetConfig},
+    ecs::schedule::{SystemConfigs, SystemSetConfig, SystemSetConfigs},
     prelude::*,
 };
 use serde::{Deserialize, Serialize};
@@ -74,7 +74,7 @@ pub fn state_changer_asy(
 ) {
     let mut new_state = None;
     let mut reader = actions.p0();
-    for event in &mut reader {
+    for event in reader.read() {
         if let Some(ChangeStateAct(state)) = event.downcast_ref() {
             new_state = Some(*state);
         }
@@ -102,11 +102,11 @@ pub trait IntoSystemConfigExt<Marker>: IntoSystemConfigs<Marker> {
 
 impl<T, Marker> IntoSystemConfigExt<Marker> for T where T: IntoSystemConfigs<Marker> {}
 
-pub trait IntoSystemSetConfigExt: IntoSystemSetConfig {
-    fn run_if_not_loading(self) -> SystemSetConfig {
-        self.into_config()
+pub trait IntoSystemSetConfigExt: IntoSystemSetConfigs {
+    fn run_if_not_loading(self) -> SystemSetConfigs {
+        self.into_configs()
             .run_if(not(in_state(EditorState::Loading)))
     }
 }
 
-impl<T> IntoSystemSetConfigExt for T where T: IntoSystemSetConfig {}
+impl<T> IntoSystemSetConfigExt for T where T: IntoSystemSetConfigs {}

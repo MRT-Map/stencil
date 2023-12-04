@@ -166,7 +166,10 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,
-    render::{settings::WgpuSettings, RenderPlugin},
+    render::{
+        settings::{RenderCreation, WgpuSettings},
+        RenderPlugin,
+    },
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
@@ -259,14 +262,14 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest())
             .set(AssetPlugin {
-                asset_folder: data_dir("assets").to_string_lossy().to_string(),
+                file_path: data_dir("assets").to_string_lossy().to_string(),
                 ..default()
             })
             .set(RenderPlugin {
-                wgpu_settings: WgpuSettings {
+                render_creation: RenderCreation::Automatic(WgpuSettings {
                     backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
                     ..default()
-                },
+                }),
             })
             .disable::<LogPlugin>()
     })
