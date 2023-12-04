@@ -29,7 +29,7 @@ pub fn move_component_sy(
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if state.component_type().is_some() {
+    if state.component_type().is_some() || *state == EditorState::EditingNodes {
         mouse.clear();
         return;
     }
