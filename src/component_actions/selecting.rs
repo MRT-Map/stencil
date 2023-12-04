@@ -4,7 +4,7 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use crate::{
     pla2::{
         bundle::{EntityCommandsSelectExt, SelectedComponent},
-        component::{EditorCoords, PlaComponent, Select},
+        component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},

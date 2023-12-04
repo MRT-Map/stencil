@@ -1,11 +1,7 @@
 use std::sync::Mutex;
 
 use bevy::prelude::*;
-use bevy_egui::{
-    egui,
-    egui::{vec2, TextureId},
-    EguiContexts,
-};
+use bevy_egui::{egui, egui::vec2, EguiContexts};
 
 use crate::{
     info_windows::InfoWindowsAct, init::load_assets::ImageAssets, misc::Action, ui::popup::Popup,
@@ -15,8 +11,8 @@ use crate::{
 pub fn info_asy(
     mut actions: EventReader<Action>,
     mut popup: EventWriter<Popup>,
-    images: Res<ImageAssets>,
-    mut ctx: EguiContexts,
+    _images: Res<ImageAssets>,
+    _ctx: EguiContexts,
 ) {
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {

@@ -11,8 +11,8 @@ use crate::{
     misc::Action,
     pla2::{
         bundle::{
-            AreaComponentBundle, ComponentBundle, CreatedComponent, EntityCommandsSelectExt,
-            LineComponentBundle, PointComponentBundle,
+            AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
+            PointComponentBundle,
         },
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,

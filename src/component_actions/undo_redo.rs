@@ -9,7 +9,7 @@ use crate::{
     misc::Action,
     pla2::{
         bundle::{
-            AreaComponentBundle, ComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
+            AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle, SelectedComponent,
         },
         component::{ComponentType, EditorCoords, PlaComponent},
@@ -96,9 +96,9 @@ pub fn undo_redo_asy(
                         let entity = *history.component_id.read().unwrap();
                         commands.entity(entity).insert(before.to_owned());
                         if Some(entity) == selected {
-                            commands.entity(entity).select_component(&skin, &before);
+                            commands.entity(entity).select_component(&skin, before);
                         } else {
-                            commands.entity(entity).component_display(&skin, &before);
+                            commands.entity(entity).component_display(&skin, before);
                         }
                     }
                 } else {
@@ -134,9 +134,9 @@ pub fn undo_redo_asy(
                         let entity = *history.component_id.read().unwrap();
                         commands.entity(entity).insert(after.to_owned());
                         if Some(entity) == selected {
-                            commands.entity(entity).select_component(&skin, &after);
+                            commands.entity(entity).select_component(&skin, after);
                         } else {
-                            commands.entity(entity).component_display(&skin, &after);
+                            commands.entity(entity).component_display(&skin, after);
                         }
                     }
                 } else {

@@ -145,7 +145,7 @@ pub fn update_handles(
     trace!("Updating handles");
     commands
         .entity(e)
-        .component_display(&skin, &pla)
+        .component_display(skin, pla)
         .despawn_descendants();
     let children = pla
         .nodes

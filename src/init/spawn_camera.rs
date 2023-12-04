@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{prelude::*, MainCamera};
 
 use crate::state::LoadingState;

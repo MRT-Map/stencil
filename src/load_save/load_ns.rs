@@ -8,7 +8,7 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     pla2::{
-        bundle::{AreaComponentBundle, ComponentBundle, LineComponentBundle, PointComponentBundle},
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         component::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },

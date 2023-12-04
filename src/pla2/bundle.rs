@@ -1,9 +1,9 @@
-use bevy::{ecs::system::EntityCommands, math::cubic_splines::Point, prelude::*};
-use bevy_mod_picking::{backends::raycast::RaycastPickable, prelude::*};
+use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy_mod_picking::prelude::*;
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
 use crate::pla2::{
-    component::{ComponentType, EditorCoords, PlaComponent, Select},
+    component::{EditorCoords, PlaComponent, Select},
     skin::Skin,
 };
 
@@ -23,14 +23,14 @@ pub struct PointComponentBundle {
     pub fill: Fill,
 }
 impl PointComponentBundle {
+    #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
-        let mut s = Self {
+        Self {
             pickable: PickableBundle::default(),
             shape: data.get_shape(skin),
             fill: data.get_fill(skin),
             data,
-        };
-        s
+        }
     }
 }
 impl ComponentBundle for PointComponentBundle {
@@ -63,6 +63,7 @@ pub struct LineComponentBundle {
     pub stroke: Stroke,
 }
 impl LineComponentBundle {
+    #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
             pickable: PickableBundle::default(),
@@ -103,6 +104,7 @@ pub struct AreaComponentBundle {
     pub stroke: Stroke,
 }
 impl AreaComponentBundle {
+    #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
             pickable: PickableBundle::default(),
@@ -145,12 +147,12 @@ pub trait EntityCommandsSelectExt {
 
 impl<'w, 's, 'a> EntityCommandsSelectExt for EntityCommands<'w, 's, 'a> {
     fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
-        let ty = data.get_type(&skin).unwrap();
-        let fill = data.get_fill(&skin).select(ty).to_owned();
+        let ty = data.get_type(skin).unwrap();
+        let fill = data.get_fill(skin).select(ty).to_owned();
         if fill.color != Color::NONE {
             self.insert(fill);
         }
-        let stroke = data.get_stroke(&skin).select(ty).to_owned();
+        let stroke = data.get_stroke(skin).select(ty).to_owned();
         if stroke.color != Color::NONE {
             self.insert(stroke);
         }
@@ -158,11 +160,11 @@ impl<'w, 's, 'a> EntityCommandsSelectExt for EntityCommands<'w, 's, 'a> {
         self
     }
     fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
-        let fill = data.get_fill(&skin);
+        let fill = data.get_fill(skin);
         if fill.color != Color::NONE {
             self.insert(fill);
         }
-        let stroke = data.get_stroke(&skin);
+        let stroke = data.get_stroke(skin);
         if stroke.color != Color::NONE {
             self.insert(stroke);
         }

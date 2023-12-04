@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::schedule::{SystemConfigs, SystemSetConfig, SystemSetConfigs},
+    ecs::schedule::{SystemConfigs, SystemSetConfigs},
     prelude::*,
 };
 use serde::{Deserialize, Serialize};
