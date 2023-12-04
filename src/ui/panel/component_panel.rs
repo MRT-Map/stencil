@@ -7,7 +7,7 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
     pla2::{
-        bundle::SelectedComponent,
+        bundle::{EntityCommandsSelectExt, SelectedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -75,7 +75,7 @@ pub fn ui_sy(
             if old_skin_type != component_data.ty {
                 commands
                     .entity(entity)
-                    .insert(component_data.get_shape(&skin, true));
+                    .select_component(&skin, &component_data);
             }
             ui.end_row();
             let mut tags = component_data.tags.join(",");

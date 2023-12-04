@@ -7,7 +7,7 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
     pla2::{
-        bundle::SelectedComponent,
+        bundle::{EntityCommandsSelectExt, SelectedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -43,7 +43,7 @@ pub fn edit_nodes_sy(
             + orig.node_pos_world.as_vec2())
         .round()
         .as_ivec2();
-        commands.entity(entity).insert(pla.get_shape(&skin, true));
+        commands.entity(entity).component_display(&skin, &pla);
     }
 
     let mut clear_orig = false;
@@ -118,7 +118,7 @@ pub fn edit_nodes_sy(
                         info!(?entity, "Deleting entity");
                         commands.entity(entity).despawn_recursive();
                     } else {
-                        commands.entity(entity).insert(pla.get_shape(&skin, true));
+                        commands.entity(entity).component_display(&skin, &pla);
                     }
                 }
             }
@@ -145,7 +145,7 @@ pub fn update_handles(
     trace!("Updating handles");
     commands
         .entity(e)
-        .insert(pla.get_shape(skin, true))
+        .component_display(&skin, &pla)
         .despawn_descendants();
     let children = pla
         .nodes

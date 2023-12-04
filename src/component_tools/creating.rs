@@ -10,7 +10,10 @@ use crate::{
     },
     misc::Action,
     pla2::{
-        bundle::{ComponentBundle, CreatedComponent},
+        bundle::{
+            AreaComponentBundle, ComponentBundle, CreatedComponent, EntityCommandsSelectExt,
+            LineComponentBundle, PointComponentBundle,
+        },
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -52,17 +55,19 @@ pub fn create_point_sy(
 ) {
     for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
-            let mut new_point = ComponentBundle::new({
-                let mut point = PlaComponent::new(ComponentType::Point);
-                point
-                    .nodes
-                    .push(mouse_pos_world.xy().round().as_ivec2().into());
-                point.namespace = prev_namespace_used.0.to_owned();
-                point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
-                point
-            });
+            let new_point = PointComponentBundle::new(
+                {
+                    let mut point = PlaComponent::new(ComponentType::Point);
+                    point
+                        .nodes
+                        .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    point.namespace = prev_namespace_used.0.to_owned();
+                    point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+                    point
+                },
+                &skin,
+            );
             debug!("Placing new point at {:?}", mouse_pos_world);
-            new_point.update_shape(&skin);
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
@@ -111,20 +116,24 @@ pub fn create_component_sy<const IS_AREA: bool>(
             mouse_pos_world
         };
         data.nodes.push(next_point.round().as_ivec2().into());
-        commands.entity(entity).insert(data.get_shape(&skin, false));
+        commands.entity(entity).component_display(&skin, &data);
     }
     for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             let new = mouse_pos_world.xy().round().as_ivec2().into();
             if set.is_empty() {
-                let mut new_comp = ComponentBundle::new({
+                let data = {
                     let mut point = PlaComponent::new(ty);
                     point.nodes.push(new);
                     point
-                });
+                };
                 debug!("Starting new line/area at {:?}", mouse_pos_world);
-                new_comp.update_shape(&skin);
-                commands.spawn(new_comp).insert(CreatedComponent);
+                if IS_AREA {
+                    commands.spawn(AreaComponentBundle::new(data, &skin))
+                } else {
+                    commands.spawn(LineComponentBundle::new(data, &skin))
+                }
+                .insert(CreatedComponent);
             } else {
                 let (mut data, entity) = set.single_mut();
                 if data.nodes.last() == Some(&new) {
@@ -141,7 +150,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                     "Continuing line/area at {:?}",
                     mouse_pos_world.xy().round().as_ivec2()
                 );
-                commands.entity(entity).insert(data.get_shape(&skin, false));
+                commands.entity(entity).component_display(&skin, &data);
 
                 if IS_AREA
                     && data.nodes.first() == data.nodes.last()
@@ -189,7 +198,7 @@ pub fn clear_created_component(
             commands
                 .entity(entity)
                 .remove::<ShapeBundle>()
-                .insert(data.get_shape(skin, false))
+                .component_display(skin, &data)
                 .remove::<CreatedComponent>();
             actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,

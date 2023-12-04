@@ -8,8 +8,8 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     pla2::{
-        bundle::ComponentBundle,
-        component::{EditorCoords, MCCoords, PlaComponent},
+        bundle::{AreaComponentBundle, ComponentBundle, LineComponentBundle, PointComponentBundle},
+        component::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
     ui::{file_explorer::open_multiple_files, popup::Popup},
@@ -93,9 +93,18 @@ pub fn load_ns_asy(
                 .iter()
                 .map(|comp| {
                     let comp = comp.to_editor_coords();
-                    let mut bundle = ComponentBundle::new(comp.to_owned());
-                    bundle.update_shape(&skin);
-                    let entity = commands.spawn(bundle).id();
+                    let entity = match comp.get_type(&skin).unwrap() {
+                        ComponentType::Point => {
+                            commands.spawn(PointComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                        ComponentType::Line => {
+                            commands.spawn(LineComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                        ComponentType::Area => {
+                            commands.spawn(AreaComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                    }
+                    .id();
                     History {
                         component_id: entity,
                         before: None,

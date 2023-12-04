@@ -3,8 +3,8 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
     pla2::{
-        bundle::SelectedComponent,
-        component::{EditorCoords, PlaComponent},
+        bundle::{EntityCommandsSelectExt, SelectedComponent},
+        component::{EditorCoords, PlaComponent, Select},
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
@@ -46,7 +46,7 @@ pub fn highlight_selected_sy(
     }
     for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
-        commands.entity(entity).insert(data.get_shape(&skin, true));
+        commands.entity(entity).select_component(&skin, data);
     }
 }
 
@@ -57,7 +57,7 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
             .entity(entity)
             .remove::<SelectedComponent>()
             .remove::<ShapeBundle>()
-            .insert(data.get_shape(skin, false))
+            .component_display(skin, data)
             .despawn_descendants();
     }
 }
