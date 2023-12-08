@@ -79,7 +79,7 @@ impl Default for TileSettings {
     fn default() -> Self {
         Self {
             init_zoom: 7.0,
-            url: "https://dynmap.minecartrapidtransit.net/tiles/new/flat".into(),
+            url: "https://dynmap.minecartrapidtransit.net/main/tiles/new/flat".into(),
             max_tile_zoom: 8,
             max_zoom_range: 32.0,
             max_get_requests: 50,
