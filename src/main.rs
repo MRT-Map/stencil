@@ -5,17 +5,18 @@
     clippy::missing_panics_doc
 )]
 #![warn(
+    clippy::as_ptr_cast_mut,
     clippy::as_underscore,
     clippy::bool_to_int_with_if,
-    clippy::cargo_common_metadata,
     clippy::case_sensitive_file_extension_comparisons,
     clippy::cast_lossless,
     clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
     clippy::checked_conversions,
+    clippy::clear_with_drain,
     clippy::clone_on_ref_ptr,
     clippy::cloned_instead_of_copied,
     clippy::cognitive_complexity,
+    clippy::collection_is_never_read,
     clippy::copy_iterator,
     clippy::create_dir,
     clippy::default_trait_access,
@@ -45,6 +46,7 @@
     clippy::if_not_else,
     clippy::if_then_some_else_none,
     clippy::implicit_hasher,
+    clippy::impl_trait_in_params,
     clippy::imprecise_flops,
     clippy::inconsistent_struct_constructor,
     clippy::index_refutable_slice,
@@ -56,11 +58,13 @@
     clippy::iter_on_single_items,
     clippy::iter_with_drain,
     clippy::large_digit_groups,
+    clippy::large_futures,
     clippy::large_stack_arrays,
     clippy::large_types_passed_by_value,
     clippy::linkedlist,
     clippy::lossy_float_literal,
     clippy::manual_assert,
+    clippy::manual_clamp,
     clippy::manual_instant_elapsed,
     clippy::manual_let_else,
     clippy::manual_ok_or,
@@ -70,8 +74,10 @@
     clippy::map_unwrap_or,
     clippy::match_on_vec_items,
     clippy::mismatching_type_param_order,
+    clippy::missing_assert_message,
     clippy::missing_const_for_fn,
     clippy::missing_enforced_import_renames,
+    clippy::multiple_unsafe_ops_per_block,
     clippy::must_use_candidate,
     clippy::mut_mut,
     clippy::naive_bytecount,
@@ -92,12 +98,15 @@
     clippy::redundant_feature_names,
     clippy::redundant_pub_crate,
     clippy::ref_option_ref,
+    clippy::ref_patterns,
     clippy::rest_pat_in_fully_bound_structs,
     clippy::return_self_not_must_use,
     clippy::same_functions_in_if_condition,
     clippy::semicolon_if_nothing_returned,
+    clippy::semicolon_inside_block,
     clippy::separated_literal_suffix,
-    clippy::significant_drop_in_scrutinee,
+    /*clippy::significant_drop_in_scrutinee,
+    clippy::significant_drop_tightening,*/
     clippy::single_match_else,
     clippy::str_to_string,
     clippy::string_add,
@@ -107,6 +116,7 @@
     clippy::suboptimal_flops,
     clippy::suspicious_operation_groupings,
     clippy::suspicious_xor_used_as_pow,
+    clippy::tests_outside_test_module,
     clippy::trailing_empty_array,
     clippy::trait_duplication_in_bounds,
     clippy::transmute_ptr_to_ptr,
@@ -115,11 +125,16 @@
     clippy::trivially_copy_pass_by_ref,
     clippy::try_err,
     clippy::type_repetition_in_bounds,
+    clippy::unchecked_duration_subtraction,
     clippy::undocumented_unsafe_blocks,
     clippy::unicode_not_nfc,
     clippy::uninlined_format_args,
+    clippy::unnecessary_box_returns,
     clippy::unnecessary_join,
+    clippy::unnecessary_safety_comment,
+    clippy::unnecessary_safety_doc,
     clippy::unnecessary_self_imports,
+    clippy::unnecessary_struct_initialization,
     clippy::unneeded_field_pattern,
     clippy::unnested_or_patterns,
     clippy::unreadable_literal,
@@ -151,7 +166,10 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,
-    render::{settings::WgpuSettings, RenderPlugin},
+    render::{
+        settings::{RenderCreation, WgpuSettings},
+        RenderPlugin,
+    },
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
@@ -244,32 +262,32 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest())
             .set(AssetPlugin {
-                asset_folder: data_dir("assets").to_string_lossy().to_string(),
+                file_path: data_dir("assets").to_string_lossy().to_string(),
                 ..default()
             })
             .set(RenderPlugin {
-                wgpu_settings: WgpuSettings {
+                render_creation: RenderCreation::Automatic(WgpuSettings {
                     backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
                     ..default()
-                },
+                }),
             })
             .disable::<LogPlugin>()
     })
-    .add_plugin(FrameTimeDiagnosticsPlugin);
+    .add_plugins(FrameTimeDiagnosticsPlugin);
 
     app.add_plugins(DefaultPickingPlugins)
-        .add_plugin(MousePosPlugin)
-        .add_plugin(EguiPlugin)
-        .add_plugin(ShapePlugin);
+        .add_plugins(MousePosPlugin)
+        .add_plugins(EguiPlugin)
+        .add_plugins(ShapePlugin);
 
-    app.add_plugin(InitPlugin)
-        .add_plugin(UiPlugin)
-        .add_plugin(RenderingPlugin)
+    app.add_plugins(InitPlugin)
+        .add_plugins(UiPlugin)
+        .add_plugins(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
-        .add_plugin(LoadSavePlugin)
-        .add_plugin(InfoWindowsPlugin)
-        .add_plugin(HotkeyPlugin)
-        .add_plugin(WindowSettingsPlugin)
+        .add_plugins(LoadSavePlugin)
+        .add_plugins(InfoWindowsPlugin)
+        .add_plugins(HotkeyPlugin)
+        .add_plugins(WindowSettingsPlugin)
         .run();
 }

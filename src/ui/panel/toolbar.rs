@@ -16,7 +16,7 @@ pub fn ui_sy(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
     mouse_pos: Res<MousePos>,
 ) {
-    let mut new_state = state.0;
+    let mut new_state = **state;
     let panel = egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
@@ -39,7 +39,7 @@ pub fn ui_sy(
         });
     });
     hovering_over_gui.egui(&panel.response, *mouse_pos);
-    if new_state != state.0 {
-        actions.send(Box::new(ChangeStateAct(new_state)));
+    if new_state != **state {
+        actions.send(Action::new(ChangeStateAct(new_state)));
     }
 }

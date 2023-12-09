@@ -150,37 +150,23 @@ impl PlaComponent<EditorCoords> {
             attributes: self.attributes.to_owned(),
         }
     }
+
     #[must_use]
-    pub fn get_shape(&self, skin: &Skin, selected: bool) -> (ShapeBundle, Fill, Stroke) {
+    pub fn get_shape(&self, skin: &Skin) -> ShapeBundle {
         if self.get_type(skin) == Some(ComponentType::Point) {
-            return (
-                ShapeBundle {
-                    path: GeometryBuilder::build_as(&shapes::Rectangle {
-                        extents: Vec2::splat(2.0),
-                        origin: RectangleOrigin::Center,
-                    }),
-                    transform: Transform::from_xyz(
-                        self.nodes[0].0.x as f32,
-                        self.nodes[0].0.y as f32,
-                        10.0,
-                    ),
-                    ..default()
-                },
-                Fill::color(if selected {
-                    Color::YELLOW
-                } else if let Some(hex) = self.front_colour(skin) {
-                    hex_to_color(*hex)
-                } else {
-                    Color::WHITE
+            return ShapeBundle {
+                path: GeometryBuilder::build_as(&shapes::Rectangle {
+                    extents: Vec2::splat(2.0),
+                    origin: RectangleOrigin::Center,
                 }),
-                Stroke::color(Color::NONE),
-            );
+                spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                    self.nodes[0].0.x as f32,
+                    self.nodes[0].0.y as f32,
+                    10.0,
+                )),
+                ..default()
+            };
         }
-        let options = StrokeOptions::default()
-            .with_start_cap(LineCap::Round)
-            .with_end_cap(LineCap::Round)
-            .with_line_join(LineJoin::Round)
-            .with_line_width(self.weight(skin).unwrap_or(2) as f32);
         let path = GeometryBuilder::build_as(&{
             let mut pb = PathBuilder::new();
             for coord in &self.nodes {
@@ -193,41 +179,6 @@ impl PlaComponent<EditorCoords> {
             }
             pb.build()
         });
-        let (fill, stroke) = if self.get_type(skin) == Some(ComponentType::Area) {
-            (
-                Fill::color(if selected {
-                    *Color::YELLOW.clone().set_a(0.5)
-                } else if let Some(hex) = self.front_colour(skin) {
-                    *hex_to_color(*hex).set_a(0.25)
-                } else {
-                    Color::NONE
-                }),
-                Stroke {
-                    color: if selected {
-                        Color::YELLOW
-                    } else if let Some(hex) = self.back_colour(skin) {
-                        hex_to_color(*hex)
-                    } else {
-                        Color::NONE
-                    },
-                    options,
-                },
-            )
-        } else {
-            (
-                Fill::color(Color::NONE),
-                Stroke {
-                    color: if selected {
-                        Color::YELLOW
-                    } else if let Some(hex) = self.front_colour(skin) {
-                        hex_to_color(*hex)
-                    } else {
-                        Color::WHITE
-                    },
-                    options,
-                },
-            )
-        };
         let transform = Transform::from_xyz(0.0, 0.0, {
             let order = skin
                 .order
@@ -237,15 +188,85 @@ impl PlaComponent<EditorCoords> {
                 .map_or(0, |a| a.0);
             (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
         });
-        (
-            ShapeBundle {
-                path,
-                transform,
-                ..default()
-            },
-            fill,
-            stroke,
-        )
+        ShapeBundle {
+            path,
+            spatial: SpatialBundle::from_transform(transform),
+            ..default()
+        }
+    }
+
+    #[must_use]
+    pub fn get_fill(&self, skin: &Skin) -> Fill {
+        if self.get_type(skin) == Some(ComponentType::Point) {
+            return Fill::color(if let Some(hex) = self.front_colour(skin) {
+                hex_to_color(*hex)
+            } else {
+                Color::WHITE
+            });
+        }
+        if self.get_type(skin) == Some(ComponentType::Area) {
+            Fill::color(if let Some(hex) = self.front_colour(skin) {
+                *hex_to_color(*hex).set_a(0.25)
+            } else {
+                Color::NONE
+            })
+        } else {
+            Fill::color(Color::NONE)
+        }
+    }
+
+    #[must_use]
+    pub fn get_stroke(&self, skin: &Skin) -> Stroke {
+        if self.get_type(skin) == Some(ComponentType::Point) {
+            return Stroke::color(Color::NONE);
+        }
+        let options = StrokeOptions::default()
+            .with_start_cap(LineCap::Round)
+            .with_end_cap(LineCap::Round)
+            .with_line_join(LineJoin::Round)
+            .with_line_width(self.weight(skin).unwrap_or(2) as f32);
+        if self.get_type(skin) == Some(ComponentType::Area) {
+            Stroke {
+                color: if let Some(hex) = self.back_colour(skin) {
+                    hex_to_color(*hex)
+                } else {
+                    Color::NONE
+                },
+                options,
+            }
+        } else {
+            Stroke {
+                color: if let Some(hex) = self.front_colour(skin) {
+                    hex_to_color(*hex)
+                } else {
+                    Color::WHITE
+                },
+                options,
+            }
+        }
+    }
+}
+
+pub trait Select {
+    fn select(&mut self, ty: ComponentType) -> &mut Self;
+}
+impl Select for Fill {
+    fn select(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => Color::YELLOW,
+            ComponentType::Line => Color::NONE,
+            ComponentType::Area => *Color::YELLOW.to_owned().set_a(0.25),
+        };
+        self
+    }
+}
+impl Select for Stroke {
+    fn select(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => Color::NONE,
+            ComponentType::Line | ComponentType::Area => Color::YELLOW,
+        };
+        self
     }
 }
 

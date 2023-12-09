@@ -3,12 +3,12 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
     pla2::{
-        bundle::SelectedComponent,
+        bundle::{EntityCommandsSelectExt, SelectedComponent},
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
-    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSet},
 };
 
 #[tracing::instrument(skip_all)]
@@ -18,11 +18,11 @@ pub fn selector_sy(
     mut mouse: EventReader<MouseEvent>,
     deselect_query: DeselectQuery,
 ) {
-    if state.0.component_type().is_some() || state.0 == EditorState::DeletingComponent {
+    if state.component_type().is_some() || *state == EditorState::DeletingComponent {
         mouse.clear();
         return;
     }
-    for event in mouse.iter() {
+    for event in mouse.read() {
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
                 select_entity(&mut commands, &deselect_query, *e);
@@ -41,12 +41,12 @@ pub fn highlight_selected_sy(
     query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
     skin: Res<Skin>,
 ) {
-    if state.0.component_type().is_some() {
+    if state.component_type().is_some() {
         return;
     }
     for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
-        commands.entity(entity).insert(data.get_shape(&skin, true));
+        commands.entity(entity).select_component(&skin, data);
     }
 }
 
@@ -57,7 +57,7 @@ pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery)
             .entity(entity)
             .remove::<SelectedComponent>()
             .remove::<ShapeBundle>()
-            .insert(data.get_shape(skin, false))
+            .component_display(skin, data)
             .despawn_descendants();
     }
 }
@@ -71,8 +71,13 @@ pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, en
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(selector_sy.run_if_not_loading())
-            .add_system(highlight_selected_sy.run_if_not_loading().after(UiBaseSet));
+        app.add_systems(Update, selector_sy.run_if_not_loading())
+            .add_systems(
+                PreUpdate,
+                highlight_selected_sy
+                    .run_if_not_loading()
+                    .after(UiSet::Reset),
+            );
     }
 }
 

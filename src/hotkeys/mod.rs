@@ -26,13 +26,13 @@ impl HotkeyActions {
     #[must_use]
     pub fn action(self) -> Action {
         match self {
-            Self::ChangeState(state) => Box::new(ChangeStateAct(state)),
-            Self::Undo => Box::new(UndoRedoAct::Undo),
-            Self::Redo => Box::new(UndoRedoAct::Redo),
-            Self::LoadNamespaces => Box::new(LoadSaveAct::Load),
-            Self::SaveNamespaces => Box::new(LoadSaveAct::Save),
-            Self::TileSettings => Box::new(TileSettingsAct::Open),
-            Self::Quit => Box::new(InfoWindowsAct::Quit(false)),
+            Self::ChangeState(state) => Action::new(ChangeStateAct(state)),
+            Self::Undo => Action::new(UndoRedoAct::Undo),
+            Self::Redo => Action::new(UndoRedoAct::Redo),
+            Self::LoadNamespaces => Action::new(LoadSaveAct::Load),
+            Self::SaveNamespaces => Action::new(LoadSaveAct::Save),
+            Self::TileSettings => Action::new(TileSettingsAct::Open),
+            Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
         }
     }
 }
@@ -98,6 +98,6 @@ pub struct HotkeyPlugin;
 impl Plugin for HotkeyPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(HotkeySettings::default())
-            .add_system(hotkey_sy.run_if_not_loading());
+            .add_systems(Update, hotkey_sy.run_if_not_loading());
     }
 }

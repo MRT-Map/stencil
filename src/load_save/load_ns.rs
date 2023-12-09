@@ -8,8 +8,8 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     pla2::{
-        bundle::ComponentBundle,
-        component::{EditorCoords, MCCoords, PlaComponent},
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
+        component::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
     ui::{file_explorer::open_multiple_files, popup::Popup},
@@ -19,15 +19,17 @@ use crate::{
 #[allow(clippy::needless_pass_by_value)]
 pub fn load_ns_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     mut commands: Commands,
     skin: Res<Skin>,
     existing_comps: Query<(&PlaComponent<EditorCoords>, Entity)>,
 ) {
     let mut send_queue: Vec<Action> = vec![];
-    for event in actions.p0().iter() {
+    for event in actions.p0().read() {
         if matches!(event.downcast_ref(), Some(LoadSaveAct::Load)) {
-            open_multiple_files("load_ns1", &mut popup, |a| Box::new(LoadSaveAct::Load1(a)));
+            open_multiple_files("load_ns1", &mut popup, |a| {
+                Action::new(LoadSaveAct::Load1(a))
+            });
         } else if let Some(LoadSaveAct::Load1(Some(files))) = event.downcast_ref() {
             let existing_namespaces: Arc<BTreeSet<String>> = Arc::new(
                 existing_comps
@@ -38,7 +40,7 @@ pub fn load_ns_asy(
                     .collect::<BTreeSet<_>>(),
             );
             for file in files {
-                send_queue.push(Box::new(LoadSaveAct::Load2(
+                send_queue.push(Action::new(LoadSaveAct::Load2(
                     file.to_owned(),
                     existing_namespaces.to_owned(),
                 )));
@@ -73,12 +75,12 @@ pub fn load_ns_asy(
                         "load_ns3",
                         format!("The namespace {} is already loaded.", first.namespace),
                         "Do you want to override this namespace?",
-                        LoadSaveAct::Load3(content),
+                        Action::new(LoadSaveAct::Load3(content)),
                     ));
                     continue;
                 }
             }
-            send_queue.push(Box::new(LoadSaveAct::Load3(content)));
+            send_queue.push(Action::new(LoadSaveAct::Load3(content)));
         } else if let Some(LoadSaveAct::Load3(content)) = event.downcast_ref() {
             if content.is_empty() {
                 popup.send(Popup::base_alert(
@@ -91,9 +93,18 @@ pub fn load_ns_asy(
                 .iter()
                 .map(|comp| {
                     let comp = comp.to_editor_coords();
-                    let mut bundle = ComponentBundle::new(comp.to_owned());
-                    bundle.update_shape(&skin);
-                    let entity = commands.spawn(bundle).id();
+                    let entity = match comp.get_type(&skin).unwrap() {
+                        ComponentType::Point => {
+                            commands.spawn(PointComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                        ComponentType::Line => {
+                            commands.spawn(LineComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                        ComponentType::Area => {
+                            commands.spawn(AreaComponentBundle::new(comp.to_owned(), &skin))
+                        }
+                    }
+                    .id();
                     History {
                         component_id: entity,
                         before: None,
@@ -101,7 +112,7 @@ pub fn load_ns_asy(
                     }
                 })
                 .collect();
-            send_queue.push(Box::new(UndoRedoAct::NewHistory(histories)));
+            send_queue.push(Action::new(UndoRedoAct::NewHistory(histories)));
             popup.send(Popup::base_alert(
                 format!("load_ns_success_{}", content[0].namespace),
                 "Loaded",

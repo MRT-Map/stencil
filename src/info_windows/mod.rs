@@ -21,10 +21,13 @@ pub struct InfoWindowsPlugin;
 
 impl Plugin for InfoWindowsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(quit::quit_asy)
-            .add_system(info::info_asy.run_if(resource_exists::<ImageAssets>()))
-            .add_system(changelog::changelog_asy)
-            .add_system(manual::manual_asy)
-            .add_system(licenses::licenses_asy);
+        app.add_systems(Update, quit::quit_asy)
+            .add_systems(
+                Update,
+                info::info_asy.run_if(resource_exists::<ImageAssets>()),
+            )
+            .add_systems(Update, changelog::changelog_asy)
+            .add_systems(Update, manual::manual_asy)
+            .add_systems(Update, licenses::licenses_asy);
     }
 }

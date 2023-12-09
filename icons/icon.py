@@ -1,0 +1,16 @@
+from PIL import Image
+
+img = Image.open("icons/icon.png")
+img.save('icons/icon.ico')
+img.resize((1024, 1024)).save("icons/icon_512x512@2x.png")
+img.resize((512, 512)).save("icons/icon_512x512.png")
+img.resize((512, 512)).save("icons/icon_256x256@2x.png")
+img.resize((256, 256)).save("icons/icon_256x256.png")
+img.resize((256, 256)).save("icons/icon_128x128@2x.png")
+img.resize((128, 128)).save("icons/icon_128x128.png")
+img.resize((96, 96)).save("icons/icon_48x48@2x.png")
+img.resize((48, 48)).save("icons/icon_48x48.png")
+img.resize((64, 64)).save("icons/icon_32x32@2x.png")
+img.resize((32, 32)).save("icons/icon_32x32.png")
+img.resize((32, 32)).save("icons/icon_16x16@2x.png")
+img.resize((16, 16)).save("icons/icon_16x16.png")

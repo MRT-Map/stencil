@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::{egui, egui::Color32};
@@ -19,10 +19,10 @@ pub enum WindowSettingsAct {
 
 pub fn window_settings_msy(
     mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     mut window_settings: ResMut<WindowSettings>,
 ) {
-    for event in actions.iter() {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(WindowSettingsAct::Open)) {
             popup.send(Popup::new(
                 "window_settings_win",
@@ -48,7 +48,7 @@ pub fn window_settings_msy(
                     ui.checkbox(&mut window_settings.backends.dx12, "DX12");
                     ui.checkbox(&mut window_settings.backends.dx11, "DX11");
                     if window_settings.backends.is_none() {
-                        ui.colored_label(Color32::RED, format!("Select at least one backend!"));
+                        ui.colored_label(Color32::RED, "Select at least one backend!".to_string());
                         invalid = true;
                     }
                     ui.separator();
@@ -68,7 +68,7 @@ pub fn window_settings_msy(
                     }
 
                     if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
-                        ew.send(Box::new(WindowSettingsAct::Update(window_settings.to_owned())));
+                        ew.send(Action::new(WindowSettingsAct::Update(window_settings.to_owned())));
                         *shown = false;
                     }
                     if ui.button("Cancel").clicked() {

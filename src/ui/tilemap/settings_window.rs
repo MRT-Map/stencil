@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
@@ -17,10 +17,10 @@ pub enum TileSettingsAct {
 
 pub fn tile_settings_msy(
     mut actions: EventReader<Action>,
-    mut popup: EventWriter<Arc<Popup>>,
+    mut popup: EventWriter<Popup>,
     mut tile_settings: ResMut<TileSettings>,
 ) {
-    for event in actions.iter() {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(TileSettingsAct::Open)) {
             popup.send(Popup::new(
                 "tile_settings_win",
@@ -66,7 +66,7 @@ pub fn tile_settings_msy(
                     ui.separator();
 
                     if ui.add_enabled(!invalid, egui::Button::new("Save")).clicked() {
-                        ew.send(Box::new(TileSettingsAct::Update(tile_settings.to_owned())));
+                        ew.send(Action::new(TileSettingsAct::Update(tile_settings.to_owned())));
                         *shown = false;
                     }
                     if ui.button("Cancel").clicked() {

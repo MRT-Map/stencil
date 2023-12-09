@@ -10,7 +10,10 @@ use crate::{
     },
     misc::Action,
     pla2::{
-        bundle::{ComponentBundle, CreatedComponent},
+        bundle::{
+            AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
+            PointComponentBundle,
+        },
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -50,23 +53,25 @@ pub fn create_point_sy(
     prev_namespace_used: Res<PrevNamespaceUsed>,
     mut actions: EventWriter<Action>,
 ) {
-    for event in mouse.iter() {
+    for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
-            let mut new_point = ComponentBundle::new({
-                let mut point = PlaComponent::new(ComponentType::Point);
-                point
-                    .nodes
-                    .push(mouse_pos_world.xy().round().as_ivec2().into());
-                point.namespace = prev_namespace_used.0.to_owned();
-                point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
-                point
-            });
+            let new_point = PointComponentBundle::new(
+                {
+                    let mut point = PlaComponent::new(ComponentType::Point);
+                    point
+                        .nodes
+                        .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    point.namespace = prev_namespace_used.0.to_owned();
+                    point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+                    point
+                },
+                &skin,
+            );
             debug!("Placing new point at {:?}", mouse_pos_world);
-            new_point.update_shape(&skin);
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: None,
                 after: Some(pla),
@@ -95,35 +100,40 @@ pub fn create_component_sy<const IS_AREA: bool>(
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
-        let next_point =
-            if mouse_pos_world != Vec2::ZERO && keys.any_pressed([KeyCode::LAlt, KeyCode::RAlt]) {
-                #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
-                let closest_angle_vec = ANGLE_VECTORS
-                    .into_iter()
-                    .chain(ANGLE_VECTORS.iter().map(|a| -*a))
-                    .min_by_key(|v| {
-                        (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
-                    })
-                    .unwrap();
-                (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
-            } else {
-                mouse_pos_world
-            };
+        let next_point = if mouse_pos_world != Vec2::ZERO
+            && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
+        {
+            #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
+            let closest_angle_vec = ANGLE_VECTORS
+                .into_iter()
+                .chain(ANGLE_VECTORS.iter().map(|a| -*a))
+                .min_by_key(|v| {
+                    (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
+                })
+                .unwrap();
+            (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
+        } else {
+            mouse_pos_world
+        };
         data.nodes.push(next_point.round().as_ivec2().into());
-        commands.entity(entity).insert(data.get_shape(&skin, false));
+        commands.entity(entity).component_display(&skin, &data);
     }
-    for event in mouse.iter() {
+    for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
             let new = mouse_pos_world.xy().round().as_ivec2().into();
             if set.is_empty() {
-                let mut new_comp = ComponentBundle::new({
+                let data = {
                     let mut point = PlaComponent::new(ty);
                     point.nodes.push(new);
                     point
-                });
+                };
                 debug!("Starting new line/area at {:?}", mouse_pos_world);
-                new_comp.update_shape(&skin);
-                commands.spawn(new_comp).insert(CreatedComponent);
+                if IS_AREA {
+                    commands.spawn(AreaComponentBundle::new(data, &skin))
+                } else {
+                    commands.spawn(LineComponentBundle::new(data, &skin))
+                }
+                .insert(CreatedComponent);
             } else {
                 let (mut data, entity) = set.single_mut();
                 if data.nodes.last() == Some(&new) {
@@ -140,7 +150,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                     "Continuing line/area at {:?}",
                     mouse_pos_world.xy().round().as_ivec2()
                 );
-                commands.entity(entity).insert(data.get_shape(&skin, false));
+                commands.entity(entity).component_display(&skin, &data);
 
                 if IS_AREA
                     && data.nodes.first() == data.nodes.last()
@@ -178,7 +188,7 @@ pub fn clear_created_component(
     prev_namespace_used: &String,
     actions: &mut EventWriter<Action>,
 ) {
-    for (mut data, entity) in created_query.iter_mut() {
+    for (mut data, entity) in &mut *created_query {
         debug!(?entity, "Clearing CreatedComponent marker");
         if data.nodes.len() == 1 {
             commands.entity(entity).despawn_recursive();
@@ -188,9 +198,9 @@ pub fn clear_created_component(
             commands
                 .entity(entity)
                 .remove::<ShapeBundle>()
-                .insert(data.get_shape(skin, false))
+                .component_display(skin, &data)
                 .remove::<CreatedComponent>();
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: None,
                 after: Some(data.to_owned()),
@@ -202,17 +212,22 @@ pub fn clear_created_component(
 pub struct CreateComponentPlugin;
 impl Plugin for CreateComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            Update,
             create_component_sy::<false>
                 .run_if(in_state(EditorState::CreatingLine))
                 .before(state_changer_asy),
         )
-        .add_system(
+        .add_systems(
+            Update,
             create_component_sy::<true>
                 .run_if(in_state(EditorState::CreatingArea))
                 .before(state_changer_asy),
         )
-        .add_system(create_point_sy.run_if(in_state(EditorState::CreatingPoint)));
+        .add_systems(
+            Update,
+            create_point_sy.run_if(in_state(EditorState::CreatingPoint)),
+        );
     }
 }
 

@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use bevy::prelude::*;
 use bevy_egui::egui;
@@ -14,8 +14,8 @@ static LICENSES: Lazy<LicenseRetriever> =
 #[cfg(debug_assertions)]
 static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
-pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Arc<Popup>>) {
-    for event in actions.iter() {
+pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
+    for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Licenses)) {
             popup.send(Popup::new(
                 "info_popup",

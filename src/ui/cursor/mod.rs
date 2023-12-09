@@ -8,7 +8,7 @@ use crate::{
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
         tilemap::settings::TileSettings,
-        HoveringOverGui, UiSet,
+        HoveringOverGui, UiSchedule, UiSet,
     },
 };
 
@@ -29,7 +29,7 @@ pub fn crosshair_sy(
     tile_settings: Res<TileSettings>,
 ) {
     if let Some(state) = state {
-        if state.0.component_type().is_none() {
+        if state.component_type().is_none() {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
                 commands.entity(e).despawn_recursive();
@@ -75,11 +75,11 @@ pub fn cursor_icon_sy(
     hovered_comp: Query<(), With<HoveredComponent>>,
 ) {
     let state = if let Some(state) = state {
-        state.0
+        **state
     } else {
         EditorState::Loading
     };
-    for mut window in windows.iter_mut() {
+    for mut window in &mut windows {
         if state.component_type().is_some() {
             window.cursor.visible = hovering_over_gui.0;
             continue;
@@ -111,6 +111,7 @@ pub struct CursorPlugin;
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            UiSchedule,
             (
                 cursor_icon_sy,
                 crosshair_sy,

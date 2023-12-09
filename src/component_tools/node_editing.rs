@@ -7,12 +7,12 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
     pla2::{
-        bundle::SelectedComponent,
+        bundle::{EntityCommandsSelectExt, SelectedComponent},
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, UiBaseSet},
+    ui::{cursor::mouse_events::MouseEvent, UiSet},
 };
 
 #[derive(Debug)]
@@ -43,11 +43,11 @@ pub fn edit_nodes_sy(
             + orig.node_pos_world.as_vec2())
         .round()
         .as_ivec2();
-        commands.entity(entity).insert(pla.get_shape(&skin, true));
+        commands.entity(entity).component_display(&skin, &pla);
     }
 
     let mut clear_orig = false;
-    for event in mouse.iter() {
+    for event in mouse.read() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             #[derive(Debug, Eq, PartialEq, Hash)]
             enum Pos {
@@ -77,7 +77,8 @@ pub fn edit_nodes_sy(
                     }
                     .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
                 );
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // TODO figure out how to fix this
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            // TODO figure out how to fix this
             let Some((list_pos, world_pos)) = handles.min_by_key(|(_, pos)| {
                 mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
             }) else {
@@ -117,7 +118,7 @@ pub fn edit_nodes_sy(
                         info!(?entity, "Deleting entity");
                         commands.entity(entity).despawn_recursive();
                     } else {
-                        commands.entity(entity).insert(pla.get_shape(&skin, true));
+                        commands.entity(entity).component_display(&skin, &pla);
                     }
                 }
             }
@@ -125,7 +126,7 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = orig.take() {
-            actions.send(Box::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History {
                 component_id: entity,
                 before: Some(orig.old_pla),
                 after: Some(pla.to_owned()),
@@ -144,7 +145,7 @@ pub fn update_handles(
     trace!("Updating handles");
     commands
         .entity(e)
-        .insert(pla.get_shape(skin, true))
+        .component_display(skin, pla)
         .despawn_descendants();
     let children = pla
         .nodes
@@ -169,7 +170,7 @@ pub fn update_handles(
                             coord.as_vec2()
                         },
                     }),
-                    transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                    spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
                     ..default()
                 },
                 Fill::color(Color::WHITE),
@@ -209,7 +210,7 @@ pub fn update_handles(
                     radius: weight * 0.25,
                     center: coord.as_vec2(),
                 }),
-                transform: Transform::from_xyz(0.0, 0.0, 100.0),
+                spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
                 ..default()
             },
             Fill::color(Color::WHITE),
@@ -244,12 +245,16 @@ pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut c
 pub struct EditNodePlugin;
 impl Plugin for EditNodePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)))
-            .add_system(remove_handles_sy.in_schedule(OnExit(EditorState::EditingNodes)))
-            .add_system(
-                show_handles_sy
-                    .run_if(in_state(EditorState::EditingNodes))
-                    .after(UiBaseSet),
-            );
+        app.add_systems(
+            Update,
+            edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)),
+        )
+        .add_systems(OnExit(EditorState::EditingNodes), remove_handles_sy)
+        .add_systems(
+            PreUpdate,
+            show_handles_sy
+                .run_if(in_state(EditorState::EditingNodes))
+                .after(UiSet::Reset),
+        );
     }
 }

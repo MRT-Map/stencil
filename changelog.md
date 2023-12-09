@@ -1,3 +1,9 @@
+# v2.1.2
+* Upgrade `bevy` to v0.12 (painfully)
+* No longer able to move the component in node-editing mode, go to select mode to do that
+* No longer able to select a line from its center like an area
+* Update default tile URL for Minecart Rapid Transit
+
 # v2.1.1
 * Added back limit to max number of HTTP requests
 * Added an option to clear tile cache on startup

@@ -29,21 +29,21 @@ pub fn move_component_sy(
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if state.0.component_type().is_some() {
+    if state.component_type().is_some() || *state == EditorState::EditingNodes {
         mouse.clear();
         return;
     }
     let Ok((entity, mut transform, mut pla, hovered)) = selected.get_single_mut() else {
-            mouse.clear();
-            return;
-        };
+        mouse.clear();
+        return;
+    };
     if let Some((orig_mouse_pos_world, orig_select_translation)) = &*orig {
         transform.translation.x =
             (mouse_pos_world.x - orig_mouse_pos_world.x + orig_select_translation.x).round();
         transform.translation.y =
             (mouse_pos_world.y - orig_mouse_pos_world.y + orig_select_translation.y).round();
     }
-    for event in mouse.iter() {
+    for event in mouse.read() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
             if hovered.is_some() {
                 *orig = Some((*mouse_pos_world, transform.translation));
@@ -57,7 +57,7 @@ pub fn move_component_sy(
                         .round()
                         .as_ivec2();
                 }
-                actions.send(Box::new(UndoRedoAct::one_history(History {
+                actions.send(Action::new(UndoRedoAct::one_history(History {
                     component_id: entity,
                     before: Some(old_pla),
                     after: Some(pla.to_owned()),
@@ -72,6 +72,6 @@ pub fn move_component_sy(
 pub struct MoveComponentPlugin;
 impl Plugin for MoveComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(move_component_sy.run_if_not_loading());
+        app.add_systems(Update, move_component_sy.run_if_not_loading());
     }
 }
