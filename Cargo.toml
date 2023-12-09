@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.1.1"
+version = "2.1.2"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
@@ -35,7 +35,10 @@ bevy_prototype_lyon = "0.10.0"
 bevy_egui = { git = "https://github.com/iiiii7d/bevy_egui" }
 egui_commonmark = "0.10.1"
 egui_extras = "0.24.2"
-bevy_mod_picking = { version = "0.17.0", default-features = false, features = ["backend_raycast", "selection"] }
+bevy_mod_picking = { version = "0.17.0", default-features = false, features = [
+    "backend_raycast",
+    "selection",
+] }
 bevy_asset_loader = "0.18.0"
 
 tracing = "0.1.40"

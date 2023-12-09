@@ -1,6 +1,6 @@
 # Maintainer: 7d <i.third.7d@protonmail.com>
 pkgname=stencil2
-pkgver=2.1.1
+pkgver=2.1.2
 pkgrel=1
 depends=('curl')
 makedepends=('rustup')
@@ -9,7 +9,7 @@ pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
 url="https://github.com/mrt-map/stencil2"
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('8fcd1c272f4f5998d13b19a9cc0605cec51b48147ed5ae548804884e80d8326c')
+sha256sums=('SKIP')
 
 build() {
   cd "$pkgname-$pkgver"
