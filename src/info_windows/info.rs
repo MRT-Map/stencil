@@ -12,8 +12,9 @@ pub fn info_asy(
     mut actions: EventReader<Action>,
     mut popup: EventWriter<Popup>,
     _images: Res<ImageAssets>,
-    _ctx: EguiContexts,
+    mut ctx: EguiContexts,
 ) {
+    egui_extras::install_image_loaders(ctx.ctx_mut());
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {
             popup.send(Popup::new(
