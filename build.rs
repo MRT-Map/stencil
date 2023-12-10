@@ -25,10 +25,14 @@ fn gather_licenses() -> Result<()> {
         .copy_license("accesskit_macos", "accesskit")
         .copy_license("accesskit_windows", "accesskit")
         .copy_license("accesskit_winit", "accesskit")
+        .copy_license("bevy_eventlistener_core", "bevy_eventlistener")
+        .copy_license("bevy_eventlistener_derive", "bevy_eventlistener")
         .copy_license("bevy_mouse_tracking_plugin", "block")
         .copy_license("bevy_picking_core", "bevy_mod_picking")
         .copy_license("bevy_picking_input", "bevy_mod_picking")
         .copy_license("bevy_picking_raycast", "bevy_mod_picking")
+        .copy_license("bevy_picking_highlight", "bevy_mod_picking")
+        .copy_license("bevy_picking_selection", "bevy_mod_picking")
         .override_license_url(
             "block",
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt"],
@@ -57,6 +61,7 @@ fn gather_licenses() -> Result<()> {
                 "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-MIT",
             ],
         )
+        .copy_license("constgebra", "color-spantrace")
         .override_license_url(
             "core-graphics-types",
             [
@@ -91,7 +96,6 @@ fn gather_licenses() -> Result<()> {
             ["https://github.com/DoumanAsh/error-code/blob/master/LICENSE"],
         )
         .copy_license("fdeflate", "d3d12")
-        .copy_license("fxhash", "d3d12")
         .override_license_url(
             "gloo-timers",
             [
@@ -149,6 +153,10 @@ fn gather_licenses() -> Result<()> {
         )
         .copy_license("ndk-context", "ndk")
         .copy_license("ndk-sys", "ndk")
+        .override_license_url(
+            "objc2",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .copy_license("objc-foundation", "block")
         .copy_license("objc-sys", "block-sys")
         .copy_license("objc2-encode", "block-sys")
