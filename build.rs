@@ -162,6 +162,13 @@ fn gather_licenses() -> Result<()> {
         .copy_license("objc2-encode", "block-sys")
         .copy_license("objc_exception", "block")
         .copy_license("objc_id", "block")
+        .override_license_url(
+            "profiling",
+            [
+                "https://github.com/aclysma/profiling/blob/master/LICENSE-APACHE",
+                "https://github.com/aclysma/profiling/blob/master/LICENSE-MIT",
+            ],
+        )
         .copy_license("profiling-procmacros", "profiling")
         .override_license_url(
             "siphasher",
