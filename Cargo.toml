@@ -34,7 +34,7 @@ bevy_prototype_lyon = "0.10.0"
 # bevy_egui = "0.23.0"
 bevy_egui = { git = "https://github.com/iiiii7d/bevy_egui" }
 egui_commonmark = "0.10.1"
-egui_extras = "0.24.2"
+egui_extras = "0.25.0"
 bevy_mod_picking = { version = "0.17.0", default-features = false, features = [
     "backend_raycast",
     "selection",
