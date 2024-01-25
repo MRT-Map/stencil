@@ -29,7 +29,7 @@ features = [
 
 [dependencies]
 # bevy_mouse_tracking = { version = "0.6.0", package = "bevy_mouse_tracking_plugin" }
-bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin" }
+bevy_mouse_tracking = { version = "0.7.0", package = "bevy_mouse_tracking_plugin" }
 bevy_prototype_lyon = "0.10.0"
 # bevy_egui = "0.23.0"
 bevy_egui = { git = "https://github.com/iiiii7d/bevy_egui" }
@@ -39,7 +39,7 @@ bevy_mod_picking = { version = "0.17.0", default-features = false, features = [
     "backend_raycast",
     "selection",
 ] }
-bevy_asset_loader = "0.19.0"
+bevy_asset_loader = "0.19.1"
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -48,21 +48,21 @@ tracing-error = "0.2.0"
 
 surf = "2.3.2"
 async-fs = "2.1.0"
-futures-lite = "2.1.0"
-async-lock = "3.2.0"
+futures-lite = "2.2.0"
+async-lock = "3.3.0"
 async-executor = "1.8.0"
 
 backtrace = "0.3.69"
 color-backtrace = "0.6.1"
 
-serde = { version = "1.0.193", features = ["derive"] }
+serde = { version = "1.0.195", features = ["derive"] }
 rmp-serde = "1.1.2"
 toml = "0.8.8"
 
 dirs = "5.0.1"
 zip = "0.6.6"
 bimap = { version = "0.6.3", features = ["serde"] }
-image = "0.24.7"
+image = "0.24.8"
 winit = "0.28.7"
 
 hex_color = { version = "3.0.0", features = ["serde"] }
@@ -75,9 +75,9 @@ license-retriever = { git = "https://github.com/MRT-Map/license-retriever" }
 
 [build-dependencies]
 license-retriever = { git = "https://github.com/MRT-Map/license-retriever" }
-anyhow = { version = "1.0.75", features = ["backtrace"] }
+anyhow = { version = "1.0.79", features = ["backtrace"] }
 zip = "0.6.6"
-embed-resource = "2.4.0"
+embed-resource = "2.4.1"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -91,4 +91,4 @@ lto = true
 [package.metadata.bundle]
 name = "stencil2"
 identifier = "io.github.mrt-map.stencil2"
-icon = ["icons/*.png"]
+icon = ["icons/icon_*.png"]

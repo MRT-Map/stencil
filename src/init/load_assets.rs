@@ -17,8 +17,8 @@ impl Plugin for LoadAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(
             LoadingState::new(SLoadingState::LoadAssets)
-                .continue_to_state(SLoadingState::LoadAssets.next()),
-        )
-        .add_collection_to_loading_state::<_, ImageAssets>(SLoadingState::LoadAssets);
+                .continue_to_state(SLoadingState::LoadAssets.next())
+                .load_collection::<ImageAssets>(),
+        );
     }
 }
