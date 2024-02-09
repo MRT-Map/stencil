@@ -25,6 +25,7 @@ features = [
     "x11",
     "wayland",
     "serialize",
+    "asset_processor",
 ]
 
 [dependencies]
