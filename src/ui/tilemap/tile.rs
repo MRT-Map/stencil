@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
-use bevy::{ecs::query::ReadOnlyWorldQuery, prelude::*};
+use bevy::{ecs::query::QueryFilter, prelude::*};
 use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
@@ -22,7 +22,7 @@ static SEMAPHORE: Lazy<Semaphore> =
     Lazy::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
-pub fn get_shown_tiles<R: ReadOnlyWorldQuery>(
+pub fn get_shown_tiles<R: QueryFilter>(
     q_camera: &Query<(&Camera, Ref<Transform>), R>,
     zoom: i8,
     tile_settings: &TileSettings,

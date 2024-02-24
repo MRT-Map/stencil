@@ -88,7 +88,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     prev_namespace_used: Res<PrevNamespaceUsed>,
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut actions: EventWriter<Action>,
 ) {
     let ty = if IS_AREA {

@@ -93,7 +93,7 @@ pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
 #[allow(clippy::needless_pass_by_value)]
 pub fn reset_hovering_over_gui_sy(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
 ) {
     if !buttons.any_pressed([MouseButton::Left, MouseButton::Middle, MouseButton::Right]) {
         hovering_over_gui.0 = false;

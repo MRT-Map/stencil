@@ -29,7 +29,7 @@ pub fn ui_sy(
                 ($ui:ident, $ew:ident, $label:literal, $action:expr) => {
                     if $ui.button($label).clicked() {
                         info!(label = $label, "Clicked menu item");
-                        $ew.send(Action::new($action))
+                        $ew.send(Action::new($action));
                     }
                 };
             }
@@ -63,7 +63,7 @@ pub fn ui_sy(
                 ui.label(format!(
                     "FPS: {}",
                     diagnostics
-                        .get(FrameTimeDiagnosticsPlugin::FPS)
+                        .get(&FrameTimeDiagnosticsPlugin::FPS)
                         .and_then(Diagnostic::average)
                         .map_or_else(|| "???".into(), |fps| format!("{fps:.2}")),
                 ));

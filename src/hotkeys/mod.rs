@@ -44,32 +44,35 @@ impl Default for HotkeySettings {
     fn default() -> Self {
         Self(
             [
-                (HotkeyActions::ChangeState(EditorState::Idle), KeyCode::Key1),
+                (
+                    HotkeyActions::ChangeState(EditorState::Idle),
+                    KeyCode::Digit1,
+                ),
                 (
                     HotkeyActions::ChangeState(EditorState::EditingNodes),
-                    KeyCode::Key2,
+                    KeyCode::Digit2,
                 ),
                 (
                     HotkeyActions::ChangeState(EditorState::DeletingComponent),
-                    KeyCode::Key3,
+                    KeyCode::Digit3,
                 ),
                 (
                     HotkeyActions::ChangeState(EditorState::CreatingPoint),
-                    KeyCode::Key4,
+                    KeyCode::Digit4,
                 ),
                 (
                     HotkeyActions::ChangeState(EditorState::CreatingLine),
-                    KeyCode::Key5,
+                    KeyCode::Digit5,
                 ),
                 (
                     HotkeyActions::ChangeState(EditorState::CreatingArea),
-                    KeyCode::Key6,
+                    KeyCode::Digit6,
                 ),
-                (HotkeyActions::Undo, KeyCode::U),
-                (HotkeyActions::Redo, KeyCode::Y),
-                (HotkeyActions::LoadNamespaces, KeyCode::L),
-                (HotkeyActions::SaveNamespaces, KeyCode::S),
-                (HotkeyActions::TileSettings, KeyCode::T),
+                (HotkeyActions::Undo, KeyCode::KeyU),
+                (HotkeyActions::Redo, KeyCode::KeyY),
+                (HotkeyActions::LoadNamespaces, KeyCode::KeyL),
+                (HotkeyActions::SaveNamespaces, KeyCode::KeyS),
+                (HotkeyActions::TileSettings, KeyCode::KeyT),
                 (HotkeyActions::Quit, KeyCode::Escape),
             ]
             .into_iter()
@@ -82,7 +85,7 @@ impl Default for HotkeySettings {
 pub fn hotkey_sy(
     mut actions: EventWriter<Action>,
     hotkey_settings: Res<HotkeySettings>,
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut ctx: EguiContexts,
 ) {
     for (action, key) in &hotkey_settings.0 {

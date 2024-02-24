@@ -16,7 +16,7 @@ use crate::{
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag_sy(
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut mouse_origin_pos: Local<Option<MousePos>>,
     mut camera_origin_pos: Local<Option<Vec2>>,
     mouse_pos: Res<MousePos>,

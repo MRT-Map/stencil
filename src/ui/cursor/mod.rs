@@ -68,7 +68,7 @@ pub fn crosshair_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn cursor_icon_sy(
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut windows: Query<&mut Window>,
     state: Option<Res<State<EditorState>>>,
     hovering_over_gui: Res<HoveringOverGui>,
@@ -92,7 +92,7 @@ pub fn cursor_icon_sy(
             EditorState::Loading => CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if !hovered_comp.is_empty() {
-                    CursorIcon::Hand
+                    CursorIcon::Pointer
                 } else if buttons.pressed(MouseButton::Left) {
                     CursorIcon::Grabbing
                 } else {

@@ -52,7 +52,7 @@ pub fn hover_handler_sy(
 pub fn right_click_handler_sy(
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
@@ -79,7 +79,7 @@ pub fn left_click_handler_sy(
     mut event_reader_down: EventReader<Pointer<Down>>,
     mut event_writer: EventWriter<MouseEvent>,
     hovering_over_gui: Res<HoveringOverGui>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut selected_entity: Local<Option<Entity>>,
     mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
