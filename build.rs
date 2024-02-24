@@ -206,10 +206,10 @@ fn gather_licenses() -> Result<()> {
 }
 
 fn zip_assets() -> Result<()> {
-    let buf = File::create(PathBuf::try_from(std::env::var("OUT_DIR")?)?.join("assets.zip"))?;
+    let buf = File::create(PathBuf::from(std::env::var("OUT_DIR")?).join("assets.zip"))?;
     let mut zip_file = ZipWriter::new(buf);
     let options = FileOptions::default();
-    for file in PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?
+    for file in PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?)
         .join("assets")
         .read_dir()?
     {
@@ -224,7 +224,7 @@ fn zip_assets() -> Result<()> {
 
 fn embed_resource() -> Result<()> {
     if std::env::var("TARGET")?.contains("windows") {
-        let root_dir = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+        let root_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?);
         let icons_dir = root_dir.join("icons");
         std::fs::copy(icons_dir.join("icon.rc"), root_dir.join("icon.rc"))?;
         std::fs::copy(icons_dir.join("icon.ico"), root_dir.join("icon.ico"))?;

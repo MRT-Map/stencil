@@ -8,7 +8,6 @@ use crate::{
     misc::Action,
     pla2::component::{EditorCoords, MCCoords, PlaComponent},
     ui::{file_explorer::save_single_dir, popup::Popup},
-    EventReader,
 };
 
 #[allow(clippy::needless_pass_by_value)]

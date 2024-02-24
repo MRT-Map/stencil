@@ -1,7 +1,4 @@
-use bevy::{
-    app::{App, Plugin},
-    prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::{
     state::IntoSystemSetConfigExt,

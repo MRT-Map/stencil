@@ -1,6 +1,5 @@
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
-    math::Vec3Swizzles,
     prelude::*,
     window::PrimaryWindow,
 };

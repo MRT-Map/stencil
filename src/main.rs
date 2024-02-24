@@ -162,7 +162,6 @@
 )]
 
 use bevy::{
-    asset::AssetPlugin,
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,

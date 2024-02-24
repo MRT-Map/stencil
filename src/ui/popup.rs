@@ -1,6 +1,7 @@
 use std::{
     any::Any,
     collections::HashMap,
+    fmt::Display,
     hash::{Hash, Hasher},
     ops::{Deref, DerefMut},
     sync::{Arc, Mutex},
@@ -58,10 +59,10 @@ impl<T: Send + Sync + ?Sized> PartialEq<Self> for PopupInner<T> {
 impl<T: Send + Sync + ?Sized> Eq for PopupInner<T> {}
 
 impl Popup {
-    pub fn new(
-        id: impl std::fmt::Display,
-        window: impl Fn() -> egui::Window<'static> + Sync + Send + 'static,
-        ui: impl Fn(
+    pub fn new<
+        I: Display,
+        W: Fn() -> egui::Window<'static> + Sync + Send + 'static,
+        U: Fn(
                 &Mutex<Box<dyn Any + Send + Sync>>,
                 &mut egui::Ui,
                 &mut EventWriter<Action>,
@@ -69,6 +70,10 @@ impl Popup {
             ) + Sync
             + Send
             + 'static,
+    >(
+        id: I,
+        window: W,
+        ui: U,
         state: Mutex<Box<dyn Any + Send + Sync>>,
     ) -> Self {
         Self(Arc::new(PopupInner {
@@ -78,10 +83,14 @@ impl Popup {
             state,
         }))
     }
-    pub fn base_alert(
-        id: impl std::fmt::Display + Send + Sync + 'static,
-        title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-        text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
+    pub fn base_alert<
+        I: Display + Send + Sync + 'static,
+        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+    >(
+        id: I,
+        title: T1,
+        text: T2,
     ) -> Self {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
@@ -102,10 +111,14 @@ impl Popup {
             Mutex::new(Box::new(())),
         )
     }
-    pub fn base_confirm(
-        id: impl std::fmt::Display + Send + Sync + 'static,
-        title: impl Into<WidgetText> + Clone + Sync + Send + 'static,
-        text: impl Into<WidgetText> + Clone + Sync + Send + 'static,
+    pub fn base_confirm<
+        I: Display + Send + Sync + 'static,
+        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+    >(
+        id: I,
+        title: T1,
+        text: T2,
         action: Action,
     ) -> Self {
         let win_id = egui::Id::new(id.to_string());

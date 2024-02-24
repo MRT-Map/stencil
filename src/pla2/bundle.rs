@@ -1,6 +1,6 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_mod_picking::prelude::*;
-use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
+use bevy_prototype_lyon::prelude::*;
 
 use crate::pla2::{
     component::{EditorCoords, PlaComponent, Select},

@@ -1,4 +1,4 @@
-use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
+use bevy::{prelude::*, sprite::Anchor};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
@@ -79,6 +79,7 @@ pub fn cursor_icon_sy(
     } else {
         EditorState::Loading
     };
+
     for mut window in &mut windows {
         if state.component_type().is_some() {
             window.cursor.visible = hovering_over_gui.0;
@@ -88,6 +89,7 @@ pub fn cursor_icon_sy(
         if hovering_over_gui.0 {
             continue;
         }
+
         window.cursor.icon = match state {
             EditorState::Loading => CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
