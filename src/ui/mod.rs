@@ -68,7 +68,7 @@ impl Plugin for UiPlugin {
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
-            .add_systems(UiSchedule, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
+            .add_systems(Last, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
             .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
             .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset));
         let mut order = app.world.resource_mut::<MainScheduleOrder>();

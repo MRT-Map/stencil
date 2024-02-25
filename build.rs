@@ -26,18 +26,24 @@ fn gather_licenses() -> Result<()> {
         .copy_license("accesskit_windows", "accesskit")
         .copy_license("accesskit_winit", "accesskit")
         .copy_license("bevy_mouse_tracking_plugin", "block")
+        .copy_license("bevy_eventlistener_derive", "bevy_eventlistener")
         .copy_license("bevy_picking_core", "bevy_mod_picking")
         .copy_license("bevy_picking_input", "bevy_mod_picking")
         .copy_license("bevy_picking_raycast", "bevy_mod_picking")
+        .copy_license("bevy_picking_highlight", "bevy_mod_picking")
+        .copy_license("bevy_picking_selection", "bevy_mod_picking")
         .override_license_url(
             "block",
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt"],
         )
         .override_license_url(
+            "block2",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
             "block-sys",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .copy_license("block2", "block-sys")
         .override_license_url(
             "cesu8",
             ["https://raw.githubusercontent.com/emk/cesu8-rs/master/COPYRIGHT-RUST.txt"],
@@ -55,6 +61,18 @@ fn gather_licenses() -> Result<()> {
             [
                 "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-APACHE",
                 "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-MIT",
+            ],
+        )
+        .override_license_url(
+            "com_macros",
+            ["https://raw.githubusercontent.com/microsoft/com-rs/master/LICENSE"],
+        )
+        .copy_license("com_macros_support", "com_macros")
+        .override_license_url(
+            "constgebra",
+            [
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt",
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Apache-2.0.txt",
             ],
         )
         .override_license_url(
@@ -91,7 +109,10 @@ fn gather_licenses() -> Result<()> {
             ["https://github.com/DoumanAsh/error-code/blob/master/LICENSE"],
         )
         .copy_license("fdeflate", "d3d12")
-        .copy_license("fxhash", "d3d12")
+        .override_license_url(
+            "gl_generator",
+            ["https://raw.githubusercontent.com/brendanzab/gl-rs/master/LICENSE"],
+        )
         .override_license_url(
             "gloo-timers",
             [
@@ -124,6 +145,11 @@ fn gather_licenses() -> Result<()> {
             "hexf-parse",
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
         )
+        .copy_license("icrate", "block2")
+        .override_license_url(
+            "khronos_api",
+            ["https://github.com/brendanzab/gl-rs/blob/master/LICENSE"],
+        )
         .copy_license("lazy-regex-proc_macros", "lazy-regex")
         .ignore("license-retriever")
         .override_license_url(
@@ -140,6 +166,7 @@ fn gather_licenses() -> Result<()> {
             "malloc_buf",
             ["https://raw.githubusercontent.com/SSheldon/malloc_buf/master/LICENSE"],
         )
+        .copy_license("naga", "wgpu")
         .override_license_url(
             "ndk",
             [
@@ -150,11 +177,36 @@ fn gather_licenses() -> Result<()> {
         .copy_license("ndk-context", "ndk")
         .copy_license("ndk-sys", "ndk")
         .copy_license("objc-foundation", "block")
-        .copy_license("objc-sys", "block-sys")
-        .copy_license("objc2-encode", "block-sys")
+        .override_license_url(
+            "objc2-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2-encode",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .copy_license("objc_exception", "block")
         .copy_license("objc_id", "block")
+        .override_license_url(
+            "profiling",
+            [
+                "https://raw.githubusercontent.com/aclysma/profiling/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/aclysma/profiling/master/LICENSE-MIT",
+            ],
+        )
         .copy_license("profiling-procmacros", "profiling")
+        .override_license_url(
+            "pulldown-cmark",
+            ["https://raw.githubusercontent.com/pulldown-cmark/pulldown-cmark/master/LICENSE"],
+        )
         .override_license_url(
             "siphasher",
             ["https://raw.githubusercontent.com/jedisct1/rust-siphash/master/COPYING"],
@@ -183,6 +235,11 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/tokio-rs/valuable/master/LICENSE"],
         )
         .override_license_url(
+            "wayland-protocols-plasma",
+            ["https://raw.githubusercontent.com/Smithay/wayland-rs/master/LICENSE.txt"],
+        )
+        .copy_license("wayland-protocols-wlr", "wayland-protocols-plasma")
+        .override_license_url(
             "widestring",
             [
                 "https://docs.rs/crate/widestring/latest/source/LICENSES/Apache-2.0.txt",
@@ -190,7 +247,6 @@ fn gather_licenses() -> Result<()> {
             ],
         )
         .copy_license("winapi-i686-pc-windows-gnu", "winapi")
-        .copy_license("winapi-wsapoll", "d3d12")
         .copy_license("winapi-x86_64-pc-windows-gnu", "winapi")
         .override_license_url(
             "zune-inflate",
