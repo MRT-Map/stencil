@@ -1,6 +1,5 @@
 use bevy::{prelude::*, sprite::Anchor};
-use bevy_egui::{egui, systems::process_output_system, EguiContexts};
-use bevy_mod_picking::picking_core::PickSet;
+use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
