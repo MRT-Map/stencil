@@ -63,7 +63,7 @@ toml = "0.8.10"
 dirs = "5.0.1"
 zip = "0.6.6"
 bimap = { version = "0.6.3", features = ["serde"] }
-image = "0.24.9"
+image = "0.25.1"
 winit = "0.29.11"
 
 hex_color = { version = "3.0.0", features = ["serde"] }
