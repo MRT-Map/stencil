@@ -76,7 +76,7 @@ pub fn tile_settings_msy(
                 Mutex::new(Box::new(tile_settings.to_owned())),
             ));
         } else if let Some(TileSettingsAct::Update(new_settings)) = event.downcast_ref() {
-            *tile_settings = new_settings.to_owned();
+            new_settings.clone_into(&mut tile_settings);
             new_settings.save().unwrap();
         }
     }

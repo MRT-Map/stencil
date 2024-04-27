@@ -78,7 +78,7 @@ pub fn window_settings_msy(
                 Mutex::new(Box::new(window_settings.to_owned())),
             ));
         } else if let Some(WindowSettingsAct::Update(new_settings)) = event.downcast_ref() {
-            *window_settings = new_settings.to_owned();
+            new_settings.clone_into(&mut window_settings);
             new_settings.save().unwrap();
         }
     }

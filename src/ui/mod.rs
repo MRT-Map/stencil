@@ -1,10 +1,5 @@
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_egui::{
-    egui,
-    egui::{Id, Pos2, Response},
-    EguiContexts,
-};
-use bevy_mouse_tracking::MousePos;
+use bevy_egui::{egui, egui::Id, EguiContexts};
 
 use crate::state::IntoSystemSetConfigExt;
 

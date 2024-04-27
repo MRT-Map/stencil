@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::MousePos;
 use itertools::Itertools;
 
 use crate::{
@@ -42,7 +41,9 @@ pub fn ui_sy(
                         .hint_text("ns.")
                         .desired_width(25.0),
                 );
-                prev_namespace_used.0 = component_data.namespace.to_owned();
+                component_data
+                    .namespace
+                    .clone_into(&mut prev_namespace_used.0);
                 ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
             });
             ui.end_row();

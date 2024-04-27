@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, egui::Align, EguiContexts};
-use bevy_mouse_tracking::{MousePos, MousePosWorld};
+use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,

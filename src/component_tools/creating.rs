@@ -61,7 +61,7 @@ pub fn create_point_sy(
                     point
                         .nodes
                         .push(mouse_pos_world.xy().round().as_ivec2().into());
-                    point.namespace = prev_namespace_used.0.to_owned();
+                    prev_namespace_used.0.clone_into(&mut point.namespace);
                     point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
                     point
                 },
@@ -193,7 +193,7 @@ pub fn clear_created_component(
         if data.nodes.len() == 1 {
             commands.entity(entity).despawn_recursive();
         } else {
-            data.namespace = prev_namespace_used.to_owned();
+            prev_namespace_used.clone_into(&mut data.namespace);
             data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
             commands
                 .entity(entity)
