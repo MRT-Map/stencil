@@ -19,7 +19,10 @@ pub struct HoveringOverGui(pub bool);
 
 impl HoveringOverGui {
     pub fn egui(&mut self, response: &Response, mouse_pos: MousePos) {
-        if response.hovered() || response.rect.contains(Pos2::from(mouse_pos.to_array())) {
+        if response.hovered()
+            || response.contains_pointer()
+            || response.rect.contains(Pos2::from(mouse_pos.to_array()))
+        {
             self.0 = true;
         }
     }

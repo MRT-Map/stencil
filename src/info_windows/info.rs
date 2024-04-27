@@ -18,7 +18,7 @@ pub fn info_asy(
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {
             popup.send(Popup::new(
-                "info_popup",
+                "info",
                 || {
                     egui::Window::new(format!("Stencil v{}", env!("CARGO_PKG_VERSION")))
                         .collapsible(false)

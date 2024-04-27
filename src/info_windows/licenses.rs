@@ -18,12 +18,11 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Licenses)) {
             popup.send(Popup::new(
-                "info_popup",
+                "licenses",
                 || {
                     egui::Window::new("Open Source Licenses")
                         .collapsible(true)
                         .resizable(true)
-                        .vscroll(true)
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                 },
                 |state, ui, _, shown| {
@@ -62,9 +61,11 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
                     }
                     for text in licenses.as_ref() {
                         ui.separator();
-                        egui::ScrollArea::vertical().show(ui, |ui| {
-                            ui.label(text);
-                        });
+                        egui::ScrollArea::vertical()
+                            .max_height(ui.available_height() * 0.75)
+                            .show(ui, |ui| {
+                                ui.label(text);
+                            });
                     }
                     ui.separator();
                     if ui.button("Close").clicked() {
