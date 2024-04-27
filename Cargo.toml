@@ -31,7 +31,8 @@ features = [
 [dependencies]
 # bevy_mouse_tracking = { version = "0.8.0", package = "bevy_mouse_tracking_plugin" }
 bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin" }
-bevy_prototype_lyon = "0.11.0"
+#bevy_prototype_lyon = "0.11.0"
+bevy_prototype_lyon = { git = "https://github.com/iiiii7d/bevy_prototype_lyon" }
 bevy_egui = "0.27.0"
 egui_commonmark = "0.15.0"
 egui_extras = "0.27.2"
