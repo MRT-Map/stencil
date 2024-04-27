@@ -208,6 +208,10 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/pulldown-cmark/pulldown-cmark/master/LICENSE"],
         )
         .override_license_url(
+            "simd_helpers",
+            ["https://raw.githubusercontent.com/lu-zero/simd_helpers/master/LICENSE"],
+        )
+        .override_license_url(
             "siphasher",
             ["https://raw.githubusercontent.com/jedisct1/rust-siphash/master/COPYING"],
         )
@@ -255,6 +259,18 @@ fn gather_licenses() -> Result<()> {
         .override_license_url(
             "xi-unicode",
             ["https://github.com/xi-editor/xi-editor/blob/master/LICENSE"],
+        )
+        .override_license_url(
+            "zune-core",
+            [
+                "https://raw.githubusercontent.com/etemesi254/zune-image/dev/LICENSE.md",
+                "https://raw.githubusercontent.com/etemesi254/zune-image/dev/LICENSE-ZLIB",
+            ],
+        )
+        .copy_license("zune-jpeg", "zune-core")
+        .override_license_url(
+            "zopfli",
+            ["https://raw.githubusercontent.com/zopfli-rs/zopfli/main/COPYING"],
         )
         .override_license_text("stencil2", [include_str!("LICENSE")]);
     LicenseRetriever::from_config(&config)?.save_in_out_dir("licenses")?;
