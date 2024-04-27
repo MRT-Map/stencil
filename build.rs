@@ -2,7 +2,7 @@ use std::{fs::File, io::Write, path::PathBuf};
 
 use anyhow::Result;
 use license_retriever::{Config, LicenseRetriever};
-use zip::{write::FileOptions, ZipWriter};
+use zip::{write::SimpleFileOptions, ZipWriter};
 
 macro_rules! p {
     ($($tt:tt)+) => {
@@ -264,7 +264,7 @@ fn gather_licenses() -> Result<()> {
 fn zip_assets() -> Result<()> {
     let buf = File::create(PathBuf::from(std::env::var("OUT_DIR")?).join("assets.zip"))?;
     let mut zip_file = ZipWriter::new(buf);
-    let options = FileOptions::default();
+    let options = SimpleFileOptions::default();
     for file in PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?)
         .join("assets")
         .read_dir()?

@@ -1,5 +1,6 @@
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_egui::{
+    egui,
     egui::{Id, Pos2, Response},
     EguiContexts,
 };
@@ -87,7 +88,7 @@ pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
 #[allow(clippy::needless_pass_by_value)]
 pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
     let ctx = ctx.ctx_mut();
-    focus.0 = ctx.memory(bevy_egui::egui::Memory::focus);
+    focus.0 = ctx.memory(egui::Memory::focused);
 }
 
 #[allow(clippy::needless_pass_by_value)]

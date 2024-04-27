@@ -89,7 +89,7 @@ pub fn hotkey_sy(
     mut ctx: EguiContexts,
 ) {
     for (action, key) in &hotkey_settings.0 {
-        if keys.just_released(*key) && ctx.ctx_mut().memory(|a| a.focus().is_none()) {
+        if keys.just_released(*key) && ctx.ctx_mut().memory(|a| a.focused().is_none()) {
             info!(?action, ?key, "Processing hotkey");
             actions.send(action.action());
         }
