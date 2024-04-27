@@ -16,7 +16,7 @@ rustflags = [
 [target.aarch64-apple-darwin]
 rustflags = [
   "-C",
-  "link-arg=-fuse-ld=/usr/local/opt/llvm/bin/ld64.lld",
+  "link-arg=-fuse-ld=/opt/homebrew/opt/llvm/bin/ld64.lld",
   "-Zshare-generics=y",
   "-Zthreads=8",
 ]
