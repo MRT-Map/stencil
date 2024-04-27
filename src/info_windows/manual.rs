@@ -16,11 +16,11 @@ pub fn manual_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                         .resizable(false)
                 },
-                |_, ui, _, show| {
+                |_, ui, _, shown| {
                     ui.label("Our online manual is available here:");
                     ui.hyperlink("https://github.com/MRT-Map/stencil2/wiki");
                     if ui.button("Close").clicked() {
-                        *show = false;
+                        *shown = false;
                     }
                 },
                 Mutex::new(Box::new(())),

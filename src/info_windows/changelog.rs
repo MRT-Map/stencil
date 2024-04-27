@@ -17,15 +17,17 @@ pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Po
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                         .vscroll(true)
                 },
-                |_, ui, _, show| {
-                    let mut cache = CommonMarkCache::default();
-                    CommonMarkViewer::new("viewer").show(
-                        ui,
-                        &mut cache,
-                        include_str!("../../changelog.md"),
-                    );
+                |_, ui, _, shown| {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        let mut cache = CommonMarkCache::default();
+                        CommonMarkViewer::new("viewer").show(
+                            ui,
+                            &mut cache,
+                            include_str!("../../changelog.md"),
+                        );
+                    });
                     if ui.button("Close").clicked() {
-                        *show = false;
+                        *shown = false;
                     }
                 },
                 Mutex::new(Box::new(())),

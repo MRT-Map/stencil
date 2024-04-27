@@ -62,7 +62,9 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
                     }
                     for text in licenses.as_ref() {
                         ui.separator();
-                        ui.label(text);
+                        egui::ScrollArea::vertical().show(ui, |ui| {
+                            ui.label(text);
+                        });
                     }
                     ui.separator();
                     if ui.button("Close").clicked() {

@@ -102,10 +102,12 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, _, show| {
-                ui.label(text.to_owned());
+            move |_, ui, _, shown| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.label(text.to_owned());
+                });
                 if ui.button("Close").clicked() {
-                    *show = false;
+                    *shown = false;
                 }
             },
             Mutex::new(Box::new(())),
@@ -131,14 +133,14 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, ew, show| {
+            move |_, ui, ew, shown| {
                 ui.label(text.to_owned());
                 if ui.button("Yes").clicked() {
                     ew.send(action.to_owned());
-                    *show = false;
+                    *shown = false;
                 }
                 if ui.button("No").clicked() {
-                    *show = false;
+                    *shown = false;
                 }
             },
             Mutex::new(Box::new(())),
@@ -160,14 +162,14 @@ pub fn popup_handler(
         show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }
     let ctx = ctx.ctx_mut();
-    for (id, (popup, showed)) in &mut show {
+    for (id, (popup, shown)) in &mut show {
         let response: egui::InnerResponse<Option<()>> = (popup.window)()
             .show(ctx, |ui| {
-                (popup.ui)(&popup.state, ui, &mut event_writer, showed);
+                (popup.ui)(&popup.state, ui, &mut event_writer, shown);
             })
             .unwrap();
         hovering_over_gui.egui(&response.response, *mouse_pos);
-        if !*showed {
+        if !*shown {
             info!(?id, "Closing popup");
         }
     }
