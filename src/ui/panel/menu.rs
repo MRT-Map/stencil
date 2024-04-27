@@ -6,24 +6,19 @@ use bevy_egui::{egui, egui::Align, EguiContexts};
 use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct,
-    info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct,
-    misc::Action,
-    ui::{tilemap::settings_window::TileSettingsAct, HoveringOverGui},
+    component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
+    load_save::LoadSaveAct, misc::Action, ui::tilemap::settings_window::TileSettingsAct,
     window_settings::window::WindowSettingsAct,
 };
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
     mut ctx: EguiContexts,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<DiagnosticsStore>,
     mouse_pos_world: Res<MousePosWorld>,
-    mouse_pos: Res<MousePos>,
 ) {
-    let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
+    egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
                 ($ui:ident, $ew:ident, $label:literal, $action:expr) => {
@@ -76,5 +71,4 @@ pub fn ui_sy(
             })
         });
     });
-    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

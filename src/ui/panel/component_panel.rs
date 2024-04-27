@@ -11,7 +11,6 @@ use crate::{
         component::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::HoveringOverGui,
 };
 
 #[derive(Default, Resource, Clone)]
@@ -21,14 +20,12 @@ pub struct PrevNamespaceUsed(pub String);
 pub fn ui_sy(
     mut ctx: EguiContexts,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut commands: Commands,
     skin: Res<Skin>,
-    mouse_pos: Res<MousePos>,
     mut prev_namespace_used: ResMut<PrevNamespaceUsed>,
     mut actions: EventWriter<Action>,
 ) {
-    let panel = egui::SidePanel::left("component_data")
+    egui::SidePanel::left("component_data")
         .default_width(200.0)
         .show(ctx.ctx_mut(), |ui| {
             if selected.is_empty() {
@@ -108,5 +105,4 @@ pub fn ui_sy(
                 })));
             }
         });
-    hovering_over_gui.egui(&panel.response, *mouse_pos);
 }

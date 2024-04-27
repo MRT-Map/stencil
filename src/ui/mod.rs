@@ -15,20 +15,6 @@ pub mod popup;
 pub mod tilemap;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
-pub struct HoveringOverGui(pub bool);
-
-impl HoveringOverGui {
-    pub fn egui(&mut self, response: &Response, mouse_pos: MousePos) {
-        if response.hovered()
-            || response.contains_pointer()
-            || response.rect.contains(Pos2::from(mouse_pos.to_array()))
-        {
-            self.0 = true;
-        }
-    }
-}
-
-#[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct Focus(pub Option<Id>);
 
 pub struct UiPlugin;
@@ -48,8 +34,7 @@ pub enum UiSet {
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<HoveringOverGui>()
-            .init_resource::<Focus>()
+        app.init_resource::<Focus>()
             .init_schedule(UiSchedule)
             .configure_sets(UiSchedule, UiSet::Init.run_if_not_loading())
             .configure_sets(
@@ -72,7 +57,6 @@ impl Plugin for UiPlugin {
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
-            .add_systems(Last, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
             .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
             .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset));
         let mut order = app.world.resource_mut::<MainScheduleOrder>();
@@ -92,14 +76,4 @@ pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
 pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
     let ctx = ctx.ctx_mut();
     focus.0 = ctx.memory(egui::Memory::focused);
-}
-
-#[allow(clippy::needless_pass_by_value)]
-pub fn reset_hovering_over_gui_sy(
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
-    buttons: Res<ButtonInput<MouseButton>>,
-) {
-    if !buttons.any_pressed([MouseButton::Left, MouseButton::Middle, MouseButton::Right]) {
-        hovering_over_gui.0 = false;
-    }
 }

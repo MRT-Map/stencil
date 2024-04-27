@@ -8,9 +8,8 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
-        reset_hovering_over_gui_sy,
         tilemap::settings::TileSettings,
-        HoveringOverGui, UiSchedule, UiSet,
+        UiSchedule, UiSet,
     },
 };
 
@@ -28,12 +27,12 @@ pub fn crosshair_sy(
     images: Res<ImageAssets>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
-    hovering_over_gui: Res<HoveringOverGui>,
+    mut ctx: EguiContexts,
     tile_settings: Res<TileSettings>,
 ) {
     if let Some(state) = state {
         if state.component_type().is_none()
-            || (state.component_type().is_some() && hovering_over_gui.0)
+            || (state.component_type().is_some() && ctx.ctx_mut().is_pointer_over_area())
         {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
@@ -77,7 +76,6 @@ pub fn cursor_icon_sy(
     mut windows: Query<(Entity, &mut Window)>,
     mut ctx: EguiContexts,
     state: Option<Res<State<EditorState>>>,
-    hovering_over_gui: Res<HoveringOverGui>,
     hovered_comp: Query<(), With<HoveredComponent>>,
 ) {
     let state = if let Some(state) = state {
@@ -88,11 +86,11 @@ pub fn cursor_icon_sy(
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
-            window.cursor.visible = hovering_over_gui.0;
+            window.cursor.visible = ctx.ctx_mut().is_pointer_over_area();
             continue;
         }
         window.cursor.visible = true;
-        if hovering_over_gui.0 {
+        if ctx.ctx_mut().is_pointer_over_area() {
             continue;
         }
 
@@ -129,7 +127,7 @@ impl Plugin for CursorPlugin {
         )
         .add_systems(
             PostUpdate,
-            (cursor_icon_sy, crosshair_sy.run_if_not_loading()).before(reset_hovering_over_gui_sy),
+            (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
         )
         .add_event::<MouseEvent>();
     }

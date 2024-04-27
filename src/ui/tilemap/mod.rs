@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     state::IntoSystemSetConfigExt,
     tile::zoom::Zoom,
-    ui::{tilemap::settings::INIT_TILE_SETTINGS, HoveringOverGui, UiSchedule, UiSet},
+    ui::{tilemap::settings::INIT_TILE_SETTINGS, UiSchedule, UiSet},
 };
 
 pub mod mouse_nav;
@@ -26,7 +26,7 @@ impl Plugin for RenderingPlugin {
             .configure_sets(
                 UiSchedule,
                 RenderingSet::Mouse
-                    .run_if(not(resource_exists_and_equals(HoveringOverGui(true))))
+                    .run_if_not_loading()
                     .in_set(UiSet::Tiles),
             )
             .configure_sets(UiSchedule, RenderingSet::Tiles.run_if_not_loading())

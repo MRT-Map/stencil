@@ -23,7 +23,6 @@ pub fn get_skin_sy(
     match &mut *task_s {
         Step::Uninitialised => {
             let new_task = executor.spawn(async move {
-                println!("afasdghfgkasdf");
                 surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
                     .recv_json::<Skin>().await
             });

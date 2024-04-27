@@ -11,10 +11,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, egui::WidgetText, EguiContexts};
 use bevy_mouse_tracking::MousePos;
 
-use crate::{
-    misc::Action,
-    ui::{HoveringOverGui, UiSet},
-};
+use crate::{misc::Action, ui::UiSet};
 
 #[derive(Event, Hash, PartialEq, Eq, Clone)]
 pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);
@@ -154,8 +151,6 @@ pub fn popup_handler(
     mut event_reader: EventReader<Popup>,
     mut event_writer: EventWriter<Action>,
     mut show: Local<HashMap<String, (Popup, bool)>>,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
-    mouse_pos: Res<MousePos>,
 ) {
     for popup in event_reader.read() {
         info!(popup.id, "Showing popup");
@@ -163,12 +158,11 @@ pub fn popup_handler(
     }
     let ctx = ctx.ctx_mut();
     for (id, (popup, shown)) in &mut show {
-        let response: egui::InnerResponse<Option<()>> = (popup.window)()
+        (popup.window)()
             .show(ctx, |ui| {
                 (popup.ui)(&popup.state, ui, &mut event_writer, shown);
             })
             .unwrap();
-        hovering_over_gui.egui(&response.response, *mouse_pos);
         if !*shown {
             info!(?id, "Closing popup");
         }

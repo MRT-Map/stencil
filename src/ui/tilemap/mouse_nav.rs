@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
     window::PrimaryWindow,
 };
+use bevy_egui::EguiContexts;
 use bevy_mouse_tracking::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
@@ -10,7 +11,7 @@ use crate::{
         utils::{get_map_width_height, get_window_width_height},
         zoom::Zoom,
     },
-    ui::{tilemap::settings::TileSettings, HoveringOverGui},
+    ui::tilemap::settings::TileSettings,
 };
 
 #[tracing::instrument(skip_all)]
@@ -21,9 +22,9 @@ pub fn mouse_drag_sy(
     mouse_pos: Res<MousePos>,
     mut camera: Query<(&Camera, &mut Transform), With<MainCamera>>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
-    hovering_over_gui: Res<HoveringOverGui>,
+    mut ctx: EguiContexts,
 ) {
-    if hovering_over_gui.0 {
+    if ctx.ctx_mut().is_pointer_over_area() {
         return;
     }
     let (camera, mut transform) = camera.single_mut();
@@ -56,11 +57,11 @@ pub fn mouse_zoom_sy(
     mut scroll_evr: EventReader<MouseWheel>,
     mut camera: Query<(&mut OrthographicProjection, &mut Transform), With<MainCamera>>,
     mut zoom: ResMut<Zoom>,
-    hovering_over_gui: Res<HoveringOverGui>,
     mouse_pos_world: Query<&MousePosWorld>,
     tile_settings: Res<TileSettings>,
+    mut ctx: EguiContexts,
 ) {
-    if hovering_over_gui.0 {
+    if ctx.ctx_mut().is_pointer_over_area() {
         return;
     }
     let (mut ort_proj, mut transform) = camera.single_mut();
