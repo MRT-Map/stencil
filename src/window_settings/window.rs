@@ -48,7 +48,7 @@ pub fn window_settings_msy(
                     ui.checkbox(&mut window_settings.backends.dx12, "DX12");
                     ui.checkbox(&mut window_settings.backends.dx11, "DX11");
                     if window_settings.backends.is_none() {
-                        ui.colored_label(Color32::RED, "Select at least one backend!".to_string());
+                        ui.colored_label(Color32::RED, "Select at least one backend!".to_owned());
                         invalid = true;
                     }
                     ui.separator();

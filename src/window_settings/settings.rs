@@ -45,9 +45,6 @@ impl From<SerializableBackends> for Backends {
         if value.dx12 {
             b |= Self::DX12;
         }
-        if value.dx11 {
-            b |= Self::DX11;
-        }
         b
     }
 }
@@ -58,7 +55,7 @@ impl From<Backends> for SerializableBackends {
             vulkan: value.contains(Backends::VULKAN),
             metal: value.contains(Backends::METAL),
             dx12: value.contains(Backends::DX12),
-            dx11: value.contains(Backends::DX11),
+            dx11: true,
         }
     }
 }

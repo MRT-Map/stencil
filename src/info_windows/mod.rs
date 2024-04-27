@@ -24,7 +24,7 @@ impl Plugin for InfoWindowsPlugin {
         app.add_systems(Update, quit::quit_asy)
             .add_systems(
                 Update,
-                info::info_asy.run_if(resource_exists::<ImageAssets>()),
+                info::info_asy.run_if(resource_exists::<ImageAssets>),
             )
             .add_systems(Update, changelog::changelog_asy)
             .add_systems(Update, manual::manual_asy)

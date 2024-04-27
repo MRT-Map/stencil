@@ -2,7 +2,7 @@ use std::{fs::File, io::Write, path::PathBuf};
 
 use anyhow::Result;
 use license_retriever::{Config, LicenseRetriever};
-use zip::{write::FileOptions, ZipWriter};
+use zip::{write::SimpleFileOptions, ZipWriter};
 
 macro_rules! p {
     ($($tt:tt)+) => {
@@ -25,9 +25,8 @@ fn gather_licenses() -> Result<()> {
         .copy_license("accesskit_macos", "accesskit")
         .copy_license("accesskit_windows", "accesskit")
         .copy_license("accesskit_winit", "accesskit")
-        .copy_license("bevy_eventlistener_core", "bevy_eventlistener")
-        .copy_license("bevy_eventlistener_derive", "bevy_eventlistener")
         .copy_license("bevy_mouse_tracking_plugin", "block")
+        .copy_license("bevy_eventlistener_derive", "bevy_eventlistener")
         .copy_license("bevy_picking_core", "bevy_mod_picking")
         .copy_license("bevy_picking_input", "bevy_mod_picking")
         .copy_license("bevy_picking_raycast", "bevy_mod_picking")
@@ -38,10 +37,13 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt"],
         )
         .override_license_url(
+            "block2",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
             "block-sys",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .copy_license("block2", "block-sys")
         .override_license_url(
             "cesu8",
             ["https://raw.githubusercontent.com/emk/cesu8-rs/master/COPYRIGHT-RUST.txt"],
@@ -61,7 +63,18 @@ fn gather_licenses() -> Result<()> {
                 "https://raw.githubusercontent.com/yaahc/color-spantrace/master/LICENSE-MIT",
             ],
         )
-        .copy_license("constgebra", "color-spantrace")
+        .override_license_url(
+            "com_macros",
+            ["https://raw.githubusercontent.com/microsoft/com-rs/master/LICENSE"],
+        )
+        .copy_license("com_macros_support", "com_macros")
+        .override_license_url(
+            "constgebra",
+            [
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt",
+                "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Apache-2.0.txt",
+            ],
+        )
         .override_license_url(
             "core-graphics-types",
             [
@@ -97,6 +110,10 @@ fn gather_licenses() -> Result<()> {
         )
         .copy_license("fdeflate", "d3d12")
         .override_license_url(
+            "gl_generator",
+            ["https://raw.githubusercontent.com/brendanzab/gl-rs/master/LICENSE"],
+        )
+        .override_license_url(
             "gloo-timers",
             [
                 "https://raw.githubusercontent.com/rustwasm/gloo/master/LICENSE-MIT",
@@ -128,6 +145,11 @@ fn gather_licenses() -> Result<()> {
             "hexf-parse",
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
         )
+        .copy_license("icrate", "block2")
+        .override_license_url(
+            "khronos_api",
+            ["https://github.com/brendanzab/gl-rs/blob/master/LICENSE"],
+        )
         .copy_license("lazy-regex-proc_macros", "lazy-regex")
         .ignore("license-retriever")
         .override_license_url(
@@ -144,6 +166,7 @@ fn gather_licenses() -> Result<()> {
             "malloc_buf",
             ["https://raw.githubusercontent.com/SSheldon/malloc_buf/master/LICENSE"],
         )
+        .copy_license("naga", "wgpu")
         .override_license_url(
             "ndk",
             [
@@ -153,23 +176,41 @@ fn gather_licenses() -> Result<()> {
         )
         .copy_license("ndk-context", "ndk")
         .copy_license("ndk-sys", "ndk")
+        .copy_license("objc-foundation", "block")
+        .override_license_url(
+            "objc2-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc-sys",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .override_license_url(
             "objc2",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .copy_license("objc-foundation", "block")
-        .copy_license("objc-sys", "block-sys")
-        .copy_license("objc2-encode", "block-sys")
+        .override_license_url(
+            "objc2-encode",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .copy_license("objc_exception", "block")
         .copy_license("objc_id", "block")
         .override_license_url(
             "profiling",
             [
-                "https://github.com/aclysma/profiling/blob/master/LICENSE-APACHE",
-                "https://github.com/aclysma/profiling/blob/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/aclysma/profiling/master/LICENSE-APACHE",
+                "https://raw.githubusercontent.com/aclysma/profiling/master/LICENSE-MIT",
             ],
         )
         .copy_license("profiling-procmacros", "profiling")
+        .override_license_url(
+            "pulldown-cmark",
+            ["https://raw.githubusercontent.com/pulldown-cmark/pulldown-cmark/master/LICENSE"],
+        )
+        .override_license_url(
+            "simd_helpers",
+            ["https://raw.githubusercontent.com/lu-zero/simd_helpers/master/LICENSE"],
+        )
         .override_license_url(
             "siphasher",
             ["https://raw.githubusercontent.com/jedisct1/rust-siphash/master/COPYING"],
@@ -198,6 +239,11 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/tokio-rs/valuable/master/LICENSE"],
         )
         .override_license_url(
+            "wayland-protocols-plasma",
+            ["https://raw.githubusercontent.com/Smithay/wayland-rs/master/LICENSE.txt"],
+        )
+        .copy_license("wayland-protocols-wlr", "wayland-protocols-plasma")
+        .override_license_url(
             "widestring",
             [
                 "https://docs.rs/crate/widestring/latest/source/LICENSES/Apache-2.0.txt",
@@ -205,7 +251,6 @@ fn gather_licenses() -> Result<()> {
             ],
         )
         .copy_license("winapi-i686-pc-windows-gnu", "winapi")
-        .copy_license("winapi-wsapoll", "d3d12")
         .copy_license("winapi-x86_64-pc-windows-gnu", "winapi")
         .override_license_url(
             "zune-inflate",
@@ -215,16 +260,28 @@ fn gather_licenses() -> Result<()> {
             "xi-unicode",
             ["https://github.com/xi-editor/xi-editor/blob/master/LICENSE"],
         )
+        .override_license_url(
+            "zune-core",
+            [
+                "https://raw.githubusercontent.com/etemesi254/zune-image/dev/LICENSE.md",
+                "https://raw.githubusercontent.com/etemesi254/zune-image/dev/LICENSE-ZLIB",
+            ],
+        )
+        .copy_license("zune-jpeg", "zune-core")
+        .override_license_url(
+            "zopfli",
+            ["https://raw.githubusercontent.com/zopfli-rs/zopfli/main/COPYING"],
+        )
         .override_license_text("stencil2", [include_str!("LICENSE")]);
     LicenseRetriever::from_config(&config)?.save_in_out_dir("licenses")?;
     Ok(())
 }
 
 fn zip_assets() -> Result<()> {
-    let buf = File::create(PathBuf::try_from(std::env::var("OUT_DIR")?)?.join("assets.zip"))?;
+    let buf = File::create(PathBuf::from(std::env::var("OUT_DIR")?).join("assets.zip"))?;
     let mut zip_file = ZipWriter::new(buf);
-    let options = FileOptions::default();
-    for file in PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?
+    let options = SimpleFileOptions::default();
+    for file in PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?)
         .join("assets")
         .read_dir()?
     {
@@ -239,7 +296,7 @@ fn zip_assets() -> Result<()> {
 
 fn embed_resource() -> Result<()> {
     if std::env::var("TARGET")?.contains("windows") {
-        let root_dir = PathBuf::try_from(std::env::var("CARGO_MANIFEST_DIR")?)?;
+        let root_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?);
         let icons_dir = root_dir.join("icons");
         std::fs::copy(icons_dir.join("icon.rc"), root_dir.join("icon.rc"))?;
         std::fs::copy(icons_dir.join("icon.ico"), root_dir.join("icon.ico"))?;

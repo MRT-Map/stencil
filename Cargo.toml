@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.1.2"
+version = "2.1.3"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
@@ -13,7 +13,7 @@ categories = ["games"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.12.1"
+version = "0.13.2"
 default-features = false
 features = [
     "bevy_sprite",
@@ -25,21 +25,22 @@ features = [
     "x11",
     "wayland",
     "serialize",
+    "asset_processor",
 ]
 
 [dependencies]
-# bevy_mouse_tracking = { version = "0.6.0", package = "bevy_mouse_tracking_plugin" }
+# bevy_mouse_tracking = { version = "0.8.0", package = "bevy_mouse_tracking_plugin" }
 bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin" }
-bevy_prototype_lyon = "0.10.0"
-# bevy_egui = "0.23.0"
-bevy_egui = { git = "https://github.com/iiiii7d/bevy_egui" }
-egui_commonmark = "0.10.1"
-egui_extras = "0.24.2"
-bevy_mod_picking = { version = "0.17.0", default-features = false, features = [
+#bevy_prototype_lyon = "0.11.0"
+bevy_prototype_lyon = { git = "https://github.com/iiiii7d/bevy_prototype_lyon" }
+bevy_egui = "0.27.0"
+egui_commonmark = "0.15.0"
+egui_extras = "0.27.2"
+bevy_mod_picking = { version = "0.18.2", default-features = false, features = [
     "backend_raycast",
     "selection",
 ] }
-bevy_asset_loader = "0.18.0"
+bevy_asset_loader = "0.20.1"
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -47,26 +48,26 @@ color-spantrace = "0.2.1"
 tracing-error = "0.2.0"
 
 surf = "2.3.2"
-async-fs = "2.1.0"
-futures-lite = "2.1.0"
-async-lock = "3.2.0"
-async-executor = "1.8.0"
+async-fs = "2.1.1"
+futures-lite = "2.3.0"
+async-lock = "3.3.0"
+async-executor = "1.11.0"
 
-backtrace = "0.3.69"
+backtrace = "0.3.71"
 color-backtrace = "0.6.1"
 
-serde = { version = "1.0.193", features = ["derive"] }
-rmp-serde = "1.1.2"
-toml = "0.8.8"
+serde = { version = "1.0.199", features = ["derive"] }
+rmp-serde = "1.2.0"
+toml = "0.8.12"
 
 dirs = "5.0.1"
-zip = "0.6.6"
+zip = "1.1.1"
 bimap = { version = "0.6.3", features = ["serde"] }
-image = "0.24.7"
-winit = "0.28.7"
+image = "0.25.1"
+winit = "0.29.15"
 
 hex_color = { version = "3.0.0", features = ["serde"] }
-itertools = "0.12.0"
+itertools = "0.12.1"
 rand = "0.8.5"
 lazy-regex = "3.1.0"
 once_cell = "1.19.0"
@@ -75,9 +76,9 @@ license-retriever = { git = "https://github.com/MRT-Map/license-retriever" }
 
 [build-dependencies]
 license-retriever = { git = "https://github.com/MRT-Map/license-retriever" }
-anyhow = { version = "1.0.75", features = ["backtrace"] }
-zip = "0.6.6"
-embed-resource = "2.4.0"
+anyhow = { version = "1.0.82", features = ["backtrace"] }
+zip = "1.1.1"
+embed-resource = "2.4.2"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -91,4 +92,4 @@ lto = true
 [package.metadata.bundle]
 name = "stencil2"
 identifier = "io.github.mrt-map.stencil2"
-icon = ["icons/*.png"]
+icon = ["icons/icon_*.png"]

@@ -162,7 +162,6 @@
 )]
 
 use bevy::{
-    asset::AssetPlugin,
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,
@@ -270,6 +269,7 @@ fn main() {
                     backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
                     ..default()
                 }),
+                ..default()
             })
             .disable::<LogPlugin>()
     })

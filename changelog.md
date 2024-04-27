@@ -1,3 +1,8 @@
+# v2.1.3
+* Upgrade `bevy` to v0.13
+* Fix mouse icon not changing
+* Fix application not existing in `dmg` file
+
 # v2.1.2
 * Upgrade `bevy` to v0.12 (painfully)
 * No longer able to move the component in node-editing mode, go to select mode to do that

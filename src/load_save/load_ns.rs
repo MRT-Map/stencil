@@ -13,7 +13,6 @@ use crate::{
         skin::Skin,
     },
     ui::{file_explorer::open_multiple_files, popup::Popup},
-    EventReader,
 };
 
 #[allow(clippy::needless_pass_by_value)]

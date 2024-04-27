@@ -1,5 +1,6 @@
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_egui::{
+    egui,
     egui::{Id, Pos2, Response},
     EguiContexts,
 };
@@ -68,9 +69,9 @@ impl Plugin for UiPlugin {
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
-            .add_systems(Update, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
-            .add_systems(Update, init_focus.in_set(UiSet::Init))
-            .add_systems(Update, save_focus.in_set(UiSet::Reset));
+            .add_systems(Last, reset_hovering_over_gui_sy.in_set(UiSet::Reset))
+            .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
+            .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset));
         let mut order = app.world.resource_mut::<MainScheduleOrder>();
         order.insert_after(PreUpdate, UiSchedule);
     }
@@ -87,13 +88,13 @@ pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
 #[allow(clippy::needless_pass_by_value)]
 pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
     let ctx = ctx.ctx_mut();
-    focus.0 = ctx.memory(bevy_egui::egui::Memory::focus);
+    focus.0 = ctx.memory(egui::Memory::focused);
 }
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn reset_hovering_over_gui_sy(
     mut hovering_over_gui: ResMut<HoveringOverGui>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
 ) {
     if !buttons.any_pressed([MouseButton::Left, MouseButton::Middle, MouseButton::Right]) {
         hovering_over_gui.0 = false;

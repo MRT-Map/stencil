@@ -1,4 +1,4 @@
-use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy::prelude::*;
 use bevy_mouse_tracking::MousePosWorld;
 use bevy_prototype_lyon::{prelude::*, shapes::Circle};
 use itertools::Itertools;

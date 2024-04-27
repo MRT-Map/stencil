@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Debug};
 
 use bevy::prelude::*;
-use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
+use bevy_prototype_lyon::prelude::*;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 

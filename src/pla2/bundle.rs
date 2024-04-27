@@ -1,6 +1,6 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_mod_picking::prelude::*;
-use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
+use bevy_prototype_lyon::prelude::*;
 
 use crate::pla2::{
     component::{EditorCoords, PlaComponent, Select},
@@ -145,7 +145,7 @@ pub trait EntityCommandsSelectExt {
     fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self;
 }
 
-impl<'w, 's, 'a> EntityCommandsSelectExt for EntityCommands<'w, 's, 'a> {
+impl<'a> EntityCommandsSelectExt for EntityCommands<'a> {
     fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
         let ty = data.get_type(skin).unwrap();
         let fill = data.get_fill(skin).select(ty).to_owned();

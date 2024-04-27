@@ -20,8 +20,8 @@ pub struct InitPlugin;
 
 impl Plugin for InitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<EditorState>()
-            .add_state::<LoadingState>()
+        app.init_state::<EditorState>()
+            .init_state::<LoadingState>()
             .init_resource::<Skin>()
             .add_event::<Action>()
             .add_systems(Update, state_changer_asy)

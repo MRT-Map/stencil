@@ -1,12 +1,14 @@
-use bevy::{math::Vec3Swizzles, prelude::*, sprite::Anchor};
+use bevy::{prelude::*, sprite::Anchor};
+use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     init::load_assets::ImageAssets,
-    state::EditorState,
+    state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
+        reset_hovering_over_gui_sy,
         tilemap::settings::TileSettings,
         HoveringOverGui, UiSchedule, UiSet,
     },
@@ -26,10 +28,13 @@ pub fn crosshair_sy(
     images: Res<ImageAssets>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
+    hovering_over_gui: Res<HoveringOverGui>,
     tile_settings: Res<TileSettings>,
 ) {
     if let Some(state) = state {
-        if state.component_type().is_none() {
+        if state.component_type().is_none()
+            || (state.component_type().is_some() && hovering_over_gui.0)
+        {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
                 commands.entity(e).despawn_recursive();
@@ -68,8 +73,9 @@ pub fn crosshair_sy(
 
 #[tracing::instrument(skip_all)]
 pub fn cursor_icon_sy(
-    buttons: Res<Input<MouseButton>>,
-    mut windows: Query<&mut Window>,
+    buttons: Res<ButtonInput<MouseButton>>,
+    mut windows: Query<(Entity, &mut Window)>,
+    mut ctx: EguiContexts,
     state: Option<Res<State<EditorState>>>,
     hovering_over_gui: Res<HoveringOverGui>,
     hovered_comp: Query<(), With<HoveredComponent>>,
@@ -79,7 +85,8 @@ pub fn cursor_icon_sy(
     } else {
         EditorState::Loading
     };
-    for mut window in &mut windows {
+
+    for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
             window.cursor.visible = hovering_over_gui.0;
             continue;
@@ -88,21 +95,22 @@ pub fn cursor_icon_sy(
         if hovering_over_gui.0 {
             continue;
         }
-        window.cursor.icon = match state {
-            EditorState::Loading => CursorIcon::Wait,
+
+        ctx.ctx_for_window_mut(e).set_cursor_icon(match state {
+            EditorState::Loading => egui::CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if !hovered_comp.is_empty() {
-                    CursorIcon::Hand
+                    egui::CursorIcon::PointingHand
                 } else if buttons.pressed(MouseButton::Left) {
-                    CursorIcon::Grabbing
+                    egui::CursorIcon::Grabbing
                 } else {
-                    CursorIcon::Grab
+                    egui::CursorIcon::Grab
                 }
             }
             EditorState::CreatingLine | EditorState::CreatingArea | EditorState::CreatingPoint => {
                 unreachable!()
             }
-        };
+        });
     }
 }
 
@@ -113,13 +121,15 @@ impl Plugin for CursorPlugin {
         app.add_systems(
             UiSchedule,
             (
-                cursor_icon_sy,
-                crosshair_sy,
                 mouse_events::left_click_handler_sy,
                 mouse_events::right_click_handler_sy,
                 mouse_events::hover_handler_sy,
             )
                 .in_set(UiSet::Mouse),
+        )
+        .add_systems(
+            PostUpdate,
+            (cursor_icon_sy, crosshair_sy.run_if_not_loading()).before(reset_hovering_over_gui_sy),
         )
         .add_event::<MouseEvent>();
     }
