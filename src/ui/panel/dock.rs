@@ -1,8 +1,16 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style};
 
-use crate::ui::panel::component_panel::{component_ui, ComponentQuery};
+use crate::{
+    misc::Action,
+    pla2::{
+        bundle::SelectedComponent,
+        component::{EditorCoords, PlaComponent},
+        skin::Skin,
+    },
+    ui::panel::component_panel::{component_ui, PrevNamespaceUsed},
+};
 
 #[derive(Debug)]
 #[non_exhaustive]
@@ -34,9 +42,9 @@ impl Default for PanelDockState {
 }
 
 impl PanelDockState {
-    fn ui(&mut self, query: ComponentQuery, ctx: &mut egui::Context) {
+    fn ui(&mut self, params: PanelParams, ctx: &mut egui::Context) {
         let mut tab_viewer = TabViewer {
-            query: Some(query),
+            params,
             viewport_rect: &mut self.viewport_rect,
             layer_id: &mut self.layer_id,
         };
@@ -50,17 +58,21 @@ impl PanelDockState {
 #[derive(Resource)]
 pub struct TempUi<'a>(pub &'a mut egui::Ui);
 
-struct TabViewer<'a, 'w, 's, 'b> {
-    query: Option<ComponentQuery<'w, 's, 'b>>,
+struct TabViewer<'a, 'w, 's> {
+    params: PanelParams<'w, 's>,
     viewport_rect: &'a mut egui::Rect,
     layer_id: &'a mut egui::LayerId,
 }
 
-impl egui_dock::TabViewer for TabViewer<'_, '_, '_, '_> {
+impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
     type Tab = DockWindow;
 
     fn title(&mut self, window: &mut Self::Tab) -> egui::WidgetText {
-        format!("{window:?}").into()
+        match window {
+            DockWindow::Tilemap => "Map",
+            DockWindow::ComponentEditor => "Component",
+        }
+        .into()
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, window: &mut Self::Tab) {
@@ -70,9 +82,13 @@ impl egui_dock::TabViewer for TabViewer<'_, '_, '_, '_> {
                 *self.viewport_rect = ui.clip_rect();
             }
             DockWindow::ComponentEditor => {
-                component_ui(ui, self.query.take().unwrap());
+                component_ui(ui, &mut self.params);
             }
         }
+    }
+
+    fn closeable(&mut self, _tab: &mut Self::Tab) -> bool {
+        false
     }
 
     fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
@@ -84,8 +100,18 @@ impl egui_dock::TabViewer for TabViewer<'_, '_, '_, '_> {
     }
 }
 
-pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, query: ComponentQuery) {
-    state.ui(query, ctx.ctx_mut());
+#[derive(SystemParam)]
+pub struct PanelParams<'w, 's> {
+    pub selected:
+        Query<'w, 's, (Entity, &'static mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
+    pub commands: Commands<'w, 's>,
+    pub skin: Res<'w, Skin>,
+    pub prev_namespace_used: ResMut<'w, PrevNamespaceUsed>,
+    pub actions: EventWriter<'w, Action>,
+}
+
+pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, params: PanelParams) {
+    state.ui(params, ctx.ctx_mut());
 }
 
 #[must_use]
