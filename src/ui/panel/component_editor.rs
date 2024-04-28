@@ -55,7 +55,7 @@ impl DockWindow for ComponentEditor {
         ui.add(egui::TextEdit::multiline(&mut component_data.description).hint_text("Description"));
         ui.end_row();
         ui.separator();
-        let component_type = component_data.get_type(&skin).unwrap();
+        let component_type = component_data.get_type(skin).unwrap();
         let old_skin_type = component_data.ty.to_owned();
         egui::ComboBox::from_label("Component type")
             .selected_text(component_data.ty.to_owned())
@@ -71,7 +71,7 @@ impl DockWindow for ComponentEditor {
         if old_skin_type != component_data.ty {
             commands
                 .entity(entity)
-                .select_component(&skin, &component_data);
+                .select_component(skin, &component_data);
         }
         ui.end_row();
         let mut tags = component_data.tags.join(",");
@@ -85,7 +85,7 @@ impl DockWindow for ComponentEditor {
         ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
         ui.end_row();
         ui.separator();
-        if component_data.get_type(&skin) == Some(ComponentType::Line) {
+        if component_data.get_type(skin) == Some(ComponentType::Line) {
             if ui.button("Reverse direction").clicked() {
                 component_data.nodes.reverse();
             };
