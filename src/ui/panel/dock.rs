@@ -1,6 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style};
+use enum_dispatch::enum_dispatch;
 
 use crate::{
     misc::Action,
@@ -9,29 +10,60 @@ use crate::{
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::panel::component_panel::{component_ui, PrevNamespaceUsed},
+    ui::panel::component_editor::{ComponentEditor, PrevNamespaceUsed},
 };
 
-#[derive(Debug)]
-#[non_exhaustive]
-enum DockWindow {
+#[enum_dispatch(DockWindows)]
+pub trait DockWindow: Copy {
+    fn title(self) -> String;
+    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui);
+    fn allowed_in_windows(self) -> bool {
+        true
+    }
+    fn closeable(self) -> bool {
+        true
+    }
+}
+
+#[enum_dispatch]
+#[derive(Clone, Copy)]
+pub enum DockWindows {
     Tilemap,
     ComponentEditor,
 }
 
+#[derive(Clone, Copy)]
+pub struct Tilemap;
+
+impl DockWindow for Tilemap {
+    fn title(self) -> String {
+        "Map".into()
+    }
+    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+        *tab_viewer.layer_id = ui.layer_id();
+        *tab_viewer.viewport_rect = ui.clip_rect();
+    }
+    fn allowed_in_windows(self) -> bool {
+        false
+    }
+    fn closeable(self) -> bool {
+        false
+    }
+}
+
 #[derive(Resource)]
 pub struct PanelDockState {
-    state: DockState<DockWindow>,
+    state: DockState<DockWindows>,
     pub viewport_rect: egui::Rect,
     pub layer_id: egui::LayerId,
 }
 
 impl Default for PanelDockState {
     fn default() -> Self {
-        let mut state = DockState::new(vec![DockWindow::Tilemap]);
+        let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
         let [_, _inspector] =
-            tree.split_left(NodeIndex::root(), 0.15, vec![DockWindow::ComponentEditor]);
+            tree.split_left(NodeIndex::root(), 0.15, vec![ComponentEditor.into()]);
 
         Self {
             state,
@@ -58,49 +90,38 @@ impl PanelDockState {
 #[derive(Resource)]
 pub struct TempUi<'a>(pub &'a mut egui::Ui);
 
-struct TabViewer<'a, 'w, 's> {
-    params: PanelParams<'w, 's>,
-    viewport_rect: &'a mut egui::Rect,
-    layer_id: &'a mut egui::LayerId,
+pub struct TabViewer<'a, 'w, 's> {
+    pub params: PanelParams<'w, 's>,
+    pub viewport_rect: &'a mut egui::Rect,
+    pub layer_id: &'a mut egui::LayerId,
 }
 
 impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
-    type Tab = DockWindow;
+    type Tab = DockWindows;
 
     fn title(&mut self, window: &mut Self::Tab) -> egui::WidgetText {
-        match window {
-            DockWindow::Tilemap => "Map",
-            DockWindow::ComponentEditor => "Component",
-        }
-        .into()
+        window.title().into()
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, window: &mut Self::Tab) {
-        match window {
-            DockWindow::Tilemap => {
-                *self.layer_id = ui.layer_id();
-                *self.viewport_rect = ui.clip_rect();
-            }
-            DockWindow::ComponentEditor => {
-                component_ui(ui, &mut self.params);
-            }
-        }
+        window.ui(self, ui);
     }
 
-    fn closeable(&mut self, _tab: &mut Self::Tab) -> bool {
-        false
+    fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
+        tab.closeable()
     }
 
     fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
-        !matches!(tab, DockWindow::Tilemap)
+        tab.allowed_in_windows()
     }
 
     fn clear_background(&self, window: &Self::Tab) -> bool {
-        !matches!(window, DockWindow::Tilemap)
+        !matches!(window, DockWindows::Tilemap(_))
     }
 }
 
 #[derive(SystemParam)]
+#[non_exhaustive]
 pub struct PanelParams<'w, 's> {
     pub selected:
         Query<'w, 's, (Entity, &'static mut PlaComponent<EditorCoords>), With<SelectedComponent>>,

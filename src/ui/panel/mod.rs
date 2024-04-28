@@ -1,11 +1,11 @@
-pub mod component_panel;
+pub mod component_editor;
 pub mod dock;
 pub mod menu;
 pub mod toolbar;
 use bevy::prelude::*;
 
 use crate::ui::{
-    panel::{component_panel::PrevNamespaceUsed, dock::PanelDockState},
+    panel::{component_editor::PrevNamespaceUsed, dock::PanelDockState},
     UiSchedule, UiSet,
 };
 

@@ -9,7 +9,7 @@ use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
     misc::Action,
     pla2::{component::ComponentType, skin::Skin},
-    ui::panel::component_panel::PrevNamespaceUsed,
+    ui::panel::component_editor::PrevNamespaceUsed,
 };
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]

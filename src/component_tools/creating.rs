@@ -18,7 +18,7 @@ use crate::{
         skin::Skin,
     },
     state::{state_changer_asy, EditorState},
-    ui::{cursor::mouse_events::MouseEvent, panel::component_panel::PrevNamespaceUsed},
+    ui::{cursor::mouse_events::MouseEvent, panel::component_editor::PrevNamespaceUsed},
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [
