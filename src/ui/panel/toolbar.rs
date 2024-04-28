@@ -1,19 +1,20 @@
-use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{egui, egui::InnerResponse};
 
 use crate::{
     misc::Action,
     state::{ChangeStateAct, EditorState},
+    ui::panel::dock::{PanelParams, TabViewer},
 };
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn ui_sy(
-    state: Res<State<EditorState>>,
-    mut ctx: EguiContexts,
-    mut actions: EventWriter<Action>,
-) {
-    let mut new_state = **state;
-    egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
+pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> InnerResponse<()> {
+    let PanelParams {
+        editor_state,
+        actions,
+        ..
+    } = &mut tab_viewer.params;
+    let mut new_state = ***editor_state;
+    let resp = egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
                 ($text:literal, $next_state:expr) => {
@@ -34,7 +35,8 @@ pub fn ui_sy(
             button!("Area", EditorState::CreatingArea);
         });
     });
-    if new_state != **state {
+    if new_state != ***editor_state {
         actions.send(Action::new(ChangeStateAct(new_state)));
     }
+    resp
 }

@@ -1,6 +1,6 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_egui::{egui, EguiContexts};
-use egui_dock::{DockArea, DockState, NodeIndex, Style};
+use bevy_egui::{egui, egui::Margin, EguiContexts};
+use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use enum_dispatch::enum_dispatch;
 
 use crate::{
@@ -10,7 +10,11 @@ use crate::{
         component::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    ui::panel::component_editor::{ComponentEditor, PrevNamespaceUsed},
+    state::EditorState,
+    ui::panel::{
+        component_editor::{ComponentEditor, PrevNamespaceUsed},
+        tilemap::Tilemap,
+    },
 };
 
 #[enum_dispatch(DockWindows)]
@@ -30,25 +34,6 @@ pub trait DockWindow: Copy {
 pub enum DockWindows {
     Tilemap,
     ComponentEditor,
-}
-
-#[derive(Clone, Copy)]
-pub struct Tilemap;
-
-impl DockWindow for Tilemap {
-    fn title(self) -> String {
-        "Map".into()
-    }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        *tab_viewer.layer_id = ui.layer_id();
-        *tab_viewer.viewport_rect = ui.clip_rect();
-    }
-    fn allowed_in_windows(self) -> bool {
-        false
-    }
-    fn closeable(self) -> bool {
-        false
-    }
 }
 
 #[derive(Resource)]
@@ -111,6 +96,16 @@ impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
         tab.closeable()
     }
 
+    fn tab_style_override(&self, tab: &Self::Tab, global_style: &TabStyle) -> Option<TabStyle> {
+        matches!(tab, DockWindows::Tilemap(_)).then(|| TabStyle {
+            tab_body: TabBodyStyle {
+                inner_margin: Margin::ZERO,
+                ..global_style.tab_body
+            },
+            ..global_style.to_owned()
+        })
+    }
+
     fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
         tab.allowed_in_windows()
     }
@@ -129,6 +124,7 @@ pub struct PanelParams<'w, 's> {
     pub skin: Res<'w, Skin>,
     pub prev_namespace_used: ResMut<'w, PrevNamespaceUsed>,
     pub actions: EventWriter<'w, Action>,
+    pub editor_state: Res<'w, State<EditorState>>,
 }
 
 pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, params: PanelParams) {

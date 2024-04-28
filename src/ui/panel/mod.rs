@@ -1,7 +1,9 @@
 pub mod component_editor;
 pub mod dock;
 pub mod menu;
+mod tilemap;
 pub mod toolbar;
+
 use bevy::prelude::*;
 
 use crate::ui::{
@@ -17,10 +19,7 @@ impl Plugin for PanelPlugin {
             .init_resource::<PanelDockState>()
             .add_systems(
                 UiSchedule,
-                (menu::ui_sy, toolbar::ui_sy)
-                    .chain()
-                    .in_set(UiSet::Panels)
-                    .before(dock::panel_sy),
+                menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
             .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels));
     }
