@@ -3,6 +3,8 @@ use bevy_egui::EguiContexts;
 use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
+use crate::ui::panel::dock::{within_tilemap, PanelDockState};
+
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct HoveredComponent;
@@ -55,18 +57,19 @@ pub fn right_click_handler_sy(
     mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
+    panel: Res<PanelDockState>,
 ) {
-    if buttons.just_pressed(MouseButton::Right) && !ctx.ctx_mut().is_pointer_over_area() {
+    if buttons.just_pressed(MouseButton::Right) && within_tilemap(&mut ctx, &panel) {
         debug!("RightPress detected");
         *prev_mouse_pos = Some(*mouse_pos);
         event_writer.send(MouseEvent::RightPress(*mouse_pos_world));
     }
-    if buttons.just_released(MouseButton::Right) && !ctx.ctx_mut().is_pointer_over_area() {
+    if buttons.just_released(MouseButton::Right) && within_tilemap(&mut ctx, &panel) {
         debug!("RightRelease detected");
         event_writer.send(MouseEvent::RightRelease(*mouse_pos_world));
         if let Some(prev) = *prev_mouse_pos {
             if (*prev - **mouse_pos).length_squared() <= CLICK_MAX_OFFSET
-                && !ctx.ctx_mut().is_pointer_over_area()
+                && within_tilemap(&mut ctx, &panel)
             {
                 debug!("RightClick detected");
                 event_writer.send(MouseEvent::RightClick(*mouse_pos_world));
@@ -85,9 +88,10 @@ pub fn left_click_handler_sy(
     mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
+    panel: Res<PanelDockState>,
 ) {
     let mut pressed_on_comp = false;
-    if !ctx.ctx_mut().is_pointer_over_area() {
+    if within_tilemap(&mut ctx, &panel) {
         for e in event_reader_down.read() {
             if e.button != PointerButton::Primary {
                 continue;
@@ -119,8 +123,7 @@ pub fn left_click_handler_sy(
     let curr = *mouse_pos;
     debug!(e = ?selected_entity, "LeftRelease detected");
     event_writer.send(MouseEvent::LeftRelease(*selected_entity, *mouse_pos_world));
-    if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && !ctx.ctx_mut().is_pointer_over_area()
-    {
+    if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && within_tilemap(&mut ctx, &panel) {
         debug!(e = ?selected_entity, "LeftClick detected");
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
     }

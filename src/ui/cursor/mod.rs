@@ -8,6 +8,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
+        panel::dock::{within_tilemap, PanelDockState},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
     },
@@ -29,10 +30,11 @@ pub fn crosshair_sy(
     mouse_pos_world: Res<MousePosWorld>,
     mut ctx: EguiContexts,
     tile_settings: Res<TileSettings>,
+    panel: Res<PanelDockState>,
 ) {
     if let Some(state) = state {
         if state.component_type().is_none()
-            || (state.component_type().is_some() && ctx.ctx_mut().is_pointer_over_area())
+            || (state.component_type().is_some() && !within_tilemap(&mut ctx, &panel))
         {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
@@ -77,6 +79,7 @@ pub fn cursor_icon_sy(
     mut ctx: EguiContexts,
     state: Option<Res<State<EditorState>>>,
     hovered_comp: Query<(), With<HoveredComponent>>,
+    panel: Res<PanelDockState>,
 ) {
     let state = if let Some(state) = state {
         **state
@@ -86,11 +89,11 @@ pub fn cursor_icon_sy(
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
-            window.cursor.visible = ctx.ctx_mut().is_pointer_over_area();
+            window.cursor.visible = !within_tilemap(&mut ctx, &panel);
             continue;
         }
         window.cursor.visible = true;
-        if ctx.ctx_mut().is_pointer_over_area() {
+        if !within_tilemap(&mut ctx, &panel) {
             continue;
         }
 

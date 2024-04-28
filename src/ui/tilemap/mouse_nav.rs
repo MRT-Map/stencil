@@ -11,7 +11,10 @@ use crate::{
         utils::{get_map_width_height, get_window_width_height},
         zoom::Zoom,
     },
-    ui::tilemap::settings::TileSettings,
+    ui::{
+        panel::dock::{within_tilemap, PanelDockState},
+        tilemap::settings::TileSettings,
+    },
 };
 
 #[tracing::instrument(skip_all)]
@@ -23,8 +26,9 @@ pub fn mouse_drag_sy(
     mut camera: Query<(&Camera, &mut Transform), With<MainCamera>>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
+    panel: Res<PanelDockState>,
 ) {
-    if ctx.ctx_mut().is_pointer_over_area() {
+    if !within_tilemap(&mut ctx, &panel) {
         return;
     }
     let (camera, mut transform) = camera.single_mut();
@@ -60,8 +64,9 @@ pub fn mouse_zoom_sy(
     mouse_pos_world: Query<&MousePosWorld>,
     tile_settings: Res<TileSettings>,
     mut ctx: EguiContexts,
+    panel: Res<PanelDockState>,
 ) {
-    if ctx.ctx_mut().is_pointer_over_area() {
+    if !within_tilemap(&mut ctx, &panel) {
         return;
     }
     let (mut ort_proj, mut transform) = camera.single_mut();

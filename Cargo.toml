@@ -33,14 +33,18 @@ features = [
 bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin" }
 #bevy_prototype_lyon = "0.11.0"
 bevy_prototype_lyon = { git = "https://github.com/iiiii7d/bevy_prototype_lyon" }
-bevy_egui = "0.27.0"
-egui_commonmark = "0.15.0"
-egui_extras = "0.27.2"
 bevy_mod_picking = { version = "0.18.2", default-features = false, features = [
     "backend_raycast",
     "selection",
 ] }
 bevy_asset_loader = "0.20.1"
+bevy-inspector-egui = "0.24.0"
+
+bevy_egui = "0.27.0"
+egui_commonmark = "0.15.0"
+egui_extras = "0.27.2"
+egui_dock = "0.12.0"
+
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -48,7 +52,7 @@ color-spantrace = "0.2.1"
 tracing-error = "0.2.0"
 
 surf = "2.3.2"
-async-fs = "2.1.1"
+async-fs = "2.1.2"
 futures-lite = "2.3.0"
 async-lock = "3.3.0"
 async-executor = "1.11.0"
