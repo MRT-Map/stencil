@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
 use surf::Url;
@@ -8,10 +6,8 @@ use crate::{
     misc::{data_path, Action},
     ui::{
         panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-        popup::Popup,
         tilemap::settings::TileSettings,
     },
-    window_settings::settings_editor::WindowSettingsEditor,
 };
 
 #[allow(dead_code)]

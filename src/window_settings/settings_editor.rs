@@ -1,18 +1,11 @@
-use std::sync::Mutex;
-
 use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::{egui, egui::Color32};
 
 #[cfg(target_os = "linux")]
 use crate::window_settings::settings::LinuxWindow;
 use crate::{
-    component_actions::undo_redo::{History, UndoRedoAct},
     misc::{data_path, Action},
-    pla2::component::ComponentType,
-    ui::{
-        panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-        popup::Popup,
-    },
+    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
     window_settings::settings::WindowSettings,
 };
 
