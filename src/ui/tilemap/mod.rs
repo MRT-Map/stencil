@@ -8,7 +8,7 @@ use crate::{
 
 pub mod mouse_nav;
 pub mod settings;
-pub mod settings_window;
+pub mod settings_editor;
 pub mod tile;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -36,7 +36,7 @@ impl Plugin for RenderingPlugin {
             )
             .add_systems(
                 UiSchedule,
-                (tile::show_tiles_sy, settings_window::tile_settings_msy)
+                (tile::show_tiles_sy, settings_editor::tile_settings_msy)
                     .in_set(RenderingSet::Tiles),
             );
     }

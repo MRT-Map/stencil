@@ -9,7 +9,8 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
-    ui::tilemap::settings_window::TileSettingsAct,
+    ui::tilemap::settings_editor::OpenTileSettingsAct,
+    window_settings::settings_editor::OpenWindowSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -20,6 +21,7 @@ pub enum HotkeyActions {
     LoadNamespaces,
     SaveNamespaces,
     TileSettings,
+    WindowSettings,
     Quit,
 }
 impl HotkeyActions {
@@ -31,7 +33,8 @@ impl HotkeyActions {
             Self::Redo => Action::new(UndoRedoAct::Redo),
             Self::LoadNamespaces => Action::new(LoadSaveAct::Load),
             Self::SaveNamespaces => Action::new(LoadSaveAct::Save),
-            Self::TileSettings => Action::new(TileSettingsAct::Open),
+            Self::TileSettings => Action::new(OpenTileSettingsAct),
+            Self::WindowSettings => Action::new(OpenWindowSettingsAct),
             Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
         }
     }
@@ -73,6 +76,7 @@ impl Default for HotkeySettings {
                 (HotkeyActions::LoadNamespaces, KeyCode::KeyL),
                 (HotkeyActions::SaveNamespaces, KeyCode::KeyS),
                 (HotkeyActions::TileSettings, KeyCode::KeyT),
+                (HotkeyActions::WindowSettings, KeyCode::KeyW),
                 (HotkeyActions::Quit, KeyCode::Escape),
             ]
             .into_iter()

@@ -7,8 +7,8 @@ use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct, misc::Action, ui::tilemap::settings_window::TileSettingsAct,
-    window_settings::window::WindowSettingsAct,
+    load_save::LoadSaveAct, misc::Action, ui::tilemap::settings_editor::OpenTileSettingsAct,
+    window_settings::settings_editor::OpenWindowSettingsAct,
 };
 
 #[allow(clippy::needless_pass_by_value)]
@@ -51,8 +51,8 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Redo", UndoRedoAct::Redo);
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
-                button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
-                button!(ui, event_writer, "Window", WindowSettingsAct::Open);
+                button!(ui, event_writer, "Tilemap", OpenTileSettingsAct);
+                button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(

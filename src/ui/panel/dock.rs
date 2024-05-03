@@ -11,10 +11,14 @@ use crate::{
         skin::Skin,
     },
     state::EditorState,
-    ui::panel::{
-        component_editor::{ComponentEditor, PrevNamespaceUsed},
-        tilemap::Tilemap,
+    ui::{
+        panel::{
+            component_editor::{ComponentEditor, PrevNamespaceUsed},
+            tilemap::Tilemap,
+        },
+        tilemap::{settings::TileSettings, settings_editor::TileSettingsEditor},
     },
+    window_settings::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
 
 #[enum_dispatch(DockWindows)]
@@ -34,11 +38,13 @@ pub trait DockWindow: Copy {
 pub enum DockWindows {
     Tilemap,
     ComponentEditor,
+    WindowSettingsEditor,
+    TileSettingsEditor,
 }
 
 #[derive(Resource)]
 pub struct PanelDockState {
-    state: DockState<DockWindows>,
+    pub state: DockState<DockWindows>,
     pub viewport_rect: egui::Rect,
     pub layer_id: egui::LayerId,
 }
@@ -125,6 +131,8 @@ pub struct PanelParams<'w, 's> {
     pub prev_namespace_used: ResMut<'w, PrevNamespaceUsed>,
     pub actions: EventWriter<'w, Action>,
     pub editor_state: Res<'w, State<EditorState>>,
+    pub window_settings: ResMut<'w, WindowSettings>,
+    pub tile_settings: ResMut<'w, TileSettings>,
 }
 
 pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, params: PanelParams) {
