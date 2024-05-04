@@ -5,7 +5,10 @@ use bevy_egui::{egui, egui::Color32};
 use crate::window_settings::settings::LinuxWindow;
 use crate::{
     misc::{data_path, Action},
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::{
+        panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+        tilemap::settings_editor::TileSettingsEditor,
+    },
     window_settings::settings::WindowSettings,
 };
 
@@ -106,7 +109,12 @@ impl DockWindow for WindowSettingsEditor {
 
 pub fn window_settings_msy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenWindowSettingsAct)) {
+        if matches!(event.downcast_ref(), Some(OpenWindowSettingsAct))
+            && !state
+                .state
+                .iter_all_tabs()
+                .any(|(_, a)| a.title() == WindowSettingsEditor.title())
+        {
             state.state.add_window(vec![WindowSettingsEditor.into()]);
         }
     }

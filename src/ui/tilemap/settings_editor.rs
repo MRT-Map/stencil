@@ -117,7 +117,12 @@ impl DockWindow for TileSettingsEditor {
 
 pub fn tile_settings_msy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenTileSettingsAct)) {
+        if matches!(event.downcast_ref(), Some(OpenTileSettingsAct))
+            && !state
+                .state
+                .iter_all_tabs()
+                .any(|(_, a)| a.title() == TileSettingsEditor.title())
+        {
             state.state.add_window(vec![TileSettingsEditor.into()]);
         }
     }
