@@ -3,7 +3,10 @@ use bevy::prelude::*;
 use crate::{
     state::IntoSystemSetConfigExt,
     tile::zoom::Zoom,
-    ui::{tilemap::settings::INIT_TILE_SETTINGS, UiSchedule, UiSet},
+    ui::{
+        tilemap::{settings::INIT_TILE_SETTINGS, tile::PendingTiles},
+        UiSchedule, UiSet,
+    },
 };
 
 pub mod mouse_nav;
@@ -23,6 +26,7 @@ impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Zoom(INIT_TILE_SETTINGS.init_zoom))
             .insert_resource(INIT_TILE_SETTINGS.to_owned())
+            .init_resource::<PendingTiles>()
             .configure_sets(
                 UiSchedule,
                 RenderingSet::Mouse

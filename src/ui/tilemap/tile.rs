@@ -63,6 +63,9 @@ pub fn get_shown_tiles<R: QueryFilter>(
         .collect()
 }
 
+#[derive(Resource, Default)]
+pub struct PendingTiles(pub HashMap<TileCoord, Task<surf::Result<()>>>);
+
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
@@ -71,7 +74,7 @@ pub fn show_tiles_sy(
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
     tile_settings: Res<TileSettings>,
-    mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<()>>>>,
+    mut pending_tiles: ResMut<PendingTiles>,
     mut old_basemap: Local<Basemap>,
     mut executor: Local<Option<Executor>>,
 ) {
@@ -83,7 +86,7 @@ pub fn show_tiles_sy(
         for (e, _) in &query {
             commands.entity(e).despawn_recursive();
         }
-        pending_tiles.clear();
+        pending_tiles.0.clear();
     }
     *old_basemap = basemap.to_owned();
 
@@ -117,7 +120,7 @@ pub fn show_tiles_sy(
                 trace!("Loading tile {tile_coord}");
                 if tile_coord.path(&basemap).try_exists().unwrap_or(false) {
                     commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, &basemap));
-                } else if !pending_tiles.contains_key(tile_coord) {
+                } else if !pending_tiles.0.contains_key(tile_coord) {
                     let url = tile_coord.url(&basemap);
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(&basemap);
@@ -139,14 +142,14 @@ pub fn show_tiles_sy(
 
                         Ok(())
                     });
-                    pending_tiles.insert(tile_coord, new_task);
+                    pending_tiles.0.insert(tile_coord, new_task);
                 }
             }
         }
     }
 
     let mut to_remove = vec![];
-    for (tile_coord, task) in &mut pending_tiles {
+    for (tile_coord, task) in &mut pending_tiles.0 {
         executor.try_tick();
         if !shown_tiles.contains(tile_coord) {
             to_remove.push((*tile_coord, true));
@@ -160,7 +163,7 @@ pub fn show_tiles_sy(
         }
     }
     for (remove, cancel) in to_remove {
-        if let Some(a) = pending_tiles.remove(&remove) {
+        if let Some(a) = pending_tiles.0.remove(&remove) {
             if cancel {
                 executor.spawn(a.cancel()).detach();
             }

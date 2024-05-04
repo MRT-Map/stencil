@@ -6,8 +6,11 @@ use bevy_egui::{egui, egui::Align, EguiContexts};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct, info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct, misc::Action, ui::tilemap::settings_editor::OpenTileSettingsAct,
+    component_actions::undo_redo::UndoRedoAct,
+    info_windows::InfoWindowsAct,
+    load_save::LoadSaveAct,
+    misc::Action,
+    ui::tilemap::{settings_editor::OpenTileSettingsAct, tile::PendingTiles},
     window_settings::settings_editor::OpenWindowSettingsAct,
 };
 
@@ -17,6 +20,7 @@ pub fn ui_sy(
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<DiagnosticsStore>,
     mouse_pos_world: Res<MousePosWorld>,
+    pending_tiles: Res<PendingTiles>,
 ) {
     egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -55,6 +59,8 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
+                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
+                ui.separator();
                 ui.label(format!(
                     "FPS: {}",
                     diagnostics
