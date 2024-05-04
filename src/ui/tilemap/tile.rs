@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cmp::PartialEq, collections::HashMap};
 
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
@@ -15,7 +15,7 @@ use crate::{
         utils::get_map_coords_of_edges,
         zoom::Zoom,
     },
-    ui::tilemap::settings::{TileSettings, INIT_TILE_SETTINGS},
+    ui::tilemap::settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
 };
 
 static SEMAPHORE: Lazy<Semaphore> =
@@ -25,7 +25,7 @@ static SEMAPHORE: Lazy<Semaphore> =
 pub fn get_shown_tiles<R: QueryFilter>(
     q_camera: &Query<(&Camera, Ref<Transform>), R>,
     zoom: i8,
-    tile_settings: &TileSettings,
+    basemap: &Basemap,
 ) -> Vec<TileCoord> {
     let (camera, transform) = q_camera.single();
     let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, &transform);
@@ -36,8 +36,8 @@ pub fn get_shown_tiles<R: QueryFilter>(
     } = TileCoord::from_world_coords(
         f64::from(c_left),
         f64::from(c_top),
-        zoom.min(tile_settings.max_tile_zoom),
-        tile_settings,
+        zoom.min(basemap.max_tile_zoom),
+        basemap,
     );
     let TileCoord {
         x: t_right,
@@ -46,8 +46,8 @@ pub fn get_shown_tiles<R: QueryFilter>(
     } = TileCoord::from_world_coords(
         f64::from(c_right),
         f64::from(c_bottom),
-        zoom.min(tile_settings.max_tile_zoom),
-        tile_settings,
+        zoom.min(basemap.max_tile_zoom),
+        basemap,
     );
 
     (t_left - 1..=t_right + 1)
@@ -56,7 +56,7 @@ pub fn get_shown_tiles<R: QueryFilter>(
                 .map(|y| TileCoord {
                     x,
                     y,
-                    z: zoom.min(tile_settings.max_tile_zoom),
+                    z: zoom.min(basemap.max_tile_zoom),
                 })
                 .collect::<Vec<_>>()
         })
@@ -72,29 +72,37 @@ pub fn show_tiles_sy(
     server: Res<AssetServer>,
     tile_settings: Res<TileSettings>,
     mut pending_tiles: Local<HashMap<TileCoord, Task<surf::Result<()>>>>,
+    mut old_basemap: Local<Basemap>,
     mut executor: Local<Option<Executor>>,
 ) {
     if q_camera.is_empty() {
         return;
     }
+    let basemap = &tile_settings.basemaps[0];
+    if *basemap != *old_basemap {
+        for (e, _) in &query {
+            commands.entity(e).despawn_recursive();
+        }
+        pending_tiles.clear();
+    }
+    *old_basemap = basemap.to_owned();
 
     let (camera, transform) = q_camera.single();
-    let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, &tile_settings);
+    let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, basemap);
     let executor = executor.get_or_insert_with(Executor::new);
     executor.try_tick();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
         for (entity, tile_coord) in &mut query {
-            if (zoom.0 <= f32::from(tile_settings.max_tile_zoom)
-                && tile_coord.z > zoom.0.round() as i8)
-                || (zoom.0 > f32::from(tile_settings.max_tile_zoom)
-                    && tile_coord.z != tile_settings.max_tile_zoom)
-                || (zoom.0 > f32::from(tile_settings.max_tile_zoom) && {
-                    let (tl, tt, tr, tb) = tile_coord.get_edges(&tile_settings);
+            if (zoom.0 <= f32::from(basemap.max_tile_zoom) && tile_coord.z > zoom.0.round() as i8)
+                || (zoom.0 > f32::from(basemap.max_tile_zoom)
+                    && tile_coord.z != basemap.max_tile_zoom)
+                || (zoom.0 > f32::from(basemap.max_tile_zoom) && {
+                    let (tl, tt, tr, tb) = tile_coord.get_edges(&basemap);
                     tr < ml || tl > mr || tb < mt || tt > mb
                 })
-                || (tile_coord.z <= (tile_settings.max_tile_zoom - 1)
-                    && zoom.0 <= f32::from(tile_settings.max_tile_zoom)
+                || (tile_coord.z <= (basemap.max_tile_zoom - 1)
+                    && zoom.0 <= f32::from(basemap.max_tile_zoom)
                     && !shown_tiles.contains(tile_coord))
             {
                 trace!("Hiding {tile_coord}");
@@ -105,22 +113,14 @@ pub fn show_tiles_sy(
             }
         }
         for tile_coord in &shown_tiles {
-            if tile_coord.z <= tile_settings.max_tile_zoom {
+            if tile_coord.z <= basemap.max_tile_zoom {
                 trace!("Loading tile {tile_coord}");
-                if tile_coord
-                    .path(&tile_settings)
-                    .try_exists()
-                    .unwrap_or(false)
-                {
-                    commands.spawn(TileBundle::from_tile_coord(
-                        *tile_coord,
-                        &server,
-                        &tile_settings,
-                    ));
+                if tile_coord.path(&basemap).try_exists().unwrap_or(false) {
+                    commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, &basemap));
                 } else if !pending_tiles.contains_key(tile_coord) {
-                    let url = tile_coord.url(&tile_settings);
+                    let url = tile_coord.url(&basemap);
                     let tile_coord = *tile_coord;
-                    let path = tile_coord.path(&tile_settings);
+                    let path = tile_coord.path(&basemap);
                     let new_task = executor.spawn(async move {
                         if std::env::var("NO_DOWNLOAD").is_ok() {
                             let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
@@ -154,11 +154,7 @@ pub fn show_tiles_sy(
         }
         if task.is_finished() {
             if matches!(future::block_on(task), Ok(())) {
-                commands.spawn(TileBundle::from_tile_coord(
-                    *tile_coord,
-                    &server,
-                    &tile_settings,
-                ));
+                commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, &basemap));
             };
             to_remove.push((*tile_coord, false));
         }

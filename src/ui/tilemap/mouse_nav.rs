@@ -82,7 +82,8 @@ pub fn mouse_zoom_sy(
             zoom.0 += u;
             trace!("Zoom changed from {orig_scale} to {}", zoom.0);
 
-            ort_proj.scale = ((f32::from(tile_settings.max_tile_zoom) - 1.0) - zoom.0).exp2();
+            ort_proj.scale =
+                ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
 
             let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
             let new_mouse_pos = mouse_pos_world.single();

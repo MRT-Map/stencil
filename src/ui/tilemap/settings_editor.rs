@@ -6,7 +6,7 @@ use crate::{
     misc::{data_path, Action},
     ui::{
         panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-        tilemap::settings::TileSettings,
+        tilemap::settings::{Basemap, TileSettings},
     },
 };
 
@@ -58,22 +58,56 @@ impl DockWindow for TileSettingsEditor {
         ui.label("Maximum number of tiles to download at a time");
         ui.separator();
 
-        ui.label("Unless you're using a different tilemap, you shouldn't need to change anything below here");
-        ui.add(
-            egui::Slider::new(&mut tile_settings.max_tile_zoom, -5..=15).text("Maximum tile zoom"),
-        );
-        ui.label("...I don't know how to explain this");
-        ui.add(
-            egui::Slider::new(&mut tile_settings.max_zoom_range, 1.0..=256.0)
-                .text("Maximum tile zoom range"),
-        );
-        ui.label("In tiles of the highest zoom level, the distance across its width / height that each tile represents");
-        ui.add(egui::TextEdit::singleline(&mut tile_settings.url).hint_text("Base URL"));
-        if let Err(e) = Url::try_from(&*tile_settings.url) {
-            ui.colored_label(Color32::RED, format!("Invalid URL: {e:?}"));
-            invalid = true;
+        ui.heading("Basemaps");
+        ui.label("The top-most entry in this list will be used to render the map");
+        let mut new_map = 0;
+        let len = tile_settings.basemaps.len();
+        let mut delete = None;
+
+        for (i, basemap) in tile_settings.basemaps.iter_mut().enumerate() {
+            ui.separator();
+            ui.colored_label(Color32::YELLOW, format!("#{i}"));
+            if ui
+                .add_enabled(i != 0, egui::Button::new("Select"))
+                .clicked()
+            {
+                new_map = i;
+            }
+            if ui
+                .add_enabled(len != 1, egui::Button::new("Delete"))
+                .clicked()
+            {
+                delete = Some(i);
+            }
+
+            ui.add(
+                egui::Slider::new(&mut basemap.max_tile_zoom, -5..=15).text("Maximum tile zoom"),
+            );
+            ui.label("...I don't know how to explain this");
+            ui.add(
+                egui::Slider::new(&mut basemap.max_zoom_range, 1.0..=256.0)
+                    .text("Maximum tile zoom range"),
+            );
+            ui.label("In tiles of the highest zoom level, the distance across its width / height that each tile represents");
+            ui.add(egui::TextEdit::singleline(&mut basemap.url).hint_text("Base URL"));
+            if let Err(e) = Url::try_from(&*basemap.url) {
+                ui.colored_label(Color32::RED, format!("Invalid URL: {e:?}"));
+                invalid = true;
+            }
+            ui.label("The base URL of the tile source");
         }
-        ui.label("The base URL of the tile source");
+
+        if new_map != 0 {
+            tile_settings.basemaps.swap(0, new_map);
+        }
+        if let Some(delete) = delete {
+            tile_settings.basemaps.remove(delete);
+        }
+
+        ui.separator();
+        if ui.button("Add").clicked() {
+            tile_settings.basemaps.push(Basemap::default());
+        }
 
         if !invalid && old_settings != **tile_settings {
             tile_settings.save().unwrap();
