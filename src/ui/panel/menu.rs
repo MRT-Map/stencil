@@ -59,8 +59,6 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
-                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
-                ui.separator();
                 ui.label(format!(
                     "FPS: {}",
                     diagnostics
@@ -73,7 +71,9 @@ pub fn ui_sy(
                     "x: {} z: {}",
                     mouse_pos_world.round().x as i32,
                     -mouse_pos_world.round().y as i32
-                ))
+                ));
+                ui.separator();
+                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
             })
         });
     });
