@@ -5,10 +5,7 @@ use bevy_egui::{egui, egui::Color32};
 use crate::window_settings::settings::LinuxWindow;
 use crate::{
     misc::{data_path, Action},
-    ui::{
-        panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-        tilemap::settings_editor::TileSettingsEditor,
-    },
+    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
     window_settings::settings::WindowSettings,
 };
 

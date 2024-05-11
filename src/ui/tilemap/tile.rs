@@ -1,4 +1,4 @@
-use std::{cmp::PartialEq, collections::HashMap};
+use std::collections::HashMap;
 
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
@@ -88,7 +88,7 @@ pub fn show_tiles_sy(
         }
         pending_tiles.0.clear();
     }
-    *old_basemap = basemap.to_owned();
+    basemap.clone_into(&mut old_basemap);
 
     let (camera, transform) = q_camera.single();
     let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, basemap);
@@ -101,7 +101,7 @@ pub fn show_tiles_sy(
                 || (zoom.0 > f32::from(basemap.max_tile_zoom)
                     && tile_coord.z != basemap.max_tile_zoom)
                 || (zoom.0 > f32::from(basemap.max_tile_zoom) && {
-                    let (tl, tt, tr, tb) = tile_coord.get_edges(&basemap);
+                    let (tl, tt, tr, tb) = tile_coord.get_edges(basemap);
                     tr < ml || tl > mr || tb < mt || tt > mb
                 })
                 || (tile_coord.z <= (basemap.max_tile_zoom - 1)
@@ -118,12 +118,12 @@ pub fn show_tiles_sy(
         for tile_coord in &shown_tiles {
             if tile_coord.z <= basemap.max_tile_zoom {
                 trace!("Loading tile {tile_coord}");
-                if tile_coord.path(&basemap).try_exists().unwrap_or(false) {
-                    commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, &basemap));
+                if tile_coord.path(basemap).try_exists().unwrap_or(false) {
+                    commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
                 } else if !pending_tiles.0.contains_key(tile_coord) {
-                    let url = tile_coord.url(&basemap);
+                    let url = tile_coord.url(basemap);
                     let tile_coord = *tile_coord;
-                    let path = tile_coord.path(&basemap);
+                    let path = tile_coord.path(basemap);
                     let new_task = executor.spawn(async move {
                         if std::env::var("NO_DOWNLOAD").is_ok() {
                             let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
@@ -157,7 +157,7 @@ pub fn show_tiles_sy(
         }
         if task.is_finished() {
             if matches!(future::block_on(task), Ok(())) {
-                commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, &basemap));
+                commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
             };
             to_remove.push((*tile_coord, false));
         }

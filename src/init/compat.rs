@@ -26,23 +26,26 @@ fn v2_2_0() {
     if let Ok(b) = std::fs::read_to_string(data_path("tile_settings.toml")) {
         if let Ok(t) = toml::from_str::<Table>(&b) {
             let mut new = TileSettings::default();
-            if let Some(v) = t.get("init_zoom").and_then(|a| a.as_float()) {
+            if let Some(v) = t.get("init_zoom").and_then(toml::Value::as_float) {
                 new.init_zoom = v as f32;
             }
-            if let Some(v) = t.get("max_get_requests").and_then(|a| a.as_integer()) {
+            if let Some(v) = t.get("max_get_requests").and_then(toml::Value::as_integer) {
                 new.max_get_requests = v as usize;
             }
-            if let Some(v) = t.get("clear_cache_on_startup").and_then(|a| a.as_bool()) {
+            if let Some(v) = t
+                .get("clear_cache_on_startup")
+                .and_then(toml::Value::as_bool)
+            {
                 new.clear_cache_on_startup = v;
             }
             if let Some(v) = t.get("url").and_then(|a| a.as_str()) {
                 new.basemaps[0].url = v.into();
             }
-            if let Some(v) = t.get("max_tile_zoom").and_then(|a| a.as_integer()) {
+            if let Some(v) = t.get("max_tile_zoom").and_then(toml::Value::as_integer) {
                 new.basemaps[0].max_tile_zoom = v as i8;
             }
-            if let Some(v) = t.get("max_zoom_range").and_then(|a| a.as_float()) {
-                new.basemaps[0].max_zoom_range = v as f64;
+            if let Some(v) = t.get("max_zoom_range").and_then(toml::Value::as_float) {
+                new.basemaps[0].max_zoom_range = v;
             }
 
             let _ = new.save();

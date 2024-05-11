@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite::Anchor};
 
 use crate::{
     tile::{tile_coord::TileCoord, zoom::Zoom},
-    ui::tilemap::settings::{Basemap, TileSettings},
+    ui::tilemap::settings::Basemap,
 };
 
 #[derive(Component)]
