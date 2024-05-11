@@ -2,7 +2,11 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::Align, EguiContexts};
+use bevy_egui::{
+    egui,
+    egui::{Align, Color32},
+    EguiContexts,
+};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
@@ -10,7 +14,10 @@ use crate::{
     info_windows::InfoWindowsAct,
     load_save::LoadSaveAct,
     misc::Action,
-    ui::tilemap::{settings_editor::OpenTileSettingsAct, tile::PendingTiles},
+    ui::{
+        panel::status::Status,
+        tilemap::{settings_editor::OpenTileSettingsAct, tile::PendingTiles},
+    },
     window_settings::settings_editor::OpenWindowSettingsAct,
 };
 
@@ -21,6 +28,7 @@ pub fn ui_sy(
     diagnostics: Res<DiagnosticsStore>,
     mouse_pos_world: Res<MousePosWorld>,
     pending_tiles: Res<PendingTiles>,
+    status: Res<Status>,
 ) {
     egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
         egui::menu::bar(ui, |ui| {
@@ -58,6 +66,8 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Tilemap", OpenTileSettingsAct);
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
+            ui.separator();
+            ui.label(status.0.to_owned().color(Color32::WHITE));
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {}",

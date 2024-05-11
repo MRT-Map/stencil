@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display, Formatter},
+};
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
@@ -29,6 +32,16 @@ pub struct PlaComponent<T: Coords> {
     pub nodes: Vec<T>,
     #[serde(skip)]
     pub attributes: HashMap<String, String>,
+}
+
+impl<T: Coords> Display for PlaComponent<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}-{}", self.namespace, self.id)?;
+        if !self.display_name.is_empty() {
+            write!(f, " ({})", self.display_name)?;
+        }
+        Ok(())
+    }
 }
 
 #[allow(dead_code)]

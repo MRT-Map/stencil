@@ -12,7 +12,7 @@ use crate::{
         skin::Skin,
     },
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, UiSet},
+    ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
 };
 
 #[derive(Debug)]
@@ -33,6 +33,7 @@ pub fn edit_nodes_sy(
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
     mut actions: EventWriter<Action>,
+    mut status: ResMut<Status>,
 ) {
     let Ok((mut pla, entity)) = selected.get_single_mut() else {
         return;
@@ -92,6 +93,7 @@ pub fn edit_nodes_sy(
                 continue;
             }
             info!(?entity, ?list_pos, "Starting movement of node");
+            status.0 = format!("Started movement of node of {}", &*pla).into();
             let (list_pos, was_new) = match list_pos {
                 Pos::Existing(i) => (i, false),
                 Pos::NewBefore(i) => {
@@ -108,14 +110,17 @@ pub fn edit_nodes_sy(
             });
         } else if let MouseEvent::RightRelease(_) = event {
             info!(?entity, "Ending movement of node");
+            status.0 = format!("Ended movement of node of {}", &*pla).into();
             clear_orig = true;
         } else if let MouseEvent::RightClick(_) = event {
             if let Some(orig) = &*orig {
                 if !orig.was_new && pla.get_type(&skin) != Some(ComponentType::Point) {
                     info!(?entity, "Deleting node");
+                    status.0 = format!("Deleted node of {}", &*pla).into();
                     pla.nodes.remove(orig.node_list_pos);
                     if pla.nodes.len() < 2 {
                         info!(?entity, "Deleting entity");
+                        status.0 = format!("Deleting {}", &*pla).into();
                         commands.entity(entity).despawn_recursive();
                     } else {
                         commands.entity(entity).component_display(&skin, &pla);

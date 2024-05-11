@@ -18,7 +18,10 @@ use crate::{
         skin::Skin,
     },
     state::{state_changer_asy, EditorState},
-    ui::{cursor::mouse_events::MouseEvent, panel::component_editor::PrevNamespaceUsed},
+    ui::{
+        cursor::mouse_events::MouseEvent,
+        panel::{component_editor::PrevNamespaceUsed, status::Status},
+    },
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [
@@ -52,6 +55,7 @@ pub fn create_point_sy(
     deselect_query: DeselectQuery,
     prev_namespace_used: Res<PrevNamespaceUsed>,
     mut actions: EventWriter<Action>,
+    mut status: ResMut<Status>,
 ) {
     for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
@@ -67,7 +71,13 @@ pub fn create_point_sy(
                 },
                 &skin,
             );
-            debug!("Placing new point at {:?}", mouse_pos_world);
+            debug!("Placing new point at {mouse_pos_world:?}");
+            status.0 = format!(
+                "Created new point {} at {:?}",
+                new_point.data,
+                mouse_pos_world.xy().round().as_ivec2()
+            )
+            .into();
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
@@ -90,12 +100,14 @@ pub fn create_component_sy<const IS_AREA: bool>(
     prev_namespace_used: Res<PrevNamespaceUsed>,
     keys: Res<ButtonInput<KeyCode>>,
     mut actions: EventWriter<Action>,
+    mut status: ResMut<Status>,
 ) {
     let ty = if IS_AREA {
         ComponentType::Area
     } else {
         ComponentType::Line
     };
+    let ty_text = if IS_AREA { "area" } else { "line" };
     if let Ok((data, entity)) = set.get_single_mut() {
         let mut data = (*data).to_owned();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
@@ -127,7 +139,12 @@ pub fn create_component_sy<const IS_AREA: bool>(
                     point.nodes.push(new);
                     point
                 };
-                debug!("Starting new line/area at {:?}", mouse_pos_world);
+                debug!("Starting new {ty_text} at {mouse_pos_world:?}");
+                status.0 = format!(
+                    "Starting new {ty_text} at {:?}",
+                    mouse_pos_world.xy().round().as_ivec2()
+                )
+                .into();
                 if IS_AREA {
                     commands.spawn(AreaComponentBundle::new(data, &skin))
                 } else {
@@ -147,9 +164,14 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 }
                 debug!(
                     ?entity,
-                    "Continuing line/area at {:?}",
+                    "Continuing {ty_text} at {:?}",
                     mouse_pos_world.xy().round().as_ivec2()
                 );
+                status.0 = format!(
+                    "Continuing {ty_text} at {:?}",
+                    mouse_pos_world.xy().round().as_ivec2()
+                )
+                .into();
                 commands.entity(entity).component_display(&skin, &data);
 
                 if IS_AREA
@@ -164,6 +186,8 @@ pub fn create_component_sy<const IS_AREA: bool>(
                         &skin,
                         &prev_namespace_used.0,
                         &mut actions,
+                        &mut status,
+                        ty_text,
                     );
                 }
             }
@@ -175,6 +199,8 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 &skin,
                 &prev_namespace_used.0,
                 &mut actions,
+                &mut status,
+                ty_text,
             );
         }
     }
@@ -187,11 +213,14 @@ pub fn clear_created_component(
     skin: &Res<Skin>,
     prev_namespace_used: &String,
     actions: &mut EventWriter<Action>,
+    status: &mut ResMut<Status>,
+    ty_text: &str,
 ) {
     for (mut data, entity) in &mut *created_query {
         debug!(?entity, "Clearing CreatedComponent marker");
         if data.nodes.len() == 1 {
             commands.entity(entity).despawn_recursive();
+            status.0 = "Cancelled component creation".into();
         } else {
             prev_namespace_used.clone_into(&mut data.namespace);
             data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
@@ -205,6 +234,7 @@ pub fn clear_created_component(
                 before: None,
                 after: Some(data.to_owned()),
             })));
+            status.0 = format!("Created new {ty_text} {}", &*data).into();
         }
     }
 }

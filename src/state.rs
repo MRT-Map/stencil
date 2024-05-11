@@ -9,7 +9,7 @@ use crate::{
     component_tools::creating::{clear_created_component, CreatedQuery},
     misc::Action,
     pla2::{component::ComponentType, skin::Skin},
-    ui::panel::component_editor::PrevNamespaceUsed,
+    ui::panel::{component_editor::PrevNamespaceUsed, status::Status},
 };
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
@@ -71,6 +71,7 @@ pub fn state_changer_asy(
     mut created_query: CreatedQuery,
     skin: Res<Skin>,
     prev_namespace_used: Res<PrevNamespaceUsed>,
+    mut status: ResMut<Status>,
 ) {
     let mut new_state = None;
     let mut reader = actions.p0();
@@ -88,6 +89,8 @@ pub fn state_changer_asy(
             &skin,
             &prev_namespace_used.0,
             &mut writer,
+            &mut status,
+            "component",
         );
         commands.insert_resource(NextState(Some(state)));
     }

@@ -16,6 +16,7 @@ use crate::{
         skin::Skin,
     },
     state::IntoSystemConfigExt,
+    ui::panel::status::Status,
 };
 
 #[derive(Clone, Debug)]
@@ -50,6 +51,7 @@ pub fn undo_redo_asy(
     mut redo_stack: Local<Vec<Vec<History<Arc<RwLock<Entity>>>>>>,
     selected_entity: Query<Entity, With<SelectedComponent>>,
     skin: Res<Skin>,
+    mut status: ResMut<Status>,
 ) {
     let selected = selected_entity.get_single().ok();
     for event in actions.read() {
@@ -79,6 +81,7 @@ pub fn undo_redo_asy(
                 if let Some(before) = &mut history.before {
                     if history.after.is_none() {
                         debug!(?history.component_id, "Undoing deletion");
+                        status.0 = format!("Undid deletion of {}", before).into();
                         let entity =
                             match before.get_type(&skin).unwrap() {
                                 ComponentType::Point => commands
@@ -93,6 +96,7 @@ pub fn undo_redo_asy(
                         ids.insert(entity, Arc::clone(&history.component_id));
                     } else {
                         debug!(?history.component_id, "Undoing edit");
+                        status.0 = format!("Undid edit of {}", before).into();
                         let entity = *history.component_id.read().unwrap();
                         commands.entity(entity).insert(before.to_owned());
                         if Some(entity) == selected {
@@ -103,6 +107,14 @@ pub fn undo_redo_asy(
                     }
                 } else {
                     debug!(?history.component_id, "Undoing creation");
+                    status.0 = format!(
+                        "Undid creation of {}",
+                        history
+                            .after
+                            .as_ref()
+                            .map_or_else(String::new, |a| format!("{a}"))
+                    )
+                    .into();
                     let entity = *history.component_id.read().unwrap();
                     commands.entity(entity).despawn_recursive();
                     ids.remove(&entity);
@@ -116,6 +128,7 @@ pub fn undo_redo_asy(
             for history in &mut histories {
                 if let Some(after) = &mut history.after {
                     debug!(?history.component_id, "Redoing creation");
+                    status.0 = format!("Redid creation of {}", after).into();
                     if history.before.is_none() {
                         let entity =
                             match after.get_type(&skin).unwrap() {
@@ -131,6 +144,7 @@ pub fn undo_redo_asy(
                         ids.insert(entity, Arc::clone(&history.component_id));
                     } else {
                         debug!(?history.component_id, "Redoing edit");
+                        status.0 = format!("Redid edit of {}", after).into();
                         let entity = *history.component_id.read().unwrap();
                         commands.entity(entity).insert(after.to_owned());
                         if Some(entity) == selected {
@@ -141,6 +155,14 @@ pub fn undo_redo_asy(
                     }
                 } else {
                     debug!(?history.component_id, "Redoing deletion");
+                    status.0 = format!(
+                        "Redid deletion of {}",
+                        history
+                            .before
+                            .as_ref()
+                            .map_or_else(String::new, |a| format!("{a}"))
+                    )
+                    .into();
                     let entity = *history.component_id.read().unwrap();
                     commands.entity(entity).despawn_recursive();
                     ids.remove(&entity);

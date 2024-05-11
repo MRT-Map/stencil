@@ -5,7 +5,7 @@ use crate::{
     misc::Action,
     pla2::component::{EditorCoords, PlaComponent},
     state::EditorState,
-    ui::cursor::mouse_events::MouseEvent,
+    ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
 
 #[tracing::instrument(skip_all)]
@@ -14,6 +14,7 @@ pub fn delete_component_sy(
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, Entity)>,
     mut actions: EventWriter<Action>,
+    mut status: ResMut<Status>,
 ) {
     for event in mouse.read() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
@@ -25,6 +26,7 @@ pub fn delete_component_sy(
                 after: None,
             })));
             commands.entity(*e).despawn_recursive();
+            status.0 = format!("Deleted {}", pla).into()
         }
     }
 }

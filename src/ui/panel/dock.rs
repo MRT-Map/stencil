@@ -14,6 +14,7 @@ use crate::{
     ui::{
         panel::{
             component_editor::{ComponentEditor, PrevNamespaceUsed},
+            status::Status,
             tilemap::Tilemap,
         },
         tilemap::{settings::TileSettings, settings_editor::TileSettingsEditor},
@@ -133,6 +134,7 @@ pub struct PanelParams<'w, 's> {
     pub editor_state: Res<'w, State<EditorState>>,
     pub window_settings: ResMut<'w, WindowSettings>,
     pub tile_settings: ResMut<'w, TileSettings>,
+    pub status: ResMut<'w, Status>,
 }
 
 pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, params: PanelParams) {

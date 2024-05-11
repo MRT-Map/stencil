@@ -1,9 +1,13 @@
+use bevy::prelude::*;
 use bevy_egui::{egui, egui::InnerResponse};
 
 use crate::{
     misc::Action,
     state::{ChangeStateAct, EditorState},
-    ui::panel::dock::{PanelParams, TabViewer},
+    ui::panel::{
+        dock::{PanelParams, TabViewer},
+        status::Status,
+    },
 };
 
 #[allow(clippy::needless_pass_by_value)]
@@ -37,6 +41,15 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> InnerResponse<(
     });
     if new_state != ***editor_state {
         actions.send(Action::new(ChangeStateAct(new_state)));
+        tab_viewer.params.status.0 = match new_state {
+            EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
+            EditorState::EditingNodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
+            EditorState::CreatingPoint => "Creating points: L-click to create point.",
+            EditorState::CreatingLine => "Creating lines: L-click to start and continue line, L-click previous node to undo it. R-click to end. Alt to snap to angle.",
+            EditorState::CreatingArea => "Creating areas: L-click to start and continue line, L-click previous node to undo it. L-click first node or R-click to end. Alt to snap to angle.",
+            EditorState::DeletingComponent => "Deleting components: L-click to delete node.",
+            _ => ""
+        }.into();
     }
     resp
 }

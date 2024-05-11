@@ -13,7 +13,7 @@ use crate::{
     misc::{cache_path, Action},
     pla2::skin::Skin,
     state::{state_changer_asy, EditorState, LoadingState},
-    ui::tilemap::settings::INIT_TILE_SETTINGS,
+    ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
 
 pub struct InitPlugin;
@@ -42,11 +42,12 @@ impl Plugin for InitPlugin {
     }
 }
 
-fn done_sy(mut commands: Commands) {
+fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
     if INIT_TILE_SETTINGS.clear_cache_on_startup {
         info!("Removing previous tile cache");
         let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
     }
+    status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState(Some(EditorState::Idle)));

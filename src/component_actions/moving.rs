@@ -9,7 +9,10 @@ use crate::{
         component::{EditorCoords, PlaComponent},
     },
     state::{EditorState, IntoSystemConfigExt},
-    ui::cursor::mouse_events::{HoveredComponent, MouseEvent},
+    ui::{
+        cursor::mouse_events::{HoveredComponent, MouseEvent},
+        panel::status::Status,
+    },
 };
 
 #[tracing::instrument(skip_all)]
@@ -28,6 +31,7 @@ pub fn move_component_sy(
     mut actions: EventWriter<Action>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
+    mut status: ResMut<Status>,
 ) {
     if state.component_type().is_some() || *state == EditorState::EditingNodes {
         mouse.clear();
@@ -49,6 +53,7 @@ pub fn move_component_sy(
                 *orig = Some((*mouse_pos_world, transform.translation));
             }
             info!("Started move");
+            status.0 = format!("Started moving {}", &*pla).into();
         } else if let MouseEvent::RightRelease(_) = event {
             if let Some((orig_mouse_pos_world, _)) = *orig {
                 let old_pla = pla.to_owned();
@@ -62,6 +67,7 @@ pub fn move_component_sy(
                     before: Some(old_pla),
                     after: Some(pla.to_owned()),
                 })));
+                status.0 = format!("Moved component {}", &*pla).into();
             }
             info!("Ended move");
             *orig = None;

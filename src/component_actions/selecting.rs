@@ -8,7 +8,7 @@ use crate::{
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
-    ui::{cursor::mouse_events::MouseEvent, UiSet},
+    ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
 };
 
 #[tracing::instrument(skip_all)]
@@ -17,6 +17,7 @@ pub fn selector_sy(
     state: Res<State<EditorState>>,
     mut mouse: EventReader<MouseEvent>,
     deselect_query: DeselectQuery,
+    mut status: ResMut<Status>,
 ) {
     if state.component_type().is_some() || *state == EditorState::DeletingComponent {
         mouse.clear();
@@ -26,9 +27,11 @@ pub fn selector_sy(
         if let MouseEvent::LeftClick(e, _) = event {
             if let Some(e) = e {
                 select_entity(&mut commands, &deselect_query, *e);
+                status.0 = "Selected component".into();
             } else {
                 info!("Selected nothing, deselecting");
                 deselect(&mut commands, &deselect_query);
+                status.0 = "Deselected component".into();
             }
         }
     }

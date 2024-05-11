@@ -1,13 +1,14 @@
 pub mod component_editor;
 pub mod dock;
 pub mod menu;
-mod tilemap;
+pub mod status;
+pub mod tilemap;
 pub mod toolbar;
 
 use bevy::prelude::*;
 
 use crate::ui::{
-    panel::{component_editor::PrevNamespaceUsed, dock::PanelDockState},
+    panel::{component_editor::PrevNamespaceUsed, dock::PanelDockState, status::Status},
     UiSchedule, UiSet,
 };
 
@@ -17,6 +18,7 @@ impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PrevNamespaceUsed>()
             .init_resource::<PanelDockState>()
+            .init_resource::<Status>()
             .add_systems(
                 UiSchedule,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
