@@ -1,11 +1,19 @@
-use bevy::prelude::*;
+use std::{
+    fs::File,
+    sync::{Arc, Mutex},
+    time::SystemTime,
+};
+
+use bevy::{prelude::*, utils::synccell::SyncCell};
 use bevy_egui::{egui, egui::Color32};
+use egui_file_dialog::FileDialog;
 use surf::Url;
 
 use crate::{
     misc::{data_path, Action},
     ui::{
         panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+        popup::Popup,
         tilemap::settings::{Basemap, TileSettings},
     },
 };
@@ -21,7 +29,12 @@ impl DockWindow for TileSettingsEditor {
         "Tile Settings".into()
     }
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        let PanelParams { tile_settings, .. } = &mut tab_viewer.params;
+        let PanelParams {
+            tile_settings,
+            status,
+            popup,
+            ..
+        } = &mut tab_viewer.params;
         let mut invalid = false;
         let old_settings = tile_settings.to_owned();
 
@@ -108,10 +121,56 @@ impl DockWindow for TileSettingsEditor {
         if ui.button("Add").clicked() {
             tile_settings.basemaps.push(Basemap::default());
         }
+        if ui.button("Import").clicked() {
+            tab_viewer.file_dialogs.tile_settings.select_file();
+        }
+        if let Some(file) = tab_viewer
+            .file_dialogs
+            .tile_settings
+            .update(ui.ctx())
+            .selected()
+        {
+            let timestamp = SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos();
+            match std::fs::read_to_string(file).map(|content| toml::from_str(&content)) {
+                Ok(Ok(new)) => {
+                    tile_settings.basemaps.insert(0, new);
+                    status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
+                }
+                Ok(Err(e)) => {
+                    popup.send(Popup::base_alert(
+                        format!("basemap_parse_error_{timestamp}"),
+                        "Could not parse basemap file",
+                        format!(
+                            "Could not parse basemap file {}: {e}",
+                            file.to_string_lossy()
+                        ),
+                    ));
+                }
+                Err(e) => {
+                    popup.send(Popup::base_alert(
+                        format!("basemap_read_error_{timestamp}"),
+                        "Could not load basemap file",
+                        format!(
+                            "Could not load basemap file {}: {e}",
+                            file.to_string_lossy()
+                        ),
+                    ));
+                }
+            };
+        }
 
         if !invalid && old_settings != **tile_settings {
             tile_settings.save().unwrap();
         }
+    }
+}
+
+impl TileSettingsEditor {
+    pub fn dialog() -> SyncCell<FileDialog> {
+        FileDialog::new().title("Import Basemap").into()
     }
 }
 

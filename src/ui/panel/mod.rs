@@ -5,10 +5,16 @@ pub mod status;
 pub mod tilemap;
 pub mod toolbar;
 
+use std::sync::Arc;
+
 use bevy::prelude::*;
 
 use crate::ui::{
-    panel::{component_editor::PrevNamespaceUsed, dock::PanelDockState, status::Status},
+    panel::{
+        component_editor::PrevNamespaceUsed,
+        dock::{FileDialogs, PanelDockState},
+        status::Status,
+    },
     UiSchedule, UiSet,
 };
 
@@ -19,10 +25,11 @@ impl Plugin for PanelPlugin {
         app.init_resource::<PrevNamespaceUsed>()
             .init_resource::<PanelDockState>()
             .init_resource::<Status>()
+            .init_resource::<FileDialogs>()
             .add_systems(
                 UiSchedule,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
-            .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels));
+            .add_systems(UiSchedule, dock::panel_sy.exclusive().in_set(UiSet::Panels));
     }
 }

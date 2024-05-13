@@ -1,6 +1,9 @@
-use bevy::{ecs::system::SystemParam, prelude::*};
+use std::sync::{Arc, Mutex};
+
+use bevy::{ecs::system::SystemParam, prelude::*, utils::synccell::SyncCell};
 use bevy_egui::{egui, egui::Margin, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
+use egui_file_dialog::FileDialog;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
@@ -17,6 +20,7 @@ use crate::{
             status::Status,
             tilemap::Tilemap,
         },
+        popup::Popup,
         tilemap::{settings::TileSettings, settings_editor::TileSettingsEditor},
     },
     window_settings::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
@@ -66,11 +70,12 @@ impl Default for PanelDockState {
 }
 
 impl PanelDockState {
-    fn ui(&mut self, params: PanelParams, ctx: &mut egui::Context) {
+    fn ui(&mut self, params: PanelParams, file_dialogs: Res<FileDialogs>, ctx: &mut egui::Context) {
         let mut tab_viewer = TabViewer {
             params,
             viewport_rect: &mut self.viewport_rect,
             layer_id: &mut self.layer_id,
+            file_dialogs,
         };
 
         DockArea::new(&mut self.state)
@@ -86,6 +91,20 @@ pub struct TabViewer<'a, 'w, 's> {
     pub params: PanelParams<'w, 's>,
     pub viewport_rect: &'a mut egui::Rect,
     pub layer_id: &'a mut egui::LayerId,
+    pub file_dialogs: Res<'w, FileDialogs>,
+}
+
+#[derive(Resource)]
+pub struct FileDialogs {
+    pub tile_settings: SyncCell<FileDialog>,
+}
+
+impl Default for FileDialogs {
+    fn default() -> Self {
+        Self {
+            tile_settings: TileSettingsEditor::dialog(),
+        }
+    }
 }
 
 impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
@@ -135,10 +154,16 @@ pub struct PanelParams<'w, 's> {
     pub window_settings: ResMut<'w, WindowSettings>,
     pub tile_settings: ResMut<'w, TileSettings>,
     pub status: ResMut<'w, Status>,
+    pub popup: EventWriter<'w, Popup>,
 }
 
-pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, params: PanelParams) {
-    state.ui(params, ctx.ctx_mut());
+pub fn panel_sy(
+    mut state: ResMut<PanelDockState>,
+    file_dialogs: Res<FileDialogs>,
+    mut ctx: EguiContexts,
+    params: PanelParams,
+) {
+    state.ui(params, file_dialogs, ctx.ctx_mut());
 }
 
 #[must_use]
