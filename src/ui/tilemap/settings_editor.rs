@@ -81,24 +81,26 @@ impl DockWindow for TileSettingsEditor {
         let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_export;
         for (i, basemap) in tile_settings.basemaps.iter_mut().enumerate() {
             ui.separator();
-            ui.colored_label(Color32::YELLOW, format!("#{i}"));
-            if ui
-                .add_enabled(i != 0, egui::Button::new("Select"))
-                .clicked()
-            {
-                new_map = i;
-            }
-            if ui
-                .add_enabled(len != 1, egui::Button::new("Delete"))
-                .clicked()
-            {
-                delete = Some(i);
-            }
-            if ui.button("Export").clicked() {
-                let mut fd = Self::export_dialog(&basemap.url);
-                fd.save_file();
-                *file_dialog = Some((basemap.to_owned(), fd));
-            }
+            egui::menu::bar(ui, |ui| {
+                ui.colored_label(Color32::YELLOW, format!("#{i}"));
+                if ui
+                    .add_enabled(i != 0, egui::Button::new("Select"))
+                    .clicked()
+                {
+                    new_map = i;
+                }
+                if ui
+                    .add_enabled(len != 1, egui::Button::new("Delete"))
+                    .clicked()
+                {
+                    delete = Some(i);
+                }
+                if ui.button("Export").clicked() {
+                    let mut fd = Self::export_dialog(&basemap.url);
+                    fd.save_file();
+                    *file_dialog = Some((basemap.to_owned(), fd));
+                }
+            });
 
             ui.add(
                 egui::Slider::new(&mut basemap.max_tile_zoom, -5..=15).text("Maximum tile zoom"),
@@ -160,13 +162,15 @@ impl DockWindow for TileSettingsEditor {
         }
 
         ui.separator();
-        if ui.button("Add").clicked() {
-            tile_settings.basemaps.push(Basemap::default());
-        }
         let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_import;
-        if ui.button("Import").clicked() {
-            file_dialog.select_file();
-        }
+        egui::menu::bar(ui, |ui| {
+            if ui.small_button("Add").clicked() {
+                tile_settings.basemaps.push(Basemap::default());
+            }
+            if ui.button("Import").clicked() {
+                file_dialog.select_file();
+            }
+        });
         file_dialog.update(ui.ctx());
         if let Some(file) = file_dialog.take_selected() {
             let timestamp = SystemTime::now()
