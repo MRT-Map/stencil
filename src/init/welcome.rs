@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-use bevy_egui::EguiContexts;
-use bevy_mouse_tracking::{prelude::*, MainCamera};
 
 use crate::{misc::data_path, state::LoadingState, ui::popup::Popup};
 
