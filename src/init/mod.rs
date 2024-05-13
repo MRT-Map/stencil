@@ -4,6 +4,7 @@ mod load_skin;
 pub mod set_icon;
 pub mod spawn_camera;
 pub mod unzip_assets;
+mod welcome;
 
 use bevy::prelude::*;
 use load_skin::get_skin_sy;
@@ -36,8 +37,9 @@ impl Plugin for InitPlugin {
             .add_systems(Update, get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
             .add_systems(
                 OnEnter(LoadingState::SpawnCamera),
-                spawn_camera::spawn_camera,
+                spawn_camera::spawn_camera_sy,
             )
+            .add_systems(OnEnter(LoadingState::Welcome), welcome::welcome_sy)
             .add_systems(OnEnter(LoadingState::Done), done_sy);
     }
 }

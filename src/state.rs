@@ -45,6 +45,7 @@ pub enum LoadingState {
     Compat,
     LoadSkin,
     SpawnCamera,
+    Welcome,
     Done,
 }
 impl LoadingState {
@@ -56,7 +57,8 @@ impl LoadingState {
             Self::LoadAssets => Self::Compat,
             Self::Compat => Self::LoadSkin,
             Self::LoadSkin => Self::SpawnCamera,
-            Self::SpawnCamera => Self::Done,
+            Self::SpawnCamera => Self::Welcome,
+            Self::Welcome => Self::Done,
             Self::Done => unreachable!(),
         }
     }
