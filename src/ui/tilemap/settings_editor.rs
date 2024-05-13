@@ -1,10 +1,6 @@
-use std::{
-    fs::File,
-    sync::{Arc, Mutex},
-    time::SystemTime,
-};
+use std::time::SystemTime;
 
-use bevy::{prelude::*, utils::synccell::SyncCell};
+use bevy::prelude::*;
 use bevy_egui::{egui, egui::Color32};
 use egui_file_dialog::FileDialog;
 use surf::Url;

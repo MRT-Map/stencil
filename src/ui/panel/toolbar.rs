@@ -1,13 +1,9 @@
-use bevy::prelude::*;
 use bevy_egui::{egui, egui::InnerResponse};
 
 use crate::{
     misc::Action,
     state::{ChangeStateAct, EditorState},
-    ui::panel::{
-        dock::{PanelParams, TabViewer},
-        status::Status,
-    },
+    ui::panel::dock::{PanelParams, TabViewer},
 };
 
 #[allow(clippy::needless_pass_by_value)]

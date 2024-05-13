@@ -26,7 +26,7 @@ pub fn delete_component_sy(
                 after: None,
             })));
             commands.entity(*e).despawn_recursive();
-            status.0 = format!("Deleted {}", pla).into()
+            status.0 = format!("Deleted {pla}").into();
         }
     }
 }

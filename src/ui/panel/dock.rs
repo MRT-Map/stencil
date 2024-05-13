@@ -1,10 +1,4 @@
-use std::sync::{Arc, Mutex};
-
-use bevy::{
-    ecs::system::SystemParam,
-    prelude::*,
-    utils::{synccell::SyncCell, HashMap},
-};
+use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, egui::Margin, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;

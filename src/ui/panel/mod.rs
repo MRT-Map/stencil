@@ -5,10 +5,7 @@ pub mod status;
 pub mod tilemap;
 pub mod toolbar;
 
-use std::sync::Arc;
-
 use bevy::prelude::*;
-use egui_file_dialog::FileDialog;
 
 use crate::ui::{
     panel::{
