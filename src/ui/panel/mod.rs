@@ -8,6 +8,7 @@ pub mod toolbar;
 use std::sync::Arc;
 
 use bevy::prelude::*;
+use egui_file_dialog::FileDialog;
 
 use crate::ui::{
     panel::{
@@ -22,14 +23,14 @@ pub struct PanelPlugin;
 
 impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
+        app.world.insert_non_send_resource(FileDialogs::default());
         app.init_resource::<PrevNamespaceUsed>()
             .init_resource::<PanelDockState>()
             .init_resource::<Status>()
-            .init_resource::<FileDialogs>()
             .add_systems(
                 UiSchedule,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
-            .add_systems(UiSchedule, dock::panel_sy.exclusive().in_set(UiSet::Panels));
+            .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels));
     }
 }

@@ -1,6 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use bevy::{ecs::system::SystemParam, prelude::*, utils::synccell::SyncCell};
+use bevy::{
+    ecs::system::SystemParam,
+    prelude::*,
+    utils::{synccell::SyncCell, HashMap},
+};
 use bevy_egui::{egui, egui::Margin, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;
@@ -21,7 +25,10 @@ use crate::{
             tilemap::Tilemap,
         },
         popup::Popup,
-        tilemap::{settings::TileSettings, settings_editor::TileSettingsEditor},
+        tilemap::{
+            settings::{Basemap, TileSettings},
+            settings_editor::TileSettingsEditor,
+        },
     },
     window_settings::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
@@ -70,7 +77,12 @@ impl Default for PanelDockState {
 }
 
 impl PanelDockState {
-    fn ui(&mut self, params: PanelParams, file_dialogs: Res<FileDialogs>, ctx: &mut egui::Context) {
+    fn ui(
+        &mut self,
+        params: PanelParams,
+        file_dialogs: NonSendMut<FileDialogs>,
+        ctx: &mut egui::Context,
+    ) {
         let mut tab_viewer = TabViewer {
             params,
             viewport_rect: &mut self.viewport_rect,
@@ -84,25 +96,23 @@ impl PanelDockState {
     }
 }
 
-#[derive(Resource)]
-pub struct TempUi<'a>(pub &'a mut egui::Ui);
-
 pub struct TabViewer<'a, 'w, 's> {
     pub params: PanelParams<'w, 's>,
     pub viewport_rect: &'a mut egui::Rect,
     pub layer_id: &'a mut egui::LayerId,
-    pub file_dialogs: Res<'w, FileDialogs>,
+    pub file_dialogs: NonSendMut<'w, FileDialogs>,
 }
 
-#[derive(Resource)]
 pub struct FileDialogs {
-    pub tile_settings: SyncCell<FileDialog>,
+    pub tile_settings_import: FileDialog,
+    pub tile_settings_export: Option<(Basemap, FileDialog)>,
 }
 
 impl Default for FileDialogs {
     fn default() -> Self {
         Self {
-            tile_settings: TileSettingsEditor::dialog(),
+            tile_settings_import: TileSettingsEditor::import_dialog(),
+            tile_settings_export: None,
         }
     }
 }
@@ -159,7 +169,7 @@ pub struct PanelParams<'w, 's> {
 
 pub fn panel_sy(
     mut state: ResMut<PanelDockState>,
-    file_dialogs: Res<FileDialogs>,
+    file_dialogs: NonSendMut<FileDialogs>,
     mut ctx: EguiContexts,
     params: PanelParams,
 ) {

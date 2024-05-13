@@ -11,6 +11,7 @@ use surf::Url;
 
 use crate::{
     misc::{data_path, Action},
+    tile::tile_coord::URL_REPLACER,
     ui::{
         panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
         popup::Popup,
@@ -77,6 +78,7 @@ impl DockWindow for TileSettingsEditor {
         let len = tile_settings.basemaps.len();
         let mut delete = None;
 
+        let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_export;
         for (i, basemap) in tile_settings.basemaps.iter_mut().enumerate() {
             ui.separator();
             ui.colored_label(Color32::YELLOW, format!("#{i}"));
@@ -91,6 +93,11 @@ impl DockWindow for TileSettingsEditor {
                 .clicked()
             {
                 delete = Some(i);
+            }
+            if ui.button("Export").clicked() {
+                let mut fd = Self::export_dialog(&basemap.url);
+                fd.save_file();
+                *file_dialog = Some((basemap.to_owned(), fd));
             }
 
             ui.add(
@@ -110,6 +117,41 @@ impl DockWindow for TileSettingsEditor {
             ui.label("The base URL of the tile source");
         }
 
+        if let Some((basemap, file_dialog)) = file_dialog {
+            file_dialog.update(ui.ctx());
+            if let Some(file) = file_dialog.take_selected() {
+                let timestamp = SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_nanos();
+                match toml::to_string_pretty(basemap).map(|s| std::fs::write(&file, s)) {
+                    Ok(Ok(_)) => {
+                        status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
+                    }
+                    Ok(Err(e)) => {
+                        popup.send(Popup::base_alert(
+                            format!("basemap_write_error_{timestamp}"),
+                            "Could not write basemap file",
+                            format!(
+                                "Could not write basemap file {}:\n{e}",
+                                file.to_string_lossy()
+                            ),
+                        ));
+                    }
+                    Err(e) => {
+                        popup.send(Popup::base_alert(
+                            format!("basemap_serialise_error_{timestamp}"),
+                            "Could not serialise basemap file",
+                            format!(
+                                "Could not serialise basemap file {}:\n{e}",
+                                file.to_string_lossy()
+                            ),
+                        ));
+                    }
+                };
+            }
+        }
+
         if new_map != 0 {
             tile_settings.basemaps.swap(0, new_map);
         }
@@ -121,20 +163,17 @@ impl DockWindow for TileSettingsEditor {
         if ui.button("Add").clicked() {
             tile_settings.basemaps.push(Basemap::default());
         }
+        let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_import;
         if ui.button("Import").clicked() {
-            tab_viewer.file_dialogs.tile_settings.select_file();
+            file_dialog.select_file();
         }
-        if let Some(file) = tab_viewer
-            .file_dialogs
-            .tile_settings
-            .update(ui.ctx())
-            .selected()
-        {
+        file_dialog.update(ui.ctx());
+        if let Some(file) = file_dialog.take_selected() {
             let timestamp = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap_or_default()
                 .as_nanos();
-            match std::fs::read_to_string(file).map(|content| toml::from_str(&content)) {
+            match std::fs::read_to_string(&file).map(|content| toml::from_str(&content)) {
                 Ok(Ok(new)) => {
                     tile_settings.basemaps.insert(0, new);
                     status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
@@ -144,7 +183,7 @@ impl DockWindow for TileSettingsEditor {
                         format!("basemap_parse_error_{timestamp}"),
                         "Could not parse basemap file",
                         format!(
-                            "Could not parse basemap file {}: {e}",
+                            "Could not parse basemap file {}:\n{e}",
                             file.to_string_lossy()
                         ),
                     ));
@@ -154,7 +193,7 @@ impl DockWindow for TileSettingsEditor {
                         format!("basemap_read_error_{timestamp}"),
                         "Could not load basemap file",
                         format!(
-                            "Could not load basemap file {}: {e}",
+                            "Could not load basemap file {}:\n{e}",
                             file.to_string_lossy()
                         ),
                     ));
@@ -169,8 +208,19 @@ impl DockWindow for TileSettingsEditor {
 }
 
 impl TileSettingsEditor {
-    pub fn dialog() -> SyncCell<FileDialog> {
-        FileDialog::new().title("Import Basemap").into()
+    #[must_use]
+    pub fn import_dialog() -> FileDialog {
+        FileDialog::new().title("Import Basemap")
+    }
+
+    #[must_use]
+    pub fn export_dialog(url: &str) -> FileDialog {
+        FileDialog::new()
+            .title(&format!("Export basemap {url}"))
+            .default_file_name(&format!(
+                "{}.toml",
+                URL_REPLACER.replace_all(url, "").as_ref()
+            ))
     }
 }
 

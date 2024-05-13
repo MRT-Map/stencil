@@ -24,21 +24,6 @@ field!(
     init_zoom,
     f32
 );
-field!(Basemap, url_is_default, default_url, url, String);
-field!(
-    Basemap,
-    max_tile_zoom_is_default,
-    default_max_tile_zoom,
-    max_tile_zoom,
-    i8
-);
-field!(
-    Basemap,
-    max_zoom_range_is_default,
-    default_max_zoom_range,
-    max_zoom_range,
-    f64
-);
 field!(
     TileSettings,
     max_get_requests_is_default,
@@ -53,27 +38,11 @@ field!(
     clear_cache_on_startup,
     bool
 );
-field!(
-    TileSettings,
-    basemaps_is_default,
-    default_basemaps,
-    basemaps,
-    Vec<Basemap>
-);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Basemap {
-    #[serde(default = "default_url", skip_serializing_if = "url_is_default")]
     pub url: String,
-    #[serde(
-        default = "default_max_tile_zoom",
-        skip_serializing_if = "max_tile_zoom_is_default"
-    )]
     pub max_tile_zoom: i8,
-    #[serde(
-        default = "default_max_zoom_range",
-        skip_serializing_if = "max_zoom_range_is_default"
-    )]
     pub max_zoom_range: f64,
 }
 
@@ -94,10 +63,6 @@ pub struct TileSettings {
         skip_serializing_if = "clear_cache_on_startup_is_default"
     )]
     pub clear_cache_on_startup: bool,
-    #[serde(
-        default = "default_basemaps",
-        skip_serializing_if = "basemaps_is_default"
-    )]
     pub basemaps: Vec<Basemap>,
 }
 
