@@ -1,8 +1,3 @@
-use std::{
-    collections::{BTreeSet, HashMap},
-    path::PathBuf,
-};
-
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_extras::{Column, TableBuilder};
@@ -11,25 +6,18 @@ use itertools::Itertools;
 
 use crate::{
     component::{
-        bundle::{
-            AreaComponentBundle, LineComponentBundle, PointComponentBundle, SelectedComponent,
-        },
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
-    misc::{load_msgpack, load_toml, save_msgpack, Action},
+    misc::{load_msgpack, save_msgpack, Action},
     project::Namespaces,
-    tile::tile_coord::URL_REPLACER,
     ui::{
         panel::{
-            dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
+            dock::{DockWindow, FileDialogs, PanelParams, TabViewer},
             status::Status,
         },
         popup::Popup,
-        tilemap::{
-            settings::{Basemap, TileSettings},
-            settings_editor::TileSettingsEditor,
-        },
     },
 };
 
@@ -223,7 +211,7 @@ pub fn project_msy(
                                 .file_name()
                                 .map(|a| a.to_string_lossy().to_string())
                         })
-                        .filter_map_ok(|p| p.strip_suffix(".pla2.msgpack").map(|a| a.to_owned()))
+                        .filter_map_ok(|p| p.strip_suffix(".pla2.msgpack").map(ToOwned::to_owned))
                         .collect()
                 })
                 .unwrap_or_default();
