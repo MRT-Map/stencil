@@ -4,7 +4,6 @@ use bevy_egui::{egui, egui::Id, EguiContexts};
 use crate::state::IntoSystemSetConfigExt;
 
 pub mod cursor;
-pub mod file_explorer;
 pub mod panel;
 pub mod popup;
 pub mod tilemap;

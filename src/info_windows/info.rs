@@ -3,15 +3,12 @@ use std::sync::Mutex;
 use bevy::prelude::*;
 use bevy_egui::{egui, egui::vec2, EguiContexts};
 
-use crate::{
-    info_windows::InfoWindowsAct, init::load_assets::ImageAssets, misc::Action, ui::popup::Popup,
-};
+use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn info_asy(
     mut actions: EventReader<Action>,
     mut popup: EventWriter<Popup>,
-    _images: Res<ImageAssets>,
     mut ctx: EguiContexts,
 ) {
     egui_extras::install_image_loaders(ctx.ctx_mut());

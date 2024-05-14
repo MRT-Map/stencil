@@ -189,7 +189,6 @@ use crate::{
     hotkeys::HotkeyPlugin,
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
-    load_save::LoadSavePlugin,
     misc::data_dir,
     project::ProjectPlugin,
     ui::UiPlugin,
@@ -203,7 +202,6 @@ pub mod error_handling;
 pub mod hotkeys;
 pub mod info_windows;
 pub mod init;
-pub mod load_save;
 pub mod misc;
 pub mod project;
 pub mod state;
@@ -287,7 +285,6 @@ fn main() {
         .add_plugins(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
-        .add_plugins(LoadSavePlugin)
         .add_plugins(InfoWindowsPlugin)
         .add_plugins(HotkeyPlugin)
         .add_plugins(WindowSettingsPlugin)

@@ -9,7 +9,6 @@ use crate::{
     window_settings::settings::WindowSettings,
 };
 
-#[allow(dead_code)]
 pub struct OpenWindowSettingsAct;
 
 #[derive(Clone, Copy)]

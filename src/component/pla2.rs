@@ -44,7 +44,6 @@ impl<T: Coords> Display for PlaComponent<T> {
     }
 }
 
-#[allow(dead_code)]
 impl<T: Coords> PlaComponent<T> {
     #[must_use]
     pub fn new(ty: ComponentType) -> Self {

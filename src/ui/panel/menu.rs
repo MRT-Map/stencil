@@ -12,8 +12,8 @@ use bevy_mouse_tracking::MousePosWorld;
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
     info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct,
     misc::Action,
+    project::project_editor::ProjectAct,
     ui::{
         panel::status::Status,
         tilemap::{settings_editor::TileSettingsAct, tile::PendingTiles},
@@ -55,8 +55,13 @@ pub fn ui_sy(
                 },
             );
             egui::menu::menu_button(ui, "File", |ui| {
-                button!(ui, event_writer, "Load namespace", LoadSaveAct::Load);
-                button!(ui, event_writer, "Save namespaces", LoadSaveAct::Save);
+                button!(
+                    ui,
+                    event_writer,
+                    "Select project folder",
+                    ProjectAct::SelectFolder
+                );
+                button!(ui, event_writer, "Save project", ProjectAct::Save);
             });
             egui::menu::menu_button(ui, "Edit", |ui| {
                 button!(ui, event_writer, "Undo", UndoRedoAct::Undo);

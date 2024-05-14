@@ -16,7 +16,6 @@ use crate::{
     },
 };
 
-#[allow(dead_code)]
 pub enum TileSettingsAct {
     Open,
     Import,

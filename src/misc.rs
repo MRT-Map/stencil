@@ -6,8 +6,6 @@ use std::{
 };
 
 use bevy::prelude::{Event, EventWriter};
-use image::EncodableLayout;
-use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{de::DeserializeOwned, Serialize};
 
