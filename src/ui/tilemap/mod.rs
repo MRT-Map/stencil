@@ -13,6 +13,7 @@ pub mod mouse_nav;
 pub mod settings;
 pub mod settings_editor;
 pub mod tile;
+pub mod window;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 enum RenderingSet {

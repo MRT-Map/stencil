@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
-use crate::pla2::component::ComponentType;
+use crate::component::pla2::ComponentType;
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SkinInfo {

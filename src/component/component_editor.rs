@@ -3,9 +3,9 @@ use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
+    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
-    pla2::{bundle::EntityCommandsSelectExt, component::ComponentType},
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 
@@ -26,6 +26,7 @@ impl DockWindow for ComponentEditor {
             skin,
             prev_namespace_used,
             actions,
+            namespaces,
             ..
         } = &mut tab_viewer.params;
         if selected.is_empty() {
@@ -37,11 +38,18 @@ impl DockWindow for ComponentEditor {
         ui.heading("Edit component data");
         ui.end_row();
         ui.horizontal(|ui| {
-            ui.add(
-                egui::TextEdit::singleline(&mut component_data.namespace)
-                    .hint_text("ns.")
-                    .desired_width(25.0),
-            );
+            egui::ComboBox::from_label("ns.")
+                .selected_text(&component_data.id)
+                .width(25.0)
+                .show_ui(ui, |ui| {
+                    ui.style_mut().wrap = Some(false);
+                    for (ns, vis) in &namespaces.visibilities {
+                        if !vis {
+                            continue;
+                        }
+                        ui.selectable_value(&mut component_data.id, ns.to_owned(), ns);
+                    }
+                });
             component_data
                 .namespace
                 .clone_into(&mut prev_namespace_used.0);
@@ -60,6 +68,7 @@ impl DockWindow for ComponentEditor {
         egui::ComboBox::from_label("Component type")
             .selected_text(component_data.ty.to_owned())
             .show_ui(ui, |ui| {
+                ui.style_mut().wrap = Some(false);
                 skin.types
                     .iter()
                     .filter(|(_, data)| data.get_type() == component_type)

@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
-    pla2::{
+    component::{
         bundle::{EntityCommandsSelectExt, SelectedComponent},
-        component::{EditorCoords, PlaComponent},
+        pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},

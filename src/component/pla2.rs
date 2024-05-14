@@ -8,7 +8,7 @@ use bevy_prototype_lyon::prelude::*;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
-use crate::pla2::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent};
+use crate::component::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent};
 
 fn hex_to_color(hex: HexColor) -> Color {
     Color::Rgba {

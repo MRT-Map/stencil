@@ -5,23 +5,22 @@ use egui_file_dialog::FileDialog;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-    misc::Action,
-    pla2::{
+    component::{
         bundle::SelectedComponent,
-        component::{EditorCoords, PlaComponent},
+        component_editor::{ComponentEditor, PrevNamespaceUsed},
+        pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    misc::Action,
+    project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
     ui::{
-        panel::{
-            component_editor::{ComponentEditor, PrevNamespaceUsed},
-            status::Status,
-            tilemap::Tilemap,
-        },
+        panel::status::Status,
         popup::Popup,
         tilemap::{
             settings::{Basemap, TileSettings},
             settings_editor::TileSettingsEditor,
+            window::Tilemap,
         },
     },
     window_settings::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
@@ -44,6 +43,7 @@ pub trait DockWindow: Copy {
 pub enum DockWindows {
     Tilemap,
     ComponentEditor,
+    ProjectEditor,
     WindowSettingsEditor,
     TileSettingsEditor,
 }
@@ -59,8 +59,8 @@ impl Default for PanelDockState {
     fn default() -> Self {
         let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
-        let [_, _inspector] =
-            tree.split_left(NodeIndex::root(), 0.15, vec![ComponentEditor.into()]);
+        let [_, _] = tree.split_left(NodeIndex::root(), 0.1, vec![ComponentEditor.into()]);
+        let [_, _] = tree.split_right(NodeIndex::root(), 0.9, vec![ProjectEditor.into()]);
 
         Self {
             state,
@@ -100,6 +100,7 @@ pub struct TabViewer<'a, 'w, 's> {
 pub struct FileDialogs {
     pub tile_settings_import: FileDialog,
     pub tile_settings_export: Option<(Basemap, FileDialog)>,
+    pub project_select: FileDialog,
 }
 
 impl Default for FileDialogs {
@@ -107,6 +108,7 @@ impl Default for FileDialogs {
         Self {
             tile_settings_import: TileSettingsEditor::import_dialog(),
             tile_settings_export: None,
+            project_select: ProjectEditor::select_dialog(),
         }
     }
 }
@@ -159,6 +161,8 @@ pub struct PanelParams<'w, 's> {
     pub tile_settings: ResMut<'w, TileSettings>,
     pub status: ResMut<'w, Status>,
     pub popup: EventWriter<'w, Popup>,
+    pub namespaces: ResMut<'w, Namespaces>,
+    pub new_namespace: Local<'s, String>,
 }
 
 pub fn panel_sy(

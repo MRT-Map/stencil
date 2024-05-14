@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
+    component::{component_editor::PrevNamespaceUsed, pla2::ComponentType, skin::Skin},
     component_tools::creating::{clear_created_component, CreatedQuery},
     misc::Action,
-    pla2::{component::ComponentType, skin::Skin},
-    ui::panel::{component_editor::PrevNamespaceUsed, status::Status},
+    ui::panel::status::Status,
 };
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]

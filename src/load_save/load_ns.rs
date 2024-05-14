@@ -4,14 +4,14 @@ use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
+    component::{
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
+        pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
+        skin::Skin,
+    },
     component_actions::undo_redo::{History, UndoRedoAct},
     load_save::LoadSaveAct,
     misc::Action,
-    pla2::{
-        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
-        component::{ComponentType, EditorCoords, MCCoords, PlaComponent},
-        skin::Skin,
-    },
     ui::{file_explorer::open_multiple_files, popup::Popup},
 };
 

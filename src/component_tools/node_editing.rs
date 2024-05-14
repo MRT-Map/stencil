@@ -4,13 +4,13 @@ use bevy_prototype_lyon::{prelude::*, shapes::Circle};
 use itertools::Itertools;
 
 use crate::{
-    component_actions::undo_redo::{History, UndoRedoAct},
-    misc::Action,
-    pla2::{
+    component::{
         bundle::{EntityCommandsSelectExt, SelectedComponent},
-        component::{ComponentType, EditorCoords, PlaComponent},
+        pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    component_actions::undo_redo::{History, UndoRedoAct},
+    misc::Action,
     state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
 };

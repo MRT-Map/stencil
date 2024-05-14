@@ -16,7 +16,7 @@ use crate::{
     misc::Action,
     ui::{
         panel::status::Status,
-        tilemap::{settings_editor::OpenTileSettingsAct, tile::PendingTiles},
+        tilemap::{settings_editor::TileSettingsAct, tile::PendingTiles},
     },
     window_settings::settings_editor::OpenWindowSettingsAct,
 };
@@ -63,7 +63,7 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Redo", UndoRedoAct::Redo);
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
-                button!(ui, event_writer, "Tilemap", OpenTileSettingsAct);
+                button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
             ui.separator();

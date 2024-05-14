@@ -4,24 +4,22 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
+    component::{
+        bundle::{
+            AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
+            PointComponentBundle,
+        },
+        component_editor::PrevNamespaceUsed,
+        pla2::{ComponentType, EditorCoords, PlaComponent},
+        skin::Skin,
+    },
     component_actions::{
         selecting::{deselect, DeselectQuery},
         undo_redo::{History, UndoRedoAct},
     },
     misc::Action,
-    pla2::{
-        bundle::{
-            AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
-            PointComponentBundle,
-        },
-        component::{ComponentType, EditorCoords, PlaComponent},
-        skin::Skin,
-    },
     state::{state_changer_asy, EditorState},
-    ui::{
-        cursor::mouse_events::MouseEvent,
-        panel::{component_editor::PrevNamespaceUsed, status::Status},
-    },
+    ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [

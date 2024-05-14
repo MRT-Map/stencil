@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, EventWriter, Local, NextState};
 use futures_lite::future;
 use tracing::{error, info};
 
-use crate::{pla2::skin::Skin, state::LoadingState, ui::popup::Popup};
+use crate::{component::skin::Skin, state::LoadingState, ui::popup::Popup};
 
 #[derive(Default)]
 pub enum Step<T> {

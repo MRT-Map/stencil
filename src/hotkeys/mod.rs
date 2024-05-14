@@ -9,7 +9,7 @@ use crate::{
     load_save::LoadSaveAct,
     misc::Action,
     state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
-    ui::tilemap::settings_editor::OpenTileSettingsAct,
+    ui::tilemap::settings_editor::TileSettingsAct,
     window_settings::settings_editor::OpenWindowSettingsAct,
 };
 
@@ -33,7 +33,7 @@ impl HotkeyActions {
             Self::Redo => Action::new(UndoRedoAct::Redo),
             Self::LoadNamespaces => Action::new(LoadSaveAct::Load),
             Self::SaveNamespaces => Action::new(LoadSaveAct::Save),
-            Self::TileSettings => Action::new(OpenTileSettingsAct),
+            Self::TileSettings => Action::new(TileSettingsAct::Open),
             Self::WindowSettings => Action::new(OpenWindowSettingsAct),
             Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
         }

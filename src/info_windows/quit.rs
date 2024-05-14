@@ -1,9 +1,9 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
+    component::pla2::{EditorCoords, PlaComponent},
     info_windows::InfoWindowsAct,
     misc::Action,
-    pla2::component::{EditorCoords, PlaComponent},
     ui::popup::Popup,
 };
 

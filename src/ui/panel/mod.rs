@@ -1,19 +1,19 @@
-pub mod component_editor;
 pub mod dock;
 pub mod menu;
 pub mod status;
-pub mod tilemap;
 pub mod toolbar;
 
 use bevy::prelude::*;
 
-use crate::ui::{
-    panel::{
-        component_editor::PrevNamespaceUsed,
-        dock::{FileDialogs, PanelDockState},
-        status::Status,
+use crate::{
+    component::component_editor::PrevNamespaceUsed,
+    ui::{
+        panel::{
+            dock::{FileDialogs, PanelDockState},
+            status::Status,
+        },
+        UiSchedule, UiSet,
     },
-    UiSchedule, UiSet,
 };
 
 pub struct PanelPlugin;

@@ -6,15 +6,15 @@ use std::{
 use bevy::prelude::*;
 
 use crate::{
-    misc::Action,
-    pla2::{
+    component::{
         bundle::{
             AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle, SelectedComponent,
         },
-        component::{ComponentType, EditorCoords, PlaComponent},
+        pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    misc::Action,
     state::IntoSystemConfigExt,
     ui::panel::status::Status,
 };

@@ -191,10 +191,12 @@ use crate::{
     init::InitPlugin,
     load_save::LoadSavePlugin,
     misc::data_dir,
+    project::ProjectPlugin,
     ui::UiPlugin,
     window_settings::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
+pub mod component;
 pub mod component_actions;
 pub mod component_tools;
 pub mod error_handling;
@@ -203,7 +205,7 @@ pub mod info_windows;
 pub mod init;
 pub mod load_save;
 pub mod misc;
-pub mod pla2;
+pub mod project;
 pub mod state;
 pub mod tile;
 pub mod ui;
@@ -289,5 +291,6 @@ fn main() {
         .add_plugins(InfoWindowsPlugin)
         .add_plugins(HotkeyPlugin)
         .add_plugins(WindowSettingsPlugin)
+        .add_plugins(ProjectPlugin)
         .run();
 }

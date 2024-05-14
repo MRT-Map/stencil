@@ -35,6 +35,7 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
                     egui::ComboBox::from_label("Library")
                         .selected_text(format!("{} {}", selection.0, selection.1))
                         .show_ui(ui, |ui| {
+                            ui.style_mut().wrap = Some(false);
                             LICENSES.iter().for_each(|(package, _)| {
                                 ui.selectable_value(
                                     selection,

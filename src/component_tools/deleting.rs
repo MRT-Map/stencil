@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    component::pla2::{EditorCoords, PlaComponent},
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
-    pla2::component::{EditorCoords, PlaComponent},
     state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };

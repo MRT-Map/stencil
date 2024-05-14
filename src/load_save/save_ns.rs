@@ -4,9 +4,9 @@ use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
+    component::pla2::{EditorCoords, MCCoords, PlaComponent},
     load_save::LoadSaveAct,
     misc::Action,
-    pla2::component::{EditorCoords, MCCoords, PlaComponent},
     ui::{file_explorer::save_single_dir, popup::Popup},
 };
 

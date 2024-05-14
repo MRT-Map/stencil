@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
+    component::{
+        bundle::SelectedComponent,
+        pla2::{EditorCoords, PlaComponent},
+    },
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
-    pla2::{
-        bundle::SelectedComponent,
-        component::{EditorCoords, PlaComponent},
-    },
     state::{EditorState, IntoSystemConfigExt},
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},

@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, path::PathBuf, sync::Arc};
 
 use bevy::prelude::*;
 
-use crate::pla2::component::{MCCoords, PlaComponent};
+use crate::component::pla2::{MCCoords, PlaComponent};
 
 pub mod load_ns;
 pub mod save_ns;

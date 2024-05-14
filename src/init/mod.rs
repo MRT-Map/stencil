@@ -10,9 +10,9 @@ use bevy::prelude::*;
 use load_skin::get_skin_sy;
 
 use crate::{
+    component::skin::Skin,
     error_handling::ack_panic_sy,
     misc::{cache_path, Action},
-    pla2::skin::Skin,
     state::{state_changer_asy, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };

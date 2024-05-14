@@ -1,22 +1,29 @@
 use std::time::SystemTime;
 
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Color32};
+use bevy_egui::{egui, egui::Color32, EguiContexts};
 use egui_file_dialog::FileDialog;
 use surf::Url;
 
 use crate::{
-    misc::{data_path, Action},
+    misc::{data_path, load_toml, save_toml, Action},
     tile::tile_coord::URL_REPLACER,
     ui::{
-        panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+        panel::{
+            dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
+            status::Status,
+        },
         popup::Popup,
         tilemap::settings::{Basemap, TileSettings},
     },
 };
 
 #[allow(dead_code)]
-pub struct OpenTileSettingsAct;
+pub enum TileSettingsAct {
+    Open,
+    Import,
+    Export(Basemap),
+}
 
 #[derive(Clone, Copy)]
 pub struct TileSettingsEditor;
@@ -28,8 +35,7 @@ impl DockWindow for TileSettingsEditor {
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         let PanelParams {
             tile_settings,
-            status,
-            popup,
+            actions,
             ..
         } = &mut tab_viewer.params;
         let mut invalid = false;
@@ -74,10 +80,9 @@ impl DockWindow for TileSettingsEditor {
         let len = tile_settings.basemaps.len();
         let mut delete = None;
 
-        let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_export;
         for (i, basemap) in tile_settings.basemaps.iter_mut().enumerate() {
             ui.separator();
-            egui::menu::bar(ui, |ui| {
+            ui.horizontal(|ui| {
                 ui.colored_label(Color32::YELLOW, format!("#{i}"));
                 if ui
                     .add_enabled(i != 0, egui::Button::new("Select"))
@@ -92,9 +97,7 @@ impl DockWindow for TileSettingsEditor {
                     delete = Some(i);
                 }
                 if ui.button("Export").clicked() {
-                    let mut fd = Self::export_dialog(&basemap.url);
-                    fd.save_file();
-                    *file_dialog = Some((basemap.to_owned(), fd));
+                    actions.send(Action::new(TileSettingsAct::Export(basemap.to_owned())));
                 }
             });
 
@@ -115,41 +118,6 @@ impl DockWindow for TileSettingsEditor {
             ui.label("The base URL of the tile source");
         }
 
-        if let Some((basemap, file_dialog)) = file_dialog {
-            file_dialog.update(ui.ctx());
-            if let Some(file) = file_dialog.take_selected() {
-                let timestamp = SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_nanos();
-                match toml::to_string_pretty(basemap).map(|s| std::fs::write(&file, s)) {
-                    Ok(Ok(_)) => {
-                        status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
-                    }
-                    Ok(Err(e)) => {
-                        popup.send(Popup::base_alert(
-                            format!("basemap_write_error_{timestamp}"),
-                            "Could not write basemap file",
-                            format!(
-                                "Could not write basemap file {}:\n{e}",
-                                file.to_string_lossy()
-                            ),
-                        ));
-                    }
-                    Err(e) => {
-                        popup.send(Popup::base_alert(
-                            format!("basemap_serialise_error_{timestamp}"),
-                            "Could not serialise basemap file",
-                            format!(
-                                "Could not serialise basemap file {}:\n{e}",
-                                file.to_string_lossy()
-                            ),
-                        ));
-                    }
-                };
-            }
-        }
-
         if new_map != 0 {
             tile_settings.basemaps.swap(0, new_map);
         }
@@ -158,48 +126,14 @@ impl DockWindow for TileSettingsEditor {
         }
 
         ui.separator();
-        let file_dialog = &mut tab_viewer.file_dialogs.tile_settings_import;
-        egui::menu::bar(ui, |ui| {
-            if ui.small_button("Add").clicked() {
+        ui.horizontal(|ui| {
+            if ui.button("Add").clicked() {
                 tile_settings.basemaps.push(Basemap::default());
             }
             if ui.button("Import").clicked() {
-                file_dialog.select_file();
+                actions.send(Action::new(TileSettingsAct::Import));
             }
         });
-        file_dialog.update(ui.ctx());
-        if let Some(file) = file_dialog.take_selected() {
-            let timestamp = SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos();
-            match std::fs::read_to_string(&file).map(|content| toml::from_str(&content)) {
-                Ok(Ok(new)) => {
-                    tile_settings.basemaps.insert(0, new);
-                    status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
-                }
-                Ok(Err(e)) => {
-                    popup.send(Popup::base_alert(
-                        format!("basemap_parse_error_{timestamp}"),
-                        "Could not parse basemap file",
-                        format!(
-                            "Could not parse basemap file {}:\n{e}",
-                            file.to_string_lossy()
-                        ),
-                    ));
-                }
-                Err(e) => {
-                    popup.send(Popup::base_alert(
-                        format!("basemap_read_error_{timestamp}"),
-                        "Could not load basemap file",
-                        format!(
-                            "Could not load basemap file {}:\n{e}",
-                            file.to_string_lossy()
-                        ),
-                    ));
-                }
-            };
-        }
 
         if !invalid && old_settings != **tile_settings {
             tile_settings.save().unwrap();
@@ -224,15 +158,47 @@ impl TileSettingsEditor {
     }
 }
 
-pub fn tile_settings_msy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+pub fn tile_settings_msy(
+    mut actions: EventReader<Action>,
+    mut state: ResMut<PanelDockState>,
+    mut tile_settings: ResMut<TileSettings>,
+    mut ctx: EguiContexts,
+    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut popup: EventWriter<Popup>,
+    mut status: ResMut<Status>,
+) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenTileSettingsAct))
+        if matches!(event.downcast_ref(), Some(TileSettingsAct::Open))
             && !state
                 .state
                 .iter_all_tabs()
                 .any(|(_, a)| a.title() == TileSettingsEditor.title())
         {
             state.state.add_window(vec![TileSettingsEditor.into()]);
+        } else if matches!(event.downcast_ref(), Some(TileSettingsAct::Import)) {
+            file_dialogs.tile_settings_import.select_file();
+        } else if let Some(TileSettingsAct::Export(basemap)) = event.downcast_ref() {
+            let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
+            fd.save_file();
+            file_dialogs.tile_settings_export = Some((basemap.to_owned(), fd));
+        }
+    }
+
+    let file_dialog = &mut file_dialogs.tile_settings_import;
+    file_dialog.update(ctx.ctx_mut());
+    if let Some(file) = file_dialog.take_selected() {
+        if let Some(new) = load_toml(&file, Some((&mut popup, "basemap"))) {
+            tile_settings.basemaps.insert(0, new);
+            status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
+        }
+    }
+
+    if let Some((basemap, file_dialog)) = &mut file_dialogs.tile_settings_export {
+        file_dialog.update(ctx.ctx_mut());
+        if let Some(file) = file_dialog.take_selected() {
+            if save_toml(basemap, &file, Some((&mut popup, "basemap"))) {
+                status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
+            }
         }
     }
 }
