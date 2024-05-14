@@ -59,8 +59,8 @@ impl Default for PanelDockState {
     fn default() -> Self {
         let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
-        let [_, _] = tree.split_left(NodeIndex::root(), 0.1, vec![ComponentEditor.into()]);
-        let [_, _] = tree.split_right(NodeIndex::root(), 0.9, vec![ProjectEditor.into()]);
+        let [_, _] = tree.split_left(NodeIndex::root(), 0.15, vec![ComponentEditor.into()]);
+        let [_, _] = tree.split_right(NodeIndex::root(), 0.85, vec![ProjectEditor.into()]);
 
         Self {
             state,

@@ -6,6 +6,8 @@ use std::{
 };
 
 use bevy::prelude::{Event, EventWriter};
+use image::EncodableLayout;
+use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -60,7 +62,11 @@ impl Action {
 }
 
 #[must_use]
-pub fn load_file<T: DeserializeOwned, F: FnOnce(String) -> Result<T, E>, E: serde::de::Error>(
+pub fn load_file<
+    T: DeserializeOwned,
+    F: for<'a> FnOnce(&'a Path) -> std::io::Result<Result<T, E>> + 'static,
+    E: serde::de::Error,
+>(
     file: &Path,
     deserializer: F,
     error: Option<(&mut EventWriter<Popup>, &'static str)>,
@@ -69,7 +75,7 @@ pub fn load_file<T: DeserializeOwned, F: FnOnce(String) -> Result<T, E>, E: serd
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap_or_default()
         .as_nanos();
-    match std::fs::read_to_string(file).map(deserializer) {
+    match deserializer(file) {
         Ok(Ok(o)) => return Some(o),
         Ok(Err(e)) => {
             if let Some((popup, thing)) = error {
@@ -104,7 +110,11 @@ pub fn load_toml<T: DeserializeOwned>(
     file: &Path,
     error: Option<(&mut EventWriter<Popup>, &'static str)>,
 ) -> Option<T> {
-    load_file(file, |content| toml::from_str(&content), error)
+    load_file(
+        file,
+        |file| std::fs::read_to_string(file).map(|c| toml::from_str(&c)),
+        error,
+    )
 }
 
 #[must_use]
@@ -114,7 +124,7 @@ pub fn load_msgpack<T: DeserializeOwned>(
 ) -> Option<T> {
     load_file(
         file,
-        |content| rmp_serde::from_slice(content.as_bytes()),
+        |file| std::fs::read(file).map(|c| rmp_serde::from_slice(&c)),
         error,
     )
 }

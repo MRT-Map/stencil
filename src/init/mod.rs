@@ -49,6 +49,7 @@ fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
         info!("Removing previous tile cache");
         let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
     }
+
     status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
 
     info!("Transitioning out of idle");

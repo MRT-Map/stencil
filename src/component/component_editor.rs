@@ -9,8 +9,13 @@ use crate::{
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 
-#[derive(Default, Resource, Clone)]
+#[derive(Resource, Clone)]
 pub struct PrevNamespaceUsed(pub String);
+impl Default for PrevNamespaceUsed {
+    fn default() -> Self {
+        Self("misc".into())
+    }
+}
 
 #[derive(Clone, Copy)]
 pub struct ComponentEditor;
@@ -39,7 +44,7 @@ impl DockWindow for ComponentEditor {
         ui.end_row();
         ui.horizontal(|ui| {
             egui::ComboBox::from_label("ns.")
-                .selected_text(&component_data.id)
+                .selected_text(&component_data.namespace)
                 .width(25.0)
                 .show_ui(ui, |ui| {
                     ui.style_mut().wrap = Some(false);
@@ -47,7 +52,7 @@ impl DockWindow for ComponentEditor {
                         if !vis {
                             continue;
                         }
-                        ui.selectable_value(&mut component_data.id, ns.to_owned(), ns);
+                        ui.selectable_value(&mut component_data.namespace, ns.to_owned(), ns);
                     }
                 });
             component_data

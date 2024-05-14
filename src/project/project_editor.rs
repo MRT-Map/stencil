@@ -50,7 +50,14 @@ impl DockWindow for ProjectEditor {
             if ui.button("Reload").clicked() {
                 actions.send(Action::new(ProjectAct::GetNamespaces));
             }
+            if ui.button("Save").clicked() {
+                actions.send(Action::new(ProjectAct::Save));
+            }
         });
+        ui.label(format!(
+            "Project folder: {}",
+            namespaces.folder.to_string_lossy()
+        ));
         TableBuilder::new(ui)
             .striped(true)
             .column(Column::auto().at_least(0.05))
@@ -144,6 +151,13 @@ pub fn project_msy(
 ) {
     for event in actions.p0().read() {
         if let Some(ProjectAct::Show(ns)) = event.downcast_ref() {
+            if !namespaces
+                .folder
+                .join(format!("{ns}.pla2.msgpack"))
+                .exists()
+            {
+                continue;
+            }
             if let Some(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some((&mut popup, "pla2")),
@@ -169,13 +183,10 @@ pub fn project_msy(
         } else if let Some(ProjectAct::Hide(ns)) = event.downcast_ref() {
             let components = query
                 .iter()
-                .filter_map(|(e, p)| {
-                    if p.namespace == *ns {
-                        None
-                    } else {
-                        commands.entity(e).despawn_recursive();
-                        Some(p)
-                    }
+                .filter(|(_, p)| p.namespace == *ns)
+                .map(|(e, p)| {
+                    commands.entity(e).despawn_recursive();
+                    Some(p.to_mc_coords())
                 })
                 .collect::<Vec<_>>();
             if save_msgpack(
@@ -188,8 +199,8 @@ pub fn project_msy(
         } else if matches!(event.downcast_ref(), Some(ProjectAct::Save)) {
             let components = query
                 .iter()
-                .map(|(_, p)| p)
-                .into_group_map_by(|a| &a.namespace);
+                .map(|(_, p)| p.to_mc_coords())
+                .into_group_map_by(|a| a.namespace.to_owned());
             for (ns, components) in &components {
                 let _ = save_msgpack(
                     &components,
