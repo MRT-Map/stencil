@@ -56,7 +56,7 @@ impl<T: Coords> PlaComponent<T> {
                     ComponentType::Area => "Area",
                 }
             ),
-            namespace: "misc".into(),
+            namespace: "_misc".into(),
             ..default()
         }
     }

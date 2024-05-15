@@ -22,7 +22,7 @@ impl Default for Namespaces {
             folder: cache_dir("scratchpad"),
             visibilities: {
                 let mut h = HashMap::new();
-                h.insert("misc".into(), true);
+                h.insert("_misc".into(), true);
                 h
             },
         }
@@ -39,7 +39,7 @@ impl Plugin for ProjectPlugin {
                 OnExit(EditorState::Loading),
                 |mut actions: EventWriter<Action>| {
                     actions.send(Action::new(ProjectAct::GetNamespaces));
-                    actions.send(Action::new(ProjectAct::Show("misc".into())));
+                    actions.send(Action::new(ProjectAct::Show("_misc".into())));
                 },
             );
     }

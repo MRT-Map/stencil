@@ -13,7 +13,7 @@ use crate::{
 pub struct PrevNamespaceUsed(pub String);
 impl Default for PrevNamespaceUsed {
     fn default() -> Self {
-        Self("misc".into())
+        Self("_misc".into())
     }
 }
 
