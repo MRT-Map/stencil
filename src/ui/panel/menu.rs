@@ -75,11 +75,15 @@ pub fn ui_sy(
             ui.label(status.0.to_owned().color(Color32::WHITE));
             ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
                 ui.label(format!(
-                    "FPS: {}",
+                    "FPS: {} ({})",
                     diagnostics
                         .get(&FrameTimeDiagnosticsPlugin::FPS)
                         .and_then(Diagnostic::average)
                         .map_or_else(|| "???".into(), |fps| format!("{fps:.2}")),
+                    diagnostics
+                        .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                        .and_then(Diagnostic::average)
+                        .map_or_else(|| "???".into(), |ft| format!("{ft:.2}ms")),
                 ));
                 ui.separator();
                 ui.label(format!(
