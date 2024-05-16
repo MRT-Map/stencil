@@ -11,6 +11,7 @@ use crate::{
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     misc::Action,
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
@@ -46,6 +47,7 @@ pub enum DockWindows {
     ProjectEditor,
     WindowSettingsEditor,
     TileSettingsEditor,
+    KeymapSettingsEditor,
 }
 
 #[derive(Resource)]
@@ -162,6 +164,7 @@ pub struct PanelParams<'w, 's> {
     pub editor_state: Res<'w, State<EditorState>>,
     pub window_settings: ResMut<'w, WindowSettings>,
     pub tile_settings: ResMut<'w, TileSettings>,
+    pub keymap_settings: ResMut<'w, KeymapSettings>,
     pub status: ResMut<'w, Status>,
     pub popup: EventWriter<'w, Popup>,
     pub namespaces: ResMut<'w, Namespaces>,

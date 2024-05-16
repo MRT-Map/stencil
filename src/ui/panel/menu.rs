@@ -8,6 +8,7 @@ use bevy_mouse_tracking::MousePosWorld;
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
     info_windows::InfoWindowsAct,
+    keymaps::settings_editor::OpenKeymapSettingsAct,
     misc::Action,
     project::project_editor::ProjectAct,
     ui::{
@@ -66,6 +67,7 @@ pub fn ui_sy(
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
+                button!(ui, event_writer, "Window", OpenKeymapSettingsAct);
             });
             ui.separator();
             ui.label(status.0.to_owned().color(egui::Color32::WHITE));

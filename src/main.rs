@@ -186,9 +186,9 @@ use crate::window::settings::LinuxWindow;
 use crate::{
     component_actions::ComponentActionPlugins,
     component_tools::ComponentToolPlugins,
-    hotkeys::HotkeyPlugin,
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
+    keymaps::KeymapPlugin,
     misc::data_dir,
     project::ProjectPlugin,
     ui::UiPlugin,
@@ -199,9 +199,9 @@ pub mod component;
 pub mod component_actions;
 pub mod component_tools;
 pub mod error_handling;
-pub mod hotkeys;
 pub mod info_windows;
 pub mod init;
+pub mod keymaps;
 pub mod misc;
 pub mod project;
 pub mod state;
@@ -286,7 +286,7 @@ fn main() {
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
         .add_plugins(InfoWindowsPlugin)
-        .add_plugins(HotkeyPlugin)
+        .add_plugins(KeymapPlugin)
         .add_plugins(WindowSettingsPlugin)
         .add_plugins(ProjectPlugin)
         .run();
