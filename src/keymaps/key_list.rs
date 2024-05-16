@@ -1,10 +1,6 @@
-use std::{
-    collections::{BTreeMap, BTreeSet, HashSet},
-    iter::IntoIterator,
-};
+use std::{collections::BTreeSet, iter::IntoIterator};
 
 use bevy::prelude::{KeyCode, KeyCode::*};
-use bimap::BiBTreeMap;
 use once_cell::sync::Lazy;
 
 pub static KEY_LIST: Lazy<BTreeSet<KeyCode>> = Lazy::new(|| {

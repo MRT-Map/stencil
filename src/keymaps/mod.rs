@@ -7,13 +7,7 @@ use bevy_egui::EguiContexts;
 use settings::KeymapSettings;
 
 use crate::{
-    info_windows::InfoWindowsAct,
-    keymaps::settings_editor::keymap_settings_msy,
-    misc::Action,
-    project::project_editor::ProjectAct,
-    state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
-    ui::tilemap::settings_editor::TileSettingsAct,
-    window::settings_editor::OpenWindowSettingsAct,
+    keymaps::settings_editor::keymap_settings_msy, misc::Action, state::IntoSystemConfigExt,
 };
 
 #[allow(clippy::needless_pass_by_value)]

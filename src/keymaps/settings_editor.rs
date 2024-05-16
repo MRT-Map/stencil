@@ -1,6 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
-
-use bevy::{prelude::*, window::WindowMode};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
