@@ -1,5 +1,5 @@
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_egui::{egui, egui::Id, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 
 use crate::state::IntoSystemSetConfigExt;
 
@@ -9,7 +9,7 @@ pub mod popup;
 pub mod tilemap;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
-pub struct Focus(pub Option<Id>);
+pub struct Focus(pub Option<egui::Id>);
 
 pub struct UiPlugin;
 

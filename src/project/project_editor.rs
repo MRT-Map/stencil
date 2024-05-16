@@ -1,5 +1,3 @@
-use std::ops::Not;
-
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_extras::{Column, TableBuilder};
@@ -115,7 +113,7 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             if ui
                                 .add_enabled(
-                                    { num_components == 0 && ns != "_misc" },
+                                    num_components == 0 && ns != "_misc",
                                     egui::Button::new("X"),
                                 )
                                 .clicked()

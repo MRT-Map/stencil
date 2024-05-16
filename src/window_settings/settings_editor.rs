@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::WindowMode};
-use bevy_egui::{egui, egui::Color32};
+use bevy_egui::egui;
 
 #[cfg(target_os = "linux")]
 use crate::window_settings::settings::LinuxWindow;
@@ -35,7 +35,7 @@ impl DockWindow for WindowSettingsEditor {
             **window_settings = WindowSettings::default();
         }
         ui.colored_label(
-            Color32::YELLOW,
+            egui::Color32::YELLOW,
             format!(
                 "Window settings can also be edited at: {}",
                 data_path("window_settings.toml").to_string_lossy()
@@ -50,7 +50,10 @@ impl DockWindow for WindowSettingsEditor {
         ui.checkbox(&mut window_settings.backends.dx12, "DX12");
         ui.checkbox(&mut window_settings.backends.dx11, "DX11");
         if window_settings.backends.is_none() {
-            ui.colored_label(Color32::RED, "Select at least one backend!".to_owned());
+            ui.colored_label(
+                egui::Color32::RED,
+                "Select at least one backend!".to_owned(),
+            );
             invalid = true;
         }
         ui.separator();

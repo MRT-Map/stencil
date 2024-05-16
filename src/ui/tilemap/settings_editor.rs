@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Color32, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use egui_file_dialog::FileDialog;
 use surf::Url;
 
@@ -48,7 +48,7 @@ impl DockWindow for TileSettingsEditor {
             **tile_settings = TileSettings::default();
         }
         ui.colored_label(
-            Color32::YELLOW,
+            egui::Color32::YELLOW,
             format!(
                 "Tile settings can also be edited at: {}",
                 data_path("tile_settings.toml").to_string_lossy()
@@ -80,7 +80,7 @@ impl DockWindow for TileSettingsEditor {
         for (i, basemap) in tile_settings.basemaps.iter_mut().enumerate() {
             ui.separator();
             ui.horizontal(|ui| {
-                ui.colored_label(Color32::YELLOW, format!("#{i}"));
+                ui.colored_label(egui::Color32::YELLOW, format!("#{i}"));
                 if ui
                     .add_enabled(i != 0, egui::Button::new("Select"))
                     .clicked()
@@ -109,7 +109,7 @@ impl DockWindow for TileSettingsEditor {
             ui.label("In tiles of the highest zoom level, the distance across its width / height that each tile represents");
             ui.add(egui::TextEdit::singleline(&mut basemap.url).hint_text("Base URL"));
             if let Err(e) = Url::try_from(&*basemap.url) {
-                ui.colored_label(Color32::RED, format!("Invalid URL: {e:?}"));
+                ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:?}"));
                 invalid = true;
             }
             ui.label("The base URL of the tile source");

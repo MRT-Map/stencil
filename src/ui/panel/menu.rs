@@ -2,11 +2,7 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{
-    egui,
-    egui::{Align, Color32},
-    EguiContexts,
-};
+use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
@@ -72,8 +68,8 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
             });
             ui.separator();
-            ui.label(status.0.to_owned().color(Color32::WHITE));
-            ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
+            ui.label(status.0.to_owned().color(egui::Color32::WHITE));
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {} ({})",
                     diagnostics

@@ -8,7 +8,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::WidgetText, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 
 use crate::{misc::Action, ui::UiSet};
 
@@ -81,8 +81,8 @@ impl Popup {
     }
     pub fn base_alert<
         I: Display + Send + Sync + 'static,
-        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
-        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
     >(
         id: I,
         title: T1,
@@ -111,8 +111,8 @@ impl Popup {
     }
     pub fn base_confirm<
         I: Display + Send + Sync + 'static,
-        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
-        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
     >(
         id: I,
         title: T1,

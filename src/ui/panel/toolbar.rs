@@ -1,4 +1,4 @@
-use bevy_egui::{egui, egui::InnerResponse};
+use bevy_egui::egui;
 
 use crate::{
     misc::Action,
@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> InnerResponse<()> {
+pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
     let PanelParams {
         editor_state,
         actions,

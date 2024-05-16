@@ -1,5 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_egui::{egui, egui::Margin, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;
 use enum_dispatch::enum_dispatch;
@@ -124,7 +124,7 @@ impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
     fn tab_style_override(&self, tab: &Self::Tab, global_style: &TabStyle) -> Option<TabStyle> {
         matches!(tab, DockWindows::Tilemap(_)).then(|| TabStyle {
             tab_body: TabBodyStyle {
-                inner_margin: Margin::ZERO,
+                inner_margin: egui::Margin::ZERO,
                 ..global_style.tab_body
             },
             ..global_style.to_owned()
