@@ -15,7 +15,7 @@ use crate::{
         skin::Skin,
     },
     misc::Action,
-    project::{project_editor::ProjectAct, Namespaces},
+    project::project_editor::ProjectAct,
     state::IntoSystemConfigExt,
     ui::panel::status::Status,
 };
@@ -23,9 +23,9 @@ use crate::{
 #[derive(Clone, Debug)]
 pub enum History<T = Entity> {
     Component {
-        component_id: T,
-        before: Option<PlaComponent<EditorCoords>>,
-        after: Option<PlaComponent<EditorCoords>>,
+        entity: T,
+        before: Option<Box<PlaComponent<EditorCoords>>>,
+        after: Option<Box<PlaComponent<EditorCoords>>>,
     },
     Namespace {
         namespace: String,
@@ -70,11 +70,11 @@ pub fn undo_redo_asy(
                     History::Component {
                         before,
                         after,
-                        component_id,
+                        entity: component_id,
                     } => History::Component {
                         before: before.to_owned(),
                         after: after.to_owned(),
-                        component_id: {
+                        entity: {
                             let component_id = Arc::clone(
                                 ids.entry(*component_id)
                                     .or_insert_with(|| Arc::new(RwLock::new(*component_id))),
@@ -101,19 +101,22 @@ pub fn undo_redo_asy(
                     History::Component {
                         before,
                         after,
-                        component_id,
+                        entity: component_id,
                     } => {
                         if let Some(before) = before {
                             if after.is_none() {
                                 debug!(?component_id, "Undoing deletion");
                                 status.0 = format!("Undid deletion of {before}").into();
                                 let entity = match before.get_type(&skin).unwrap() {
-                                    ComponentType::Point => commands
-                                        .spawn(PointComponentBundle::new(before.to_owned(), &skin)),
-                                    ComponentType::Line => commands
-                                        .spawn(LineComponentBundle::new(before.to_owned(), &skin)),
-                                    ComponentType::Area => commands
-                                        .spawn(AreaComponentBundle::new(before.to_owned(), &skin)),
+                                    ComponentType::Point => commands.spawn(
+                                        PointComponentBundle::new((**before).to_owned(), &skin),
+                                    ),
+                                    ComponentType::Line => commands.spawn(
+                                        LineComponentBundle::new((**before).to_owned(), &skin),
+                                    ),
+                                    ComponentType::Area => commands.spawn(
+                                        AreaComponentBundle::new((**before).to_owned(), &skin),
+                                    ),
                                 }
                                 .id();
                                 *component_id.write().unwrap() = entity;
@@ -122,7 +125,7 @@ pub fn undo_redo_asy(
                                 let component_id = component_id.read().unwrap();
                                 debug!(?component_id, "Undoing edit");
                                 status.0 = format!("Undid edit of {before}").into();
-                                commands.entity(*component_id).insert(before.to_owned());
+                                commands.entity(*component_id).insert((**before).to_owned());
                                 if Some(*component_id) == selected {
                                     commands
                                         .entity(*component_id)
@@ -170,19 +173,22 @@ pub fn undo_redo_asy(
                     History::Component {
                         before,
                         after,
-                        component_id,
+                        entity: component_id,
                     } => {
                         if let Some(after) = after {
                             debug!(?component_id, "Redoing creation");
                             status.0 = format!("Redid creation of {after}").into();
                             if before.is_none() {
                                 let entity = match after.get_type(&skin).unwrap() {
-                                    ComponentType::Point => commands
-                                        .spawn(PointComponentBundle::new(after.to_owned(), &skin)),
-                                    ComponentType::Line => commands
-                                        .spawn(LineComponentBundle::new(after.to_owned(), &skin)),
-                                    ComponentType::Area => commands
-                                        .spawn(AreaComponentBundle::new(after.to_owned(), &skin)),
+                                    ComponentType::Point => commands.spawn(
+                                        PointComponentBundle::new((**after).to_owned(), &skin),
+                                    ),
+                                    ComponentType::Line => commands.spawn(
+                                        LineComponentBundle::new((**after).to_owned(), &skin),
+                                    ),
+                                    ComponentType::Area => commands.spawn(
+                                        AreaComponentBundle::new((**after).to_owned(), &skin),
+                                    ),
                                 }
                                 .id();
                                 *component_id.write().unwrap() = entity;
@@ -191,7 +197,7 @@ pub fn undo_redo_asy(
                                 let component_id = component_id.read().unwrap();
                                 debug!(?component_id, "Redoing edit");
                                 status.0 = format!("Redid edit of {after}").into();
-                                commands.entity(*component_id).insert(after.to_owned());
+                                commands.entity(*component_id).insert((**after).to_owned());
                                 if Some(*component_id) == selected {
                                     commands
                                         .entity(*component_id)

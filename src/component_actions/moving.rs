@@ -63,9 +63,9 @@ pub fn move_component_sy(
                         .as_ivec2();
                 }
                 actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                    component_id: entity,
-                    before: Some(old_pla),
-                    after: Some(pla.to_owned()),
+                    entity,
+                    before: Some(old_pla.into()),
+                    after: Some(pla.to_owned().into()),
                 })));
                 status.0 = format!("Moved component {}", &*pla).into();
             }

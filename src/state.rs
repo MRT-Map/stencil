@@ -6,9 +6,10 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    component::{component_editor::PrevNamespaceUsed, pla2::ComponentType, skin::Skin},
+    component::{pla2::ComponentType, skin::Skin},
     component_tools::creating::{clear_created_component, CreatedQuery},
     misc::Action,
+    project::Namespaces,
     ui::panel::status::Status,
 };
 
@@ -72,7 +73,7 @@ pub fn state_changer_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut created_query: CreatedQuery,
     skin: Res<Skin>,
-    prev_namespace_used: Res<PrevNamespaceUsed>,
+    namespaces: Res<Namespaces>,
     mut status: ResMut<Status>,
 ) {
     let mut new_state = None;
@@ -89,7 +90,7 @@ pub fn state_changer_asy(
             &mut commands,
             &mut created_query,
             &skin,
-            &prev_namespace_used.0,
+            &namespaces,
             &mut writer,
             &mut status,
             "component",

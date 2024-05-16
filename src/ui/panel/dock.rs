@@ -7,7 +7,7 @@ use enum_dispatch::enum_dispatch;
 use crate::{
     component::{
         bundle::SelectedComponent,
-        component_editor::{ComponentEditor, PrevNamespaceUsed},
+        component_editor::ComponentEditor,
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -154,7 +154,6 @@ pub struct PanelParams<'w, 's> {
         Query<'w, 's, (Entity, &'static mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     pub commands: Commands<'w, 's>,
     pub skin: Res<'w, Skin>,
-    pub prev_namespace_used: ResMut<'w, PrevNamespaceUsed>,
     pub actions: EventWriter<'w, Action>,
     pub editor_state: Res<'w, State<EditorState>>,
     pub window_settings: ResMut<'w, WindowSettings>,

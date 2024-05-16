@@ -5,15 +5,12 @@ pub mod toolbar;
 
 use bevy::prelude::*;
 
-use crate::{
-    component::component_editor::PrevNamespaceUsed,
-    ui::{
-        panel::{
-            dock::{FileDialogs, PanelDockState},
-            status::Status,
-        },
-        UiSchedule, UiSet,
+use crate::ui::{
+    panel::{
+        dock::{FileDialogs, PanelDockState},
+        status::Status,
     },
+    UiSchedule, UiSet,
 };
 
 pub struct PanelPlugin;
@@ -21,8 +18,7 @@ pub struct PanelPlugin;
 impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
         app.world.insert_non_send_resource(FileDialogs::default());
-        app.init_resource::<PrevNamespaceUsed>()
-            .init_resource::<PanelDockState>()
+        app.init_resource::<PanelDockState>()
             .init_resource::<Status>()
             .add_systems(
                 UiSchedule,

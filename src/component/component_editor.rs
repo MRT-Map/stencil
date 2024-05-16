@@ -1,4 +1,3 @@
-use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 
@@ -8,14 +7,6 @@ use crate::{
     misc::Action,
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
-
-#[derive(Resource, Clone)]
-pub struct PrevNamespaceUsed(pub String);
-impl Default for PrevNamespaceUsed {
-    fn default() -> Self {
-        Self("_misc".into())
-    }
-}
 
 #[derive(Clone, Copy)]
 pub struct ComponentEditor;
@@ -29,7 +20,6 @@ impl DockWindow for ComponentEditor {
             selected,
             commands,
             skin,
-            prev_namespace_used,
             actions,
             namespaces,
             ..
@@ -57,7 +47,7 @@ impl DockWindow for ComponentEditor {
                 });
             component_data
                 .namespace
-                .clone_into(&mut prev_namespace_used.0);
+                .clone_into(&mut namespaces.prev_used);
             ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
         });
         ui.end_row();
@@ -116,9 +106,9 @@ impl DockWindow for ComponentEditor {
         );
         if *component_data != old_data {
             actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                component_id: entity,
-                before: Some(old_data),
-                after: Some(component_data.to_owned()),
+                entity,
+                before: Some(old_data.into()),
+                after: Some(component_data.to_owned().into()),
             })));
         }
     }

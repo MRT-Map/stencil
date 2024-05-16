@@ -14,6 +14,7 @@ pub mod project_editor;
 pub struct Namespaces {
     pub folder: PathBuf,
     pub visibilities: HashMap<String, bool>,
+    pub prev_used: String,
 }
 
 impl Default for Namespaces {
@@ -25,6 +26,7 @@ impl Default for Namespaces {
                 h.insert("_misc".into(), true);
                 h
             },
+            prev_used: "_misc".into(),
         }
     }
 }

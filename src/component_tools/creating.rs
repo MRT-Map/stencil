@@ -9,7 +9,6 @@ use crate::{
             AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle,
         },
-        component_editor::PrevNamespaceUsed,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -18,6 +17,7 @@ use crate::{
         undo_redo::{History, UndoRedoAct},
     },
     misc::Action,
+    project::Namespaces,
     state::{state_changer_asy, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
@@ -51,7 +51,7 @@ pub fn create_point_sy(
     mut mouse: EventReader<MouseEvent>,
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
-    prev_namespace_used: Res<PrevNamespaceUsed>,
+    namespaces: Res<Namespaces>,
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
 ) {
@@ -63,7 +63,7 @@ pub fn create_point_sy(
                     point
                         .nodes
                         .push(mouse_pos_world.xy().round().as_ivec2().into());
-                    prev_namespace_used.0.clone_into(&mut point.namespace);
+                    namespaces.prev_used.clone_into(&mut point.namespace);
                     point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
                     point
                 },
@@ -80,9 +80,9 @@ pub fn create_point_sy(
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
             actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                component_id: entity,
+                entity,
                 before: None,
-                after: Some(pla),
+                after: Some(pla.into()),
             })));
         }
     }
@@ -95,7 +95,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     skin: Res<Skin>,
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
-    prev_namespace_used: Res<PrevNamespaceUsed>,
+    namespaces: Res<Namespaces>,
     keys: Res<ButtonInput<KeyCode>>,
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
@@ -182,7 +182,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                         &mut commands,
                         &mut set,
                         &skin,
-                        &prev_namespace_used.0,
+                        &namespaces,
                         &mut actions,
                         &mut status,
                         ty_text,
@@ -195,7 +195,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 &mut commands,
                 &mut set,
                 &skin,
-                &prev_namespace_used.0,
+                &namespaces,
                 &mut actions,
                 &mut status,
                 ty_text,
@@ -209,7 +209,7 @@ pub fn clear_created_component(
     commands: &mut Commands,
     created_query: &mut CreatedQuery,
     skin: &Res<Skin>,
-    prev_namespace_used: &String,
+    namespaces: &Res<Namespaces>,
     actions: &mut EventWriter<Action>,
     status: &mut ResMut<Status>,
     ty_text: &str,
@@ -220,7 +220,7 @@ pub fn clear_created_component(
             commands.entity(entity).despawn_recursive();
             status.0 = "Cancelled component creation".into();
         } else {
-            prev_namespace_used.clone_into(&mut data.namespace);
+            namespaces.prev_used.clone_into(&mut data.namespace);
             data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
             commands
                 .entity(entity)
@@ -228,9 +228,9 @@ pub fn clear_created_component(
                 .component_display(skin, &data)
                 .remove::<CreatedComponent>();
             actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                component_id: entity,
+                entity,
                 before: None,
-                after: Some(data.to_owned()),
+                after: Some(data.to_owned().into()),
             })));
             status.0 = format!("Created new {ty_text} {}", &*data).into();
         }
