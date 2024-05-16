@@ -10,7 +10,7 @@ use crate::{
     project::project_editor::ProjectAct,
     state::{ChangeStateAct, EditorState, IntoSystemConfigExt},
     ui::tilemap::settings_editor::TileSettingsAct,
-    window_settings::settings_editor::OpenWindowSettingsAct,
+    window::settings_editor::OpenWindowSettingsAct,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]

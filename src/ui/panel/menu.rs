@@ -14,7 +14,7 @@ use crate::{
         panel::status::Status,
         tilemap::{settings_editor::TileSettingsAct, tile::PendingTiles},
     },
-    window_settings::settings_editor::OpenWindowSettingsAct,
+    window::settings_editor::OpenWindowSettingsAct,
 };
 
 #[allow(clippy::needless_pass_by_value)]

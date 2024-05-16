@@ -182,7 +182,7 @@ use tracing_subscriber::{
 use ui::tilemap::RenderingPlugin;
 
 #[cfg(target_os = "linux")]
-use crate::window_settings::settings::LinuxWindow;
+use crate::window::settings::LinuxWindow;
 use crate::{
     component_actions::ComponentActionPlugins,
     component_tools::ComponentToolPlugins,
@@ -192,7 +192,7 @@ use crate::{
     misc::data_dir,
     project::ProjectPlugin,
     ui::UiPlugin,
-    window_settings::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
+    window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
 pub mod component;
@@ -207,7 +207,7 @@ pub mod project;
 pub mod state;
 pub mod tile;
 pub mod ui;
-pub mod window_settings;
+pub mod window;
 
 fn init_logger() {
     tracing_subscriber::registry()

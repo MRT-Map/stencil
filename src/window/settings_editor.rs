@@ -2,11 +2,11 @@ use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::egui;
 
 #[cfg(target_os = "linux")]
-use crate::window_settings::settings::LinuxWindow;
+use crate::window::settings::LinuxWindow;
 use crate::{
     misc::{data_path, Action},
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-    window_settings::settings::WindowSettings,
+    window::settings::WindowSettings,
 };
 
 pub struct OpenWindowSettingsAct;

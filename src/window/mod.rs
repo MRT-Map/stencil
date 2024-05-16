@@ -3,9 +3,7 @@ pub mod settings_editor;
 
 use bevy::prelude::*;
 
-use crate::window_settings::{
-    settings::INIT_WINDOW_SETTINGS, settings_editor::window_settings_msy,
-};
+use crate::window::{settings::INIT_WINDOW_SETTINGS, settings_editor::window_settings_msy};
 
 pub struct WindowSettingsPlugin;
 

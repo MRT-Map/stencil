@@ -23,7 +23,7 @@ use crate::{
             window::Tilemap,
         },
     },
-    window_settings::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
+    window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
 
 #[enum_dispatch(DockWindows)]
