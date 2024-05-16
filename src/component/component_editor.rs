@@ -115,7 +115,7 @@ impl DockWindow for ComponentEditor {
                 .join("\n"),
         );
         if *component_data != old_data {
-            actions.send(Action::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 component_id: entity,
                 before: Some(old_data),
                 after: Some(component_data.to_owned()),

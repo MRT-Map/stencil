@@ -20,7 +20,7 @@ pub fn delete_component_sy(
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
-            actions.send(Action::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 component_id: *e,
                 before: Some(pla.to_owned()),
                 after: None,

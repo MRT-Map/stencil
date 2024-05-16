@@ -79,7 +79,7 @@ pub fn create_point_sy(
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
-            actions.send(Action::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 component_id: entity,
                 before: None,
                 after: Some(pla),
@@ -227,7 +227,7 @@ pub fn clear_created_component(
                 .remove::<ShapeBundle>()
                 .component_display(skin, &data)
                 .remove::<CreatedComponent>();
-            actions.send(Action::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 component_id: entity,
                 before: None,
                 after: Some(data.to_owned()),

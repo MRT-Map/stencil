@@ -15,25 +15,32 @@ use crate::{
         skin::Skin,
     },
     misc::Action,
+    project::{project_editor::ProjectAct, Namespaces},
     state::IntoSystemConfigExt,
     ui::panel::status::Status,
 };
 
 #[derive(Clone, Debug)]
-pub struct History<T> {
-    pub component_id: T,
-    pub before: Option<PlaComponent<EditorCoords>>,
-    pub after: Option<PlaComponent<EditorCoords>>,
+pub enum History<T = Entity> {
+    Component {
+        component_id: T,
+        before: Option<PlaComponent<EditorCoords>>,
+        after: Option<PlaComponent<EditorCoords>>,
+    },
+    Namespace {
+        namespace: String,
+        visible: bool,
+    },
 }
 
 pub enum UndoRedoAct {
-    NewHistory(Vec<History<Entity>>),
+    NewHistory(Vec<History>),
     Undo,
     Redo,
 }
 impl UndoRedoAct {
     #[must_use]
-    pub fn one_history(history: History<Entity>) -> Self {
+    pub fn one_history(history: History) -> Self {
         Self::NewHistory(vec![history])
     }
 }
@@ -45,7 +52,7 @@ impl UndoRedoAct {
 )]
 pub fn undo_redo_asy(
     mut commands: Commands,
-    mut actions: EventReader<Action>,
+    mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
     mut undo_stack: Local<Vec<Vec<History<Arc<RwLock<Entity>>>>>>,
     mut redo_stack: Local<Vec<Vec<History<Arc<RwLock<Entity>>>>>>,
@@ -54,70 +61,103 @@ pub fn undo_redo_asy(
     mut status: ResMut<Status>,
 ) {
     let selected = selected_entity.get_single().ok();
-    for event in actions.read() {
+    let mut send_queue: Vec<Action> = vec![];
+    for event in actions.p0().read() {
         if let Some(UndoRedoAct::NewHistory(histories)) = event.downcast_ref() {
             let histories = histories
                 .iter()
-                .map(|history| {
-                    let component_id = Arc::clone(
-                        ids.entry(history.component_id)
-                            .or_insert_with(|| Arc::new(RwLock::new(history.component_id))),
-                    );
-                    debug!(?history.component_id, "Added entry to undo stack");
-                    History {
+                .map(|history| match history {
+                    History::Component {
+                        before,
+                        after,
                         component_id,
-                        before: history.before.to_owned(),
-                        after: history.after.to_owned(),
-                    }
+                    } => History::Component {
+                        before: before.to_owned(),
+                        after: after.to_owned(),
+                        component_id: {
+                            let component_id = Arc::clone(
+                                ids.entry(*component_id)
+                                    .or_insert_with(|| Arc::new(RwLock::new(*component_id))),
+                            );
+                            debug!(?component_id, "Added entry to undo stack");
+                            component_id
+                        },
+                    },
+                    History::Namespace { namespace, visible } => History::Namespace {
+                        namespace: namespace.to_owned(),
+                        visible: visible.to_owned(),
+                    },
                 })
                 .collect();
             redo_stack.clear();
             undo_stack.push(histories);
         } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Undo)) {
+            println!("{undo_stack:#?}");
             let Some(mut histories) = undo_stack.pop() else {
                 continue;
             };
             for history in &mut histories {
-                if let Some(before) = &mut history.before {
-                    if history.after.is_none() {
-                        debug!(?history.component_id, "Undoing deletion");
-                        status.0 = format!("Undid deletion of {before}").into();
-                        let entity =
-                            match before.get_type(&skin).unwrap() {
-                                ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new(before.to_owned(), &skin)),
-                                ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new(before.to_owned(), &skin)),
-                                ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new(before.to_owned(), &skin)),
+                match history {
+                    History::Component {
+                        before,
+                        after,
+                        component_id,
+                    } => {
+                        if let Some(before) = before {
+                            if after.is_none() {
+                                debug!(?component_id, "Undoing deletion");
+                                status.0 = format!("Undid deletion of {before}").into();
+                                let entity = match before.get_type(&skin).unwrap() {
+                                    ComponentType::Point => commands
+                                        .spawn(PointComponentBundle::new(before.to_owned(), &skin)),
+                                    ComponentType::Line => commands
+                                        .spawn(LineComponentBundle::new(before.to_owned(), &skin)),
+                                    ComponentType::Area => commands
+                                        .spawn(AreaComponentBundle::new(before.to_owned(), &skin)),
+                                }
+                                .id();
+                                *component_id.write().unwrap() = entity;
+                                ids.insert(entity, Arc::clone(component_id));
+                            } else {
+                                let component_id = component_id.read().unwrap();
+                                debug!(?component_id, "Undoing edit");
+                                status.0 = format!("Undid edit of {before}").into();
+                                commands.entity(*component_id).insert(before.to_owned());
+                                if Some(*component_id) == selected {
+                                    commands
+                                        .entity(*component_id)
+                                        .select_component(&skin, before);
+                                } else {
+                                    commands
+                                        .entity(*component_id)
+                                        .component_display(&skin, before);
+                                }
                             }
-                            .id();
-                        *history.component_id.write().unwrap() = entity;
-                        ids.insert(entity, Arc::clone(&history.component_id));
-                    } else {
-                        debug!(?history.component_id, "Undoing edit");
-                        status.0 = format!("Undid edit of {before}").into();
-                        let entity = *history.component_id.read().unwrap();
-                        commands.entity(entity).insert(before.to_owned());
-                        if Some(entity) == selected {
-                            commands.entity(entity).select_component(&skin, before);
                         } else {
-                            commands.entity(entity).component_display(&skin, before);
+                            let component_id = component_id.read().unwrap();
+                            debug!(?component_id, "Undoing creation");
+                            status.0 = format!(
+                                "Undid creation of {}",
+                                after.as_ref().map_or_else(String::new, |a| format!("{a}"))
+                            )
+                            .into();
+                            commands.entity(*component_id).despawn_recursive();
+                            ids.remove(&component_id);
                         }
                     }
-                } else {
-                    debug!(?history.component_id, "Undoing creation");
-                    status.0 = format!(
-                        "Undid creation of {}",
-                        history
-                            .after
-                            .as_ref()
-                            .map_or_else(String::new, |a| format!("{a}"))
-                    )
-                    .into();
-                    let entity = *history.component_id.read().unwrap();
-                    commands.entity(entity).despawn_recursive();
-                    ids.remove(&entity);
+                    History::Namespace { namespace, visible } => {
+                        send_queue.push(if *visible {
+                            Action::new(ProjectAct::Hide {
+                                ns: namespace.to_owned(),
+                                history_invoked: true,
+                            })
+                        } else {
+                            Action::new(ProjectAct::Show {
+                                ns: namespace.to_owned(),
+                                history_invoked: true,
+                            })
+                        });
+                    }
                 }
             }
             redo_stack.push(histories);
@@ -126,50 +166,75 @@ pub fn undo_redo_asy(
                 continue;
             };
             for history in &mut histories {
-                if let Some(after) = &mut history.after {
-                    debug!(?history.component_id, "Redoing creation");
-                    status.0 = format!("Redid creation of {after}").into();
-                    if history.before.is_none() {
-                        let entity =
-                            match after.get_type(&skin).unwrap() {
-                                ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new(after.to_owned(), &skin)),
-                                ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new(after.to_owned(), &skin)),
-                                ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new(after.to_owned(), &skin)),
+                match history {
+                    History::Component {
+                        before,
+                        after,
+                        component_id,
+                    } => {
+                        if let Some(after) = after {
+                            debug!(?component_id, "Redoing creation");
+                            status.0 = format!("Redid creation of {after}").into();
+                            if before.is_none() {
+                                let entity = match after.get_type(&skin).unwrap() {
+                                    ComponentType::Point => commands
+                                        .spawn(PointComponentBundle::new(after.to_owned(), &skin)),
+                                    ComponentType::Line => commands
+                                        .spawn(LineComponentBundle::new(after.to_owned(), &skin)),
+                                    ComponentType::Area => commands
+                                        .spawn(AreaComponentBundle::new(after.to_owned(), &skin)),
+                                }
+                                .id();
+                                *component_id.write().unwrap() = entity;
+                                ids.insert(entity, Arc::clone(component_id));
+                            } else {
+                                let component_id = component_id.read().unwrap();
+                                debug!(?component_id, "Redoing edit");
+                                status.0 = format!("Redid edit of {after}").into();
+                                commands.entity(*component_id).insert(after.to_owned());
+                                if Some(*component_id) == selected {
+                                    commands
+                                        .entity(*component_id)
+                                        .select_component(&skin, after);
+                                } else {
+                                    commands
+                                        .entity(*component_id)
+                                        .component_display(&skin, after);
+                                }
                             }
-                            .id();
-                        *history.component_id.write().unwrap() = entity;
-                        ids.insert(entity, Arc::clone(&history.component_id));
-                    } else {
-                        debug!(?history.component_id, "Redoing edit");
-                        status.0 = format!("Redid edit of {after}").into();
-                        let entity = *history.component_id.read().unwrap();
-                        commands.entity(entity).insert(after.to_owned());
-                        if Some(entity) == selected {
-                            commands.entity(entity).select_component(&skin, after);
                         } else {
-                            commands.entity(entity).component_display(&skin, after);
+                            let component_id = component_id.read().unwrap();
+                            debug!(?component_id, "Redoing deletion");
+                            status.0 = format!(
+                                "Redid deletion of {}",
+                                before.as_ref().map_or_else(String::new, |a| format!("{a}"))
+                            )
+                            .into();
+                            commands.entity(*component_id).despawn_recursive();
+                            ids.remove(&component_id);
                         }
                     }
-                } else {
-                    debug!(?history.component_id, "Redoing deletion");
-                    status.0 = format!(
-                        "Redid deletion of {}",
-                        history
-                            .before
-                            .as_ref()
-                            .map_or_else(String::new, |a| format!("{a}"))
-                    )
-                    .into();
-                    let entity = *history.component_id.read().unwrap();
-                    commands.entity(entity).despawn_recursive();
-                    ids.remove(&entity);
+                    History::Namespace { namespace, visible } => {
+                        send_queue.push(if *visible {
+                            Action::new(ProjectAct::Show {
+                                ns: namespace.to_owned(),
+                                history_invoked: true,
+                            })
+                        } else {
+                            Action::new(ProjectAct::Hide {
+                                ns: namespace.to_owned(),
+                                history_invoked: true,
+                            })
+                        });
+                    }
                 }
             }
             undo_stack.push(histories);
         }
+    }
+
+    for action in send_queue {
+        actions.p1().send(action);
     }
 }
 

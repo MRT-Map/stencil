@@ -10,6 +10,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
+    component_actions::undo_redo::{History, UndoRedoAct},
     misc::{load_msgpack, save_msgpack, Action},
     project::Namespaces,
     ui::{
@@ -24,8 +25,8 @@ use crate::{
 pub enum ProjectAct {
     SelectFolder,
     GetNamespaces,
-    Show(String),
-    Hide(String),
+    Show { ns: String, history_invoked: bool },
+    Hide { ns: String, history_invoked: bool },
     Save,
 }
 
@@ -84,9 +85,15 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             if ui.checkbox(vis, "").changed() {
                                 if *vis {
-                                    actions.send(Action::new(ProjectAct::Show(ns.to_owned())));
+                                    actions.send(Action::new(ProjectAct::Show {
+                                        ns: ns.to_owned(),
+                                        history_invoked: false,
+                                    }));
                                 } else {
-                                    actions.send(Action::new(ProjectAct::Hide(ns.to_owned())));
+                                    actions.send(Action::new(ProjectAct::Hide {
+                                        ns: ns.to_owned(),
+                                        history_invoked: false,
+                                    }));
                                 }
                             }
                         });
@@ -149,8 +156,13 @@ pub fn project_msy(
     mut status: ResMut<Status>,
     skin: Res<Skin>,
 ) {
+    let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().read() {
-        if let Some(ProjectAct::Show(ns)) = event.downcast_ref() {
+        if let Some(ProjectAct::Show {
+            ns,
+            history_invoked,
+        }) = event.downcast_ref()
+        {
             if !namespaces
                 .folder
                 .join(format!("{ns}.pla2.msgpack"))
@@ -158,6 +170,7 @@ pub fn project_msy(
             {
                 continue;
             }
+            namespaces.visibilities.insert(ns.to_owned(), true);
             if let Some(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some((&mut popup, "pla2")),
@@ -178,9 +191,20 @@ pub fn project_msy(
                         )),
                     };
                 }
-                status.0 = format!("Loaded namespace {ns}").into();
+                if !history_invoked {
+                    send_queue.push(Action::new(UndoRedoAct::one_history(History::Namespace {
+                        namespace: ns.to_owned(),
+                        visible: true,
+                    })));
+                    status.0 = format!("Loaded namespace {ns}").into();
+                }
             }
-        } else if let Some(ProjectAct::Hide(ns)) = event.downcast_ref() {
+        } else if let Some(ProjectAct::Hide {
+            ns,
+            history_invoked,
+        }) = event.downcast_ref()
+        {
+            namespaces.visibilities.insert(ns.to_owned(), false);
             let components = query
                 .iter()
                 .filter(|(_, p)| p.namespace == *ns)
@@ -189,11 +213,18 @@ pub fn project_msy(
                     Some(p.to_mc_coords())
                 })
                 .collect::<Vec<_>>();
-            if save_msgpack(
+            if !save_msgpack(
                 &components,
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some((&mut popup, "pla2")),
             ) {
+                continue;
+            }
+            if !history_invoked {
+                send_queue.push(Action::new(UndoRedoAct::one_history(History::Namespace {
+                    namespace: ns.to_owned(),
+                    visible: false,
+                })));
                 status.0 = format!("Saved namespace {ns}").into();
             }
         } else if matches!(event.downcast_ref(), Some(ProjectAct::Save)) {
@@ -230,6 +261,9 @@ pub fn project_msy(
                 let _ = namespaces.visibilities.entry(ns).or_insert(false);
             }
         }
+    }
+    for action in send_queue {
+        actions.p1().send(action);
     }
 
     let file_dialog = &mut file_dialogs.project_select;

@@ -131,7 +131,7 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = orig.take() {
-            actions.send(Action::new(UndoRedoAct::one_history(History {
+            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 component_id: entity,
                 before: Some(orig.old_pla),
                 after: Some(pla.to_owned()),

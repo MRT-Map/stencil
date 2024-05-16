@@ -38,6 +38,13 @@ field!(
     clear_cache_on_startup,
     bool
 );
+field!(
+    TileSettings,
+    basemaps_is_default,
+    default_basemaps,
+    basemaps,
+    Vec<Basemap>
+);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Basemap {
@@ -63,6 +70,10 @@ pub struct TileSettings {
         skip_serializing_if = "clear_cache_on_startup_is_default"
     )]
     pub clear_cache_on_startup: bool,
+    #[serde(
+        default = "default_basemaps",
+        skip_serializing_if = "basemaps_is_default"
+    )]
     pub basemaps: Vec<Basemap>,
 }
 

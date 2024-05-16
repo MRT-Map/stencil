@@ -39,7 +39,10 @@ impl Plugin for ProjectPlugin {
                 OnExit(EditorState::Loading),
                 |mut actions: EventWriter<Action>| {
                     actions.send(Action::new(ProjectAct::GetNamespaces));
-                    actions.send(Action::new(ProjectAct::Show("_misc".into())));
+                    actions.send(Action::new(ProjectAct::Show {
+                        ns: "_misc".into(),
+                        history_invoked: true,
+                    }));
                 },
             );
     }
