@@ -51,7 +51,7 @@ pub fn create_point_sy(
     mut mouse: EventReader<MouseEvent>,
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
-    namespaces: Res<Namespaces>,
+    mut namespaces: ResMut<Namespaces>,
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
 ) {
@@ -63,6 +63,14 @@ pub fn create_point_sy(
                     point
                         .nodes
                         .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    if !namespaces
+                        .visibilities
+                        .get(&namespaces.prev_used)
+                        .copied()
+                        .unwrap_or_default()
+                    {
+                        namespaces.prev_used = "_misc".into();
+                    }
                     namespaces.prev_used.clone_into(&mut point.namespace);
                     point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
                     point
@@ -95,7 +103,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     skin: Res<Skin>,
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
-    namespaces: Res<Namespaces>,
+    mut namespaces: ResMut<Namespaces>,
     keys: Res<ButtonInput<KeyCode>>,
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
@@ -182,7 +190,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                         &mut commands,
                         &mut set,
                         &skin,
-                        &namespaces,
+                        &mut namespaces,
                         &mut actions,
                         &mut status,
                         ty_text,
@@ -195,7 +203,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 &mut commands,
                 &mut set,
                 &skin,
-                &namespaces,
+                &mut namespaces,
                 &mut actions,
                 &mut status,
                 ty_text,
@@ -209,7 +217,7 @@ pub fn clear_created_component(
     commands: &mut Commands,
     created_query: &mut CreatedQuery,
     skin: &Res<Skin>,
-    namespaces: &Res<Namespaces>,
+    namespaces: &mut ResMut<Namespaces>,
     actions: &mut EventWriter<Action>,
     status: &mut ResMut<Status>,
     ty_text: &str,
@@ -220,6 +228,14 @@ pub fn clear_created_component(
             commands.entity(entity).despawn_recursive();
             status.0 = "Cancelled component creation".into();
         } else {
+            if !namespaces
+                .visibilities
+                .get(&namespaces.prev_used)
+                .copied()
+                .unwrap_or_default()
+            {
+                namespaces.prev_used = "_misc".into();
+            }
             namespaces.prev_used.clone_into(&mut data.namespace);
             data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
             commands

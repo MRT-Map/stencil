@@ -73,7 +73,7 @@ pub fn state_changer_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut created_query: CreatedQuery,
     skin: Res<Skin>,
-    namespaces: Res<Namespaces>,
+    mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
 ) {
     let mut new_state = None;
@@ -90,7 +90,7 @@ pub fn state_changer_asy(
             &mut commands,
             &mut created_query,
             &skin,
-            &namespaces,
+            &mut namespaces,
             &mut writer,
             &mut status,
             "component",

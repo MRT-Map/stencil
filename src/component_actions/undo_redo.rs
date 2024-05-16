@@ -92,7 +92,6 @@ pub fn undo_redo_asy(
             redo_stack.clear();
             undo_stack.push(histories);
         } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Undo)) {
-            println!("{undo_stack:#?}");
             let Some(mut histories) = undo_stack.pop() else {
                 continue;
             };
