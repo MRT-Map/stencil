@@ -17,13 +17,14 @@ impl DockWindow for ComponentEditor {
     }
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         let PanelParams {
-            selected,
+            queries,
             commands,
             skin,
             actions,
             namespaces,
             ..
-        } = &mut tab_viewer.params;
+        } = tab_viewer.params;
+        let mut selected = queries.p0();
         if selected.is_empty() {
             ui.heading("Select a component...");
             return;

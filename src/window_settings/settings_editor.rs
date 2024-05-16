@@ -21,7 +21,7 @@ impl DockWindow for WindowSettingsEditor {
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         let PanelParams {
             window_settings, ..
-        } = &mut tab_viewer.params;
+        } = tab_viewer.params;
         let mut invalid = false;
         let old_settings = window_settings.to_owned();
 

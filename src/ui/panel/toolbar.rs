@@ -12,7 +12,7 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> InnerResponse<(
         editor_state,
         actions,
         ..
-    } = &mut tab_viewer.params;
+    } = tab_viewer.params;
     let mut new_state = ***editor_state;
     let resp = egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
         egui::menu::bar(ui, |ui| {

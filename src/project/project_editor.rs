@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_extras::{Column, TableBuilder};
@@ -42,8 +44,10 @@ impl DockWindow for ProjectEditor {
             namespaces,
             new_namespace,
             actions,
+            queries,
             ..
-        } = &mut tab_viewer.params;
+        } = tab_viewer.params;
+        let components = queries.p1().iter().counts_by(|a| a.namespace.to_owned());
         ui.horizontal(|ui| {
             if ui.button("Select project folder").clicked() {
                 actions.send(Action::new(ProjectAct::SelectFolder));
@@ -62,7 +66,7 @@ impl DockWindow for ProjectEditor {
         TableBuilder::new(ui)
             .striped(true)
             .column(Column::auto().at_least(0.05))
-            .columns(Column::remainder(), 2)
+            .columns(Column::auto().at_least(25.0), 2)
             .column(Column::auto().at_least(0.05))
             .header(20.0, |mut header| {
                 header.col(|ui| {
@@ -100,11 +104,22 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             ui.label(egui::RichText::new(ns).code());
                         });
+                        let num_components = components.get(ns).copied().unwrap_or_default();
                         row.col(|ui| {
-                            ui.label("0");
+                            ui.label(if *vis {
+                                num_components.to_string()
+                            } else {
+                                "-".into()
+                            });
                         });
                         row.col(|ui| {
-                            if ui.add_enabled(false, egui::Button::new("X")).clicked() {
+                            if ui
+                                .add_enabled(
+                                    { num_components == 0 && ns != "_misc" },
+                                    egui::Button::new("X"),
+                                )
+                                .clicked()
+                            {
                                 delete = Some(ns.to_owned());
                             }
                         });
@@ -121,7 +136,14 @@ impl DockWindow for ProjectEditor {
                             .show(ui);
                     });
                     row.col(|ui| {
-                        if ui.button("+").clicked() {
+                        if ui
+                            .add_enabled(
+                                !new_namespace.is_empty()
+                                    && !namespaces.visibilities.keys().contains(&**new_namespace),
+                                egui::Button::new("+"),
+                            )
+                            .clicked()
+                        {
                             namespaces
                                 .visibilities
                                 .insert(new_namespace.to_owned(), true);

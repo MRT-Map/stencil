@@ -59,8 +59,8 @@ impl Default for PanelDockState {
     fn default() -> Self {
         let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
-        let [_, _] = tree.split_left(NodeIndex::root(), 0.15, vec![ComponentEditor.into()]);
-        let [_, _] = tree.split_right(NodeIndex::root(), 0.85, vec![ProjectEditor.into()]);
+        let [_, _] = tree.split_left(NodeIndex::root(), 0.2, vec![ComponentEditor.into()]);
+        let [_, _] = tree.split_right(NodeIndex::root(), 0.8, vec![ProjectEditor.into()]);
 
         Self {
             state,
@@ -71,17 +71,11 @@ impl Default for PanelDockState {
 }
 
 impl PanelDockState {
-    fn ui(
-        &mut self,
-        params: PanelParams,
-        file_dialogs: NonSendMut<FileDialogs>,
-        ctx: &mut egui::Context,
-    ) {
+    fn ui(&mut self, params: &mut PanelParams, ctx: &mut egui::Context) {
         let mut tab_viewer = TabViewer {
             params,
             viewport_rect: &mut self.viewport_rect,
             layer_id: &mut self.layer_id,
-            file_dialogs,
         };
 
         DockArea::new(&mut self.state)
@@ -91,10 +85,9 @@ impl PanelDockState {
 }
 
 pub struct TabViewer<'a, 'w, 's> {
-    pub params: PanelParams<'w, 's>,
+    pub params: &'a mut PanelParams<'w, 's>,
     pub viewport_rect: &'a mut egui::Rect,
     pub layer_id: &'a mut egui::LayerId,
-    pub file_dialogs: NonSendMut<'w, FileDialogs>,
 }
 
 pub struct FileDialogs {
@@ -150,8 +143,19 @@ impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
 #[derive(SystemParam)]
 #[non_exhaustive]
 pub struct PanelParams<'w, 's> {
-    pub selected:
-        Query<'w, 's, (Entity, &'static mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
+    pub queries: ParamSet<
+        'w,
+        's,
+        (
+            Query<
+                'w,
+                's,
+                (Entity, &'static mut PlaComponent<EditorCoords>),
+                With<SelectedComponent>,
+            >,
+            Query<'w, 's, &'static PlaComponent<EditorCoords>>,
+        ),
+    >,
     pub commands: Commands<'w, 's>,
     pub skin: Res<'w, Skin>,
     pub actions: EventWriter<'w, Action>,
@@ -164,13 +168,8 @@ pub struct PanelParams<'w, 's> {
     pub new_namespace: Local<'s, String>,
 }
 
-pub fn panel_sy(
-    mut state: ResMut<PanelDockState>,
-    file_dialogs: NonSendMut<FileDialogs>,
-    mut ctx: EguiContexts,
-    params: PanelParams,
-) {
-    state.ui(params, file_dialogs, ctx.ctx_mut());
+pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut params: PanelParams) {
+    state.ui(&mut params, ctx.ctx_mut());
 }
 
 #[must_use]

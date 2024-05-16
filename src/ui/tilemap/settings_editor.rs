@@ -34,7 +34,7 @@ impl DockWindow for TileSettingsEditor {
             tile_settings,
             actions,
             ..
-        } = &mut tab_viewer.params;
+        } = tab_viewer.params;
         let mut invalid = false;
         let old_settings = tile_settings.to_owned();
 
