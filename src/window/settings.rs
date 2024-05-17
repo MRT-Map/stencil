@@ -1,5 +1,4 @@
 use bevy::{prelude::*, render::settings::Backends, window::WindowMode};
-use itertools::Either;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;

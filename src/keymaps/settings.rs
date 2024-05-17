@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
-use color_eyre::eyre::{eyre, OptionExt};
-use itertools::{Either, Itertools};
+use color_eyre::eyre::OptionExt;
+use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -18,7 +18,7 @@ use crate::{
     misc::{data_path, Action},
     project::project_editor::ProjectAct,
     state::{ChangeStateAct, EditorState},
-    ui::tilemap::{settings::TileSettings, settings_editor::TileSettingsAct},
+    ui::tilemap::settings_editor::TileSettingsAct,
     window::settings_editor::OpenWindowSettingsAct,
 };
 

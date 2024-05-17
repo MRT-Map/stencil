@@ -4,7 +4,6 @@ use backtrace::Backtrace;
 use bevy::prelude::*;
 use color_backtrace::BacktracePrinter;
 use itertools::Itertools;
-use tracing::{error, warn};
 use tracing_error::SpanTrace;
 
 use crate::{misc::data_dir, ui::popup::Popup};

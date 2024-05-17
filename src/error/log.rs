@@ -2,16 +2,9 @@ use std::{fmt::Debug, sync::RwLock, time::SystemTime};
 
 use bevy::prelude::ResMut;
 use bevy_egui::egui;
-use egui_extras::{Column, TableBuilder};
 use once_cell::sync::Lazy;
-use tracing::log::Level::Error;
 
-use crate::{
-    misc::Action,
-    project::project_editor::ProjectAct,
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-    window::settings_editor::WindowSettingsEditor,
-};
+use crate::ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer};
 
 pub static ERROR_LOG: Lazy<RwLock<ErrorLog>> = Lazy::new(|| RwLock::new(ErrorLog::default()));
 
