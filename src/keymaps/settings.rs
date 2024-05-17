@@ -2,17 +2,21 @@ use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
 use itertools::Either;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
     info_windows::InfoWindowsAct,
-    keymaps::settings_editor::OpenKeymapSettingsAct,
+    keymaps::{
+        key_list::KEY_LIST,
+        settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
+    },
     misc::{data_path, Action},
     project::project_editor::ProjectAct,
     state::{ChangeStateAct, EditorState},
-    ui::tilemap::settings_editor::TileSettingsAct,
+    ui::tilemap::{settings::TileSettings, settings_editor::TileSettingsAct},
     window::settings_editor::OpenWindowSettingsAct,
 };
 
@@ -97,7 +101,7 @@ impl KeymapSettings {
         match std::fs::read_to_string(data_path("keymap_settings.toml")) {
             Ok(str) => {
                 info!("Found keymap settings file");
-                toml::from_str(&str).map(Self::from_serializable)
+                toml::from_str(&str).map(|a| Self::from_serializable(&a))
             }
             Err(e) => {
                 info!("Couldn't find or open keymap settings file: {e:?}");
@@ -120,21 +124,36 @@ impl KeymapSettings {
     }
 
     #[must_use]
-    pub fn as_serializable(&self) -> Vec<(KeymapAction, KeyCode)> {
+    pub fn as_serializable(&self) -> HashMap<&str, HashMap<String, String>> {
         let default = Self::default();
-        self.0
+        KEYMAP_MENU
             .iter()
-            .filter(|(action, key)| **key != default.0[action])
-            .map(|(action, key)| (*action, *key))
+            .map(|(cat, menu)| {
+                (
+                    *cat,
+                    menu.iter()
+                        .map(|a| &a.0)
+                        .filter(|action| default.0[action] != self.0[action])
+                        .map(|action| (format!("{action:?}"), format!("{:?}", self.0[action])))
+                        .collect(),
+                )
+            })
             .collect()
     }
 
     #[must_use]
-    pub fn from_serializable(o: Vec<(KeymapAction, KeyCode)>) -> Self {
+    pub fn from_serializable(o: &HashMap<String, HashMap<String, String>>) -> Self {
         let mut s = Self::default();
-        for (action, key) in o {
-            s.0.insert(action, key);
+        for menu in o.values() {
+            for (action, key) in menu {
+                let action = s.0.keys().find(|a| format!("{a:?}") == *action).unwrap();
+                let key = KEY_LIST.iter().find(|a| format!("{a:?}") == *key).unwrap();
+                s.0.insert(*action, *key);
+            }
         }
         s
     }
 }
+
+pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> =
+    Lazy::new(|| KeymapSettings::load().unwrap());

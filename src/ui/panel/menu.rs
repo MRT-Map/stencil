@@ -67,7 +67,7 @@ pub fn ui_sy(
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
-                button!(ui, event_writer, "Window", OpenKeymapSettingsAct);
+                button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
             });
             ui.separator();
             ui.label(status.0.to_owned().color(egui::Color32::WHITE));
