@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::data_path;
+use crate::{error::log::AddToErrorLog, misc::data_path};
 
 macro_rules! field {
     ($s:ty, $f:ident, $f2:ident, $i:ident, $t:ty) => {
@@ -99,11 +99,11 @@ impl Default for Basemap {
 }
 
 impl TileSettings {
-    pub fn load() -> Result<Self, toml::de::Error> {
+    pub fn load() -> color_eyre::Result<Self> {
         match std::fs::read_to_string(data_path("tile_settings.toml")) {
             Ok(str) => {
                 info!("Found tile settings file");
-                toml::from_str(&str)
+                Ok(toml::from_str(&str)?)
             }
             Err(e) => {
                 info!("Couldn't find or open tile settings file: {e:?}");
@@ -113,17 +113,17 @@ impl TileSettings {
             }
         }
     }
-    pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
+    pub fn save(&self) -> color_eyre::Result<()> {
         info!("Saving tile settings file");
         let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml";
-        let serialized = toml::to_string_pretty(self).map_err(Either::Right)?;
+        let serialized = toml::to_string_pretty(self)?;
 
-        std::fs::write(
+        Ok(std::fs::write(
             data_path("tile_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
-        )
-        .map_err(Either::Left)
+        )?)
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(|| TileSettings::load().unwrap());
+pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
+    Lazy::new(|| TileSettings::load().unwrap_or_default_and_log());

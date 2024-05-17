@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
-use itertools::Either;
+use color_eyre::eyre::{eyre, OptionExt};
+use itertools::{Either, Itertools};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
+    error::log::AddToErrorLog,
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,
@@ -97,11 +99,13 @@ impl Default for KeymapSettings {
 }
 
 impl KeymapSettings {
-    pub fn load() -> Result<Self, toml::de::Error> {
+    pub fn load() -> color_eyre::Result<Self> {
         match std::fs::read_to_string(data_path("keymap_settings.toml")) {
             Ok(str) => {
                 info!("Found keymap settings file");
-                toml::from_str(&str).map(|a| Self::from_serializable(&a))
+                toml::from_str(&str)
+                    .map_err(Into::into)
+                    .and_then(|a| Self::from_serializable(&a))
             }
             Err(e) => {
                 info!("Couldn't find or open keymap settings file: {e:?}");
@@ -111,49 +115,66 @@ impl KeymapSettings {
             }
         }
     }
-    pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
+    pub fn save(&self) -> color_eyre::Result<()> {
         info!("Saving keymap settings file");
         let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml";
-        let serialized = toml::to_string_pretty(&self.as_serializable()).map_err(Either::Right)?;
+        let serialized = toml::to_string_pretty(&self.as_serializable()?)?;
 
-        std::fs::write(
+        Ok(std::fs::write(
             data_path("keymap_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
-        )
-        .map_err(Either::Left)
+        )?)
     }
 
-    #[must_use]
-    pub fn as_serializable(&self) -> HashMap<&str, HashMap<String, String>> {
+    pub fn as_serializable(&self) -> color_eyre::Result<HashMap<&str, HashMap<String, String>>> {
         let default = Self::default();
         KEYMAP_MENU
             .iter()
             .map(|(cat, menu)| {
-                (
-                    *cat,
-                    menu.iter()
-                        .map(|a| &a.0)
-                        .filter(|action| default.0[action] != self.0[action])
-                        .map(|action| (format!("{action:?}"), format!("{:?}", self.0[action])))
-                        .collect(),
-                )
+                menu.iter()
+                    .map(|a| {
+                        Ok((
+                            &a.0,
+                            default.0.get(&a.0).ok_or_eyre(format!(
+                                "Action {:?} not registered in default keymap",
+                                a.0
+                            ))?,
+                            self.0.get(&a.0).ok_or_eyre(format!(
+                                "Action {:?} not registered in custom keymap",
+                                a.0
+                            ))?,
+                        ))
+                    })
+                    .filter_ok(|(_, default_key, custom_key)| default_key != custom_key)
+                    .map_ok(|(action, _, custom_key)| {
+                        (format!("{action:?}"), format!("{custom_key:?}"))
+                    })
+                    .collect::<Result<_, _>>()
+                    .map(|a| (*cat, a))
             })
             .collect()
     }
 
-    #[must_use]
-    pub fn from_serializable(o: &HashMap<String, HashMap<String, String>>) -> Self {
+    pub fn from_serializable(
+        o: &HashMap<String, HashMap<String, String>>,
+    ) -> color_eyre::Result<Self> {
         let mut s = Self::default();
         for menu in o.values() {
             for (action, key) in menu {
-                let action = s.0.keys().find(|a| format!("{a:?}") == *action).unwrap();
-                let key = KEY_LIST.iter().find(|a| format!("{a:?}") == *key).unwrap();
+                let action =
+                    s.0.keys()
+                        .find(|a| format!("{a:?}") == *action)
+                        .ok_or_eyre(format!("Invalid action {action}"))?;
+                let key = KEY_LIST
+                    .iter()
+                    .find(|a| format!("{a:?}") == *key)
+                    .ok_or_eyre(format!("Invalid key {key}"))?;
                 s.0.insert(*action, *key);
             }
         }
-        s
+        Ok(s)
     }
 }
 
 pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> =
-    Lazy::new(|| KeymapSettings::load().unwrap());
+    Lazy::new(|| KeymapSettings::load().unwrap_or_default_and_log());

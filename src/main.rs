@@ -198,7 +198,7 @@ use crate::{
 pub mod component;
 pub mod component_actions;
 pub mod component_tools;
-pub mod error_handling;
+pub mod error;
 pub mod info_windows;
 pub mod init;
 pub mod keymaps;
@@ -209,7 +209,8 @@ pub mod tile;
 pub mod ui;
 pub mod window;
 
-fn init_logger() {
+fn init_logger() -> color_eyre::Result<()> {
+    color_eyre::install()?;
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::fmt::layer().compact().with_writer(
@@ -233,12 +234,13 @@ fn init_logger() {
         })
         .with(ErrorLayer::default())
         .init();
+    Ok(())
 }
 
-fn main() {
-    std::panic::set_hook(Box::new(error_handling::panic));
+fn main() -> color_eyre::Result<()> {
+    std::panic::set_hook(Box::new(error::panic::panic));
 
-    init_logger();
+    init_logger()?;
     info!("Logger initialised");
 
     #[cfg(target_os = "linux")]
@@ -290,4 +292,5 @@ fn main() {
         .add_plugins(WindowSettingsPlugin)
         .add_plugins(ProjectPlugin)
         .run();
+    Ok(())
 }

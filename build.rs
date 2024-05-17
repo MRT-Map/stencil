@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
-use anyhow::Result;
+use color_eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
@@ -324,7 +324,7 @@ fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
         inner()
             .map_err(|a| {
-                p!("Backtrace: {:?}", a.backtrace());
+                p!("Backtrace: {:?}", a);
                 a
             })
             .unwrap()

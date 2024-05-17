@@ -11,6 +11,7 @@ use crate::{
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    error::log::ErrorLogViewer,
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     misc::Action,
     project::{project_editor::ProjectEditor, Namespaces},
@@ -48,6 +49,7 @@ pub enum DockWindows {
     WindowSettingsEditor,
     TileSettingsEditor,
     KeymapSettingsEditor,
+    ErrorLogViewer,
 }
 
 #[derive(Resource)]

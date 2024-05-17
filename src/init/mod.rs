@@ -11,9 +11,9 @@ use load_skin::get_skin_sy;
 
 use crate::{
     component::skin::Skin,
-    error_handling::ack_panic_sy,
+    error::{log::update_error_log_sy, panic::ack_panic_sy},
     misc::{cache_path, Action},
-    state::{state_changer_asy, EditorState, LoadingState},
+    state::{state_changer_asy, EditorState, IntoSystemConfigExt, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
 
@@ -26,7 +26,8 @@ impl Plugin for InitPlugin {
             .init_resource::<Skin>()
             .add_event::<Action>()
             .add_systems(Update, state_changer_asy)
-            .add_systems(Startup, ack_panic_sy);
+            .add_systems(Startup, ack_panic_sy)
+            .add_systems(Update, update_error_log_sy.run_if_not_loading());
         app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
             .add_systems(
                 OnEnter(LoadingState::UnzipAssets),

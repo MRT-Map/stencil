@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::data_path;
+use crate::{error::log::AddToErrorLog, misc::data_path};
 
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]
@@ -85,11 +85,11 @@ pub struct WindowSettings {
 }
 
 impl WindowSettings {
-    pub fn load() -> Result<Self, toml::de::Error> {
+    pub fn load() -> color_eyre::Result<Self> {
         match std::fs::read_to_string(data_path("window_settings.toml")) {
             Ok(str) => {
                 info!("Found window settings file");
-                toml::from_str(&str)
+                Ok(toml::from_str(&str)?)
             }
             Err(e) => {
                 info!("Couldn't find or open window settings file: {e:?}");
@@ -99,18 +99,17 @@ impl WindowSettings {
             }
         }
     }
-    pub fn save(&self) -> Result<(), Either<std::io::Error, toml::ser::Error>> {
+    pub fn save(&self) -> color_eyre::Result<()> {
         info!("Saving window settings file");
         let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#window_settingstoml";
-        let serialized = toml::to_string_pretty(self).map_err(Either::Right)?;
+        let serialized = toml::to_string_pretty(self)?;
 
-        std::fs::write(
+        Ok(std::fs::write(
             data_path("window_settings.toml"),
             format!("{prefix_text}\n\n{serialized}"),
-        )
-        .map_err(Either::Left)
+        )?)
     }
 }
 
 pub static INIT_WINDOW_SETTINGS: Lazy<WindowSettings> =
-    Lazy::new(|| WindowSettings::load().unwrap());
+    Lazy::new(|| WindowSettings::load().unwrap_or_default_and_log());
