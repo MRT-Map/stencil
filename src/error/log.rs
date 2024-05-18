@@ -55,11 +55,6 @@ pub fn update_error_log_sy(mut state: ResMut<PanelDockState>) {
     let Ok(mut error_log) = ERROR_LOG.try_write() else {
         return;
     };
-    error_log.errors.push(ErrorLogEntry {
-        timestamp: SystemTime::now(),
-        count: 1,
-        message: "a".into(),
-    });
     if error_log.errors.len() == error_log.last_length {
         return;
     }
