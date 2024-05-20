@@ -3,7 +3,10 @@ use bevy::prelude::{Commands, EventWriter, Local, NextState};
 use futures_lite::future;
 use tracing::{error, info};
 
-use crate::{component::skin::Skin, state::LoadingState, ui::popup::Popup};
+use crate::{
+    component::skin::Skin, error::log::AddToErrorLog, misc::cache_path, state::LoadingState,
+    ui::popup::Popup,
+};
 
 #[derive(Default)]
 pub enum Step<T> {
@@ -19,6 +22,16 @@ pub fn get_skin_sy(
     mut popup: EventWriter<Popup>,
     mut executor: Local<Option<Executor>>,
 ) {
+    if cache_path("skin.msgpack").exists() {
+        if let Ok(skin) = std::fs::read(cache_path("skin.msgpack")) {
+            if let Ok(skin) = rmp_serde::from_slice::<Skin>(&skin) {
+                info!("Retrieved from cache");
+                commands.insert_resource(skin);
+                commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
+                *task_s = Step::Complete;
+            }
+        }
+    }
     let executor = executor.get_or_insert_with(Executor::new);
     match &mut *task_s {
         Step::Uninitialised => {
@@ -35,6 +48,13 @@ pub fn get_skin_sy(
             }
             Some(Ok(skin)) => {
                 info!("Retrieved");
+                let _ = rmp_serde::to_vec_named(&skin)
+                    .map_err(color_eyre::Report::from)
+                    .and_then(|s| {
+                        std::fs::write(cache_path("skin.msgpack"), s)
+                            .map_err(color_eyre::Report::from)
+                    })
+                    .add_to_error_log();
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
                 *task_s = Step::Complete;

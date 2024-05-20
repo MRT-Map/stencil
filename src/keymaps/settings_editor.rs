@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use itertools::Itertools;
 use once_cell::sync::Lazy;
 
 use crate::{
