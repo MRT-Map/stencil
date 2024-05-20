@@ -171,8 +171,6 @@ pub fn update_handles(
         })
         .map(|coord| {
             circle(
-                pla,
-                skin,
                 zoom,
                 if pla.get_type(skin) == ComponentType::Point {
                     Vec2::ZERO
@@ -208,7 +206,7 @@ pub fn update_handles(
             true
         }
     })
-    .map(|coord| circle(pla, skin, zoom, coord.as_vec2(), 0.5, Color::GRAY))
+    .map(|coord| circle(zoom, coord.as_vec2(), 0.5, Color::GRAY))
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     trace!("Pushing second set of children");

@@ -57,8 +57,6 @@ pub fn highlight_selected_sy(
             commands.entity(entity).despawn_descendants();
             let start = commands
                 .spawn(circle(
-                    data,
-                    &skin,
                     &zoom,
                     data.nodes.first().unwrap().0.as_vec2(),
                     1.0,
@@ -67,8 +65,6 @@ pub fn highlight_selected_sy(
                 .id();
             let end = commands
                 .spawn(circle(
-                    data,
-                    &skin,
                     &zoom,
                     data.nodes.last().unwrap().0.as_vec2(),
                     1.0,
