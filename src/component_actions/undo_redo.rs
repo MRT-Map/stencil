@@ -15,7 +15,7 @@ use crate::{
         skin::Skin,
     },
     misc::Action,
-    project::project_editor::ProjectAct,
+    project::events::ProjectAct,
     state::IntoSystemConfigExt,
     ui::panel::status::Status,
 };

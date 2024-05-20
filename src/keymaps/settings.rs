@@ -15,7 +15,7 @@ use crate::{
         settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
     },
     misc::{data_path, load_toml, save_toml_with_header, Action},
-    project::project_editor::ProjectAct,
+    project::events::ProjectAct,
     state::{ChangeStateAct, EditorState},
     ui::tilemap::settings_editor::TileSettingsAct,
     window::settings_editor::OpenWindowSettingsAct,

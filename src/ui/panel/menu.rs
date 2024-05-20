@@ -15,7 +15,7 @@ use crate::{
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
     misc::Action,
-    project::project_editor::ProjectAct,
+    project::events::ProjectAct,
     ui::{
         panel::status::Status,
         tilemap::{settings_editor::TileSettingsAct, tile::PendingTiles},
