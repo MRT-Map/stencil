@@ -4,7 +4,11 @@ use bevy::{
 };
 use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MousePosWorld;
+#[cfg(debug_assertions)]
+use egui_notify::ToastLevel;
 
+#[cfg(debug_assertions)]
+use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
     error::log::OpenErrorLogViewerAct,
@@ -75,6 +79,21 @@ pub fn ui_sy(
             });
             egui::menu::menu_button(ui, "Debug", |ui| {
                 button!(ui, event_writer, "Error Log", OpenErrorLogViewerAct);
+                #[cfg(debug_assertions)]
+                {
+                    if ui.button("Trigger Warning").clicked() {
+                        info!(label = "Trigger Warning", "Clicked menu item");
+                        let mut error_log = ERROR_LOG.write().unwrap();
+                        error_log.pending_errors.push(ErrorLogEntry::new(
+                            &"Warning Triggered",
+                            ToastLevel::Warning,
+                        ));
+                    }
+                    if ui.button("Trigger Panic").clicked() {
+                        info!(label = "Trigger Panic", "Clicked menu item");
+                        panic!("Panic Triggered");
+                    }
+                }
             });
             ui.separator();
             ui.label(status.0.to_owned().color(egui::Color32::WHITE));
