@@ -1,5 +1,6 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
+use bevy_mouse_tracking::MainCamera;
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;
 use enum_dispatch::enum_dispatch;
@@ -9,6 +10,7 @@ use crate::{
     component::{
         bundle::SelectedComponent,
         component_editor::ComponentEditor,
+        component_list::ComponentList,
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -50,6 +52,7 @@ pub enum DockWindows {
     TileSettingsEditor,
     KeymapSettingsEditor,
     ErrorLogViewer,
+    ComponentList,
 }
 
 #[derive(Resource)]
@@ -64,7 +67,11 @@ impl Default for PanelDockState {
         let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
         let [_, _] = tree.split_left(NodeIndex::root(), 0.2, vec![ComponentEditor.into()]);
-        let [_, _] = tree.split_right(NodeIndex::root(), 0.8, vec![ProjectEditor.into()]);
+        let [_, _] = tree.split_right(
+            NodeIndex::root(),
+            0.8,
+            vec![ProjectEditor.into(), ComponentList.into()],
+        );
 
         Self {
             state,
@@ -160,6 +167,7 @@ pub struct PanelParams<'w, 's> {
             Query<'w, 's, &'static PlaComponent<EditorCoords>>,
         ),
     >,
+    pub camera: Query<'w, 's, &'static mut Transform, With<MainCamera>>,
     pub commands: Commands<'w, 's>,
     pub skin: Res<'w, Skin>,
     pub actions: EventWriter<'w, Action>,

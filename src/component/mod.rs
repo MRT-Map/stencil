@@ -5,4 +5,5 @@ pub mod skin;
 
 pub mod actions;
 pub mod circle;
+pub mod component_list;
 pub mod tools;
