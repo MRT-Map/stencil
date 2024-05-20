@@ -12,6 +12,7 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::Action,
     state::EditorState,
+    tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
 };
 
@@ -34,6 +35,7 @@ pub fn edit_nodes_sy(
     skin: Res<Skin>,
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
+    zoom: Res<Zoom>,
 ) {
     let Ok((mut pla, entity)) = selected.get_single_mut() else {
         return;
@@ -44,7 +46,7 @@ pub fn edit_nodes_sy(
             + orig.node_pos_world.as_vec2())
         .round()
         .as_ivec2();
-        commands.entity(entity).component_display(&skin, &pla);
+        commands.entity(entity).select_component(&skin, &pla);
     }
 
     let mut clear_orig = false;
@@ -87,7 +89,7 @@ pub fn edit_nodes_sy(
                 continue;
             };
             if mouse_pos_world.xy().distance_squared(world_pos.as_vec2())
-                > pla.weight(&skin).unwrap_or(2) as f32
+                > pla.weight(&skin).unwrap_or(2) as f32 * zoom.0.exp2() / 4.0
             {
                 info!(?entity, "Handle is too far");
                 continue;
@@ -123,7 +125,7 @@ pub fn edit_nodes_sy(
                         status.0 = format!("Deleting {}", &*pla).into();
                         commands.entity(entity).despawn_recursive();
                     } else {
-                        commands.entity(entity).component_display(&skin, &pla);
+                        commands.entity(entity).select_component(&skin, &pla);
                     }
                 }
             }
@@ -146,11 +148,12 @@ pub fn update_handles(
     e: Entity,
     skin: &Skin,
     mouse_pos_world: &MousePosWorld,
+    zoom: &Zoom,
 ) {
     trace!("Updating handles");
     commands
         .entity(e)
-        .component_display(skin, pla)
+        .select_component(skin, pla)
         .despawn_descendants();
     let children = pla
         .nodes
@@ -168,7 +171,7 @@ pub fn update_handles(
             (
                 ShapeBundle {
                     path: GeometryBuilder::build_as(&Circle {
-                        radius: weight * 0.5,
+                        radius: weight * 512.0 / zoom.0.exp2(),
                         center: if pla.get_type(skin) == Some(ComponentType::Point) {
                             Vec2::ZERO
                         } else {
@@ -179,7 +182,7 @@ pub fn update_handles(
                     ..default()
                 },
                 Fill::color(Color::WHITE),
-                Stroke::new(Color::GRAY, weight * 0.5),
+                Stroke::new(Color::GRAY, weight * 512.0 / zoom.0.exp2()),
             )
         })
         .map(|bundle| commands.spawn(bundle).id())
@@ -212,14 +215,14 @@ pub fn update_handles(
         (
             ShapeBundle {
                 path: GeometryBuilder::build_as(&Circle {
-                    radius: weight * 0.25,
+                    radius: weight * 256.0 / zoom.0.exp2(),
                     center: coord.as_vec2(),
                 }),
                 spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
                 ..default()
             },
             Fill::color(Color::WHITE),
-            Stroke::new(Color::GRAY, weight * 0.25),
+            Stroke::new(Color::GRAY, weight * 256.0 / zoom.0.exp2()),
         )
     })
     .map(|bundle| commands.spawn(bundle).id())
@@ -234,9 +237,10 @@ pub fn show_handles_sy(
     mut commands: Commands,
     skin: Res<Skin>,
     mouse_pos_world: Res<MousePosWorld>,
+    zoom: Res<Zoom>,
 ) {
     for (pla, e) in selected.iter() {
-        update_handles(&mut commands, pla, e, &skin, &mouse_pos_world);
+        update_handles(&mut commands, pla, e, &skin, &mouse_pos_world, &zoom);
     }
 }
 
