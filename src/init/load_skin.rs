@@ -6,8 +6,9 @@ use tracing::{error, info};
 
 use crate::{
     component::skin::Skin,
+    dirs_paths::cache_path,
     error::log::{ErrorLogEntry, ERROR_LOG},
-    misc::{cache_path, load_msgpack, save_msgpack},
+    load_save::{load_msgpack, save_msgpack},
     state::LoadingState,
 };
 

@@ -3,7 +3,10 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::{data_path, load_toml, save_toml_with_header};
+use crate::{
+    dirs_paths::data_path,
+    load_save::{load_toml, save_toml_with_header},
+};
 
 macro_rules! field {
     ($s:ty, $f:ident, $f2:ident, $i:ident, $t:ty) => {

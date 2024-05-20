@@ -5,7 +5,7 @@ use bevy_egui::egui;
 use license_retriever::LicenseRetriever;
 use once_cell::sync::Lazy;
 
-use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
+use crate::{action::Action, info_windows::InfoWindowsAct, ui::popup::Popup};
 
 #[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =

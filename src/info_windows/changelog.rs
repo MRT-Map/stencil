@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
-use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
+use crate::{action::Action, info_windows::InfoWindowsAct, ui::popup::Popup};
 
 pub fn changelog_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
     for event in actions.read() {

@@ -4,16 +4,16 @@ use bevy_prototype_lyon::{prelude::*, shapes::Circle};
 use itertools::Itertools;
 
 use crate::{
+    action::Action,
     component::{
+        actions::{
+            selecting::highlight_selected_sy,
+            undo_redo::{History, UndoRedoAct},
+        },
         bundle::{EntityCommandsSelectExt, SelectedComponent},
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    component_actions::{
-        selecting::highlight_selected_sy,
-        undo_redo::{History, UndoRedoAct},
-    },
-    misc::Action,
     state::EditorState,
     tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},

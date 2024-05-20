@@ -3,7 +3,10 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::misc::{data_path, load_toml, save_toml_with_header};
+use crate::{
+    dirs_paths::data_path,
+    load_save::{load_toml, save_toml_with_header},
+};
 
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]

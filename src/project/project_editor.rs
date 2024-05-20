@@ -4,7 +4,7 @@ use egui_file_dialog::FileDialog;
 use itertools::Itertools;
 
 use crate::{
-    misc::Action,
+    action::Action,
     project::events::ProjectAct,
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };

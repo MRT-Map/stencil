@@ -8,13 +8,14 @@ use bevy_egui::EguiContexts;
 use itertools::Itertools;
 
 use crate::{
+    action::Action,
     component::{
+        actions::undo_redo::{History, UndoRedoAct},
         bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
-    component_actions::undo_redo::{History, UndoRedoAct},
-    misc::{load_msgpack, save_msgpack, Action},
+    load_save::{load_msgpack, save_msgpack},
     project::Namespaces,
     ui::{
         panel::{dock::FileDialogs, status::Status},

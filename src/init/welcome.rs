@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{misc::data_path, state::LoadingState, ui::popup::Popup};
+use crate::{dirs_paths::data_path, state::LoadingState, ui::popup::Popup};
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn welcome_sy(mut commands: Commands, mut popup: EventWriter<Popup>) {

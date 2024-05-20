@@ -4,7 +4,12 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
+    action::Action,
     component::{
+        actions::{
+            selecting::{deselect, DeselectQuery},
+            undo_redo::{History, UndoRedoAct},
+        },
         bundle::{
             AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle,
@@ -12,11 +17,6 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    component_actions::{
-        selecting::{deselect, DeselectQuery},
-        undo_redo::{History, UndoRedoAct},
-    },
-    misc::Action,
     project::Namespaces,
     state::{state_changer_asy, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},

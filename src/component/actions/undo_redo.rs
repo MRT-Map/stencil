@@ -6,6 +6,7 @@ use std::{
 use bevy::prelude::*;
 
 use crate::{
+    action::Action,
     component::{
         bundle::{
             AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
@@ -14,7 +15,6 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    misc::Action,
     project::events::ProjectAct,
     state::IntoSystemConfigExt,
     ui::panel::status::Status,

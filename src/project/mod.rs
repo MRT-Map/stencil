@@ -3,10 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use bevy::prelude::*;
 use events::ProjectAct;
 
-use crate::{
-    misc::{cache_dir, Action},
-    state::EditorState,
-};
+use crate::{action::Action, dirs_paths::cache_dir, state::EditorState};
 
 pub mod events;
 pub mod project_editor;

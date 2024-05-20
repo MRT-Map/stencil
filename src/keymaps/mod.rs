@@ -7,8 +7,8 @@ use bevy_egui::EguiContexts;
 use settings::KeymapSettings;
 
 use crate::{
+    action::Action,
     keymaps::{settings::INIT_KEYMAP_SETTINGS, settings_editor::keymap_settings_msy},
-    misc::Action,
     state::IntoSystemConfigExt,
 };
 

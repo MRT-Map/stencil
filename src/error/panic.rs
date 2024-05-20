@@ -6,7 +6,7 @@ use color_backtrace::BacktracePrinter;
 use itertools::Itertools;
 use tracing_error::SpanTrace;
 
-use crate::{misc::data_dir, ui::popup::Popup};
+use crate::{dirs_paths::data_dir, ui::popup::Popup};
 
 pub fn panic(panic: &PanicInfo) {
     error!("Caught panic: {panic:#}");

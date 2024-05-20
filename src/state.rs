@@ -6,9 +6,12 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    component::{pla2::ComponentType, skin::Skin},
-    component_tools::creating::{clear_created_component, CreatedQuery},
-    misc::Action,
+    action::Action,
+    component::{
+        pla2::ComponentType,
+        skin::Skin,
+        tools::creating::{clear_created_component, CreatedQuery},
+    },
     project::Namespaces,
     ui::panel::status::Status,
 };

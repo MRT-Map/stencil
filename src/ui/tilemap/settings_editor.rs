@@ -4,7 +4,9 @@ use egui_file_dialog::FileDialog;
 use surf::Url;
 
 use crate::{
-    misc::{data_path, load_toml, save_toml, Action},
+    action::Action,
+    dirs_paths::data_path,
+    load_save::{load_toml, save_toml},
     tile::tile_coord::URL_REPLACER,
     ui::{
         panel::{

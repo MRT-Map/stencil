@@ -10,7 +10,7 @@ use std::{
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-use crate::{misc::Action, ui::UiSet};
+use crate::{action::Action, ui::UiSet};
 
 #[derive(Event, Hash, PartialEq, Eq, Clone)]
 pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);

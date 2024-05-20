@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 use crate::{
-    misc::Action,
+    action::Action,
     state::{ChangeStateAct, EditorState},
     ui::panel::dock::{PanelParams, TabViewer},
 };

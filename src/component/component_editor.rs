@@ -2,9 +2,12 @@ use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
-    component_actions::undo_redo::{History, UndoRedoAct},
-    misc::Action,
+    action::Action,
+    component::{
+        actions::undo_redo::{History, UndoRedoAct},
+        bundle::EntityCommandsSelectExt,
+        pla2::ComponentType,
+    },
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 

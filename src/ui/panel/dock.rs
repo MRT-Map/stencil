@@ -5,6 +5,7 @@ use egui_file_dialog::FileDialog;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
+    action::Action,
     component::{
         bundle::SelectedComponent,
         component_editor::ComponentEditor,
@@ -13,7 +14,6 @@ use crate::{
     },
     error::log::ErrorLogViewer,
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
-    misc::Action,
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
     ui::{

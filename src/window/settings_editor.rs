@@ -4,7 +4,8 @@ use bevy_egui::egui;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
-    misc::{data_path, Action},
+    action::Action,
+    dirs_paths::data_path,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
     window::settings::WindowSettings,
 };

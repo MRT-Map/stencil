@@ -3,11 +3,11 @@ use bevy_egui::egui;
 use once_cell::sync::Lazy;
 
 use crate::{
+    action::Action,
     keymaps::{
         key_list::KEY_LIST,
         settings::{KeymapAction, KeymapSettings},
     },
-    misc::Action,
     state::EditorState,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
 };

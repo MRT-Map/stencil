@@ -10,11 +10,11 @@ use egui_notify::ToastLevel;
 #[cfg(debug_assertions)]
 use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 use crate::{
-    component_actions::undo_redo::UndoRedoAct,
+    action::Action,
+    component::actions::undo_redo::UndoRedoAct,
     error::log::OpenErrorLogViewerAct,
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
-    misc::Action,
     project::events::ProjectAct,
     ui::{
         panel::status::Status,

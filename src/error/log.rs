@@ -7,7 +7,7 @@ use egui_notify::{Toast, ToastLevel, Toasts};
 use once_cell::sync::Lazy;
 
 use crate::{
-    misc::Action,
+    action::Action,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 

@@ -174,6 +174,7 @@ use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
+use dirs_paths::data_dir;
 use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
@@ -184,25 +185,23 @@ use ui::tilemap::RenderingPlugin;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
-    component_actions::ComponentActionPlugins,
-    component_tools::ComponentToolPlugins,
+    component::{actions::ComponentActionPlugins, tools::ComponentToolPlugins},
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
     keymaps::KeymapPlugin,
-    misc::data_dir,
     project::ProjectPlugin,
     ui::UiPlugin,
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
+pub mod action;
 pub mod component;
-pub mod component_actions;
-pub mod component_tools;
+mod dirs_paths;
 pub mod error;
 pub mod info_windows;
 pub mod init;
 pub mod keymaps;
-pub mod misc;
+mod load_save;
 pub mod project;
 pub mod state;
 pub mod tile;

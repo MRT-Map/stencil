@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use toml::Table;
 
-use crate::{misc::data_path, state::LoadingState, ui::tilemap::settings::TileSettings};
+use crate::{dirs_paths::data_path, state::LoadingState, ui::tilemap::settings::TileSettings};
 
 fn v2_0_1() {
     info!("Running compatibility upgrades from v2.0.1");

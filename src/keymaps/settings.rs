@@ -8,13 +8,15 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct,
+    action::Action,
+    component::actions::undo_redo::UndoRedoAct,
+    dirs_paths::data_path,
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,
         settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
     },
-    misc::{data_path, load_toml, save_toml_with_header, Action},
+    load_save::{load_toml, save_toml_with_header},
     project::events::ProjectAct,
     state::{ChangeStateAct, EditorState},
     ui::tilemap::settings_editor::TileSettingsAct,

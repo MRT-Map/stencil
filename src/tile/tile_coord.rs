@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use lazy_regex::{lazy_regex, Regex};
 use once_cell::sync::Lazy;
 
-use crate::{misc::cache_dir, tile::zoom::Zoom, ui::tilemap::settings::Basemap};
+use crate::{dirs_paths::cache_dir, tile::zoom::Zoom, ui::tilemap::settings::Basemap};
 
 pub static URL_REPLACER: Lazy<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
