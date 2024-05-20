@@ -96,19 +96,22 @@ pub fn project_msy(
             let components = query
                 .iter()
                 .filter(|(_, p)| p.namespace == *ns)
-                .map(|(e, p)| {
-                    commands.entity(e).despawn_recursive();
-                    Some(p.to_mc_coords())
-                })
+                .collect::<Vec<_>>();
+            let component_data = components
+                .iter()
+                .map(|(_, p)| p.to_mc_coords())
                 .collect::<Vec<_>>();
             if save_msgpack(
-                &components,
+                &component_data,
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             )
             .is_err()
             {
                 continue;
+            }
+            for (e, _) in components {
+                commands.entity(e).despawn_recursive();
             }
             if !history_invoked {
                 send_queue.push(Action::new(UndoRedoAct::one_history(History::Namespace {
