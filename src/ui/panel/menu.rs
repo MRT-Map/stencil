@@ -28,7 +28,10 @@ pub fn ui_sy(
     pending_tiles: Res<PendingTiles>,
     status: Res<Status>,
 ) {
-    egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
+    egui::TopBottomPanel::top("menu").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
                 ($ui:ident, $ew:ident, $label:literal, $action:expr) => {

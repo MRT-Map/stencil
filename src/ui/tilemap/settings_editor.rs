@@ -161,9 +161,11 @@ pub fn tile_settings_msy(
     mut tile_settings: ResMut<TileSettings>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
-    mut popup: EventWriter<Popup>,
     mut status: ResMut<Status>,
 ) {
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(TileSettingsAct::Open))
             && !state
@@ -182,18 +184,18 @@ pub fn tile_settings_msy(
     }
 
     let file_dialog = &mut file_dialogs.tile_settings_import;
-    file_dialog.update(ctx.ctx_mut());
+    file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
-        if let Some(new) = load_toml(&file, Some((&mut popup, "basemap"))) {
+        if let Some(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
             status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
         }
     }
 
     if let Some((basemap, file_dialog)) = &mut file_dialogs.tile_settings_export {
-        file_dialog.update(ctx.ctx_mut());
+        file_dialog.update(ctx);
         if let Some(file) = file_dialog.take_selected() {
-            if save_toml(basemap, &file, Some((&mut popup, "basemap"))) {
+            if save_toml(basemap, &file, Some("basemap")) {
                 status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
             }
         }

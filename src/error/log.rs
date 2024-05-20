@@ -79,19 +79,6 @@ pub fn update_error_log_sy(
     let Ok(mut error_log) = ERROR_LOG.try_write() else {
         return;
     };
-    if error_log.pending_errors.is_empty() {
-        return;
-    }
-    let pending_errors = error_log.pending_errors.to_owned();
-    for error in pending_errors {
-        toasts
-            .0
-            .add(Toast::custom(&error.message, error.level.to_owned()))
-            .set_duration(None);
-        error_log.errors.push(error);
-    }
-    error_log.pending_errors.clear();
-    toasts.0.show(ctx.ctx_mut());
 
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(OpenErrorLogViewerAct)) {
@@ -107,6 +94,22 @@ pub fn update_error_log_sy(
             }
         }
     }
+    if let Some(ctx) = ctx.try_ctx_mut() {
+        toasts.0.show(ctx);
+    };
+
+    if error_log.pending_errors.is_empty() {
+        return;
+    }
+    let pending_errors = error_log.pending_errors.to_owned();
+    for error in pending_errors {
+        toasts
+            .0
+            .add(Toast::custom(&error.message, error.level.to_owned()))
+            .set_duration(None);
+        error_log.errors.push(error);
+    }
+    error_log.pending_errors.clear();
 }
 
 pub trait AddToErrorLog<T: Default> {

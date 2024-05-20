@@ -145,7 +145,7 @@ impl Popup {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn popup_handler(
+pub fn popup_handler_sy(
     mut ctx: EguiContexts,
     mut event_reader: EventReader<Popup>,
     mut event_writer: EventWriter<Action>,
@@ -155,7 +155,9 @@ pub fn popup_handler(
         info!(popup.id, "Showing popup");
         show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }
-    let ctx = ctx.ctx_mut();
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
     for (id, (popup, shown)) in &mut show {
         (popup.window)()
             .show(ctx, |ui| {
@@ -174,6 +176,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Popup>()
-            .add_systems(Update, popup_handler.in_set(UiSet::Popups));
+            .add_systems(Update, popup_handler_sy.in_set(UiSet::Popups));
     }
 }

@@ -193,7 +193,7 @@ pub fn project_msy(
             namespaces.visibilities.insert(ns.to_owned(), true);
             if let Some(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
-                Some((&mut popup, "pla2")),
+                Some("pla2"),
             ) {
                 for component in components {
                     match component.get_type(&skin).unwrap() {
@@ -236,7 +236,7 @@ pub fn project_msy(
             if !save_msgpack(
                 &components,
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
-                Some((&mut popup, "pla2")),
+                Some("pla2"),
             ) {
                 continue;
             }
@@ -256,7 +256,7 @@ pub fn project_msy(
                 let _ = save_msgpack(
                     &components,
                     &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
-                    Some((&mut popup, "pla2")),
+                    Some("pla2"),
                 );
             }
             status.0 = format!("Saved {} namespaces", components.len()).into();
@@ -287,7 +287,8 @@ pub fn project_msy(
     }
 
     let file_dialog = &mut file_dialogs.project_select;
-    file_dialog.update(ctx.ctx_mut());
+    let Some(ctx) = ctx.try_ctx_mut() else { return };
+    file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
         namespaces.folder = file;
         namespaces.visibilities.clear();

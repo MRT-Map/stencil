@@ -52,7 +52,13 @@ impl Plugin for UiPlugin {
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
             .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
-            .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset));
+            .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset))
+            .add_systems(Startup, |mut ctx: EguiContexts| {
+                let Some(ctx) = ctx.try_ctx_mut() else {
+                    return;
+                };
+                egui_extras::install_image_loaders(ctx);
+            });
         let mut order = app.world.resource_mut::<MainScheduleOrder>();
         order.insert_after(PreUpdate, UiSchedule);
     }
@@ -60,7 +66,7 @@ impl Plugin for UiPlugin {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
-    let ctx = ctx.ctx_mut();
+    let Some(ctx) = ctx.try_ctx_mut() else { return };
     if let Some(f) = focus.0 {
         ctx.memory_mut(|a| a.request_focus(f));
     }
@@ -68,6 +74,6 @@ pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
-    let ctx = ctx.ctx_mut();
+    let Some(ctx) = ctx.try_ctx_mut() else { return };
     focus.0 = ctx.memory(egui::Memory::focused);
 }

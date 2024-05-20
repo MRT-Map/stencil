@@ -32,7 +32,7 @@ impl Plugin for InitPlugin {
             .init_resource::<NotifToasts>()
             .add_systems(Update, state_changer_asy)
             .add_systems(Startup, ack_panic_sy)
-            .add_systems(Update, update_error_log_sy.run_if_not_loading());
+            .add_systems(Update, update_error_log_sy);
         app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
             .add_systems(
                 OnEnter(LoadingState::UnzipAssets),

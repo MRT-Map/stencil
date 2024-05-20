@@ -174,11 +174,15 @@ pub struct PanelParams<'w, 's> {
 }
 
 pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut params: PanelParams) {
-    state.ui(&mut params, ctx.ctx_mut());
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
+    state.ui(&mut params, ctx);
 }
 
 #[must_use]
 pub fn within_tilemap(ctx: &mut EguiContexts, panel: &Res<PanelDockState>) -> bool {
-    ctx.ctx_mut()
-        .rect_contains_pointer(panel.layer_id, panel.viewport_rect)
+    ctx.try_ctx_mut().map_or(true, |a| {
+        a.rect_contains_pointer(panel.layer_id, panel.viewport_rect)
+    })
 }

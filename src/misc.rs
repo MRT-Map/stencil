@@ -6,10 +6,14 @@ use std::{
 };
 
 use bevy::prelude::{Event, EventWriter};
+use egui_notify::ToastLevel;
 use once_cell::sync::Lazy;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::ui::popup::Popup;
+use crate::{
+    error::log::{ErrorLogEntry, ERROR_LOG},
+    ui::popup::Popup,
+};
 
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let dir = dirs::data_dir()
@@ -67,35 +71,31 @@ pub fn load_file<
 >(
     file: &Path,
     deserializer: F,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
+    error: Option<&'static str>,
 ) -> Option<T> {
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos();
     match deserializer(file) {
         Ok(Ok(o)) => return Some(o),
         Ok(Err(e)) => {
-            if let Some((popup, thing)) = error {
-                popup.send(Popup::base_alert(
-                    format!("{thing}_parse_error_{timestamp}"),
-                    format!("Could not parse {thing} file"),
+            if let Some(thing) = error {
+                let mut error_log = ERROR_LOG.write().unwrap();
+                error_log.pending_errors.push(ErrorLogEntry::new(
                     format!(
                         "Could not parse {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
+                    ToastLevel::Warning,
                 ));
             }
         }
         Err(e) => {
-            if let Some((popup, thing)) = error {
-                popup.send(Popup::base_alert(
-                    format!("{thing}_read_error_{timestamp}"),
-                    format!("Could not load {thing} file"),
+            if let Some(thing) = error {
+                let mut error_log = ERROR_LOG.write().unwrap();
+                error_log.pending_errors.push(ErrorLogEntry::new(
                     format!(
                         "Could not load {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
+                    ToastLevel::Warning,
                 ));
             }
         }
@@ -104,10 +104,7 @@ pub fn load_file<
 }
 
 #[must_use]
-pub fn load_toml<T: DeserializeOwned>(
-    file: &Path,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
-) -> Option<T> {
+pub fn load_toml<T: DeserializeOwned>(file: &Path, error: Option<&'static str>) -> Option<T> {
     load_file(
         file,
         |file| std::fs::read_to_string(file).map(|c| toml::from_str(&c)),
@@ -116,10 +113,7 @@ pub fn load_toml<T: DeserializeOwned>(
 }
 
 #[must_use]
-pub fn load_msgpack<T: DeserializeOwned>(
-    file: &Path,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
-) -> Option<T> {
+pub fn load_msgpack<T: DeserializeOwned>(file: &Path, error: Option<&'static str>) -> Option<T> {
     load_file(
         file,
         |file| std::fs::read(file).map(|c| rmp_serde::from_slice(&c)),
@@ -137,35 +131,31 @@ pub fn save_file<
     o: &T,
     serializer: F,
     file: &Path,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
+    error: Option<&'static str>,
 ) -> bool {
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos();
     match serializer(o).map(move |s| std::fs::write(file, s)) {
         Ok(Ok(_)) => return true,
         Ok(Err(e)) => {
-            if let Some((popup, thing)) = error {
-                popup.send(Popup::base_alert(
-                    format!("{thing}_write_error_{timestamp}"),
-                    format!("Could not write {thing} file"),
+            if let Some(thing) = error {
+                let mut error_log = ERROR_LOG.write().unwrap();
+                error_log.pending_errors.push(ErrorLogEntry::new(
                     format!(
                         "Could not write {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
+                    ToastLevel::Warning,
                 ));
             }
         }
         Err(e) => {
-            if let Some((popup, thing)) = error {
-                popup.send(Popup::base_alert(
-                    format!("{thing}_serialise_error_{timestamp}"),
-                    format!("Could not {thing} basemap file"),
+            if let Some(thing) = error {
+                let mut error_log = ERROR_LOG.write().unwrap();
+                error_log.pending_errors.push(ErrorLogEntry::new(
                     format!(
-                        "Could not {thing} basemap file {}:\n{e}",
+                        "Could not serialise {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
+                    ToastLevel::Warning,
                 ));
             }
         }
@@ -174,19 +164,11 @@ pub fn save_file<
 }
 
 #[must_use]
-pub fn save_toml<T: Serialize>(
-    o: &T,
-    file: &Path,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
-) -> bool {
+pub fn save_toml<T: Serialize>(o: &T, file: &Path, error: Option<&'static str>) -> bool {
     save_file(o, |o| toml::to_string_pretty(o), file, error)
 }
 
 #[must_use]
-pub fn save_msgpack<T: Serialize>(
-    o: &T,
-    file: &Path,
-    error: Option<(&mut EventWriter<Popup>, &'static str)>,
-) -> bool {
+pub fn save_msgpack<T: Serialize>(o: &T, file: &Path, error: Option<&'static str>) -> bool {
     save_file(o, |o| rmp_serde::to_vec_named(o), file, error)
 }

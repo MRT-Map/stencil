@@ -20,7 +20,11 @@ pub fn keymap_sy(
     mut ctx: EguiContexts,
 ) {
     for (action, key) in &hotkey_settings.0 {
-        if keys.just_released(*key) && ctx.ctx_mut().memory(|a| a.focused().is_none()) {
+        if keys.just_released(*key)
+            && ctx
+                .try_ctx_mut()
+                .map_or(true, |a| a.memory(|a| a.focused().is_none()))
+        {
             info!(?action, ?key, "Processing hotkey");
             actions.send(action.action());
         }

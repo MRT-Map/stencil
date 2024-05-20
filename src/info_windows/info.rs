@@ -6,12 +6,7 @@ use bevy_egui::{egui, EguiContexts};
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn info_asy(
-    mut actions: EventReader<Action>,
-    mut popup: EventWriter<Popup>,
-    mut ctx: EguiContexts,
-) {
-    egui_extras::install_image_loaders(ctx.ctx_mut());
+pub fn info_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Popup>) {
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Info)) {
             popup.send(Popup::new(
