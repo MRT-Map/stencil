@@ -1,13 +1,19 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
+use bevy_prototype_lyon::{
+    draw::{Fill, Stroke},
+    entity::ShapeBundle,
+    geometry::GeometryBuilder,
+    shapes::Circle,
+};
 
 use crate::{
     component::{
         bundle::{EntityCommandsSelectExt, SelectedComponent},
-        pla2::{EditorCoords, PlaComponent},
+        pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
     state::{EditorState, IntoSystemConfigExt},
+    tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
 };
 
@@ -41,8 +47,9 @@ pub fn selector_sy(
 pub fn highlight_selected_sy(
     state: Res<State<EditorState>>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, Entity), Changed<SelectedComponent>>,
+    query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     skin: Res<Skin>,
+    zoom: Res<Zoom>,
 ) {
     if state.component_type().is_some() {
         return;
@@ -50,6 +57,43 @@ pub fn highlight_selected_sy(
     for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
         commands.entity(entity).select_component(&skin, data);
+        if data.get_type(&skin) == Some(ComponentType::Line) && !data.nodes.is_empty() {
+            commands.entity(entity).despawn_descendants();
+            let weight = data.weight(&skin).unwrap_or(2) as f32;
+            let start = commands
+                .spawn((
+                    ShapeBundle {
+                        path: GeometryBuilder::build_as(&Circle {
+                            radius: weight * 512.0 / zoom.0.exp2(),
+                            center: data.nodes.first().unwrap().0.as_vec2(),
+                        }),
+                        spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                            0.0, 0.0, 100.0,
+                        )),
+                        ..default()
+                    },
+                    Fill::color(Color::WHITE),
+                    Stroke::new(Color::RED, weight * 512.0 / zoom.0.exp2()),
+                ))
+                .id();
+            let end = commands
+                .spawn((
+                    ShapeBundle {
+                        path: GeometryBuilder::build_as(&Circle {
+                            radius: weight * 512.0 / zoom.0.exp2(),
+                            center: data.nodes.last().unwrap().0.as_vec2(),
+                        }),
+                        spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                            0.0, 0.0, 100.0,
+                        )),
+                        ..default()
+                    },
+                    Fill::color(Color::WHITE),
+                    Stroke::new(Color::GREEN, weight * 512.0 / zoom.0.exp2()),
+                ))
+                .id();
+            commands.entity(entity).add_child(start).add_child(end);
+        }
     }
 }
 

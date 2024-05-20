@@ -9,7 +9,10 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    component_actions::undo_redo::{History, UndoRedoAct},
+    component_actions::{
+        selecting::highlight_selected_sy,
+        undo_redo::{History, UndoRedoAct},
+    },
     misc::Action,
     state::EditorState,
     tile::zoom::Zoom,
@@ -17,7 +20,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct Orig {
+pub struct NodeEditData {
     pub old_pla: PlaComponent<EditorCoords>,
     pub mouse_pos_world: MousePosWorld,
     pub node_pos_world: IVec2,
@@ -29,7 +32,7 @@ pub struct Orig {
 pub fn edit_nodes_sy(
     mut selected: Query<(&mut PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     mut commands: Commands,
-    mut orig: Local<Option<Orig>>,
+    mut node_edit_data: Local<Option<NodeEditData>>,
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
@@ -40,7 +43,7 @@ pub fn edit_nodes_sy(
     let Ok((mut pla, entity)) = selected.get_single_mut() else {
         return;
     };
-    if let Some(orig) = &*orig {
+    if let Some(orig) = &*node_edit_data {
         debug!(?entity, "Moving node");
         pla.nodes[orig.node_list_pos].0 = (mouse_pos_world.xy() - orig.mouse_pos_world.xy()
             + orig.node_pos_world.as_vec2())
@@ -103,7 +106,7 @@ pub fn edit_nodes_sy(
                     (i, true)
                 }
             };
-            *orig = Some(Orig {
+            *node_edit_data = Some(NodeEditData {
                 old_pla: pla.to_owned(),
                 mouse_pos_world: *mouse_pos_world,
                 node_pos_world: world_pos,
@@ -115,7 +118,7 @@ pub fn edit_nodes_sy(
             status.0 = format!("Ended movement of node of {}", &*pla).into();
             clear_orig = true;
         } else if let MouseEvent::RightClick(_) = event {
-            if let Some(orig) = &*orig {
+            if let Some(orig) = &*node_edit_data {
                 if !orig.was_new && pla.get_type(&skin) != Some(ComponentType::Point) {
                     info!(?entity, "Deleting node");
                     status.0 = format!("Deleted node of {}", &*pla).into();
@@ -132,7 +135,7 @@ pub fn edit_nodes_sy(
         }
     }
     if clear_orig {
-        if let Some(orig) = orig.take() {
+        if let Some(orig) = node_edit_data.take() {
             actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 entity,
                 before: Some(orig.old_pla.into()),
@@ -263,7 +266,8 @@ impl Plugin for EditNodePlugin {
             PreUpdate,
             show_handles_sy
                 .run_if(in_state(EditorState::EditingNodes))
-                .after(UiSet::Reset),
+                .after(UiSet::Reset)
+                .after(highlight_selected_sy),
         );
     }
 }

@@ -98,13 +98,17 @@ impl DockWindow for ComponentEditor {
             ui.separator();
         }
         ui.heading("Position data");
-        ui.label(
-            component_data
-                .nodes
-                .iter()
-                .map(|a| format!("{}, {}", a.0.x, -a.0.y))
-                .join("\n"),
-        );
+        let is_line = component_data.get_type(skin) == Some(ComponentType::Line);
+        for (i, a) in component_data.nodes.iter().enumerate() {
+            let color = if i == 0 && is_line {
+                egui::Color32::GREEN
+            } else if i == component_data.nodes.len() - 1 && is_line {
+                egui::Color32::RED
+            } else {
+                egui::Color32::WHITE
+            };
+            ui.colored_label(color, format!("{}, {}", a.0.x, -a.0.y));
+        }
         if *component_data != old_data {
             actions.send(Action::new(UndoRedoAct::one_history(History::Component {
                 entity,
