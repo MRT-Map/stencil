@@ -7,7 +7,6 @@ pub mod unzip_assets;
 mod welcome;
 
 use bevy::prelude::*;
-use egui_notify::Toasts;
 use load_skin::get_skin_sy;
 
 use crate::{
@@ -17,7 +16,7 @@ use crate::{
         panic::ack_panic_sy,
     },
     misc::{cache_path, Action},
-    state::{state_changer_asy, EditorState, IntoSystemConfigExt, LoadingState},
+    state::{state_changer_asy, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
 

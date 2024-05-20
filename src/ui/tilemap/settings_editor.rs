@@ -11,7 +11,6 @@ use crate::{
             dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
             status::Status,
         },
-        popup::Popup,
         tilemap::settings::{Basemap, TileSettings},
     },
 };

@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::egui;
 
 use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
 

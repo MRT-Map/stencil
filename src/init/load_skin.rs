@@ -1,12 +1,14 @@
 use async_executor::{Executor, Task};
-use bevy::prelude::{Commands, EventWriter, Local, NextState};
+use bevy::prelude::{Commands, Local, NextState};
 use egui_notify::ToastLevel;
 use futures_lite::future;
 use tracing::{error, info};
 
 use crate::{
-    component::skin::Skin, error::log::AddToErrorLog, misc::cache_path, state::LoadingState,
-    ui::popup::Popup,
+    component::skin::Skin,
+    error::log::{AddToErrorLog, ErrorLogEntry, ERROR_LOG},
+    misc::cache_path,
+    state::LoadingState,
 };
 
 #[derive(Default)]
@@ -20,7 +22,6 @@ pub enum Step<T> {
 pub fn get_skin_sy(
     mut commands: Commands,
     mut task_s: Local<Step<surf::Result<Skin>>>,
-    mut popup: EventWriter<Popup>,
     mut executor: Local<Option<Executor>>,
 ) {
     if cache_path("skin.msgpack").exists() {
@@ -62,11 +63,8 @@ pub fn get_skin_sy(
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                popup.send(Popup::base_alert(
-                    "quit1",
-                    "Unable to load skin",
-                    format!("Make sure you are connected to the internet.\nError: {err}"),
-                ));
+                let mut error_log = ERROR_LOG.write().unwrap();
+                error_log.pending_errors.push(ErrorLogEntry::new(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error));
                 *task_s = Step::Complete;
             }
         },

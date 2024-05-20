@@ -2,18 +2,14 @@ use std::{
     any::Any,
     path::{Path, PathBuf},
     sync::Arc,
-    time::SystemTime,
 };
 
-use bevy::prelude::{Event, EventWriter};
+use bevy::prelude::Event;
 use egui_notify::ToastLevel;
 use once_cell::sync::Lazy;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{
-    error::log::{ErrorLogEntry, ERROR_LOG},
-    ui::popup::Popup,
-};
+use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 
 pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let dir = dirs::data_dir()
@@ -79,7 +75,7 @@ pub fn load_file<
             if let Some(thing) = error {
                 let mut error_log = ERROR_LOG.write().unwrap();
                 error_log.pending_errors.push(ErrorLogEntry::new(
-                    format!(
+                    &format!(
                         "Could not parse {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -91,7 +87,7 @@ pub fn load_file<
             if let Some(thing) = error {
                 let mut error_log = ERROR_LOG.write().unwrap();
                 error_log.pending_errors.push(ErrorLogEntry::new(
-                    format!(
+                    &format!(
                         "Could not load {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -139,7 +135,7 @@ pub fn save_file<
             if let Some(thing) = error {
                 let mut error_log = ERROR_LOG.write().unwrap();
                 error_log.pending_errors.push(ErrorLogEntry::new(
-                    format!(
+                    &format!(
                         "Could not write {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -151,7 +147,7 @@ pub fn save_file<
             if let Some(thing) = error {
                 let mut error_log = ERROR_LOG.write().unwrap();
                 error_log.pending_errors.push(ErrorLogEntry::new(
-                    format!(
+                    &format!(
                         "Could not serialise {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),

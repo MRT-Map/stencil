@@ -29,7 +29,7 @@ pub struct ErrorLogEntry {
     pub message: String,
 }
 impl ErrorLogEntry {
-    pub fn new<S: ToString>(message: S, level: ToastLevel) -> Self {
+    pub fn new<S: ToString>(message: &S, level: ToastLevel) -> Self {
         Self {
             timestamp: SystemTime::now(),
             level,
@@ -125,7 +125,7 @@ impl<T: Default, E: ToString + Debug> AddToErrorLog<T> for Result<T, E> {
             let mut error_log = ERROR_LOG.write().unwrap();
             error_log
                 .pending_errors
-                .push(ErrorLogEntry::new(e.to_string(), level));
+                .push(ErrorLogEntry::new(&e.to_string(), level));
         })
     }
     fn unwrap_or_default_and_log(self, level: ToastLevel) -> T {

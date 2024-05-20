@@ -13,12 +13,9 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::{load_msgpack, save_msgpack, Action},
     project::Namespaces,
-    ui::{
-        panel::{
-            dock::{DockWindow, FileDialogs, PanelParams, TabViewer},
-            status::Status,
-        },
-        popup::Popup,
+    ui::panel::{
+        dock::{DockWindow, FileDialogs, PanelParams, TabViewer},
+        status::Status,
     },
 };
 
@@ -172,7 +169,6 @@ pub fn project_msy(
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
-    mut popup: EventWriter<Popup>,
     mut status: ResMut<Status>,
     skin: Res<Skin>,
 ) {
