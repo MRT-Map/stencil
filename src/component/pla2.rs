@@ -5,10 +5,15 @@ use std::{
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use egui_notify::ToastLevel;
 use hex_color::HexColor;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::component::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent};
+use crate::{
+    component::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
+    error::log::{ErrorLogEntry, ERROR_LOG},
+};
 
 fn hex_to_color(hex: HexColor) -> Color {
     Color::Rgba {
@@ -34,7 +39,7 @@ pub struct PlaComponent<T: Coords> {
     pub attributes: HashMap<String, String>,
 }
 
-impl<T: Coords> Display for PlaComponent<T> {
+impl<T: Coords + PartialEq> Display for PlaComponent<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}-{}", self.namespace, self.id)?;
         if !self.display_name.is_empty() {
@@ -44,7 +49,7 @@ impl<T: Coords> Display for PlaComponent<T> {
     }
 }
 
-impl<T: Coords> PlaComponent<T> {
+impl<T: Coords + PartialEq> PlaComponent<T> {
     #[must_use]
     pub fn new(ty: ComponentType) -> Self {
         Self {
@@ -61,8 +66,27 @@ impl<T: Coords> PlaComponent<T> {
         }
     }
     #[must_use]
-    pub fn get_type(&self, skin: &Skin) -> Option<ComponentType> {
-        Some(skin.types.get(self.ty.as_str())?.get_type())
+    pub fn get_type(&self, skin: &Skin) -> ComponentType {
+        if let Some(sc) = skin.types.get(self.ty.as_str()) {
+            sc.get_type()
+        } else {
+            let (ty, s) = if self.nodes.len() == 1 || self.nodes.iter().dedup().count() == 1 {
+                (ComponentType::Point, "point")
+            } else if self.nodes.first() == self.nodes.last() && !self.nodes.is_empty() {
+                (ComponentType::Area, "area")
+            } else {
+                (ComponentType::Line, "line")
+            };
+            let mut error_log = ERROR_LOG.write().unwrap();
+            error_log.pending_errors.push(ErrorLogEntry::new(
+                &format!(
+                    "Unknown type {} for component {}\nAssuming it is a(n) {}",
+                    self.ty, self, s
+                ),
+                ToastLevel::Warning,
+            ));
+            ty
+        }
     }
     #[must_use]
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
@@ -166,7 +190,7 @@ impl PlaComponent<EditorCoords> {
 
     #[must_use]
     pub fn get_shape(&self, skin: &Skin) -> ShapeBundle {
-        if self.get_type(skin) == Some(ComponentType::Point) {
+        if self.get_type(skin) == ComponentType::Point {
             return ShapeBundle {
                 path: GeometryBuilder::build_as(&shapes::Rectangle {
                     extents: Vec2::splat(2.0),
@@ -185,7 +209,7 @@ impl PlaComponent<EditorCoords> {
             for coord in &self.nodes {
                 pb.line_to(coord.0.as_vec2());
             }
-            if self.get_type(skin) == Some(ComponentType::Area) {
+            if self.get_type(skin) == ComponentType::Area {
                 if let Some(coord) = self.nodes.first() {
                     pb.line_to(coord.0.as_vec2());
                 }
@@ -210,14 +234,14 @@ impl PlaComponent<EditorCoords> {
 
     #[must_use]
     pub fn get_fill(&self, skin: &Skin) -> Fill {
-        if self.get_type(skin) == Some(ComponentType::Point) {
+        if self.get_type(skin) == ComponentType::Point {
             return Fill::color(if let Some(hex) = self.front_colour(skin) {
                 hex_to_color(*hex)
             } else {
                 Color::WHITE
             });
         }
-        if self.get_type(skin) == Some(ComponentType::Area) {
+        if self.get_type(skin) == ComponentType::Area {
             Fill::color(if let Some(hex) = self.front_colour(skin) {
                 *hex_to_color(*hex).set_a(0.25)
             } else {
@@ -230,7 +254,7 @@ impl PlaComponent<EditorCoords> {
 
     #[must_use]
     pub fn get_stroke(&self, skin: &Skin) -> Stroke {
-        if self.get_type(skin) == Some(ComponentType::Point) {
+        if self.get_type(skin) == ComponentType::Point {
             return Stroke::color(Color::NONE);
         }
         let options = StrokeOptions::default()
@@ -238,7 +262,7 @@ impl PlaComponent<EditorCoords> {
             .with_end_cap(LineCap::Round)
             .with_line_join(LineJoin::Round)
             .with_line_width(self.weight(skin).unwrap_or(2) as f32);
-        if self.get_type(skin) == Some(ComponentType::Area) {
+        if self.get_type(skin) == ComponentType::Area {
             Stroke {
                 color: if let Some(hex) = self.back_colour(skin) {
                     hex_to_color(*hex)

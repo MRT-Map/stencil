@@ -53,7 +53,7 @@ pub fn highlight_selected_sy(
     for (data, entity) in query.iter() {
         trace!(?entity, "Highlighting selected component");
         commands.entity(entity).select_component(&skin, data);
-        if data.get_type(&skin) == Some(ComponentType::Line) && !data.nodes.is_empty() {
+        if data.get_type(&skin) == ComponentType::Line && !data.nodes.is_empty() {
             commands.entity(entity).despawn_descendants();
             let start = commands
                 .spawn(circle(

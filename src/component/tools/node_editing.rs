@@ -66,7 +66,7 @@ pub fn edit_nodes_sy(
                 .enumerate()
                 .map(|(i, ec)| (Pos::Existing(i), ec.0))
                 .chain(
-                    if pla.get_type(&skin) == Some(ComponentType::Area) {
+                    if pla.get_type(&skin) == ComponentType::Area {
                         pla.nodes
                             .iter()
                             .enumerate()
@@ -119,7 +119,7 @@ pub fn edit_nodes_sy(
             clear_orig = true;
         } else if let MouseEvent::RightClick(_) = event {
             if let Some(orig) = &*node_edit_data {
-                if !orig.was_new && pla.get_type(&skin) != Some(ComponentType::Point) {
+                if !orig.was_new && pla.get_type(&skin) != ComponentType::Point {
                     info!(?entity, "Deleting node");
                     status.0 = format!("Deleted node of {}", &*pla).into();
                     pla.nodes.remove(orig.node_list_pos);
@@ -174,7 +174,7 @@ pub fn update_handles(
                 pla,
                 skin,
                 zoom,
-                if pla.get_type(skin) == Some(ComponentType::Point) {
+                if pla.get_type(skin) == ComponentType::Point {
                     Vec2::ZERO
                 } else {
                     coord.as_vec2()
@@ -187,7 +187,7 @@ pub fn update_handles(
         .collect::<Vec<_>>();
     trace!("Pushing first set of children");
     commands.entity(e).push_children(&children);
-    let more_children = if pla.get_type(skin) == Some(ComponentType::Area) {
+    let more_children = if pla.get_type(skin) == ComponentType::Area {
         pla.nodes
             .iter()
             .circular_tuple_windows::<(_, _)>()

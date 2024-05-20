@@ -64,7 +64,7 @@ pub fn project_msy(
                 Some("pla2"),
             ) {
                 for component in components {
-                    match component.get_type(&skin).unwrap() {
+                    match component.get_type(&skin) {
                         ComponentType::Point => commands.spawn(PointComponentBundle::new(
                             component.to_editor_coords(),
                             &skin,

@@ -106,7 +106,7 @@ pub fn undo_redo_asy(
                             if after.is_none() {
                                 debug!(?component_id, "Undoing deletion");
                                 status.0 = format!("Undid deletion of {before}").into();
-                                let entity = match before.get_type(&skin).unwrap() {
+                                let entity = match before.get_type(&skin) {
                                     ComponentType::Point => commands.spawn(
                                         PointComponentBundle::new((**before).to_owned(), &skin),
                                     ),
@@ -178,7 +178,7 @@ pub fn undo_redo_asy(
                             debug!(?component_id, "Redoing creation");
                             status.0 = format!("Redid creation of {after}").into();
                             if before.is_none() {
-                                let entity = match after.get_type(&skin).unwrap() {
+                                let entity = match after.get_type(&skin) {
                                     ComponentType::Point => commands.spawn(
                                         PointComponentBundle::new((**after).to_owned(), &skin),
                                     ),

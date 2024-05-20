@@ -147,13 +147,17 @@ pub trait EntityCommandsSelectExt {
 
 impl<'a> EntityCommandsSelectExt for EntityCommands<'a> {
     fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
-        let ty = data.get_type(skin).unwrap();
+        let ty = data.get_type(skin);
         let fill = data.get_fill(skin).select(ty).to_owned();
-        if fill.color != Color::NONE {
+        if fill.color == Color::NONE {
+            self.remove::<Fill>();
+        } else {
             self.insert(fill);
         }
         let stroke = data.get_stroke(skin).select(ty).to_owned();
-        if stroke.color != Color::NONE {
+        if stroke.color == Color::NONE {
+            self.remove::<Stroke>();
+        } else {
             self.insert(stroke);
         }
         self.insert(data.get_shape(skin));
@@ -161,11 +165,15 @@ impl<'a> EntityCommandsSelectExt for EntityCommands<'a> {
     }
     fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
         let fill = data.get_fill(skin);
-        if fill.color != Color::NONE {
+        if fill.color == Color::NONE {
+            self.remove::<Fill>();
+        } else {
             self.insert(fill);
         }
         let stroke = data.get_stroke(skin);
-        if stroke.color != Color::NONE {
+        if stroke.color == Color::NONE {
+            self.remove::<Stroke>();
+        } else {
             self.insert(stroke);
         }
         self.insert(data.get_shape(skin));
