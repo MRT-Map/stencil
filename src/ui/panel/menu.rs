@@ -12,7 +12,7 @@ use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 use crate::{
     action::Action,
     error::log::OpenErrorLogViewerAct,
-    history::{HistoryAct, HistoryEntry},
+    history::HistoryAct,
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
     project::events::ProjectAct,

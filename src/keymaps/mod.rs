@@ -8,7 +8,7 @@ use settings::KeymapSettings;
 
 use crate::{
     action::Action,
-    keymaps::{settings::INIT_KEYMAP_SETTINGS, settings_editor::keymap_settings_msy},
+    keymaps::{settings::INIT_KEYMAP_SETTINGS, settings_editor::keymap_settings_asy},
     state::IntoSystemConfigExt,
 };
 
@@ -37,6 +37,6 @@ impl Plugin for KeymapPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_KEYMAP_SETTINGS.to_owned())
             .add_systems(Update, keymap_sy.run_if_not_loading())
-            .add_systems(Update, keymap_settings_msy);
+            .add_systems(Update, keymap_settings_asy);
     }
 }

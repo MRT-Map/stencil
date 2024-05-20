@@ -2,12 +2,7 @@ use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
-use crate::{
-    action::Action,
-    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
-    history::{HistoryAct, HistoryEntry},
-    ui::panel::dock::{DockWindow, PanelParams, TabViewer},
-};
+use crate::ui::panel::dock::{DockWindow, PanelParams, TabViewer};
 
 #[derive(Clone, Copy)]
 pub struct ComponentList;

@@ -10,7 +10,7 @@ use tracing::info;
 use crate::{
     action::Action,
     dirs_paths::data_path,
-    history::{HistoryAct, HistoryEntry},
+    history::HistoryAct,
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,

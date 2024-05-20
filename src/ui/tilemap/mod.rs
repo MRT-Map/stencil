@@ -41,7 +41,7 @@ impl Plugin for RenderingPlugin {
             )
             .add_systems(
                 UiSchedule,
-                (tile::show_tiles_sy, settings_editor::tile_settings_msy)
+                (tile::show_tiles_sy, settings_editor::tile_settings_asy)
                     .in_set(RenderingSet::Tiles),
             );
     }

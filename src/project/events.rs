@@ -33,7 +33,7 @@ pub enum ProjectAct {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn project_msy(
+pub fn project_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut namespaces: ResMut<Namespaces>,
     mut commands: Commands,

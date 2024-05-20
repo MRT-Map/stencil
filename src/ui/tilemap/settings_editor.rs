@@ -156,7 +156,7 @@ impl TileSettingsEditor {
     }
 }
 
-pub fn tile_settings_msy(
+pub fn tile_settings_asy(
     mut actions: EventReader<Action>,
     mut state: ResMut<PanelDockState>,
     mut tile_settings: ResMut<TileSettings>,

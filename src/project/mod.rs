@@ -34,7 +34,7 @@ pub struct ProjectPlugin;
 impl Plugin for ProjectPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Namespaces>()
-            .add_systems(Update, events::project_msy)
+            .add_systems(Update, events::project_asy)
             .add_systems(
                 OnExit(EditorState::Loading),
                 |mut actions: EventWriter<Action>| {

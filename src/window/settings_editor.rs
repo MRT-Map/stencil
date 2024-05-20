@@ -107,7 +107,7 @@ impl DockWindow for WindowSettingsEditor {
     }
 }
 
-pub fn window_settings_msy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+pub fn window_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(OpenWindowSettingsAct))
             && !state

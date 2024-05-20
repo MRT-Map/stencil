@@ -63,7 +63,7 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
-pub fn keymap_settings_msy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+pub fn keymap_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(OpenKeymapSettingsAct))
             && !state
