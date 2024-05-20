@@ -131,13 +131,15 @@ impl Popup {
             },
             move |_, ui, ew, shown| {
                 ui.label(text.to_owned());
-                if ui.button("Yes").clicked() {
-                    ew.send(action.to_owned());
-                    *shown = false;
-                }
-                if ui.button("No").clicked() {
-                    *shown = false;
-                }
+                ui.horizontal(|ui| {
+                    if ui.button("Yes").clicked() {
+                        ew.send(action.to_owned());
+                        *shown = false;
+                    }
+                    if ui.button("No").clicked() {
+                        *shown = false;
+                    }
+                });
             },
             Mutex::new(Box::new(())),
         )

@@ -13,9 +13,12 @@ use crate::{
     component_actions::undo_redo::{History, UndoRedoAct},
     misc::{load_msgpack, save_msgpack, Action},
     project::Namespaces,
-    ui::panel::{
-        dock::{DockWindow, FileDialogs, PanelParams, TabViewer},
-        status::Status,
+    ui::{
+        panel::{
+            dock::{DockWindow, FileDialogs, PanelParams, TabViewer},
+            status::Status,
+        },
+        popup::Popup,
     },
 };
 
@@ -24,6 +27,7 @@ pub enum ProjectAct {
     GetNamespaces,
     Show { ns: String, history_invoked: bool },
     Hide { ns: String, history_invoked: bool },
+    Delete(String, bool),
     Save,
 }
 
@@ -121,7 +125,7 @@ impl DockWindow for ProjectEditor {
                     });
                 }
                 if let Some(delete) = delete {
-                    namespaces.visibilities.remove(&delete);
+                    actions.send(Action::new(ProjectAct::Delete(delete, false)));
                 }
                 body.row(20.0, |mut row| {
                     row.col(|_| ());
@@ -171,6 +175,7 @@ pub fn project_msy(
     mut file_dialogs: NonSendMut<FileDialogs>,
     mut status: ResMut<Status>,
     skin: Res<Skin>,
+    mut popup: EventWriter<Popup>,
 ) {
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().read() {
@@ -278,6 +283,16 @@ pub fn project_msy(
             for ns in ns {
                 let _ = namespaces.visibilities.entry(ns).or_insert(false);
             }
+        } else if let Some(ProjectAct::Delete(ns, false)) = event.downcast_ref() {
+            popup.send(Popup::base_confirm(
+                "confirm_delete_ns",
+                format!("Are you sure you want to delete namespace {ns}?"),
+                "",
+                Action::new(ProjectAct::Delete(ns.to_owned(), true)),
+            ));
+        } else if let Some(ProjectAct::Delete(ns, true)) = event.downcast_ref() {
+            namespaces.visibilities.remove(ns);
+            let _ = std::fs::remove_file(&namespaces.folder.join(format!("{ns}.pla2.msgpack")));
         }
     }
     for action in send_queue {
