@@ -9,8 +9,8 @@ use tracing::info;
 
 use crate::{
     action::Action,
-    component::actions::undo_redo::UndoRedoAct,
     dirs_paths::data_path,
+    history::{History, UndoRedoAct},
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,

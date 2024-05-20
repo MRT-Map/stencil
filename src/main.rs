@@ -186,6 +186,7 @@ use ui::tilemap::RenderingPlugin;
 use crate::window::settings::LinuxWindow;
 use crate::{
     component::{actions::ComponentActionPlugins, tools::ComponentToolPlugins},
+    history::HistoryPlugin,
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
     keymaps::KeymapPlugin,
@@ -198,10 +199,11 @@ pub mod action;
 pub mod component;
 mod dirs_paths;
 pub mod error;
+pub mod history;
 pub mod info_windows;
 pub mod init;
 pub mod keymaps;
-mod load_save;
+pub mod load_save;
 pub mod project;
 pub mod state;
 pub mod tile;
@@ -289,6 +291,7 @@ fn main() -> eyre::Result<()> {
         .add_plugins(KeymapPlugin)
         .add_plugins(WindowSettingsPlugin)
         .add_plugins(ProjectPlugin)
+        .add_plugins(HistoryPlugin)
         .run();
     Ok(())
 }

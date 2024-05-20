@@ -4,10 +4,10 @@ use bevy_mouse_tracking::MousePosWorld;
 use crate::{
     action::Action,
     component::{
-        actions::undo_redo::{History, UndoRedoAct},
         bundle::SelectedComponent,
         pla2::{EditorCoords, PlaComponent},
     },
+    history::{History, UndoRedoAct},
     state::{EditorState, IntoSystemConfigExt},
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},

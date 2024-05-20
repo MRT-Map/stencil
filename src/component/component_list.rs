@@ -4,11 +4,8 @@ use itertools::Itertools;
 
 use crate::{
     action::Action,
-    component::{
-        actions::undo_redo::{History, UndoRedoAct},
-        bundle::EntityCommandsSelectExt,
-        pla2::ComponentType,
-    },
+    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
+    history::{History, UndoRedoAct},
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 

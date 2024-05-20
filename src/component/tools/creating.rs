@@ -6,10 +6,7 @@ use rand::distributions::{Alphanumeric, DistString};
 use crate::{
     action::Action,
     component::{
-        actions::{
-            selecting::{deselect, DeselectQuery},
-            undo_redo::{History, UndoRedoAct},
-        },
+        actions::selecting::{deselect, DeselectQuery},
         bundle::{
             AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle,
@@ -17,6 +14,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    history::{History, UndoRedoAct},
     project::Namespaces,
     state::{state_changer_asy, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},

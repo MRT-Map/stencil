@@ -10,11 +10,11 @@ use itertools::Itertools;
 use crate::{
     action::Action,
     component::{
-        actions::undo_redo::{History, UndoRedoAct},
         bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
+    history::{History, UndoRedoAct},
     load_save::{load_msgpack, save_msgpack},
     project::Namespaces,
     ui::{

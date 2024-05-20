@@ -5,15 +5,13 @@ use itertools::Itertools;
 use crate::{
     action::Action,
     component::{
-        actions::{
-            selecting::highlight_selected_sy,
-            undo_redo::{History, UndoRedoAct},
-        },
+        actions::selecting::highlight_selected_sy,
         bundle::{EntityCommandsSelectExt, SelectedComponent},
         circle::circle,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    history::{History, UndoRedoAct},
     state::EditorState,
     tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},

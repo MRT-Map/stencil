@@ -50,7 +50,7 @@ impl UndoRedoAct {
     clippy::cognitive_complexity,
     clippy::implicit_hasher
 )]
-pub fn undo_redo_asy(
+pub fn history_asy(
     mut commands: Commands,
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
@@ -243,9 +243,9 @@ pub fn undo_redo_asy(
     }
 }
 
-pub struct UndoRedoPlugin;
-impl Plugin for UndoRedoPlugin {
+pub struct HistoryPlugin;
+impl Plugin for HistoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, undo_redo_asy.run_if_not_loading());
+        app.add_systems(Update, history_asy.run_if_not_loading());
     }
 }

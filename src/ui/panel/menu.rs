@@ -11,8 +11,8 @@ use egui_notify::ToastLevel;
 use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 use crate::{
     action::Action,
-    component::actions::undo_redo::UndoRedoAct,
     error::log::OpenErrorLogViewerAct,
+    history::{History, UndoRedoAct},
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
     project::events::ProjectAct,
