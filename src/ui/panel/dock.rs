@@ -15,6 +15,7 @@ use crate::{
         skin::Skin,
     },
     error::log::ErrorLogViewer,
+    history::{history_viewer::HistoryViewer, History},
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
@@ -53,6 +54,7 @@ pub enum DockWindows {
     KeymapSettingsEditor,
     ErrorLogViewer,
     ComponentList,
+    HistoryViewer,
 }
 
 #[derive(Resource)]
@@ -70,7 +72,11 @@ impl Default for PanelDockState {
         let [_, _] = tree.split_right(
             NodeIndex::root(),
             0.8,
-            vec![ProjectEditor.into(), ComponentList.into()],
+            vec![
+                ProjectEditor.into(),
+                ComponentList.into(),
+                HistoryViewer.into(),
+            ],
         );
 
         Self {
@@ -179,6 +185,7 @@ pub struct PanelParams<'w, 's> {
     pub popup: EventWriter<'w, Popup>,
     pub namespaces: ResMut<'w, Namespaces>,
     pub new_namespace: Local<'s, String>,
+    pub history: ResMut<'w, History>,
 }
 
 pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut params: PanelParams) {

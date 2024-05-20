@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     action::Action,
     component::pla2::{EditorCoords, PlaComponent},
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
@@ -20,11 +20,13 @@ pub fn delete_component_sy(
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
-            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                entity: *e,
-                before: Some(pla.to_owned().into()),
-                after: None,
-            })));
+            actions.send(Action::new(HistoryAct::one_history(
+                HistoryEntry::Component {
+                    entity: *e,
+                    before: Some(pla.to_owned().into()),
+                    after: None,
+                },
+            )));
             commands.entity(*e).despawn_recursive();
             status.0 = format!("Deleted {pla}").into();
         }

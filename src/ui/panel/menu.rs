@@ -12,7 +12,7 @@ use crate::error::log::{ErrorLogEntry, ERROR_LOG};
 use crate::{
     action::Action,
     error::log::OpenErrorLogViewerAct,
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
     project::events::ProjectAct,
@@ -69,8 +69,8 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Save project", ProjectAct::Save);
             });
             egui::menu::menu_button(ui, "Edit", |ui| {
-                button!(ui, event_writer, "Undo", UndoRedoAct::Undo);
-                button!(ui, event_writer, "Redo", UndoRedoAct::Redo);
+                button!(ui, event_writer, "Undo", HistoryAct::Undo);
+                button!(ui, event_writer, "Redo", HistoryAct::Redo);
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);

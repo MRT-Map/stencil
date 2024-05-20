@@ -5,7 +5,7 @@ use itertools::Itertools;
 use crate::{
     action::Action,
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 

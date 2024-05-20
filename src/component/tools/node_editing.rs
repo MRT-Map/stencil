@@ -11,7 +11,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     state::EditorState,
     tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
@@ -134,11 +134,13 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = node_edit_data.take() {
-            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                entity,
-                before: Some(orig.old_pla.into()),
-                after: Some(pla.to_owned().into()),
-            })));
+            actions.send(Action::new(HistoryAct::one_history(
+                HistoryEntry::Component {
+                    entity,
+                    before: Some(orig.old_pla.into()),
+                    after: Some(pla.to_owned().into()),
+                },
+            )));
         }
     }
 }

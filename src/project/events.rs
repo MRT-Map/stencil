@@ -14,7 +14,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     load_save::{load_msgpack, save_msgpack},
     project::Namespaces,
     ui::{
@@ -80,10 +80,12 @@ pub fn project_msy(
                     };
                 }
                 if !history_invoked {
-                    send_queue.push(Action::new(UndoRedoAct::one_history(History::Namespace {
-                        namespace: ns.to_owned(),
-                        visible: true,
-                    })));
+                    send_queue.push(Action::new(HistoryAct::one_history(
+                        HistoryEntry::Namespace {
+                            namespace: ns.to_owned(),
+                            visible: true,
+                        },
+                    )));
                     status.0 = format!("Loaded namespace {ns}").into();
                 }
             }
@@ -114,10 +116,12 @@ pub fn project_msy(
                 commands.entity(e).despawn_recursive();
             }
             if !history_invoked {
-                send_queue.push(Action::new(UndoRedoAct::one_history(History::Namespace {
-                    namespace: ns.to_owned(),
-                    visible: false,
-                })));
+                send_queue.push(Action::new(HistoryAct::one_history(
+                    HistoryEntry::Namespace {
+                        namespace: ns.to_owned(),
+                        visible: false,
+                    },
+                )));
                 status.0 = format!("Saved namespace {ns}").into();
             }
         } else if matches!(event.downcast_ref(), Some(ProjectAct::Save)) {

@@ -4,7 +4,7 @@ use itertools::Itertools;
 use crate::{
     action::Action,
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
 
@@ -110,11 +110,13 @@ impl DockWindow for ComponentEditor {
             ui.colored_label(color, format!("{}, {}", a.0.x, -a.0.y));
         }
         if *component_data != old_data {
-            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                entity,
-                before: Some(old_data.into()),
-                after: Some(component_data.to_owned().into()),
-            })));
+            actions.send(Action::new(HistoryAct::one_history(
+                HistoryEntry::Component {
+                    entity,
+                    before: Some(old_data.into()),
+                    after: Some(component_data.to_owned().into()),
+                },
+            )));
         }
     }
     fn closeable(self) -> bool {

@@ -7,7 +7,7 @@ use crate::{
         bundle::SelectedComponent,
         pla2::{EditorCoords, PlaComponent},
     },
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     state::{EditorState, IntoSystemConfigExt},
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
@@ -62,11 +62,13 @@ pub fn move_component_sy(
                         .round()
                         .as_ivec2();
                 }
-                actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                    entity,
-                    before: Some(old_pla.into()),
-                    after: Some(pla.to_owned().into()),
-                })));
+                actions.send(Action::new(HistoryAct::one_history(
+                    HistoryEntry::Component {
+                        entity,
+                        before: Some(old_pla.into()),
+                        after: Some(pla.to_owned().into()),
+                    },
+                )));
                 status.0 = format!("Moved component {}", &*pla).into();
             }
             info!("Ended move");

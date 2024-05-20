@@ -1,3 +1,5 @@
+pub mod history_viewer;
+
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
@@ -21,7 +23,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
-pub enum History<T = Entity> {
+pub enum HistoryEntry<T = Entity> {
     Component {
         entity: T,
         before: Option<Box<PlaComponent<EditorCoords>>>,
@@ -33,16 +35,22 @@ pub enum History<T = Entity> {
     },
 }
 
-pub enum UndoRedoAct {
-    NewHistory(Vec<History>),
+pub enum HistoryAct {
+    NewHistory(Vec<HistoryEntry>),
     Undo,
     Redo,
 }
-impl UndoRedoAct {
+impl HistoryAct {
     #[must_use]
-    pub fn one_history(history: History) -> Self {
+    pub fn one_history(history: HistoryEntry) -> Self {
         Self::NewHistory(vec![history])
     }
+}
+
+#[derive(Resource, Default, Debug)]
+pub struct History {
+    pub undo_stack: Vec<Vec<HistoryEntry<Arc<RwLock<Entity>>>>>,
+    pub redo_stack: Vec<Vec<HistoryEntry<Arc<RwLock<Entity>>>>>,
 }
 
 #[allow(
@@ -54,8 +62,7 @@ pub fn history_asy(
     mut commands: Commands,
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
-    mut undo_stack: Local<Vec<Vec<History<Arc<RwLock<Entity>>>>>>,
-    mut redo_stack: Local<Vec<Vec<History<Arc<RwLock<Entity>>>>>>,
+    mut history: ResMut<History>,
     selected_entity: Query<Entity, With<SelectedComponent>>,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
@@ -63,15 +70,15 @@ pub fn history_asy(
     let selected = selected_entity.get_single().ok();
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().read() {
-        if let Some(UndoRedoAct::NewHistory(histories)) = event.downcast_ref() {
+        if let Some(HistoryAct::NewHistory(histories)) = event.downcast_ref() {
             let histories = histories
                 .iter()
                 .map(|history| match history {
-                    History::Component {
+                    HistoryEntry::Component {
                         before,
                         after,
                         entity: component_id,
-                    } => History::Component {
+                    } => HistoryEntry::Component {
                         before: before.to_owned(),
                         after: after.to_owned(),
                         entity: {
@@ -83,21 +90,21 @@ pub fn history_asy(
                             component_id
                         },
                     },
-                    History::Namespace { namespace, visible } => History::Namespace {
+                    HistoryEntry::Namespace { namespace, visible } => HistoryEntry::Namespace {
                         namespace: namespace.to_owned(),
                         visible: visible.to_owned(),
                     },
                 })
                 .collect();
-            redo_stack.clear();
-            undo_stack.push(histories);
-        } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Undo)) {
-            let Some(mut histories) = undo_stack.pop() else {
+            history.redo_stack.clear();
+            history.undo_stack.push(histories);
+        } else if matches!(event.downcast_ref(), Some(HistoryAct::Undo)) {
+            let Some(mut histories) = history.undo_stack.pop() else {
                 continue;
             };
             for history in &mut histories {
                 match history {
-                    History::Component {
+                    HistoryEntry::Component {
                         before,
                         after,
                         entity: component_id,
@@ -147,7 +154,7 @@ pub fn history_asy(
                             ids.remove(&component_id);
                         }
                     }
-                    History::Namespace { namespace, visible } => {
+                    HistoryEntry::Namespace { namespace, visible } => {
                         send_queue.push(if *visible {
                             Action::new(ProjectAct::Hide {
                                 ns: namespace.to_owned(),
@@ -162,14 +169,14 @@ pub fn history_asy(
                     }
                 }
             }
-            redo_stack.push(histories);
-        } else if matches!(event.downcast_ref(), Some(UndoRedoAct::Redo)) {
-            let Some(mut histories) = redo_stack.pop() else {
+            history.redo_stack.push(histories);
+        } else if matches!(event.downcast_ref(), Some(HistoryAct::Redo)) {
+            let Some(mut histories) = history.redo_stack.pop() else {
                 continue;
             };
             for history in &mut histories {
                 match history {
-                    History::Component {
+                    HistoryEntry::Component {
                         before,
                         after,
                         entity: component_id,
@@ -219,7 +226,7 @@ pub fn history_asy(
                             ids.remove(&component_id);
                         }
                     }
-                    History::Namespace { namespace, visible } => {
+                    HistoryEntry::Namespace { namespace, visible } => {
                         send_queue.push(if *visible {
                             Action::new(ProjectAct::Show {
                                 ns: namespace.to_owned(),
@@ -234,7 +241,7 @@ pub fn history_asy(
                     }
                 }
             }
-            undo_stack.push(histories);
+            history.undo_stack.push(histories);
         }
     }
 
@@ -246,6 +253,7 @@ pub fn history_asy(
 pub struct HistoryPlugin;
 impl Plugin for HistoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, history_asy.run_if_not_loading());
+        app.init_resource::<History>()
+            .add_systems(Update, history_asy.run_if_not_loading());
     }
 }

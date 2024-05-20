@@ -14,7 +14,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     project::Namespaces,
     state::{state_changer_asy, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
@@ -85,11 +85,13 @@ pub fn create_point_sy(
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
-            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                entity,
-                before: None,
-                after: Some(pla.into()),
-            })));
+            actions.send(Action::new(HistoryAct::one_history(
+                HistoryEntry::Component {
+                    entity,
+                    before: None,
+                    after: Some(pla.into()),
+                },
+            )));
         }
     }
 }
@@ -241,11 +243,13 @@ pub fn clear_created_component(
                 .remove::<ShapeBundle>()
                 .component_display(skin, &data)
                 .remove::<CreatedComponent>();
-            actions.send(Action::new(UndoRedoAct::one_history(History::Component {
-                entity,
-                before: None,
-                after: Some(data.to_owned().into()),
-            })));
+            actions.send(Action::new(HistoryAct::one_history(
+                HistoryEntry::Component {
+                    entity,
+                    before: None,
+                    after: Some(data.to_owned().into()),
+                },
+            )));
             status.0 = format!("Created new {ty_text} {}", &*data).into();
         }
     }

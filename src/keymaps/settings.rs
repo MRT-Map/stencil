@@ -10,7 +10,7 @@ use tracing::info;
 use crate::{
     action::Action,
     dirs_paths::data_path,
-    history::{History, UndoRedoAct},
+    history::{HistoryAct, HistoryEntry},
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,
@@ -41,8 +41,8 @@ impl KeymapAction {
     pub fn action(self) -> Action {
         match self {
             Self::ChangeState(state) => Action::new(ChangeStateAct(state)),
-            Self::Undo => Action::new(UndoRedoAct::Undo),
-            Self::Redo => Action::new(UndoRedoAct::Redo),
+            Self::Undo => Action::new(HistoryAct::Undo),
+            Self::Redo => Action::new(HistoryAct::Redo),
             Self::SelectProjectFolder => Action::new(ProjectAct::SelectFolder),
             Self::SaveProject => Action::new(ProjectAct::Save),
             Self::TileSettings => Action::new(TileSettingsAct::Open),
