@@ -208,8 +208,7 @@ pub mod tile;
 pub mod ui;
 pub mod window;
 
-fn init_logger() -> color_eyre::Result<()> {
-    color_eyre::install()?;
+fn init_logger() -> eyre::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::fmt::layer().compact().with_writer(
@@ -236,7 +235,7 @@ fn init_logger() -> color_eyre::Result<()> {
     Ok(())
 }
 
-fn main() -> color_eyre::Result<()> {
+fn main() -> eyre::Result<()> {
     std::panic::set_hook(Box::new(error::panic::panic));
 
     init_logger()?;

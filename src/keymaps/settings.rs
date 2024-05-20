@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
-use color_eyre::eyre::OptionExt;
+use eyre::OptionExt;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -120,11 +120,11 @@ impl KeymapSettings {
             }
         }
     }
-    pub fn save(&self) -> color_eyre::Result<()> {
+    pub fn save(&self) -> eyre::Result<()> {
         save_toml_with_header(&self.as_serializable()?, &data_path("keymap_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml", Some("keymap settings"))
     }
 
-    pub fn as_serializable(&self) -> color_eyre::Result<HashMap<&str, HashMap<String, String>>> {
+    pub fn as_serializable(&self) -> eyre::Result<HashMap<&str, HashMap<String, String>>> {
         let default = Self::default();
         KEYMAP_MENU
             .iter()
@@ -153,9 +153,7 @@ impl KeymapSettings {
             .collect()
     }
 
-    pub fn from_serializable(
-        o: &HashMap<String, HashMap<String, String>>,
-    ) -> color_eyre::Result<Self> {
+    pub fn from_serializable(o: &HashMap<String, HashMap<String, String>>) -> eyre::Result<Self> {
         let mut s = Self::default();
         for menu in o.values() {
             for (action, key) in menu {
