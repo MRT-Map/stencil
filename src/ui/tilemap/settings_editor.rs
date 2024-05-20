@@ -185,7 +185,7 @@ pub fn tile_settings_msy(
     let file_dialog = &mut file_dialogs.tile_settings_import;
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
-        if let Some(new) = load_toml(&file, Some("basemap")) {
+        if let Ok(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
             status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
         }
@@ -194,7 +194,7 @@ pub fn tile_settings_msy(
     if let Some((basemap, file_dialog)) = &mut file_dialogs.tile_settings_export {
         file_dialog.update(ctx);
         if let Some(file) = file_dialog.take_selected() {
-            if save_toml(basemap, &file, Some("basemap")) {
+            if save_toml(basemap, &file, Some("basemap")).is_ok() {
                 status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
             }
         }

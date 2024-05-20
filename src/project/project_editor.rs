@@ -187,7 +187,7 @@ pub fn project_msy(
                 continue;
             }
             namespaces.visibilities.insert(ns.to_owned(), true);
-            if let Some(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
+            if let Ok(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             ) {
@@ -229,11 +229,13 @@ pub fn project_msy(
                     Some(p.to_mc_coords())
                 })
                 .collect::<Vec<_>>();
-            if !save_msgpack(
+            if save_msgpack(
                 &components,
                 &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
-            ) {
+            )
+            .is_err()
+            {
                 continue;
             }
             if !history_invoked {

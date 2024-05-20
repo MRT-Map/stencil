@@ -16,7 +16,7 @@ use crate::{
         key_list::KEY_LIST,
         settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
     },
-    misc::{data_path, Action},
+    misc::{data_path, load_toml, save_toml_with_header, Action},
     project::project_editor::ProjectAct,
     state::{ChangeStateAct, EditorState},
     ui::tilemap::settings_editor::TileSettingsAct,
@@ -100,31 +100,28 @@ impl Default for KeymapSettings {
 }
 
 impl KeymapSettings {
-    pub fn load() -> color_eyre::Result<Self> {
-        match std::fs::read_to_string(data_path("keymap_settings.toml")) {
+    pub fn load() -> Self {
+        if !data_path("keymap_settings.toml").exists() {
+            let s = Self::default();
+            let _ = s.save();
+            return s;
+        }
+        match load_toml(&data_path("keymap_settings.toml"), Some("keymap settings"))
+            .and_then(|a| Self::from_serializable(&a))
+        {
             Ok(str) => {
                 info!("Found keymap settings file");
-                toml::from_str(&str)
-                    .map_err(Into::into)
-                    .and_then(|a| Self::from_serializable(&a))
+                str
             }
             Err(e) => {
-                info!("Couldn't find or open keymap settings file: {e:?}");
+                info!("Couldn't open or parse keymap settings file: {e:?}");
                 let s = Self::default();
-                let _ = s.save();
-                Ok(s)
+                s
             }
         }
     }
     pub fn save(&self) -> color_eyre::Result<()> {
-        info!("Saving keymap settings file");
-        let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml";
-        let serialized = toml::to_string_pretty(&self.as_serializable()?)?;
-
-        Ok(std::fs::write(
-            data_path("keymap_settings.toml"),
-            format!("{prefix_text}\n\n{serialized}"),
-        )?)
+        save_toml_with_header(&self.as_serializable()?, &data_path("keymap_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml", Some("keymap settings"))
     }
 
     pub fn as_serializable(&self) -> color_eyre::Result<HashMap<&str, HashMap<String, String>>> {
@@ -177,5 +174,4 @@ impl KeymapSettings {
     }
 }
 
-pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> =
-    Lazy::new(|| KeymapSettings::load().unwrap_or_default_and_log(ToastLevel::Warning));
+pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> = Lazy::new(KeymapSettings::load);

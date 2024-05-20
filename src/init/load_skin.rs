@@ -6,8 +6,8 @@ use tracing::{error, info};
 
 use crate::{
     component::skin::Skin,
-    error::log::{AddToErrorLog, ErrorLogEntry, ERROR_LOG},
-    misc::cache_path,
+    error::log::{ErrorLogEntry, ERROR_LOG},
+    misc::{cache_path, load_msgpack, save_msgpack},
     state::LoadingState,
 };
 
@@ -25,13 +25,11 @@ pub fn get_skin_sy(
     mut executor: Local<Option<Executor>>,
 ) {
     if cache_path("skin.msgpack").exists() {
-        if let Ok(skin) = std::fs::read(cache_path("skin.msgpack")) {
-            if let Ok(skin) = rmp_serde::from_slice::<Skin>(&skin) {
-                info!("Retrieved from cache");
-                commands.insert_resource(skin);
-                commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
-                *task_s = Step::Complete;
-            }
+        if let Ok(skin) = load_msgpack::<Skin>(&cache_path("skin.msgpack"), Some("skin")) {
+            info!("Retrieved from cache");
+            commands.insert_resource(skin);
+            commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
+            *task_s = Step::Complete;
         }
     }
     let executor = executor.get_or_insert_with(Executor::new);
@@ -50,13 +48,7 @@ pub fn get_skin_sy(
             }
             Some(Ok(skin)) => {
                 info!("Retrieved");
-                let _ = rmp_serde::to_vec_named(&skin)
-                    .map_err(color_eyre::Report::from)
-                    .and_then(|s| {
-                        std::fs::write(cache_path("skin.msgpack"), s)
-                            .map_err(color_eyre::Report::from)
-                    })
-                    .add_to_error_log(ToastLevel::Warning);
+                let _ = save_msgpack(&skin, &cache_path("skin.msgpack"), Some("skin"));
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
                 *task_s = Step::Complete;

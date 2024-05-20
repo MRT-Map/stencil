@@ -4,7 +4,10 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{error::log::AddToErrorLog, misc::data_path};
+use crate::{
+    error::log::AddToErrorLog,
+    misc::{data_path, load_toml, save_toml_with_header},
+};
 
 macro_rules! field {
     ($s:ty, $f:ident, $f2:ident, $i:ident, $t:ty) => {
@@ -99,31 +102,27 @@ impl Default for Basemap {
 }
 
 impl TileSettings {
-    pub fn load() -> color_eyre::Result<Self> {
-        match std::fs::read_to_string(data_path("tile_settings.toml")) {
+    pub fn load() -> Self {
+        if !data_path("tile_settings.toml").exists() {
+            let s = Self::default();
+            let _ = s.save();
+            return s;
+        }
+        match load_toml(&data_path("tile_settings.toml"), Some("tile settings")) {
             Ok(str) => {
                 info!("Found tile settings file");
-                Ok(toml::from_str(&str)?)
+                str
             }
             Err(e) => {
-                info!("Couldn't find or open tile settings file: {e:?}");
+                info!("Couldn't open or parse tile settings file: {e:?}");
                 let s = Self::default();
-                let _ = s.save();
-                Ok(s)
+                s
             }
         }
     }
     pub fn save(&self) -> color_eyre::Result<()> {
-        info!("Saving tile settings file");
-        let prefix_text = "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml";
-        let serialized = toml::to_string_pretty(self)?;
-
-        Ok(std::fs::write(
-            data_path("tile_settings.toml"),
-            format!("{prefix_text}\n\n{serialized}"),
-        )?)
+        save_toml_with_header(self, &data_path("tile_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml", Some("tile settings"))
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
-    Lazy::new(|| TileSettings::load().unwrap_or_default_and_log(ToastLevel::Warning));
+pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(TileSettings::load);
