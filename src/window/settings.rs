@@ -1,13 +1,9 @@
 use bevy::{prelude::*, render::settings::Backends, window::WindowMode};
-use egui_notify::ToastLevel;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{
-    error::log::AddToErrorLog,
-    misc::{data_path, load_toml, save_toml_with_header},
-};
+use crate::misc::{data_path, load_toml, save_toml_with_header};
 
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]
@@ -101,8 +97,8 @@ impl WindowSettings {
             }
             Err(e) => {
                 info!("Couldn't open or parse window settings file: {e:?}");
-                let s = Self::default();
-                s
+
+                Self::default()
             }
         }
     }

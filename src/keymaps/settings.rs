@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
 use color_eyre::eyre::OptionExt;
-use egui_notify::ToastLevel;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -10,7 +9,6 @@ use tracing::info;
 
 use crate::{
     component_actions::undo_redo::UndoRedoAct,
-    error::log::AddToErrorLog,
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,
@@ -115,8 +113,8 @@ impl KeymapSettings {
             }
             Err(e) => {
                 info!("Couldn't open or parse keymap settings file: {e:?}");
-                let s = Self::default();
-                s
+
+                Self::default()
             }
         }
     }

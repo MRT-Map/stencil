@@ -69,7 +69,7 @@ pub fn load_file<
     error: Option<&'static str>,
 ) -> color_eyre::Result<T> {
     match deserializer(file) {
-        Ok(Ok(o)) => return Ok(o),
+        Ok(Ok(o)) => Ok(o),
         Ok(Err(e)) => {
             if let Some(thing) = error {
                 let mut error_log = ERROR_LOG.write().unwrap();

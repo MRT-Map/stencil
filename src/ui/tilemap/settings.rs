@@ -1,13 +1,9 @@
 use bevy::prelude::*;
-use egui_notify::ToastLevel;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{
-    error::log::AddToErrorLog,
-    misc::{data_path, load_toml, save_toml_with_header},
-};
+use crate::misc::{data_path, load_toml, save_toml_with_header};
 
 macro_rules! field {
     ($s:ty, $f:ident, $f2:ident, $i:ident, $t:ty) => {
@@ -115,8 +111,8 @@ impl TileSettings {
             }
             Err(e) => {
                 info!("Couldn't open or parse tile settings file: {e:?}");
-                let s = Self::default();
-                s
+
+                Self::default()
             }
         }
     }
