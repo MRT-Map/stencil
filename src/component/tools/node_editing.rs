@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_mouse_tracking::MousePosWorld;
-use bevy_prototype_lyon::{prelude::*, shapes::Circle};
 use itertools::Itertools;
 
 use crate::{
@@ -11,6 +10,7 @@ use crate::{
             undo_redo::{History, UndoRedoAct},
         },
         bundle::{EntityCommandsSelectExt, SelectedComponent},
+        circle::circle,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -170,22 +170,17 @@ pub fn update_handles(
             }
         })
         .map(|coord| {
-            let weight = pla.weight(skin).unwrap_or(2) as f32;
-            (
-                ShapeBundle {
-                    path: GeometryBuilder::build_as(&Circle {
-                        radius: weight * 512.0 / zoom.0.exp2(),
-                        center: if pla.get_type(skin) == Some(ComponentType::Point) {
-                            Vec2::ZERO
-                        } else {
-                            coord.as_vec2()
-                        },
-                    }),
-                    spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
-                    ..default()
+            circle(
+                pla,
+                skin,
+                zoom,
+                if pla.get_type(skin) == Some(ComponentType::Point) {
+                    Vec2::ZERO
+                } else {
+                    coord.as_vec2()
                 },
-                Fill::color(Color::WHITE),
-                Stroke::new(Color::GRAY, weight * 512.0 / zoom.0.exp2()),
+                1.0,
+                Color::GRAY,
             )
         })
         .map(|bundle| commands.spawn(bundle).id())
@@ -213,21 +208,7 @@ pub fn update_handles(
             true
         }
     })
-    .map(|coord| {
-        let weight = pla.weight(skin).unwrap_or(2) as f32;
-        (
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&Circle {
-                    radius: weight * 256.0 / zoom.0.exp2(),
-                    center: coord.as_vec2(),
-                }),
-                spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
-                ..default()
-            },
-            Fill::color(Color::WHITE),
-            Stroke::new(Color::GRAY, weight * 256.0 / zoom.0.exp2()),
-        )
-    })
+    .map(|coord| circle(pla, skin, zoom, coord.as_vec2(), 0.5, Color::GRAY))
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     trace!("Pushing second set of children");

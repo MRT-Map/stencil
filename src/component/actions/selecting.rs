@@ -1,14 +1,10 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::{
-    draw::{Fill, Stroke},
-    entity::ShapeBundle,
-    geometry::GeometryBuilder,
-    shapes::Circle,
-};
+use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
     component::{
         bundle::{EntityCommandsSelectExt, SelectedComponent},
+        circle::circle,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -59,37 +55,24 @@ pub fn highlight_selected_sy(
         commands.entity(entity).select_component(&skin, data);
         if data.get_type(&skin) == Some(ComponentType::Line) && !data.nodes.is_empty() {
             commands.entity(entity).despawn_descendants();
-            let weight = data.weight(&skin).unwrap_or(2) as f32;
             let start = commands
-                .spawn((
-                    ShapeBundle {
-                        path: GeometryBuilder::build_as(&Circle {
-                            radius: weight * 512.0 / zoom.0.exp2(),
-                            center: data.nodes.first().unwrap().0.as_vec2(),
-                        }),
-                        spatial: SpatialBundle::from_transform(Transform::from_xyz(
-                            0.0, 0.0, 100.0,
-                        )),
-                        ..default()
-                    },
-                    Fill::color(Color::WHITE),
-                    Stroke::new(Color::RED, weight * 512.0 / zoom.0.exp2()),
+                .spawn(circle(
+                    data,
+                    &skin,
+                    &zoom,
+                    data.nodes.first().unwrap().0.as_vec2(),
+                    1.0,
+                    Color::GREEN,
                 ))
                 .id();
             let end = commands
-                .spawn((
-                    ShapeBundle {
-                        path: GeometryBuilder::build_as(&Circle {
-                            radius: weight * 512.0 / zoom.0.exp2(),
-                            center: data.nodes.last().unwrap().0.as_vec2(),
-                        }),
-                        spatial: SpatialBundle::from_transform(Transform::from_xyz(
-                            0.0, 0.0, 100.0,
-                        )),
-                        ..default()
-                    },
-                    Fill::color(Color::WHITE),
-                    Stroke::new(Color::GREEN, weight * 512.0 / zoom.0.exp2()),
+                .spawn(circle(
+                    data,
+                    &skin,
+                    &zoom,
+                    data.nodes.last().unwrap().0.as_vec2(),
+                    1.0,
+                    Color::RED,
                 ))
                 .id();
             commands.entity(entity).add_child(start).add_child(end);
