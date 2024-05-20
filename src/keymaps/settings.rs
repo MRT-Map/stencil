@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::{KeyCode, Resource};
 use color_eyre::eyre::OptionExt;
+use egui_notify::ToastLevel;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -164,11 +165,11 @@ impl KeymapSettings {
                 let action =
                     s.0.keys()
                         .find(|a| format!("{a:?}") == *action)
-                        .ok_or_eyre(format!("Invalid action {action}"))?;
+                        .ok_or_eyre(format!("Invalid action {action} in custom keymap"))?;
                 let key = KEY_LIST
                     .iter()
                     .find(|a| format!("{a:?}") == *key)
-                    .ok_or_eyre(format!("Invalid key {key}"))?;
+                    .ok_or_eyre(format!("Invalid key {key} in custom keymap"))?;
                 s.0.insert(*action, *key);
             }
         }
@@ -177,4 +178,4 @@ impl KeymapSettings {
 }
 
 pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> =
-    Lazy::new(|| KeymapSettings::load().unwrap_or_default_and_log());
+    Lazy::new(|| KeymapSettings::load().unwrap_or_default_and_log(ToastLevel::Warning));

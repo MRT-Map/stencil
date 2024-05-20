@@ -1,5 +1,6 @@
 use async_executor::{Executor, Task};
 use bevy::prelude::{Commands, EventWriter, Local, NextState};
+use egui_notify::ToastLevel;
 use futures_lite::future;
 use tracing::{error, info};
 
@@ -54,7 +55,7 @@ pub fn get_skin_sy(
                         std::fs::write(cache_path("skin.msgpack"), s)
                             .map_err(color_eyre::Report::from)
                     })
-                    .add_to_error_log();
+                    .add_to_error_log(ToastLevel::Warning);
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
                 *task_s = Step::Complete;

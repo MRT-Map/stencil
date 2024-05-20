@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use egui_notify::ToastLevel;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -125,4 +126,4 @@ impl TileSettings {
 }
 
 pub static INIT_TILE_SETTINGS: Lazy<TileSettings> =
-    Lazy::new(|| TileSettings::load().unwrap_or_default_and_log());
+    Lazy::new(|| TileSettings::load().unwrap_or_default_and_log(ToastLevel::Warning));

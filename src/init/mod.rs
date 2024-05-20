@@ -7,11 +7,15 @@ pub mod unzip_assets;
 mod welcome;
 
 use bevy::prelude::*;
+use egui_notify::Toasts;
 use load_skin::get_skin_sy;
 
 use crate::{
     component::skin::Skin,
-    error::{log::update_error_log_sy, panic::ack_panic_sy},
+    error::{
+        log::{update_error_log_sy, NotifToasts},
+        panic::ack_panic_sy,
+    },
     misc::{cache_path, Action},
     state::{state_changer_asy, EditorState, IntoSystemConfigExt, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
@@ -25,6 +29,7 @@ impl Plugin for InitPlugin {
             .init_state::<LoadingState>()
             .init_resource::<Skin>()
             .add_event::<Action>()
+            .init_resource::<NotifToasts>()
             .add_systems(Update, state_changer_asy)
             .add_systems(Startup, ack_panic_sy)
             .add_systems(Update, update_error_log_sy.run_if_not_loading());
