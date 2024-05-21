@@ -154,11 +154,13 @@ pub fn history_asy(
                             Action::new(ProjectAct::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
+                                notif: true,
                             })
                         } else {
                             Action::new(ProjectAct::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
+                                notif: true,
                             })
                         });
                     }
@@ -226,11 +228,13 @@ pub fn history_asy(
                             Action::new(ProjectAct::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
+                                notif: true,
                             })
                         } else {
                             Action::new(ProjectAct::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
+                                notif: true,
                             })
                         });
                     }

@@ -190,6 +190,7 @@ use crate::{
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
     keymaps::KeymapPlugin,
+    notification::NotificationPlugin,
     project::ProjectPlugin,
     ui::UiPlugin,
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
@@ -293,6 +294,7 @@ fn main() -> eyre::Result<()> {
         .add_plugins(WindowSettingsPlugin)
         .add_plugins(ProjectPlugin)
         .add_plugins(HistoryPlugin)
+        .add_plugins(NotificationPlugin)
         .run();
     Ok(())
 }

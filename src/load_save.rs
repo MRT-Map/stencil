@@ -3,7 +3,7 @@ use std::path::Path;
 use egui_notify::ToastLevel;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::notification::{Notif, NOTIF_LOG};
+use crate::notification::{Notif, NotifLogRwLockExt, NOTIF_LOG};
 
 pub fn load_file<
     T: DeserializeOwned,
@@ -18,8 +18,7 @@ pub fn load_file<
         Ok(Ok(o)) => Ok(o),
         Ok(Err(e)) => {
             if let Some(thing) = error {
-                let mut notif_log = NOTIF_LOG.write().unwrap();
-                notif_log.push(
+                NOTIF_LOG.push(
                     &format!(
                         "Could not parse {thing} file {}:\n{e}",
                         file.to_string_lossy()
@@ -31,8 +30,7 @@ pub fn load_file<
         }
         Err(e) => {
             if let Some(thing) = error {
-                let mut notif_log = NOTIF_LOG.write().unwrap();
-                notif_log.push(
+                NOTIF_LOG.push(
                     &format!(
                         "Could not load {thing} file {}:\n{e}",
                         file.to_string_lossy()
@@ -79,8 +77,7 @@ pub fn save_file<
         Ok(Ok(_)) => Ok(()),
         Ok(Err(e)) => {
             if let Some(thing) = error {
-                let mut notif_log = NOTIF_LOG.write().unwrap();
-                notif_log.push(
+                NOTIF_LOG.push(
                     &format!(
                         "Could not write {thing} file {}:\n{e}",
                         file.to_string_lossy()
@@ -92,8 +89,7 @@ pub fn save_file<
         }
         Err(e) => {
             if let Some(thing) = error {
-                let mut notif_log = NOTIF_LOG.write().unwrap();
-                notif_log.push(
+                NOTIF_LOG.push(
                     &format!(
                         "Could not serialise {thing} file {}:\n{e}",
                         file.to_string_lossy()

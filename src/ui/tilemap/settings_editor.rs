@@ -1,12 +1,14 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_file_dialog::FileDialog;
+use egui_notify::ToastLevel;
 use surf::Url;
 
 use crate::{
     action::Action,
     dirs_paths::data_path,
     load_save::{load_toml, save_toml},
+    notification::{NotifLogRwLockExt, NOTIF_LOG},
     tile::tile_coord::URL_REPLACER,
     ui::{
         panel::{
@@ -189,7 +191,10 @@ pub fn tile_settings_asy(
     if let Some(file) = file_dialog.take_selected() {
         if let Ok(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
-            status.0 = format!("Loaded new basemap from {}", file.to_string_lossy()).into();
+            NOTIF_LOG.push(
+                &format!("Loaded new basemap from {}", file.to_string_lossy()),
+                ToastLevel::Success,
+            );
         }
     }
 
@@ -197,7 +202,10 @@ pub fn tile_settings_asy(
         file_dialog.update(ctx);
         if let Some(file) = file_dialog.take_selected() {
             if save_toml(basemap, &file, Some("basemap")).is_ok() {
-                status.0 = format!("Exported basemap to {}", file.to_string_lossy()).into();
+                NOTIF_LOG.push(
+                    &format!("Exported basemap to {}", file.to_string_lossy()),
+                    ToastLevel::Success,
+                );
             }
         }
     }

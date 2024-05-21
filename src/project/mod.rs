@@ -60,6 +60,7 @@ impl Plugin for ProjectPlugin {
                     actions.send(Action::new(ProjectAct::Show {
                         ns: "_misc".into(),
                         history_invoked: true,
+                        notif: false,
                     }));
                 },
             );

@@ -69,11 +69,13 @@ impl DockWindow for ProjectEditor {
                                     actions.send(Action::new(ProjectAct::Show {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
+                                        notif: true,
                                     }));
                                 } else {
                                     actions.send(Action::new(ProjectAct::Hide {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
+                                        notif: true,
                                     }));
                                 }
                             }

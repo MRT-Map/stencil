@@ -5,6 +5,7 @@ use bevy::{
     },
 };
 use bevy_egui::EguiContexts;
+use egui_notify::ToastLevel;
 use itertools::Itertools;
 
 use crate::{
@@ -16,6 +17,7 @@ use crate::{
     },
     history::{HistoryAct, HistoryEntry},
     load_save::{load_msgpack, save_msgpack},
+    notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
     ui::{
         panel::{dock::FileDialogs, status::Status},
@@ -26,8 +28,16 @@ use crate::{
 pub enum ProjectAct {
     SelectFolder,
     GetNamespaces,
-    Show { ns: String, history_invoked: bool },
-    Hide { ns: String, history_invoked: bool },
+    Show {
+        ns: String,
+        history_invoked: bool,
+        notif: bool,
+    },
+    Hide {
+        ns: String,
+        history_invoked: bool,
+        notif: bool,
+    },
     Delete(String, bool),
     Save(bool),
 }
@@ -40,7 +50,6 @@ pub fn project_asy(
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
-    mut status: ResMut<Status>,
     skin: Res<Skin>,
     mut popup: EventWriter<Popup>,
 ) {
@@ -49,6 +58,7 @@ pub fn project_asy(
         if let Some(ProjectAct::Show {
             ns,
             history_invoked,
+            notif,
         }) = event.downcast_ref()
         {
             if !namespaces
@@ -86,12 +96,15 @@ pub fn project_asy(
                             visible: true,
                         },
                     )));
-                    status.0 = format!("Loaded namespace {ns}").into();
+                }
+                if *notif {
+                    NOTIF_LOG.push(&format!("Loaded namespace {ns}"), ToastLevel::Success);
                 }
             }
         } else if let Some(ProjectAct::Hide {
             ns,
             history_invoked,
+            notif,
         }) = event.downcast_ref()
         {
             namespaces.visibilities.insert(ns.to_owned(), false);
@@ -122,7 +135,9 @@ pub fn project_asy(
                         visible: false,
                     },
                 )));
-                status.0 = format!("Saved namespace {ns}").into();
+            }
+            if *notif {
+                NOTIF_LOG.push(&format!("Saved namespace {ns}"), ToastLevel::Success);
             }
         } else if let Some(ProjectAct::Save(auto)) = event.downcast_ref() {
             let components = query
@@ -136,11 +151,14 @@ pub fn project_asy(
                     Some("pla2"),
                 );
             }
-            status.0 = if *auto {
-                format!("Auto-saved {} namespaces", components.len()).into()
-            } else {
-                format!("Saved {} namespaces", components.len()).into()
-            };
+            NOTIF_LOG.push(
+                &if *auto {
+                    format!("Auto-saved {} namespaces", components.len())
+                } else {
+                    format!("Saved {} namespaces", components.len())
+                },
+                ToastLevel::Success,
+            );
         } else if matches!(event.downcast_ref(), Some(ProjectAct::SelectFolder)) {
             file_dialogs.project_select.select_directory();
         } else if matches!(event.downcast_ref(), Some(ProjectAct::GetNamespaces)) {

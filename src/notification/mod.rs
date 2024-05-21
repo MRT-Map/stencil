@@ -1,4 +1,8 @@
-use std::{fmt::Debug, sync::RwLock, time::SystemTime};
+use std::{
+    fmt::Debug,
+    sync::RwLock,
+    time::{Duration, SystemTime},
+};
 
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
@@ -25,7 +29,17 @@ pub struct NotifLog {
 }
 impl NotifLog {
     pub fn push<S: ToString>(&mut self, message: &S, level: ToastLevel) {
-        self.pending_notifs.push(Notif::new(message, level))
+        self.pending_notifs.push(Notif::new(message, level));
+    }
+}
+
+pub trait NotifLogRwLockExt {
+    fn push<S: ToString>(&self, message: &S, level: ToastLevel);
+}
+impl NotifLogRwLockExt for RwLock<NotifLog> {
+    fn push<S: ToString>(&self, message: &S, level: ToastLevel) {
+        let mut notif_log = self.write().unwrap();
+        notif_log.push(message, level);
     }
 }
 
@@ -62,7 +76,13 @@ pub fn update_notifs_asy(mut toasts: ResMut<NotifToasts>, mut ctx: EguiContexts)
         toasts
             .0
             .add(Toast::custom(&notif.message, notif.level.to_owned()))
-            .set_duration(None);
+            .set_duration(
+                if notif.level == ToastLevel::Info || notif.level == ToastLevel::Success {
+                    Some(Duration::from_secs(3))
+                } else {
+                    None
+                },
+            );
         notif_log.notifs.push(notif);
     }
     notif_log.pending_notifs.clear();
@@ -78,10 +98,7 @@ pub trait AddToErrorLog<T: Default> {
 impl<T: Default, E: ToString + Debug> AddToErrorLog<T> for Result<T, E> {
     fn notif_error(self, level: ToastLevel) -> Self {
         self.inspect_err(|e| {
-            let mut notif_log = NOTIF_LOG.write().unwrap();
-            notif_log
-                .pending_notifs
-                .push(Notif::new(&e.to_string(), level));
+            NOTIF_LOG.push(&e.to_string(), level);
         })
     }
     fn unwrap_or_default_and_notif(self, level: ToastLevel) -> T {

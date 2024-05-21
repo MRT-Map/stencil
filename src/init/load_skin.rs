@@ -8,7 +8,7 @@ use crate::{
     component::skin::Skin,
     dirs_paths::cache_path,
     load_save::{load_msgpack, save_msgpack},
-    notification::{Notif, NOTIF_LOG},
+    notification::{Notif, NotifLogRwLockExt, NOTIF_LOG},
     state::LoadingState,
 };
 
@@ -57,8 +57,7 @@ pub fn get_skin_sy(
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                let mut notif_log = NOTIF_LOG.write().unwrap();
-                notif_log.push(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
+                NOTIF_LOG.push(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
                 *task_s = Step::Complete;
             }
         },

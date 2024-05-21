@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     component::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
-    notification::{Notif, NOTIF_LOG},
+    notification::{Notif, NotifLogRwLockExt, NOTIF_LOG},
 };
 
 fn hex_to_color(hex: HexColor) -> Color {
@@ -77,8 +77,7 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
             } else {
                 (ComponentType::Line, "line")
             };
-            let mut notif_log = NOTIF_LOG.write().unwrap();
-            notif_log.push(
+            NOTIF_LOG.push(
                 &format!(
                     "Unknown type {} for component {}\nAssuming it is a(n) {}",
                     self.ty, self, s

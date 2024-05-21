@@ -14,7 +14,7 @@ use crate::{
     history::HistoryAct,
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
-    notification::viewer::OpenNotifLogViewerAct,
+    notification::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
     project::events::ProjectAct,
     ui::{
         panel::status::Status,
@@ -83,8 +83,7 @@ pub fn ui_sy(
                 {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
-                        let mut notif_log = NOTIF_LOG.write().unwrap();
-                        notif_log.push(&"Warning Triggered", ToastLevel::Warning);
+                        NOTIF_LOG.push(&"Warning Triggered", ToastLevel::Warning);
                     }
                     if ui.button("Trigger Panic").clicked() {
                         info!(label = "Trigger Panic", "Clicked menu item");
