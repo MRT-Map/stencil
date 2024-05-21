@@ -13,10 +13,7 @@ use crate::{
     action::Action,
     component::skin::Skin,
     dirs_paths::cache_path,
-    error::{
-        log::{update_error_log_sy, NotifToasts},
-        panic::ack_panic_sy,
-    },
+    panic::ack_panic_sy,
     state::{state_changer_asy, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
@@ -29,10 +26,8 @@ impl Plugin for InitPlugin {
             .init_state::<LoadingState>()
             .init_resource::<Skin>()
             .add_event::<Action>()
-            .init_resource::<NotifToasts>()
             .add_systems(Update, state_changer_asy)
-            .add_systems(Startup, ack_panic_sy)
-            .add_systems(Update, update_error_log_sy);
+            .add_systems(Startup, ack_panic_sy);
         app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
             .add_systems(
                 OnEnter(LoadingState::UnzipAssets),

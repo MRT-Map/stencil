@@ -3,7 +3,7 @@ use std::path::Path;
 use egui_notify::ToastLevel;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::error::log::{ErrorLogEntry, ERROR_LOG};
+use crate::notification::{Notif, NOTIF_LOG};
 
 pub fn load_file<
     T: DeserializeOwned,
@@ -18,27 +18,27 @@ pub fn load_file<
         Ok(Ok(o)) => Ok(o),
         Ok(Err(e)) => {
             if let Some(thing) = error {
-                let mut error_log = ERROR_LOG.write().unwrap();
-                error_log.pending_errors.push(ErrorLogEntry::new(
+                let mut notif_log = NOTIF_LOG.write().unwrap();
+                notif_log.push(
                     &format!(
                         "Could not parse {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
                     ToastLevel::Warning,
-                ));
+                );
             }
             Err(e.into())
         }
         Err(e) => {
             if let Some(thing) = error {
-                let mut error_log = ERROR_LOG.write().unwrap();
-                error_log.pending_errors.push(ErrorLogEntry::new(
+                let mut notif_log = NOTIF_LOG.write().unwrap();
+                notif_log.push(
                     &format!(
                         "Could not load {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
                     ToastLevel::Warning,
-                ));
+                );
             }
             Err(e.into())
         }
@@ -79,27 +79,27 @@ pub fn save_file<
         Ok(Ok(_)) => Ok(()),
         Ok(Err(e)) => {
             if let Some(thing) = error {
-                let mut error_log = ERROR_LOG.write().unwrap();
-                error_log.pending_errors.push(ErrorLogEntry::new(
+                let mut notif_log = NOTIF_LOG.write().unwrap();
+                notif_log.push(
                     &format!(
                         "Could not write {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
                     ToastLevel::Warning,
-                ));
+                );
             }
             Err(e.into())
         }
         Err(e) => {
             if let Some(thing) = error {
-                let mut error_log = ERROR_LOG.write().unwrap();
-                error_log.pending_errors.push(ErrorLogEntry::new(
+                let mut notif_log = NOTIF_LOG.write().unwrap();
+                notif_log.push(
                     &format!(
                         "Could not serialise {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
                     ToastLevel::Warning,
-                ));
+                );
             }
             Err(e.into())
         }

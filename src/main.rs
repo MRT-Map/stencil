@@ -197,13 +197,14 @@ use crate::{
 
 pub mod action;
 pub mod component;
-mod dirs_paths;
-pub mod error;
+pub mod dirs_paths;
 pub mod history;
 pub mod info_windows;
 pub mod init;
 pub mod keymaps;
 pub mod load_save;
+pub mod notification;
+pub mod panic;
 pub mod project;
 pub mod state;
 pub mod tile;
@@ -238,7 +239,7 @@ fn init_logger() -> eyre::Result<()> {
 }
 
 fn main() -> eyre::Result<()> {
-    std::panic::set_hook(Box::new(error::panic::panic));
+    std::panic::set_hook(Box::new(panic::panic));
 
     init_logger()?;
     info!("Logger initialised");

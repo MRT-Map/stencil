@@ -14,9 +14,9 @@ use crate::{
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
-    error::log::ErrorLogViewer,
     history::{history_viewer::HistoryViewer, History},
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
+    notification::viewer::NotifLogViewer,
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
     ui::{
@@ -52,7 +52,7 @@ pub enum DockWindows {
     WindowSettingsEditor,
     TileSettingsEditor,
     KeymapSettingsEditor,
-    ErrorLogViewer,
+    NotifLogViewer,
     ComponentList,
     HistoryViewer,
 }

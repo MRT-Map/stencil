@@ -8,13 +8,13 @@ use bevy_mouse_tracking::MousePosWorld;
 use egui_notify::ToastLevel;
 
 #[cfg(debug_assertions)]
-use crate::error::log::{ErrorLogEntry, ERROR_LOG};
+use crate::notification::{Notif, NOTIF_LOG};
 use crate::{
     action::Action,
-    error::log::OpenErrorLogViewerAct,
     history::HistoryAct,
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::OpenKeymapSettingsAct,
+    notification::viewer::OpenNotifLogViewerAct,
     project::events::ProjectAct,
     ui::{
         panel::status::Status,
@@ -78,16 +78,13 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
             });
             egui::menu::menu_button(ui, "Debug", |ui| {
-                button!(ui, event_writer, "Error Log", OpenErrorLogViewerAct);
+                button!(ui, event_writer, "Error Log", OpenNotifLogViewerAct);
                 #[cfg(debug_assertions)]
                 {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
-                        let mut error_log = ERROR_LOG.write().unwrap();
-                        error_log.pending_errors.push(ErrorLogEntry::new(
-                            &"Warning Triggered",
-                            ToastLevel::Warning,
-                        ));
+                        let mut notif_log = NOTIF_LOG.write().unwrap();
+                        notif_log.push(&"Warning Triggered", ToastLevel::Warning);
                     }
                     if ui.button("Trigger Panic").clicked() {
                         info!(label = "Trigger Panic", "Clicked menu item");

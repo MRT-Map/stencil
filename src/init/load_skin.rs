@@ -7,8 +7,8 @@ use tracing::{error, info};
 use crate::{
     component::skin::Skin,
     dirs_paths::cache_path,
-    error::log::{ErrorLogEntry, ERROR_LOG},
     load_save::{load_msgpack, save_msgpack},
+    notification::{Notif, NOTIF_LOG},
     state::LoadingState,
 };
 
@@ -57,8 +57,8 @@ pub fn get_skin_sy(
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                let mut error_log = ERROR_LOG.write().unwrap();
-                error_log.pending_errors.push(ErrorLogEntry::new(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error));
+                let mut notif_log = NOTIF_LOG.write().unwrap();
+                notif_log.push(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
                 *task_s = Step::Complete;
             }
         },
