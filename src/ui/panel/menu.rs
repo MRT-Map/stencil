@@ -66,7 +66,7 @@ pub fn ui_sy(
                     "Select project folder",
                     ProjectAct::SelectFolder
                 );
-                button!(ui, event_writer, "Save project", ProjectAct::Save);
+                button!(ui, event_writer, "Save project", ProjectAct::Save(false));
             });
             egui::menu::menu_button(ui, "Edit", |ui| {
                 button!(ui, event_writer, "Undo", HistoryAct::Undo);

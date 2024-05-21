@@ -33,7 +33,7 @@ impl DockWindow for ProjectEditor {
                 actions.send(Action::new(ProjectAct::GetNamespaces));
             }
             if ui.button("Save").clicked() {
-                actions.send(Action::new(ProjectAct::Save));
+                actions.send(Action::new(ProjectAct::Save(false)));
             }
         });
         ui.label(format!(

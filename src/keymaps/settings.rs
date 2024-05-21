@@ -44,7 +44,7 @@ impl KeymapAction {
             Self::Undo => Action::new(HistoryAct::Undo),
             Self::Redo => Action::new(HistoryAct::Redo),
             Self::SelectProjectFolder => Action::new(ProjectAct::SelectFolder),
-            Self::SaveProject => Action::new(ProjectAct::Save),
+            Self::SaveProject => Action::new(ProjectAct::Save(false)),
             Self::TileSettings => Action::new(TileSettingsAct::Open),
             Self::WindowSettings => Action::new(OpenWindowSettingsAct),
             Self::KeymapSettings => Action::new(OpenKeymapSettingsAct),

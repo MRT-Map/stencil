@@ -29,7 +29,7 @@ pub enum ProjectAct {
     Show { ns: String, history_invoked: bool },
     Hide { ns: String, history_invoked: bool },
     Delete(String, bool),
-    Save,
+    Save(bool),
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -124,7 +124,7 @@ pub fn project_asy(
                 )));
                 status.0 = format!("Saved namespace {ns}").into();
             }
-        } else if matches!(event.downcast_ref(), Some(ProjectAct::Save)) {
+        } else if let Some(ProjectAct::Save(auto)) = event.downcast_ref() {
             let components = query
                 .iter()
                 .map(|(_, p)| p.to_mc_coords())
@@ -136,7 +136,11 @@ pub fn project_asy(
                     Some("pla2"),
                 );
             }
-            status.0 = format!("Saved {} namespaces", components.len()).into();
+            status.0 = if *auto {
+                format!("Auto-saved {} namespaces", components.len()).into()
+            } else {
+                format!("Saved {} namespaces", components.len()).into()
+            };
         } else if matches!(event.downcast_ref(), Some(ProjectAct::SelectFolder)) {
             file_dialogs.project_select.select_directory();
         } else if matches!(event.downcast_ref(), Some(ProjectAct::GetNamespaces)) {
