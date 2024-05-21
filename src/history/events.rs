@@ -68,8 +68,30 @@ pub fn history_asy(
                         visible: visible.to_owned(),
                     },
                 })
-                .collect();
+                .collect::<Vec<_>>();
             history.redo_stack.clear();
+            if let (
+                Some(
+                    [HistoryEntry::Component {
+                        entity: e1,
+                        after: a1,
+                        ..
+                    }],
+                ),
+                [HistoryEntry::Component {
+                    entity: e2,
+                    after: a2,
+                    ..
+                }],
+            ) = (
+                history.undo_stack.last_mut().map(Vec::as_mut_slice),
+                histories.as_slice(),
+            ) {
+                if *e1.read().unwrap() == *e2.read().unwrap() {
+                    a2.clone_into(a1);
+                    continue;
+                }
+            }
             history.undo_stack.push(histories);
         } else if matches!(event.downcast_ref(), Some(HistoryAct::Undo)) {
             let Some(mut histories) = history.undo_stack.pop() else {

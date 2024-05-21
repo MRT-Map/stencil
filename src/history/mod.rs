@@ -1,7 +1,10 @@
 mod events;
 pub mod history_viewer;
 
-use std::sync::{Arc, RwLock};
+use std::{
+    fmt::{Display, Formatter},
+    sync::{Arc, RwLock},
+};
 
 use bevy::prelude::*;
 
@@ -21,6 +24,40 @@ pub enum HistoryEntry<T = Entity> {
         namespace: String,
         visible: bool,
     },
+}
+
+impl<T> Display for HistoryEntry<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Component { before, after, .. } => match (before, after) {
+                (Some(before), Some(after)) => {
+                    let before_id = before.to_string();
+                    let after_id = after.to_string();
+                    if before_id == after_id {
+                        write!(f, "Edit component data of {before_id}")
+                    } else {
+                        write!(f, "Edit component data of {before_id}/{after_id}")
+                    }
+                }
+                (Some(before), None) => {
+                    write!(f, "Delete {before}")
+                }
+                (None, Some(after)) => {
+                    write!(f, "Create {after}")
+                }
+                (None, None) => {
+                    panic!();
+                }
+            },
+            Self::Namespace { namespace, visible } => {
+                if *visible {
+                    write!(f, "Show {namespace}")
+                } else {
+                    write!(f, "Hide {namespace}")
+                }
+            }
+        }
+    }
 }
 
 pub enum HistoryAct {
