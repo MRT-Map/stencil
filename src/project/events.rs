@@ -25,9 +25,9 @@ use crate::{
 };
 
 pub enum ProjectAct {
-    SelectFolder,
-    LoadFolder(PathBuf, bool),
-    GetNamespaces,
+    Open,
+    Load(PathBuf, bool),
+    Reload,
     Show {
         ns: String,
         history_invoked: bool,
@@ -160,9 +160,9 @@ pub fn project_asy(
                 },
                 ToastLevel::Success,
             );
-        } else if matches!(event.downcast_ref(), Some(ProjectAct::SelectFolder)) {
+        } else if matches!(event.downcast_ref(), Some(ProjectAct::Open)) {
             file_dialogs.project_select.select_directory();
-        } else if matches!(event.downcast_ref(), Some(ProjectAct::GetNamespaces)) {
+        } else if matches!(event.downcast_ref(), Some(ProjectAct::Reload)) {
             let ns: Vec<String> = namespaces
                 .folder
                 .read_dir()
@@ -211,13 +211,10 @@ pub fn project_asy(
                     action: NamespaceAction::Delete(delete_file),
                 },
             )));
-        } else if let Some(ProjectAct::LoadFolder(folder, true)) = event.downcast_ref() {
+        } else if let Some(ProjectAct::Load(folder, true)) = event.downcast_ref() {
             send_queue.push(Action::new(ProjectAct::Save(false)));
-            send_queue.push(Action::new(ProjectAct::LoadFolder(
-                folder.to_owned(),
-                false,
-            )));
-        } else if let Some(ProjectAct::LoadFolder(folder, false)) = event.downcast_ref() {
+            send_queue.push(Action::new(ProjectAct::Load(folder.to_owned(), false)));
+        } else if let Some(ProjectAct::Load(folder, false)) = event.downcast_ref() {
             history.redo_stack.clear();
             history.undo_stack.clear();
             namespaces.folder = folder.to_owned();
@@ -225,7 +222,7 @@ pub fn project_asy(
             for (e, _) in query.iter() {
                 commands.entity(e).despawn_recursive();
             }
-            send_queue.push(Action::new(ProjectAct::GetNamespaces));
+            send_queue.push(Action::new(ProjectAct::Reload));
         }
     }
     for action in send_queue {
@@ -240,8 +237,8 @@ pub fn project_asy(
             "save-before-switching",
             "Save before switching projects?",
             "",
-            Action::new(ProjectAct::LoadFolder(file.to_owned(), true)),
-            Action::new(ProjectAct::LoadFolder(file, false)),
+            Action::new(ProjectAct::Load(file.to_owned(), true)),
+            Action::new(ProjectAct::Load(file, false)),
         ));
     }
 }

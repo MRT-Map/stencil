@@ -48,7 +48,7 @@ pub fn autosave_sy(
     let time = time.elapsed();
     if time - last_save_time.to_owned() >= Duration::from_secs(misc_settings.autosave_interval) {
         actions.send(Action::new(ProjectAct::Save(true)));
-        actions.send(Action::new(ProjectAct::GetNamespaces));
+        actions.send(Action::new(ProjectAct::Reload));
         *last_save = Some(time);
     }
 }
@@ -69,7 +69,7 @@ impl Plugin for ProjectPlugin {
             .add_systems(
                 OnExit(EditorState::Loading),
                 |mut actions: EventWriter<Action>| {
-                    actions.send(Action::new(ProjectAct::GetNamespaces));
+                    actions.send(Action::new(ProjectAct::Reload));
                     actions.send(Action::new(ProjectAct::Show {
                         ns: "_misc".into(),
                         history_invoked: true,

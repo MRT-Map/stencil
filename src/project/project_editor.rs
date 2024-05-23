@@ -30,11 +30,11 @@ impl DockWindow for ProjectEditor {
         } = tab_viewer.params;
         let components = queries.p1().iter().counts_by(|a| a.namespace.to_owned());
         ui.horizontal(|ui| {
-            if ui.button("Select project folder").clicked() {
-                actions.send(Action::new(ProjectAct::SelectFolder));
+            if ui.button("Open").clicked() {
+                actions.send(Action::new(ProjectAct::Open));
             }
             if ui.button("Reload").clicked() {
-                actions.send(Action::new(ProjectAct::GetNamespaces));
+                actions.send(Action::new(ProjectAct::Reload));
             }
             if ui.button("Save").clicked() {
                 actions.send(Action::new(ProjectAct::Save(false)));
@@ -149,7 +149,7 @@ impl DockWindow for ProjectEditor {
 impl ProjectEditor {
     #[must_use]
     pub fn select_dialog() -> FileDialog {
-        FileDialog::new().title("Select project folder")
+        FileDialog::new().title("Open project")
     }
 }
 

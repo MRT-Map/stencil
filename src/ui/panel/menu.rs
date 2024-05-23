@@ -78,13 +78,9 @@ pub fn ui_sy(
             );
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "File", |ui| {
-                button!(
-                    ui,
-                    event_writer,
-                    "Select Project Folder...",
-                    ProjectAct::SelectFolder
-                );
-                button!(ui, event_writer, "Save Project", ProjectAct::Save(false));
+                button!(ui, event_writer, "Open...", ProjectAct::Open);
+                button!(ui, event_writer, "Reload", ProjectAct::Reload);
+                button!(ui, event_writer, "Save", ProjectAct::Save(false));
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
