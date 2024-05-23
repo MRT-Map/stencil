@@ -7,6 +7,7 @@ use crate::window::settings::LinuxWindow;
 use crate::{
     action::Action,
     dirs_paths::{cache_path, data_path},
+    file::safe_delete,
     misc_config::settings::MiscSettings,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -56,7 +57,7 @@ impl DockWindow for MiscSettingsEditor {
             .clicked
             && cache_path("skin.msgpack").exists()
         {
-            std::fs::remove_file(cache_path("skin.msgpack")).unwrap();
+            let _ = safe_delete(&cache_path("skin.msgpack"), Some("cached skin file"));
         }
         ui.separator();
 
@@ -106,21 +107,21 @@ impl DockWindow for MiscSettingsEditor {
             egui::Slider::new(&mut misc_settings.additional_zoom, 0..=4)
                 .text("Additional zoom levels"),
         );
-        ui.label("Increases the maximum zoom so you can zoom in further.");
+        ui.label("Increases the maximum zoom so you can zoom in further");
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=4)
+            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=600)
                 .text("Autosave interval"),
         );
-        ui.label("Set to 0 to disable autosave.");
+        ui.label("Set to 0 to disable autosave");
 
         if !invalid && old_settings != **misc_settings {
             misc_settings.save().unwrap();
             if old_settings.skin_url != misc_settings.skin_url
                 && cache_path("skin.msgpack").exists()
             {
-                std::fs::remove_file(cache_path("skin.msgpack")).unwrap();
+                let _ = safe_delete(&cache_path("skin.msgpack"), Some("cached skin file"));
             }
         }
     }

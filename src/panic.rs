@@ -6,7 +6,7 @@ use color_backtrace::BacktracePrinter;
 use itertools::Itertools;
 use tracing_error::SpanTrace;
 
-use crate::{dirs_paths::data_dir, ui::popup::Popup};
+use crate::{dirs_paths::data_dir, file::safe_delete, ui::popup::Popup};
 
 pub fn panic(panic: &PanicInfo) {
     error!("Caught panic: {panic:#}");
@@ -64,7 +64,7 @@ pub fn ack_panic_sy(mut popup: EventWriter<Popup>) {
             _e => panic!("{_e:?}"),
         },
     };
-    std::fs::remove_file(&to_show_file).unwrap();
+    let _ = safe_delete(&to_show_file, Some("to_show file"));
     popup.send(Popup::base_alert(
         "ack_panic",
         "Panic",

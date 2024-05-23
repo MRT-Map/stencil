@@ -5,7 +5,6 @@ use events::ProjectAct;
 
 use crate::{
     action::Action, dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState,
-    ui::panel::status::Status,
 };
 
 pub mod events;

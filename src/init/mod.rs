@@ -13,6 +13,7 @@ use crate::{
     action::Action,
     component::skin::Skin,
     dirs_paths::cache_path,
+    file::safe_delete,
     panic::ack_panic_sy,
     state::{state_changer_asy, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
@@ -48,7 +49,7 @@ impl Plugin for InitPlugin {
 fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
     if INIT_TILE_SETTINGS.clear_cache_on_startup {
         info!("Removing previous tile cache");
-        let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
+        let _ = safe_delete(&cache_path("tile-cache"), None);
     }
 
     status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();

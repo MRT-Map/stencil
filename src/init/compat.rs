@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 use toml::Table;
 
-use crate::{dirs_paths::data_path, state::LoadingState, ui::tilemap::settings::TileSettings};
+use crate::{
+    dirs_paths::data_path, file::safe_delete, state::LoadingState,
+    ui::tilemap::settings::TileSettings,
+};
 
 fn v2_0_1() {
     info!("Running compatibility upgrades from v2.0.1");
     if data_path("tile_settings.msgpack").is_dir() {
-        let _ = std::fs::remove_dir_all(data_path("tile_settings.msgpack"));
+        let _ = safe_delete(&data_path("tile_settings.msgpack"), None);
     }
 }
 
@@ -16,9 +19,9 @@ fn v2_1_0() {
         if let Ok(t) = rmp_serde::from_slice::<TileSettings>(&b) {
             let _ = t.save();
         }
-        let _ = std::fs::remove_file(data_path("tile_settings.msgpack"));
+        let _ = safe_delete(&data_path("tile_settings.msgpack"), None);
     }
-    let _ = std::fs::remove_dir_all(data_path("tile-cache"));
+    let _ = safe_delete(&data_path("tile-cache"), None);
 }
 
 fn v2_2_0() {

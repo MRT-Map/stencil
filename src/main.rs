@@ -200,11 +200,11 @@ use crate::{
 pub mod action;
 pub mod component;
 pub mod dirs_paths;
+pub mod file;
 pub mod history;
 pub mod info_windows;
 pub mod init;
 pub mod keymaps;
-pub mod load_save;
 pub mod misc_config;
 pub mod notification;
 pub mod panic;

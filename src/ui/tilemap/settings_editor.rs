@@ -7,14 +7,11 @@ use surf::Url;
 use crate::{
     action::Action,
     dirs_paths::data_path,
-    load_save::{load_toml, save_toml},
+    file::{load_toml, save_toml},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     tile::tile_coord::URL_REPLACER,
     ui::{
-        panel::{
-            dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
-            status::Status,
-        },
+        panel::dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
         tilemap::settings::{Basemap, TileSettings},
     },
 };

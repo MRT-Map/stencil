@@ -15,8 +15,8 @@ use crate::{
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
+    file::{load_msgpack, safe_delete, save_msgpack},
     history::{HistoryAct, HistoryEntry},
-    load_save::{load_msgpack, save_msgpack},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
     ui::{panel::dock::FileDialogs, popup::Popup},
@@ -185,7 +185,10 @@ pub fn project_asy(
             ));
         } else if let Some(ProjectAct::Delete(ns, true)) = event.downcast_ref() {
             namespaces.visibilities.remove(ns);
-            let _ = std::fs::remove_file(&namespaces.folder.join(format!("{ns}.pla2.msgpack")));
+            let _ = safe_delete(
+                &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                Some("namespace file"),
+            );
         }
     }
     for action in send_queue {

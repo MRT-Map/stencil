@@ -102,6 +102,6 @@ pub struct NotificationPlugin;
 impl Plugin for NotificationPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
-            .add_systems(Update, update_notifs_asy);
+            .add_systems(Update, (update_notifs_asy, viewer::log_viewer_asy));
     }
 }

@@ -1,9 +1,15 @@
-use std::path::Path;
+use std::{
+    path::{Path, PathBuf},
+    time::SystemTime,
+};
 
 use egui_notify::ToastLevel;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::notification::{NotifLogRwLockExt, NOTIF_LOG};
+use crate::{
+    dirs_paths::cache_dir,
+    notification::{NotifLogRwLockExt, NOTIF_LOG},
+};
 
 pub fn load_file<
     T: DeserializeOwned,
@@ -73,9 +79,14 @@ pub fn save_file<
     file: &Path,
     error: Option<&'static str>,
 ) -> eyre::Result<()> {
+    let old_file = file.exists().then(|| safe_delete(file, None));
+
     match serializer(o).map(move |s| std::fs::write(file, s)) {
         Ok(Ok(_)) => Ok(()),
         Ok(Err(e)) => {
+            if let Some(Ok(old_file)) = old_file {
+                let _ = restore(&old_file, file, None);
+            }
             if let Some(thing) = error {
                 NOTIF_LOG.push(
                     &format!(
@@ -130,4 +141,46 @@ pub fn save_msgpack<T: Serialize>(
     error: Option<&'static str>,
 ) -> eyre::Result<()> {
     save_file(o, |o| rmp_serde::to_vec_named(o), file, error)
+}
+
+pub fn safe_delete(path: &Path, error: Option<&'static str>) -> eyre::Result<PathBuf> {
+    let trash_dir = cache_dir("trash");
+    let timestamp = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let new_path = trash_dir.join(timestamp.to_string());
+    match std::fs::rename(path, &new_path) {
+        Ok(()) => Ok(new_path),
+        Err(e) => {
+            if let Some(thing) = error {
+                NOTIF_LOG.push(
+                    &format!(
+                        "Could not safe delete {thing} file/directory {}:\n{e}",
+                        path.to_string_lossy()
+                    ),
+                    ToastLevel::Warning,
+                );
+            }
+            Err(e.into())
+        }
+    }
+}
+
+pub fn restore(path: &Path, old_path: &Path, error: Option<&'static str>) -> eyre::Result<()> {
+    match std::fs::rename(path, old_path) {
+        Ok(()) => Ok(()),
+        Err(e) => {
+            if let Some(thing) = error {
+                NOTIF_LOG.push(
+                    &format!(
+                        "Could not restore {thing} from file/directory {}:\n{e}",
+                        path.to_string_lossy()
+                    ),
+                    ToastLevel::Warning,
+                );
+            }
+            Err(e.into())
+        }
+    }
 }
