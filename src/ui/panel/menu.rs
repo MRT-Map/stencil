@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::{egui, EguiContexts};
+use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
 use bevy_mouse_tracking::MousePosWorld;
 #[cfg(debug_assertions)]
 use egui_notify::ToastLevel;
@@ -19,6 +20,7 @@ use crate::{
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
     project::events::ProjectAct,
+    tile::zoom::Zoom,
     ui::{
         panel::{
             dock::{DockWindow, DockWindows, PanelDockState},
@@ -42,6 +44,7 @@ pub fn ui_sy(
     mouse_pos_world: Res<MousePosWorld>,
     pending_tiles: Res<PendingTiles>,
     status: Res<Status>,
+    zoom: Res<Zoom>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
@@ -106,7 +109,7 @@ pub fn ui_sy(
                 }
             });
             ui.separator();
-            ui.label(status.0.to_owned().color(egui::Color32::WHITE));
+
             ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
                 ui.label(format!(
                     "FPS: {} ({})",
@@ -121,13 +124,24 @@ pub fn ui_sy(
                 ));
                 ui.separator();
                 ui.label(format!(
-                    "x: {} z: {}",
+                    "x: {} z: {} \u{1f50d}: {:.2}",
                     mouse_pos_world.round().x as i32,
-                    -mouse_pos_world.round().y as i32
+                    -mouse_pos_world.round().y as i32,
+                    zoom.0
                 ));
                 ui.separator();
                 ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
-            })
+                ui.separator();
+
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
+                    egui::ScrollArea::horizontal()
+                        .max_width(ui.available_width())
+                        .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
+                        .show(ui, |ui| {
+                            ui.label(status.0.to_owned().color(egui::Color32::WHITE));
+                        });
+                });
+            });
         });
     });
 }
