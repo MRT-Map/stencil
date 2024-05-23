@@ -5,6 +5,7 @@ use itertools::Itertools;
 
 use crate::{
     action::Action,
+    history::{HistoryAct, HistoryEntry, NamespaceAction},
     project::events::ProjectAct,
     ui::panel::dock::{DockWindow, PanelParams, TabViewer},
 };
@@ -94,7 +95,7 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             if ui
                                 .add_enabled(
-                                    num_components == 0 && ns != "_misc",
+                                    num_components == 0 && ns != "_misc" && !*vis,
                                     egui::Button::new("X"),
                                 )
                                 .clicked()
@@ -126,6 +127,13 @@ impl DockWindow for ProjectEditor {
                             namespaces
                                 .visibilities
                                 .insert(new_namespace.to_owned(), true);
+
+                            actions.send(Action::new(HistoryAct::one_history(
+                                HistoryEntry::Namespace {
+                                    namespace: new_namespace.to_owned(),
+                                    action: NamespaceAction::Create(None),
+                                },
+                            )));
                             new_namespace.clear();
                         }
                     });

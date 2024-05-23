@@ -21,8 +21,9 @@ use crate::{
         pla2::ComponentType,
         skin::Skin,
     },
-    history::{History, HistoryAct, HistoryEntry},
-    project::events::ProjectAct,
+    file::{restore, safe_delete},
+    history::{History, HistoryAct, HistoryEntry, NamespaceAction},
+    project::{events::ProjectAct, Namespaces},
     ui::panel::status::Status,
 };
 
@@ -39,6 +40,7 @@ pub fn history_asy(
     selected_entity: Query<Entity, With<SelectedComponent>>,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
+    mut namespaces: ResMut<Namespaces>,
 ) {
     let selected = selected_entity.get_single().ok();
     let mut send_queue: Vec<Action> = vec![];
@@ -63,9 +65,9 @@ pub fn history_asy(
                             component_id
                         },
                     },
-                    HistoryEntry::Namespace { namespace, visible } => HistoryEntry::Namespace {
+                    HistoryEntry::Namespace { namespace, action } => HistoryEntry::Namespace {
                         namespace: namespace.to_owned(),
-                        visible: visible.to_owned(),
+                        action: action.to_owned(),
                     },
                 })
                 .collect::<Vec<_>>();
@@ -139,20 +141,53 @@ pub fn history_asy(
                             ids.remove(&component_id);
                         }
                     },
-                    HistoryEntry::Namespace { namespace, visible } => {
-                        send_queue.push(if *visible {
-                            Action::new(ProjectAct::Hide {
+                    HistoryEntry::Namespace { namespace, action } => {
+                        send_queue.push(Action::new(match action {
+                            NamespaceAction::Show => ProjectAct::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
-                            })
-                        } else {
-                            Action::new(ProjectAct::Show {
+                            },
+                            NamespaceAction::Hide => ProjectAct::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
-                            })
-                        });
+                            },
+                            NamespaceAction::Create(deleted_file) => {
+                                namespaces.visibilities.remove(namespace);
+                                if namespaces
+                                    .folder
+                                    .join(format!("{namespace}.pla2.msgpack"))
+                                    .exists()
+                                {
+                                    *deleted_file = safe_delete(
+                                        &namespaces
+                                            .folder
+                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        Some("namespace file"),
+                                    )
+                                    .ok();
+                                }
+                                continue;
+                            }
+                            NamespaceAction::Delete(deleted_file) => {
+                                namespaces.visibilities.insert(namespace.to_owned(), false);
+                                if let Some(deleted_file) = deleted_file {
+                                    let _ = restore(
+                                        deleted_file,
+                                        &namespaces
+                                            .folder
+                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        Some("namespace file"),
+                                    )
+                                    .ok();
+                                }
+                                continue;
+                            }
+                            _ => {
+                                continue;
+                            }
+                        }))
                     }
                 }
             }
@@ -203,20 +238,53 @@ pub fn history_asy(
                             ids.remove(&component_id);
                         }
                     },
-                    HistoryEntry::Namespace { namespace, visible } => {
-                        send_queue.push(if *visible {
-                            Action::new(ProjectAct::Show {
+                    HistoryEntry::Namespace { namespace, action } => {
+                        send_queue.push(Action::new(match action {
+                            NamespaceAction::Show => ProjectAct::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
-                            })
-                        } else {
-                            Action::new(ProjectAct::Hide {
+                            },
+                            NamespaceAction::Hide => ProjectAct::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
-                            })
-                        });
+                            },
+                            NamespaceAction::Create(deleted_file) => {
+                                namespaces.visibilities.insert(namespace.to_owned(), true);
+                                if let Some(deleted_file) = deleted_file {
+                                    let _ = restore(
+                                        deleted_file,
+                                        &namespaces
+                                            .folder
+                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        Some("namespace file"),
+                                    )
+                                    .ok();
+                                }
+                                continue;
+                            }
+                            NamespaceAction::Delete(deleted_file) => {
+                                namespaces.visibilities.remove(namespace);
+                                if namespaces
+                                    .folder
+                                    .join(format!("{namespace}.pla2.msgpack"))
+                                    .exists()
+                                {
+                                    *deleted_file = safe_delete(
+                                        &namespaces
+                                            .folder
+                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        Some("namespace file"),
+                                    )
+                                    .ok();
+                                }
+                                continue;
+                            }
+                            _ => {
+                                continue;
+                            }
+                        }))
                     }
                 }
             }

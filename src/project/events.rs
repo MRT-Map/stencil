@@ -16,7 +16,7 @@ use crate::{
         skin::Skin,
     },
     file::{load_msgpack, safe_delete, save_msgpack},
-    history::{HistoryAct, HistoryEntry},
+    history::{HistoryAct, HistoryEntry, NamespaceAction},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
     ui::{panel::dock::FileDialogs, popup::Popup},
@@ -90,7 +90,7 @@ pub fn project_asy(
                     send_queue.push(Action::new(HistoryAct::one_history(
                         HistoryEntry::Namespace {
                             namespace: ns.to_owned(),
-                            visible: true,
+                            action: NamespaceAction::Show,
                         },
                     )));
                 }
@@ -129,7 +129,7 @@ pub fn project_asy(
                 send_queue.push(Action::new(HistoryAct::one_history(
                     HistoryEntry::Namespace {
                         namespace: ns.to_owned(),
-                        visible: false,
+                        action: NamespaceAction::Hide,
                     },
                 )));
             }
@@ -185,10 +185,24 @@ pub fn project_asy(
             ));
         } else if let Some(ProjectAct::Delete(ns, true)) = event.downcast_ref() {
             namespaces.visibilities.remove(ns);
-            let _ = safe_delete(
-                &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
-                Some("namespace file"),
-            );
+            let delete_file = namespaces
+                .folder
+                .join(format!("{ns}.pla2.msgpack"))
+                .exists()
+                .then(|| {
+                    safe_delete(
+                        &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                        Some("namespace file"),
+                    )
+                    .ok()
+                })
+                .flatten();
+            send_queue.push(Action::new(HistoryAct::one_history(
+                HistoryEntry::Namespace {
+                    namespace: ns.to_owned(),
+                    action: NamespaceAction::Delete(delete_file),
+                },
+            )));
         }
     }
     for action in send_queue {
