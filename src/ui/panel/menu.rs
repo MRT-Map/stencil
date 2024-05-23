@@ -7,11 +7,8 @@ use bevy::{
 use bevy_egui::{egui, EguiContexts};
 use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
 use bevy_mouse_tracking::MousePosWorld;
-#[cfg(debug_assertions)]
 use egui_notify::ToastLevel;
 
-#[cfg(debug_assertions)]
-use crate::ui::notif::NOTIF_LOG;
 use crate::{
     action::Action,
     component::panels::{
@@ -24,7 +21,7 @@ use crate::{
     project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
     tile::zoom::Zoom,
     ui::{
-        notif::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
+        notif::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
             dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateAct},
             status::Status,
