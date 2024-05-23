@@ -4,16 +4,19 @@ mod load_skin;
 pub mod set_icon;
 pub mod spawn_camera;
 pub mod unzip_assets;
+mod welcome;
 
 use bevy::prelude::*;
 use load_skin::get_skin_sy;
 
 use crate::{
-    error_handling::ack_panic_sy,
-    misc::{cache_path, Action},
-    pla2::skin::Skin,
+    action::Action,
+    component::skin::Skin,
+    dirs_paths::cache_path,
+    file::safe_delete,
+    panic::ack_panic_sy,
     state::{state_changer_asy, EditorState, LoadingState},
-    ui::tilemap::settings::INIT_TILE_SETTINGS,
+    ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
 
 pub struct InitPlugin;
@@ -36,17 +39,20 @@ impl Plugin for InitPlugin {
             .add_systems(Update, get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
             .add_systems(
                 OnEnter(LoadingState::SpawnCamera),
-                spawn_camera::spawn_camera,
+                spawn_camera::spawn_camera_sy,
             )
+            .add_systems(OnEnter(LoadingState::Welcome), welcome::welcome_sy)
             .add_systems(OnEnter(LoadingState::Done), done_sy);
     }
 }
 
-fn done_sy(mut commands: Commands) {
+fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
     if INIT_TILE_SETTINGS.clear_cache_on_startup {
         info!("Removing previous tile cache");
-        let _ = std::fs::remove_dir_all(cache_path("tile-cache"));
+        let _ = safe_delete(&cache_path("tile-cache"), None);
     }
+
+    status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState(Some(EditorState::Idle)));

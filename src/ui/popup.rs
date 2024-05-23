@@ -8,13 +8,9 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::WidgetText, EguiContexts};
-use bevy_mouse_tracking::MousePos;
+use bevy_egui::{egui, EguiContexts};
 
-use crate::{
-    misc::Action,
-    ui::{HoveringOverGui, UiSet},
-};
+use crate::{action::Action, ui::UiSet};
 
 #[derive(Event, Hash, PartialEq, Eq, Clone)]
 pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);
@@ -85,8 +81,8 @@ impl Popup {
     }
     pub fn base_alert<
         I: Display + Send + Sync + 'static,
-        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
-        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
     >(
         id: I,
         title: T1,
@@ -102,10 +98,12 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, _, show| {
-                ui.label(text.to_owned());
+            move |_, ui, _, shown| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.label(text.to_owned());
+                });
                 if ui.button("Close").clicked() {
-                    *show = false;
+                    *shown = false;
                 }
             },
             Mutex::new(Box::new(())),
@@ -113,8 +111,8 @@ impl Popup {
     }
     pub fn base_confirm<
         I: Display + Send + Sync + 'static,
-        T1: Into<WidgetText> + Clone + Sync + Send + 'static,
-        T2: Into<WidgetText> + Clone + Sync + Send + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
     >(
         id: I,
         title: T1,
@@ -131,15 +129,54 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, ew, show| {
+            move |_, ui, ew, shown| {
                 ui.label(text.to_owned());
-                if ui.button("Yes").clicked() {
-                    ew.send(action.to_owned());
-                    *show = false;
-                }
-                if ui.button("No").clicked() {
-                    *show = false;
-                }
+                ui.horizontal(|ui| {
+                    if ui.button("Yes").clicked() {
+                        ew.send(action.to_owned());
+                        *shown = false;
+                    }
+                    if ui.button("No").clicked() {
+                        *shown = false;
+                    }
+                });
+            },
+            Mutex::new(Box::new(())),
+        )
+    }
+    pub fn base_choose<
+        I: Display + Send + Sync + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+    >(
+        id: I,
+        title: T1,
+        text: T2,
+        action1: Action,
+        action2: Action,
+    ) -> Self {
+        let win_id = egui::Id::new(id.to_string());
+        Self::new(
+            id.to_string(),
+            move || {
+                egui::Window::new(title.to_owned())
+                    .collapsible(false)
+                    .resizable(false)
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .id(win_id)
+            },
+            move |_, ui, ew, shown| {
+                ui.label(text.to_owned());
+                ui.horizontal(|ui| {
+                    if ui.button("Yes").clicked() {
+                        ew.send(action1.to_owned());
+                        *shown = false;
+                    }
+                    if ui.button("No").clicked() {
+                        ew.send(action2.to_owned());
+                        *shown = false;
+                    }
+                });
             },
             Mutex::new(Box::new(())),
         )
@@ -147,27 +184,26 @@ impl Popup {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn popup_handler(
+pub fn popup_handler_sy(
     mut ctx: EguiContexts,
     mut event_reader: EventReader<Popup>,
     mut event_writer: EventWriter<Action>,
     mut show: Local<HashMap<String, (Popup, bool)>>,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
-    mouse_pos: Res<MousePos>,
 ) {
     for popup in event_reader.read() {
         info!(popup.id, "Showing popup");
         show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
     }
-    let ctx = ctx.ctx_mut();
-    for (id, (popup, showed)) in &mut show {
-        let response: egui::InnerResponse<Option<()>> = (popup.window)()
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
+    for (id, (popup, shown)) in &mut show {
+        (popup.window)()
             .show(ctx, |ui| {
-                (popup.ui)(&popup.state, ui, &mut event_writer, showed);
+                (popup.ui)(&popup.state, ui, &mut event_writer, shown);
             })
             .unwrap();
-        hovering_over_gui.egui(&response.response, *mouse_pos);
-        if !*showed {
+        if !*shown {
             info!(?id, "Closing popup");
         }
     }
@@ -179,6 +215,6 @@ pub struct PopupPlugin;
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Popup>()
-            .add_systems(Update, popup_handler.in_set(UiSet::Popups));
+            .add_systems(Update, popup_handler_sy.in_set(UiSet::Popups));
     }
 }

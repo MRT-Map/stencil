@@ -1,29 +1,55 @@
+use std::collections::HashSet;
+
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::Align, EguiContexts};
-use bevy_mouse_tracking::{MousePos, MousePosWorld};
+use bevy_egui::{egui, EguiContexts};
+use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
+use bevy_mouse_tracking::MousePosWorld;
+use egui_notify::ToastLevel;
 
 use crate::{
-    component_actions::undo_redo::UndoRedoAct,
+    action::Action,
+    component::panels::{
+        component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
+    },
+    history::{history_viewer::OpenHistoryViewerAct, HistoryAct},
     info_windows::InfoWindowsAct,
-    load_save::LoadSaveAct,
-    misc::Action,
-    ui::{tilemap::settings_window::TileSettingsAct, HoveringOverGui},
-    window_settings::window::WindowSettingsAct,
+    keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsAct},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
+    project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
+    tile::zoom::Zoom,
+    ui::{
+        notif::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt, NOTIF_LOG},
+        panel::{
+            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateAct},
+            status::Status,
+        },
+        tilemap::{
+            settings_editor::{TileSettingsAct, TileSettingsEditor},
+            tile::PendingTiles,
+        },
+    },
+    window::settings_editor::{OpenWindowSettingsAct, WindowSettingsEditor},
 };
+
+pub struct OpenAllSettingsAct;
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
     mut ctx: EguiContexts,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
     mut event_writer: EventWriter<Action>,
     diagnostics: Res<DiagnosticsStore>,
     mouse_pos_world: Res<MousePosWorld>,
-    mouse_pos: Res<MousePos>,
+    pending_tiles: Res<PendingTiles>,
+    status: Res<Status>,
+    zoom: Res<Zoom>,
 ) {
-    let panel = egui::TopBottomPanel::top("menu").show(ctx.ctx_mut(), |ui| {
+    let Some(ctx) = ctx.try_ctx_mut() else {
+        return;
+    };
+    egui::TopBottomPanel::top("menu").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
                 ($ui:ident, $ew:ident, $label:literal, $action:expr) => {
@@ -47,34 +73,110 @@ pub fn ui_sy(
                     button!(ui, event_writer, "Quit", InfoWindowsAct::Quit(false));
                 },
             );
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "File", |ui| {
-                button!(ui, event_writer, "Load namespace", LoadSaveAct::Load);
-                button!(ui, event_writer, "Save namespaces", LoadSaveAct::Save);
+                button!(ui, event_writer, "Open...", ProjectAct::Open);
+                button!(ui, event_writer, "Reload", ProjectAct::Reload);
+                button!(ui, event_writer, "Save", ProjectAct::Save(false));
             });
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
-                button!(ui, event_writer, "Undo", UndoRedoAct::Undo);
-                button!(ui, event_writer, "Redo", UndoRedoAct::Redo);
+                button!(ui, event_writer, "Undo", HistoryAct::Undo);
+                button!(ui, event_writer, "Redo", HistoryAct::Redo);
             });
+            #[allow(clippy::cognitive_complexity)]
+            egui::menu::menu_button(ui, "View", |ui| {
+                button!(ui, event_writer, "Component List", OpenComponentListAct);
+                button!(ui, event_writer, "Component Editor", OpenComponentEditorAct);
+                button!(ui, event_writer, "Project", OpenProjectEditorAct);
+                button!(ui, event_writer, "History", OpenHistoryViewerAct);
+                button!(ui, event_writer, "Notification Log", OpenNotifLogViewerAct);
+                ui.separator();
+                button!(ui, event_writer, "Reset Layout", ResetPanelDockStateAct);
+            });
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Settings", |ui| {
+                button!(ui, event_writer, "Open All", OpenAllSettingsAct);
+                ui.separator();
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
-                button!(ui, event_writer, "Window", WindowSettingsAct::Open);
+                button!(ui, event_writer, "Window", OpenWindowSettingsAct);
+                button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
+                button!(ui, event_writer, "Misc", OpenMiscSettingsAct);
             });
-            ui.with_layout(egui::Layout::right_to_left(Align::RIGHT), |ui| {
+            #[cfg(debug_assertions)]
+            {
+                #[allow(clippy::cognitive_complexity)]
+                egui::menu::menu_button(ui, "Debug", |ui| {
+                    if ui.button("Trigger Warning").clicked() {
+                        info!(label = "Trigger Warning", "Clicked menu item");
+                        NOTIF_LOG.push(&"Warning Triggered", ToastLevel::Warning);
+                    }
+                    if ui.button("Trigger Panic").clicked() {
+                        info!(label = "Trigger Panic", "Clicked menu item");
+                        panic!("Panic Triggered");
+                    }
+                });
+            }
+            ui.separator();
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
                 ui.label(format!(
-                    "FPS: {}",
+                    "FPS: {} ({})",
                     diagnostics
                         .get(&FrameTimeDiagnosticsPlugin::FPS)
                         .and_then(Diagnostic::average)
                         .map_or_else(|| "???".into(), |fps| format!("{fps:.2}")),
+                    diagnostics
+                        .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                        .and_then(Diagnostic::average)
+                        .map_or_else(|| "???".into(), |ft| format!("{ft:.2}ms")),
                 ));
                 ui.separator();
                 ui.label(format!(
-                    "x: {} z: {}",
+                    "x: {} z: {} \u{1f50d}: {:.2}",
                     mouse_pos_world.round().x as i32,
-                    -mouse_pos_world.round().y as i32
-                ))
-            })
+                    -mouse_pos_world.round().y as i32,
+                    zoom.0
+                ));
+                ui.separator();
+                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
+                ui.separator();
+
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
+                    egui::ScrollArea::horizontal()
+                        .max_width(ui.available_width())
+                        .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
+                        .show(ui, |ui| {
+                            ui.label(status.0.to_owned().color(egui::Color32::WHITE));
+                        });
+                });
+            });
         });
     });
-    hovering_over_gui.egui(&panel.response, *mouse_pos);
+}
+
+pub fn all_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+    for event in actions.read() {
+        if matches!(event.downcast_ref(), Some(OpenAllSettingsAct)) {
+            let all_tabs = state
+                .state
+                .iter_all_tabs()
+                .map(|(_, a)| a.title())
+                .collect::<HashSet<_>>();
+            let settings_tabs = [
+                TileSettingsEditor.into(),
+                WindowSettingsEditor.into(),
+                KeymapSettingsEditor.into(),
+                MiscSettingsEditor.into(),
+            ]
+            .into_iter()
+            .filter(|a: &DockWindows| !all_tabs.contains(&a.title()))
+            .collect::<Vec<_>>();
+            if settings_tabs.is_empty() {
+                NOTIF_LOG.push(&"All settings tabs are already open", ToastLevel::Info);
+            } else {
+                state.state.add_window(settings_tabs);
+            }
+        }
+    }
 }

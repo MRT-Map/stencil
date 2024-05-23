@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
-use anyhow::Result;
+use color_eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
@@ -27,6 +27,16 @@ fn gather_licenses() -> Result<()> {
         .copy_license("accesskit_winit", "accesskit")
         .copy_license("bevy_mouse_tracking_plugin", "block")
         .copy_license("bevy_eventlistener_derive", "bevy_eventlistener")
+        .override_license_url(
+            "bevy-inspector-egui",
+            ["https://raw.githubusercontent.com/jakobhellermann/bevy-inspector-egui/main/LICENSE-MIT.md",
+                    "https://raw.githubusercontent.com/jakobhellermann/bevy-inspector-egui/main/LICENSE-APACHE.md"],
+        )
+        .override_license_url(
+            "bevy-inspector-egui-derive",
+            ["https://raw.githubusercontent.com/jakobhellermann/bevy-inspector-egui/main/LICENSE-MIT.md",
+                    "https://raw.githubusercontent.com/jakobhellermann/bevy-inspector-egui/main/LICENSE-APACHE.md"],
+        )
         .copy_license("bevy_picking_core", "bevy_mod_picking")
         .copy_license("bevy_picking_input", "bevy_mod_picking")
         .copy_license("bevy_picking_raycast", "bevy_mod_picking")
@@ -146,6 +156,10 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
         )
         .copy_license("icrate", "block2")
+        .override_license_url("indenter", [
+            "https://raw.githubusercontent.com/eyre-rs/indenter/master/LICENSE-MIT",
+            "https://raw.githubusercontent.com/eyre-rs/indenter/master/LICENSE-APACHE"
+        ])
         .override_license_url(
             "khronos_api",
             ["https://github.com/brendanzab/gl-rs/blob/master/LICENSE"],
@@ -176,7 +190,6 @@ fn gather_licenses() -> Result<()> {
         )
         .copy_license("ndk-context", "ndk")
         .copy_license("ndk-sys", "ndk")
-        .copy_license("objc-foundation", "block")
         .override_license_url(
             "objc2-sys",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
@@ -189,12 +202,35 @@ fn gather_licenses() -> Result<()> {
             "objc2",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
+         .override_license_url(
+            "objc2-app-kit",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
+            "objc2-core-data",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
+            "objc2-core-image",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .override_license_url(
             "objc2-encode",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
+         .override_license_url(
+            "objc2-foundation",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
+            "objc2-metal",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
+            "objc2-quartz-core",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .copy_license("objc_exception", "block")
-        .copy_license("objc_id", "block")
         .override_license_url(
             "profiling",
             [
@@ -324,7 +360,7 @@ fn main() {
     if let Err(e) = std::panic::catch_unwind(|| {
         inner()
             .map_err(|a| {
-                p!("Backtrace: {:?}", a.backtrace());
+                p!("Backtrace: {:?}", a);
                 a
             })
             .unwrap()

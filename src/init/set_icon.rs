@@ -6,7 +6,7 @@ use crate::state::LoadingState;
 #[allow(clippy::needless_pass_by_value)]
 pub fn set_icon_sy(
     mut commands: Commands,
-    windows: NonSend<WinitWindows>,
+    windows: NonSendMut<WinitWindows>,
     primary_id: Query<Entity, With<PrimaryWindow>>,
 ) {
     info!("Setting the window icon");

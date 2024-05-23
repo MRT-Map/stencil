@@ -1,9 +1,17 @@
 use async_executor::{Executor, Task};
-use bevy::prelude::{Commands, EventWriter, Local, NextState};
+use bevy::prelude::{Commands, Local, NextState};
+use egui_notify::ToastLevel;
 use futures_lite::future;
 use tracing::{error, info};
 
-use crate::{pla2::skin::Skin, state::LoadingState, ui::popup::Popup};
+use crate::{
+    component::skin::Skin,
+    dirs_paths::cache_path,
+    file::{load_msgpack, save_msgpack},
+    misc_config::settings::INIT_MISC_SETTINGS,
+    state::LoadingState,
+    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
+};
 
 #[derive(Default)]
 pub enum Step<T> {
@@ -13,19 +21,27 @@ pub enum Step<T> {
     Complete,
 }
 
+#[allow(clippy::cognitive_complexity)]
 pub fn get_skin_sy(
     mut commands: Commands,
     mut task_s: Local<Step<surf::Result<Skin>>>,
-    mut popup: EventWriter<Popup>,
     mut executor: Local<Option<Executor>>,
 ) {
+    if cache_path("skin.msgpack").exists() {
+        if let Ok(skin) = load_msgpack::<Skin>(&cache_path("skin.msgpack"), Some("skin")) {
+            info!("Retrieved from cache");
+            commands.insert_resource(skin);
+            commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
+            *task_s = Step::Complete;
+        }
+    }
     let executor = executor.get_or_insert_with(Executor::new);
     match &mut *task_s {
         Step::Uninitialised => {
             let new_task = executor.spawn(async move {
-                println!("afasdghfgkasdf");
-                surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
-                    .recv_json::<Skin>().await
+                surf::get(&INIT_MISC_SETTINGS.skin_url)
+                    .recv_json::<Skin>()
+                    .await
             });
             info!("Retrieving skin");
             *task_s = Step::Pending(new_task);
@@ -36,17 +52,14 @@ pub fn get_skin_sy(
             }
             Some(Ok(skin)) => {
                 info!("Retrieved");
+                let _ = save_msgpack(&skin, &cache_path("skin.msgpack"), Some("skin"));
                 commands.insert_resource(skin);
                 commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
                 *task_s = Step::Complete;
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                popup.send(Popup::base_alert(
-                    "quit1",
-                    "Unable to load skin",
-                    format!("Make sure you are connected to the internet.\nError: {err}"),
-                ));
+                NOTIF_LOG.push(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
                 *task_s = Step::Complete;
             }
         },

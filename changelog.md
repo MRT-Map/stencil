@@ -1,3 +1,43 @@
+***Coming soon***
+* Directly download namespace files from GitHub repositories
+* Show colours of component types in component type editor
+* Selecting multiple components
+* Copying and pasting
+* Font configuration
+
+# v2.2.0
+* Revamped UI
+  * New tabs and windows / docking format from `egui_dock`
+  * New notifications from `egui_notify`
+  * Menu bar now has
+    * status messages
+    * zoom level
+    * number of pending tiles
+    * time per frame in milliseconds
+* Added more settings
+  * Revamp tilemap settings: multiple registered basemaps, one is selected for rendering
+  * Keymap settings
+  * Miscellaneous settings
+* Added welcome message when opening the application for the first time
+* Added project panel
+  * Open, save and reload multiple namespace files in the same folder
+  * Hide and show namespaces
+  * Create and delete namespaces
+  * Default project is a scratchpad
+* Namespace in component editor is now a dropdown and only accepts visible namespaces
+  * `_misc` is the default and cannot be hidden or deleted
+* Added autosaving (default: every 60s)
+* Added component list panel
+* Added history panel
+* Added notification log window
+* Added green and red circles on start and end of line components respectively to show line direction
+  * First and last coordinates in the component editor are also green and red respectively for line components
+* If the skin type of a loaded component is invalid, now tries to guess whether it is a point, line or area depending on the nature of the nodes, instead of crashing
+* Size of handles in node editing are now independent of the width of the component
+* Added safe deleting, moving and writing of all files: now backs old versions up to a cache directory
+* Added caching of skin JSON file
+* Added Apple silicon support in `dmg` file
+
 # v2.1.3
 * Upgrade `bevy` to v0.13
 * Fix mouse icon not changing

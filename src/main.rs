@@ -174,6 +174,7 @@ use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
+use dirs_paths::data_dir;
 use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
@@ -182,34 +183,38 @@ use tracing_subscriber::{
 use ui::tilemap::RenderingPlugin;
 
 #[cfg(target_os = "linux")]
-use crate::window_settings::settings::LinuxWindow;
+use crate::window::settings::LinuxWindow;
 use crate::{
-    component_actions::ComponentActionPlugins,
-    component_tools::ComponentToolPlugins,
-    hotkeys::HotkeyPlugin,
+    component::{
+        actions::ComponentActionPlugins, panels::ComponentPanelsPlugin, tools::ComponentToolPlugins,
+    },
+    history::HistoryPlugin,
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
-    load_save::LoadSavePlugin,
-    misc::data_dir,
-    ui::UiPlugin,
-    window_settings::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
+    keymaps::KeymapPlugin,
+    misc_config::MiscSettingsPlugin,
+    project::ProjectPlugin,
+    ui::{notif::NotifPlugin, UiPlugin},
+    window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
-pub mod component_actions;
-pub mod component_tools;
-pub mod error_handling;
-pub mod hotkeys;
+pub mod action;
+pub mod component;
+pub mod dirs_paths;
+pub mod file;
+pub mod history;
 pub mod info_windows;
 pub mod init;
-pub mod load_save;
-pub mod misc;
-pub mod pla2;
+pub mod keymaps;
+pub mod misc_config;
+pub mod panic;
+pub mod project;
 pub mod state;
 pub mod tile;
 pub mod ui;
-pub mod window_settings;
+pub mod window;
 
-fn init_logger() {
+fn init_logger() -> eyre::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::fmt::layer().compact().with_writer(
@@ -233,12 +238,13 @@ fn init_logger() {
         })
         .with(ErrorLayer::default())
         .init();
+    Ok(())
 }
 
-fn main() {
-    std::panic::set_hook(Box::new(error_handling::panic));
+fn main() -> eyre::Result<()> {
+    std::panic::set_hook(Box::new(panic::panic));
 
-    init_logger();
+    init_logger()?;
     info!("Logger initialised");
 
     #[cfg(target_os = "linux")]
@@ -285,9 +291,14 @@ fn main() {
         .add_plugins(RenderingPlugin)
         .add_plugins(ComponentToolPlugins)
         .add_plugins(ComponentActionPlugins)
-        .add_plugins(LoadSavePlugin)
         .add_plugins(InfoWindowsPlugin)
-        .add_plugins(HotkeyPlugin)
+        .add_plugins(KeymapPlugin)
         .add_plugins(WindowSettingsPlugin)
+        .add_plugins(ProjectPlugin)
+        .add_plugins(HistoryPlugin)
+        .add_plugins(NotifPlugin)
+        .add_plugins(MiscSettingsPlugin)
+        .add_plugins(ComponentPanelsPlugin)
         .run();
+    Ok(())
 }

@@ -6,10 +6,14 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    component_tools::creating::{clear_created_component, CreatedQuery},
-    misc::Action,
-    pla2::{component::ComponentType, skin::Skin},
-    ui::panel::component_panel::PrevNamespaceUsed,
+    action::Action,
+    component::{
+        pla2::ComponentType,
+        skin::Skin,
+        tools::creating::{clear_created_component, CreatedQuery},
+    },
+    project::Namespaces,
+    ui::panel::status::Status,
 };
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
@@ -45,6 +49,7 @@ pub enum LoadingState {
     Compat,
     LoadSkin,
     SpawnCamera,
+    Welcome,
     Done,
 }
 impl LoadingState {
@@ -56,7 +61,8 @@ impl LoadingState {
             Self::LoadAssets => Self::Compat,
             Self::Compat => Self::LoadSkin,
             Self::LoadSkin => Self::SpawnCamera,
-            Self::SpawnCamera => Self::Done,
+            Self::SpawnCamera => Self::Welcome,
+            Self::Welcome => Self::Done,
             Self::Done => unreachable!(),
         }
     }
@@ -70,7 +76,8 @@ pub fn state_changer_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut created_query: CreatedQuery,
     skin: Res<Skin>,
-    prev_namespace_used: Res<PrevNamespaceUsed>,
+    mut namespaces: ResMut<Namespaces>,
+    mut status: ResMut<Status>,
 ) {
     let mut new_state = None;
     let mut reader = actions.p0();
@@ -86,8 +93,10 @@ pub fn state_changer_asy(
             &mut commands,
             &mut created_query,
             &skin,
-            &prev_namespace_used.0,
+            &mut namespaces,
             &mut writer,
+            &mut status,
+            "component",
         );
         commands.insert_resource(NextState(Some(state)));
     }

@@ -1,23 +1,20 @@
-use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::MousePos;
+use bevy_egui::egui;
 
 use crate::{
-    misc::Action,
+    action::Action,
     state::{ChangeStateAct, EditorState},
-    ui::HoveringOverGui,
+    ui::panel::dock::{PanelParams, TabViewer},
 };
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn ui_sy(
-    state: Res<State<EditorState>>,
-    mut ctx: EguiContexts,
-    mut actions: EventWriter<Action>,
-    mut hovering_over_gui: ResMut<HoveringOverGui>,
-    mouse_pos: Res<MousePos>,
-) {
-    let mut new_state = **state;
-    let panel = egui::TopBottomPanel::top("toolbar").show(ctx.ctx_mut(), |ui| {
+pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
+    let PanelParams {
+        editor_state,
+        actions,
+        ..
+    } = tab_viewer.params;
+    let mut new_state = ***editor_state;
+    let resp = egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
         egui::menu::bar(ui, |ui| {
             macro_rules! button {
                 ($text:literal, $next_state:expr) => {
@@ -38,8 +35,17 @@ pub fn ui_sy(
             button!("Area", EditorState::CreatingArea);
         });
     });
-    hovering_over_gui.egui(&panel.response, *mouse_pos);
-    if new_state != **state {
+    if new_state != ***editor_state {
         actions.send(Action::new(ChangeStateAct(new_state)));
+        tab_viewer.params.status.0 = match new_state {
+            EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
+            EditorState::EditingNodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
+            EditorState::CreatingPoint => "Creating points: L-click to create point.",
+            EditorState::CreatingLine => "Creating lines: L-click to start and continue line, L-click previous node to undo it. R-click to end. Alt to snap to angle.",
+            EditorState::CreatingArea => "Creating areas: L-click to start and continue line, L-click previous node to undo it. L-click first node or R-click to end. Alt to snap to angle.",
+            EditorState::DeletingComponent => "Deleting components: L-click to delete node.",
+            _ => ""
+        }.into();
     }
+    resp
 }

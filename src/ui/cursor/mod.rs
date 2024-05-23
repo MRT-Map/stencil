@@ -4,13 +4,14 @@ use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     init::load_assets::ImageAssets,
+    misc_config::settings::MiscSettings,
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
-        reset_hovering_over_gui_sy,
+        panel::dock::{within_tilemap, PanelDockState},
         tilemap::settings::TileSettings,
-        HoveringOverGui, UiSchedule, UiSet,
+        UiSchedule, UiSet,
     },
 };
 
@@ -28,12 +29,14 @@ pub fn crosshair_sy(
     images: Res<ImageAssets>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
-    hovering_over_gui: Res<HoveringOverGui>,
+    mut ctx: EguiContexts,
     tile_settings: Res<TileSettings>,
+    panel: Res<PanelDockState>,
+    misc_settings: Res<MiscSettings>,
 ) {
     if let Some(state) = state {
         if state.component_type().is_none()
-            || (state.component_type().is_some() && hovering_over_gui.0)
+            || (state.component_type().is_some() && !within_tilemap(&mut ctx, &panel))
         {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
@@ -47,7 +50,9 @@ pub fn crosshair_sy(
     let translation = mouse_pos_world.round().xy();
     let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
-        (f32::from(tile_settings.max_tile_zoom) - zoom.0).exp2() * 16f32,
+        (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0).exp2()
+            * 16f32
+            * misc_settings.crosshair_size,
     ));
     if ch.is_empty() {
         debug!("Spawning crosshair");
@@ -77,8 +82,8 @@ pub fn cursor_icon_sy(
     mut windows: Query<(Entity, &mut Window)>,
     mut ctx: EguiContexts,
     state: Option<Res<State<EditorState>>>,
-    hovering_over_gui: Res<HoveringOverGui>,
     hovered_comp: Query<(), With<HoveredComponent>>,
+    panel: Res<PanelDockState>,
 ) {
     let state = if let Some(state) = state {
         **state
@@ -88,11 +93,11 @@ pub fn cursor_icon_sy(
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
-            window.cursor.visible = hovering_over_gui.0;
+            window.cursor.visible = !within_tilemap(&mut ctx, &panel);
             continue;
         }
         window.cursor.visible = true;
-        if hovering_over_gui.0 {
+        if !within_tilemap(&mut ctx, &panel) {
             continue;
         }
 
@@ -129,7 +134,7 @@ impl Plugin for CursorPlugin {
         )
         .add_systems(
             PostUpdate,
-            (cursor_icon_sy, crosshair_sy.run_if_not_loading()).before(reset_hovering_over_gui_sy),
+            (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
         )
         .add_event::<MouseEvent>();
     }

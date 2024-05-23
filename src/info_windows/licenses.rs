@@ -5,7 +5,7 @@ use bevy_egui::egui;
 use license_retriever::LicenseRetriever;
 use once_cell::sync::Lazy;
 
-use crate::{info_windows::InfoWindowsAct, misc::Action, ui::popup::Popup};
+use crate::{action::Action, info_windows::InfoWindowsAct, ui::popup::Popup};
 
 #[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =
@@ -18,12 +18,11 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
     for event in actions.read() {
         if matches!(event.downcast_ref(), Some(InfoWindowsAct::Licenses)) {
             popup.send(Popup::new(
-                "info_popup",
+                "licenses",
                 || {
                     egui::Window::new("Open Source Licenses")
                         .collapsible(true)
                         .resizable(true)
-                        .vscroll(true)
                         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                 },
                 |state, ui, _, shown| {
@@ -36,6 +35,7 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
                     egui::ComboBox::from_label("Library")
                         .selected_text(format!("{} {}", selection.0, selection.1))
                         .show_ui(ui, |ui| {
+                            ui.style_mut().wrap = Some(false);
                             LICENSES.iter().for_each(|(package, _)| {
                                 ui.selectable_value(
                                     selection,
@@ -62,7 +62,11 @@ pub fn licenses_asy(mut actions: EventReader<Action>, mut popup: EventWriter<Pop
                     }
                     for text in licenses.as_ref() {
                         ui.separator();
-                        ui.label(text);
+                        egui::ScrollArea::vertical()
+                            .max_height(ui.available_height() * 0.75)
+                            .show(ui, |ui| {
+                                ui.label(text);
+                            });
                     }
                     ui.separator();
                     if ui.button("Close").clicked() {
