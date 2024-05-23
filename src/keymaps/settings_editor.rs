@@ -122,7 +122,7 @@ pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 5]> = Lazy::new
         (
             "Project",
             [
-                (KeymapAction::SelectProjectFolder, "Open Project"),
+                (KeymapAction::OpenProject, "Open Project"),
                 (KeymapAction::SaveProject, "Save Project"),
                 (KeymapAction::ReloadProject, "Reload Project"),
             ]

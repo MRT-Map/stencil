@@ -156,14 +156,12 @@ pub fn history_asy(
                             NamespaceAction::Create(deleted_file) => {
                                 namespaces.visibilities.remove(namespace);
                                 if namespaces
-                                    .folder
+                                    .dir
                                     .join(format!("{namespace}.pla2.msgpack"))
                                     .exists()
                                 {
                                     *deleted_file = safe_delete(
-                                        &namespaces
-                                            .folder
-                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
                                         Some("namespace file"),
                                     )
                                     .ok();
@@ -175,9 +173,7 @@ pub fn history_asy(
                                 if let Some(deleted_file) = deleted_file {
                                     let _ = restore(
                                         deleted_file,
-                                        &namespaces
-                                            .folder
-                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
                                         Some("namespace file"),
                                     )
                                     .ok();
@@ -252,9 +248,7 @@ pub fn history_asy(
                                 if let Some(deleted_file) = deleted_file {
                                     let _ = restore(
                                         deleted_file,
-                                        &namespaces
-                                            .folder
-                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
                                         Some("namespace file"),
                                     )
                                     .ok();
@@ -264,14 +258,12 @@ pub fn history_asy(
                             NamespaceAction::Delete(deleted_file) => {
                                 namespaces.visibilities.remove(namespace);
                                 if namespaces
-                                    .folder
+                                    .dir
                                     .join(format!("{namespace}.pla2.msgpack"))
                                     .exists()
                                 {
                                     *deleted_file = safe_delete(
-                                        &namespaces
-                                            .folder
-                                            .join(format!("{namespace}.pla2.msgpack")),
+                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
                                         Some("namespace file"),
                                     )
                                     .ok();

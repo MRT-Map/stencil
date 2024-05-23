@@ -62,16 +62,12 @@ pub fn project_asy(
             notif,
         }) = event.downcast_ref()
         {
-            if !namespaces
-                .folder
-                .join(format!("{ns}.pla2.msgpack"))
-                .exists()
-            {
+            if !namespaces.dir.join(format!("{ns}.pla2.msgpack")).exists() {
                 continue;
             }
             namespaces.visibilities.insert(ns.to_owned(), true);
             if let Ok(components) = load_msgpack::<Vec<PlaComponent<MCCoords>>>(
-                &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             ) {
                 for component in components {
@@ -119,7 +115,7 @@ pub fn project_asy(
                 .collect::<Vec<_>>();
             if save_msgpack(
                 &component_data,
-                &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             )
             .is_err()
@@ -148,7 +144,7 @@ pub fn project_asy(
             for (ns, components) in &components {
                 let _ = save_msgpack(
                     &components,
-                    &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                    &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                     Some("pla2"),
                 );
             }
@@ -164,7 +160,7 @@ pub fn project_asy(
             file_dialogs.project_select.select_directory();
         } else if matches!(event.downcast_ref(), Some(ProjectAct::Reload)) {
             let ns: Vec<String> = namespaces
-                .folder
+                .dir
                 .read_dir()
                 .and_then(|rd| {
                     rd.into_iter()
@@ -194,12 +190,12 @@ pub fn project_asy(
         } else if let Some(ProjectAct::Delete(ns, true)) = event.downcast_ref() {
             namespaces.visibilities.remove(ns);
             let delete_file = namespaces
-                .folder
+                .dir
                 .join(format!("{ns}.pla2.msgpack"))
                 .exists()
                 .then(|| {
                     safe_delete(
-                        &namespaces.folder.join(format!("{ns}.pla2.msgpack")),
+                        &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                         Some("namespace file"),
                     )
                     .ok()
@@ -211,13 +207,13 @@ pub fn project_asy(
                     action: NamespaceAction::Delete(delete_file),
                 },
             )));
-        } else if let Some(ProjectAct::Load(folder, true)) = event.downcast_ref() {
+        } else if let Some(ProjectAct::Load(dir, true)) = event.downcast_ref() {
             send_queue.push(Action::new(ProjectAct::Save(false)));
-            send_queue.push(Action::new(ProjectAct::Load(folder.to_owned(), false)));
-        } else if let Some(ProjectAct::Load(folder, false)) = event.downcast_ref() {
+            send_queue.push(Action::new(ProjectAct::Load(dir.to_owned(), false)));
+        } else if let Some(ProjectAct::Load(dir, false)) = event.downcast_ref() {
             history.redo_stack.clear();
             history.undo_stack.clear();
-            namespaces.folder = folder.to_owned();
+            namespaces.dir = dir.to_owned();
             namespaces.visibilities.clear();
             for (e, _) in query.iter() {
                 commands.entity(e).despawn_recursive();

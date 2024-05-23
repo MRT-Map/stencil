@@ -12,7 +12,7 @@ pub mod project_editor;
 
 #[derive(Resource, Clone)]
 pub struct Namespaces {
-    pub folder: PathBuf,
+    pub dir: PathBuf,
     pub visibilities: HashMap<String, bool>,
     pub prev_used: String,
 }
@@ -20,7 +20,7 @@ pub struct Namespaces {
 impl Default for Namespaces {
     fn default() -> Self {
         Self {
-            folder: cache_dir("scratchpad"),
+            dir: cache_dir("scratchpad"),
             visibilities: {
                 let mut h = HashMap::new();
                 h.insert("_misc".into(), true);

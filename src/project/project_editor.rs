@@ -41,8 +41,8 @@ impl DockWindow for ProjectEditor {
             }
         });
         ui.label(format!(
-            "Project folder: {}",
-            namespaces.folder.to_string_lossy()
+            "Project directory: {}",
+            namespaces.dir.to_string_lossy()
         ));
         TableBuilder::new(ui)
             .striped(true)
