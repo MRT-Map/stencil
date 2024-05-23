@@ -1,7 +1,11 @@
 use bevy_egui::egui;
 use itertools::Itertools;
 
-use crate::ui::panel::dock::{DockWindow, PanelParams, TabViewer};
+use crate::{
+    action::Action,
+    history::HistoryAct,
+    ui::panel::dock::{DockWindow, PanelParams, TabViewer},
+};
 
 #[derive(Clone, Copy)]
 pub struct HistoryViewer;
@@ -11,7 +15,17 @@ impl DockWindow for HistoryViewer {
         "History".into()
     }
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        let PanelParams { history, .. } = tab_viewer.params;
+        let PanelParams {
+            history, actions, ..
+        } = tab_viewer.params;
+        ui.horizontal(|ui| {
+            if ui.button("Undo").clicked() {
+                actions.send(Action::new(HistoryAct::Undo));
+            }
+            if ui.button("Redo").clicked() {
+                actions.send(Action::new(HistoryAct::Redo));
+            }
+        });
         for entry in &history.undo_stack {
             ui.label(entry.iter().map(ToString::to_string).join("; "));
         }
