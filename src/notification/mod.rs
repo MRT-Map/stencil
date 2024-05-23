@@ -8,12 +8,6 @@ use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use egui_notify::{Toast, ToastLevel, Toasts};
 use once_cell::sync::Lazy;
-use viewer::NotifLogViewer;
-
-use crate::{
-    action::Action,
-    ui::panel::dock::{DockWindow, PanelDockState},
-};
 
 pub mod viewer;
 
@@ -77,11 +71,8 @@ pub fn update_notifs_asy(mut toasts: ResMut<NotifToasts>, mut ctx: EguiContexts)
             .0
             .add(Toast::custom(&notif.message, notif.level.to_owned()))
             .set_duration(
-                if notif.level == ToastLevel::Info || notif.level == ToastLevel::Success {
-                    Some(Duration::from_secs(3))
-                } else {
-                    None
-                },
+                (notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
+                    .then(|| Duration::from_secs(3)),
             );
         notif_log.notifs.push(notif);
     }

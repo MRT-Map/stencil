@@ -19,10 +19,7 @@ use crate::{
     load_save::{load_msgpack, save_msgpack},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
-    ui::{
-        panel::{dock::FileDialogs, status::Status},
-        popup::Popup,
-    },
+    ui::{panel::dock::FileDialogs, popup::Popup},
 };
 
 pub enum ProjectAct {
@@ -42,7 +39,7 @@ pub enum ProjectAct {
     Save(bool),
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
 pub fn project_asy(
     mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut namespaces: ResMut<Namespaces>,

@@ -1,7 +1,6 @@
-use bevy::{prelude::*, render::settings::Backends, window::WindowMode};
+use bevy::prelude::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use surf::Url;
 use tracing::info;
 
 use crate::{
@@ -90,6 +89,13 @@ field!(
     additional_zoom,
     i8
 );
+field!(
+    MiscSettings,
+    autosave_interval_is_default,
+    default_autosave_interval,
+    autosave_interval,
+    u64
+);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Resource)]
 pub struct MiscSettings {
@@ -143,6 +149,11 @@ pub struct MiscSettings {
         skip_serializing_if = "additional_zoom_is_default"
     )]
     pub additional_zoom: i8,
+    #[serde(
+        default = "default_autosave_interval",
+        skip_serializing_if = "autosave_interval_is_default"
+    )]
+    pub autosave_interval: u64,
 }
 
 impl Default for MiscSettings {
@@ -158,6 +169,7 @@ impl Default for MiscSettings {
             scroll_multiplier_line: 1.0,
             scroll_multiplier_pixel: 1.0,
             additional_zoom: 3,
+            autosave_interval: 60
         }
     }
 }

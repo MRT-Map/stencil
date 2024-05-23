@@ -11,7 +11,7 @@ use bevy_mouse_tracking::MousePosWorld;
 use egui_notify::ToastLevel;
 
 #[cfg(debug_assertions)]
-use crate::notification::{Notif, NOTIF_LOG};
+use crate::notification::NOTIF_LOG;
 use crate::{
     action::Action,
     history::HistoryAct,
@@ -73,6 +73,7 @@ pub fn ui_sy(
                     button!(ui, event_writer, "Quit", InfoWindowsAct::Quit(false));
                 },
             );
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "File", |ui| {
                 button!(
                     ui,
@@ -82,10 +83,12 @@ pub fn ui_sy(
                 );
                 button!(ui, event_writer, "Save project", ProjectAct::Save(false));
             });
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
                 button!(ui, event_writer, "Undo", HistoryAct::Undo);
                 button!(ui, event_writer, "Redo", HistoryAct::Redo);
             });
+            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, event_writer, "Open All", OpenAllSettingsAct);
                 ui.separator();
@@ -94,8 +97,9 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
                 button!(ui, event_writer, "Misc", OpenMiscSettingsAct);
             });
-            egui::menu::menu_button(ui, "Debug", |ui| {
-                button!(ui, event_writer, "Notification Log", OpenNotifLogViewerAct);
+            #[allow(clippy::cognitive_complexity)]
+            egui::menu::menu_button(ui, "Notification", |ui| {
+                button!(ui, event_writer, "Log", OpenNotifLogViewerAct);
                 #[cfg(debug_assertions)]
                 {
                     if ui.button("Trigger Warning").clicked() {

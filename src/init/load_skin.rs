@@ -9,7 +9,7 @@ use crate::{
     dirs_paths::cache_path,
     load_save::{load_msgpack, save_msgpack},
     misc_config::settings::INIT_MISC_SETTINGS,
-    notification::{Notif, NotifLogRwLockExt, NOTIF_LOG},
+    notification::{NotifLogRwLockExt, NOTIF_LOG},
     state::LoadingState,
 };
 

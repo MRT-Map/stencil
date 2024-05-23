@@ -164,7 +164,6 @@ pub fn tile_settings_asy(
     mut tile_settings: ResMut<TileSettings>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
-    mut status: ResMut<Status>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;

@@ -11,7 +11,6 @@ use crate::{
     },
     state::EditorState,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
-    window::settings::WindowSettings,
 };
 
 pub struct OpenKeymapSettingsAct;

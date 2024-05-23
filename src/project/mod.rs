@@ -3,7 +3,10 @@ use std::{collections::HashMap, path::PathBuf, time::Duration};
 use bevy::prelude::*;
 use events::ProjectAct;
 
-use crate::{action::Action, dirs_paths::cache_dir, state::EditorState, ui::panel::status::Status};
+use crate::{
+    action::Action, dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState,
+    ui::panel::status::Status,
+};
 
 pub mod events;
 pub mod project_editor;
@@ -34,16 +37,20 @@ pub fn autosave_sy(
     mut actions: EventWriter<Action>,
     mut last_save: Local<Option<Duration>>,
     time: Res<Time<Real>>,
-    mut status: ResMut<Status>,
+    misc_settings: Res<MiscSettings>,
 ) {
-    let Some(last_save) = &*last_save else {
+    if misc_settings.autosave_interval == 0 {
+        return;
+    }
+    let Some(last_save_time) = &*last_save else {
         *last_save = Some(time.elapsed());
         return;
     };
     let time = time.elapsed();
-    if time - last_save.to_owned() >= Duration::from_secs(60) {
+    if time - last_save_time.to_owned() >= Duration::from_secs(misc_settings.autosave_interval) {
         actions.send(Action::new(ProjectAct::Save(true)));
         actions.send(Action::new(ProjectAct::GetNamespaces));
+        *last_save = Some(time);
     }
 }
 

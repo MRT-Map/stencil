@@ -1,10 +1,10 @@
 use bevy::prelude::{EventReader, ResMut};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::egui;
 use chrono::{DateTime, Utc};
 
 use crate::{
     action::Action,
-    notification::{NotifToasts, NOTIF_LOG},
+    notification::NOTIF_LOG,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 

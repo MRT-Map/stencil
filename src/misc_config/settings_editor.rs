@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowMode};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use surf::Url;
 
@@ -7,7 +7,6 @@ use crate::window::settings::LinuxWindow;
 use crate::{
     action::Action,
     dirs_paths::{cache_path, data_path},
-    keymaps::settings::KeymapSettings,
     misc_config::settings::MiscSettings,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -105,9 +104,16 @@ impl DockWindow for MiscSettingsEditor {
 
         ui.add(
             egui::Slider::new(&mut misc_settings.additional_zoom, 0..=4)
-                .text("Additional zoom levels beyond the maximum zoom"),
+                .text("Additional zoom levels"),
         );
+        ui.label("Increases the maximum zoom so you can zoom in further.");
         ui.separator();
+
+        ui.add(
+            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=4)
+                .text("Autosave interval"),
+        );
+        ui.label("Set to 0 to disable autosave.");
 
         if !invalid && old_settings != **misc_settings {
             misc_settings.save().unwrap();

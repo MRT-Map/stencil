@@ -3,7 +3,7 @@ use std::path::Path;
 use egui_notify::ToastLevel;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::notification::{Notif, NotifLogRwLockExt, NOTIF_LOG};
+use crate::notification::{NotifLogRwLockExt, NOTIF_LOG};
 
 pub fn load_file<
     T: DeserializeOwned,
