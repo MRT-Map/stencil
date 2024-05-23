@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
@@ -13,15 +15,24 @@ use crate::{
     action::Action,
     history::HistoryAct,
     info_windows::InfoWindowsAct,
-    keymaps::settings_editor::OpenKeymapSettingsAct,
+    keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsAct},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
     project::events::ProjectAct,
     ui::{
-        panel::status::Status,
-        tilemap::{settings_editor::TileSettingsAct, tile::PendingTiles},
+        panel::{
+            dock::{DockWindow, DockWindows, PanelDockState},
+            status::Status,
+        },
+        tilemap::{
+            settings_editor::{TileSettingsAct, TileSettingsEditor},
+            tile::PendingTiles,
+        },
     },
-    window::settings_editor::OpenWindowSettingsAct,
+    window::settings_editor::{OpenWindowSettingsAct, WindowSettingsEditor},
 };
+
+pub struct OpenAllSettingsAct;
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
@@ -73,12 +84,15 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Redo", HistoryAct::Redo);
             });
             egui::menu::menu_button(ui, "Settings", |ui| {
+                button!(ui, event_writer, "Open All", OpenAllSettingsAct);
+                ui.separator();
                 button!(ui, event_writer, "Tilemap", TileSettingsAct::Open);
                 button!(ui, event_writer, "Window", OpenWindowSettingsAct);
                 button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
+                button!(ui, event_writer, "Misc", OpenMiscSettingsAct);
             });
             egui::menu::menu_button(ui, "Debug", |ui| {
-                button!(ui, event_writer, "Error Log", OpenNotifLogViewerAct);
+                button!(ui, event_writer, "Notification Log", OpenNotifLogViewerAct);
                 #[cfg(debug_assertions)]
                 {
                     if ui.button("Trigger Warning").clicked() {
@@ -116,4 +130,35 @@ pub fn ui_sy(
             })
         });
     });
+}
+
+pub fn all_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+    for event in actions.read() {
+        if matches!(event.downcast_ref(), Some(OpenAllSettingsAct))
+            && !state
+                .state
+                .iter_all_tabs()
+                .any(|(_, a)| a.title() == MiscSettingsEditor.title())
+        {
+            let all_tabs = state
+                .state
+                .iter_all_tabs()
+                .map(|(_, a)| a.title())
+                .collect::<HashSet<_>>();
+            let settings_tabs = [
+                TileSettingsEditor.into(),
+                WindowSettingsEditor.into(),
+                KeymapSettingsEditor.into(),
+                MiscSettingsEditor.into(),
+            ]
+            .into_iter()
+            .filter(|a: &DockWindows| !all_tabs.contains(&a.title()))
+            .collect::<Vec<_>>();
+            if settings_tabs.is_empty() {
+                NOTIF_LOG.push(&"All settings tabs are already open", ToastLevel::Info);
+            } else {
+                state.state.add_window(settings_tabs);
+            }
+        }
+    }
 }

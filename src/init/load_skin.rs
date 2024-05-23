@@ -8,6 +8,7 @@ use crate::{
     component::skin::Skin,
     dirs_paths::cache_path,
     load_save::{load_msgpack, save_msgpack},
+    misc_config::settings::INIT_MISC_SETTINGS,
     notification::{Notif, NotifLogRwLockExt, NOTIF_LOG},
     state::LoadingState,
 };
@@ -38,8 +39,9 @@ pub fn get_skin_sy(
     match &mut *task_s {
         Step::Uninitialised => {
             let new_task = executor.spawn(async move {
-                surf::get("https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json")
-                    .recv_json::<Skin>().await
+                surf::get(&INIT_MISC_SETTINGS.skin_url)
+                    .recv_json::<Skin>()
+                    .await
             });
             info!("Retrieving skin");
             *task_s = Step::Pending(new_task);
