@@ -9,8 +9,9 @@ use crate::{
         key_list::KEY_LIST,
         settings::{KeymapAction, KeymapSettings},
     },
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     state::EditorState,
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 pub struct OpenKeymapSettingsAct;
@@ -74,18 +75,16 @@ impl DockWindow for KeymapSettingsEditor {
 
 pub fn keymap_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenKeymapSettingsAct))
-            && !state
-                .state
-                .iter_all_tabs()
-                .any(|(_, a)| a.title() == KeymapSettingsEditor.title())
-        {
-            state.state.add_window(vec![KeymapSettingsEditor.into()]);
-        }
+        window_action_handler(
+            &event,
+            &mut state,
+            OpenKeymapSettingsAct,
+            KeymapSettingsEditor,
+        );
     }
 }
 
-pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 3]> = Lazy::new(|| {
+pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 5]> = Lazy::new(|| {
     [
         (
             "State",
@@ -115,6 +114,30 @@ pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 3]> = Lazy::new
                 (KeymapAction::TileSettings, "Tile"),
                 (KeymapAction::WindowSettings, "Window"),
                 (KeymapAction::KeymapSettings, "Keymap"),
+                (KeymapAction::MiscSettings, "Misc"),
+                (KeymapAction::AllSettings, "All"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Project",
+            [
+                (KeymapAction::SelectProjectFolder, "Open Project"),
+                (KeymapAction::SaveProject, "Save Project"),
+                (KeymapAction::ReloadProject, "Reload Project"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Windows",
+            [
+                (KeymapAction::ComponentEditor, "Component Editor"),
+                (KeymapAction::Project, "Project"),
+                (KeymapAction::ComponentList, "Component List"),
+                (KeymapAction::History, "History"),
+                (KeymapAction::NotifLog, "Notification Log"),
             ]
             .into_iter()
             .collect(),
@@ -124,8 +147,6 @@ pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 3]> = Lazy::new
             [
                 (KeymapAction::Undo, "Undo"),
                 (KeymapAction::Redo, "Redo"),
-                (KeymapAction::SelectProjectFolder, "Select Project Folder"),
-                (KeymapAction::SaveProject, "Save"),
                 (KeymapAction::Quit, "Quit"),
             ]
             .into_iter()

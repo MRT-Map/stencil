@@ -9,17 +9,22 @@ use tracing::info;
 
 use crate::{
     action::Action,
+    component::panels::{
+        component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
+    },
     dirs_paths::data_path,
     file::{load_toml, save_toml_with_header},
-    history::HistoryAct,
+    history::{history_viewer::OpenHistoryViewerAct, HistoryAct},
     info_windows::InfoWindowsAct,
     keymaps::{
         key_list::KEY_LIST,
         settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
     },
-    project::events::ProjectAct,
+    misc_config::settings_editor::OpenMiscSettingsAct,
+    notification::viewer::OpenNotifLogViewerAct,
+    project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
     state::{ChangeStateAct, EditorState},
-    ui::tilemap::settings_editor::TileSettingsAct,
+    ui::{panel::menu::OpenAllSettingsAct, tilemap::settings_editor::TileSettingsAct},
     window::settings_editor::OpenWindowSettingsAct,
 };
 
@@ -28,12 +33,20 @@ pub enum KeymapAction {
     ChangeState(EditorState),
     Undo,
     Redo,
+    Quit,
     SelectProjectFolder,
     SaveProject,
+    ReloadProject,
     TileSettings,
     WindowSettings,
     KeymapSettings,
-    Quit,
+    MiscSettings,
+    AllSettings,
+    ComponentEditor,
+    Project,
+    ComponentList,
+    History,
+    NotifLog,
 }
 
 impl KeymapAction {
@@ -43,12 +56,20 @@ impl KeymapAction {
             Self::ChangeState(state) => Action::new(ChangeStateAct(state)),
             Self::Undo => Action::new(HistoryAct::Undo),
             Self::Redo => Action::new(HistoryAct::Redo),
+            Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
             Self::SelectProjectFolder => Action::new(ProjectAct::SelectFolder),
             Self::SaveProject => Action::new(ProjectAct::Save(false)),
+            Self::ReloadProject => Action::new(ProjectAct::GetNamespaces),
             Self::TileSettings => Action::new(TileSettingsAct::Open),
             Self::WindowSettings => Action::new(OpenWindowSettingsAct),
             Self::KeymapSettings => Action::new(OpenKeymapSettingsAct),
-            Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
+            Self::MiscSettings => Action::new(OpenMiscSettingsAct),
+            Self::AllSettings => Action::new(OpenAllSettingsAct),
+            Self::ComponentEditor => Action::new(OpenComponentEditorAct),
+            Self::Project => Action::new(OpenProjectEditorAct),
+            Self::ComponentList => Action::new(OpenComponentListAct),
+            Self::History => Action::new(OpenHistoryViewerAct),
+            Self::NotifLog => Action::new(OpenNotifLogViewerAct),
         }
     }
 }
@@ -86,12 +107,20 @@ impl Default for KeymapSettings {
                 ),
                 (KeymapAction::Undo, KeyCode::KeyU),
                 (KeymapAction::Redo, KeyCode::KeyY),
-                (KeymapAction::SelectProjectFolder, KeyCode::KeyL),
+                (KeymapAction::Quit, KeyCode::Escape),
+                (KeymapAction::SelectProjectFolder, KeyCode::KeyO),
                 (KeymapAction::SaveProject, KeyCode::KeyS),
+                (KeymapAction::ReloadProject, KeyCode::KeyR),
                 (KeymapAction::TileSettings, KeyCode::KeyT),
                 (KeymapAction::WindowSettings, KeyCode::KeyW),
                 (KeymapAction::KeymapSettings, KeyCode::KeyK),
-                (KeymapAction::Quit, KeyCode::Escape),
+                (KeymapAction::MiscSettings, KeyCode::KeyM),
+                (KeymapAction::AllSettings, KeyCode::KeyA),
+                (KeymapAction::ComponentEditor, KeyCode::KeyC),
+                (KeymapAction::Project, KeyCode::KeyP),
+                (KeymapAction::ComponentList, KeyCode::KeyL),
+                (KeymapAction::History, KeyCode::KeyH),
+                (KeymapAction::NotifLog, KeyCode::KeyN),
             ]
             .into_iter()
             .collect(),

@@ -1,14 +1,18 @@
+use bevy::prelude::{EventReader, ResMut};
 use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
     action::Action,
     history::HistoryAct,
-    ui::panel::dock::{DockWindow, PanelParams, TabViewer},
+    notification::viewer::{NotifLogViewer, OpenNotifLogViewerAct},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
 pub struct HistoryViewer;
+
+pub struct OpenHistoryViewerAct;
 
 impl DockWindow for HistoryViewer {
     fn title(self) -> String {
@@ -34,7 +38,10 @@ impl DockWindow for HistoryViewer {
             ui.label(entry.iter().map(ToString::to_string).join("; "));
         }
     }
-    fn closeable(self) -> bool {
-        false
+}
+
+pub fn history_viewer_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
+    for event in actions.read() {
+        window_action_handler(&event, &mut state, OpenHistoryViewerAct, HistoryViewer);
     }
 }

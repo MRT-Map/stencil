@@ -4,8 +4,9 @@ use chrono::{DateTime, Utc};
 
 use crate::{
     action::Action,
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::NOTIF_LOG,
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
@@ -42,17 +43,6 @@ impl DockWindow for NotifLogViewer {
 
 pub fn log_viewer_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenNotifLogViewerAct)) {
-            let tab = state
-                .state
-                .iter_all_tabs()
-                .find(|(_, a)| a.title() == NotifLogViewer.title())
-                .map(|a| a.0);
-            if let Some(tab) = tab {
-                state.state.set_focused_node_and_surface(tab);
-            } else {
-                state.state.add_window(vec![NotifLogViewer.into()]);
-            }
-        }
+        window_action_handler(&event, &mut state, OpenNotifLogViewerAct, NotifLogViewer);
     }
 }

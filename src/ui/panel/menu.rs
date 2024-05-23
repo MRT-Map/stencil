@@ -14,16 +14,19 @@ use egui_notify::ToastLevel;
 use crate::notification::NOTIF_LOG;
 use crate::{
     action::Action,
-    history::HistoryAct,
+    component::panels::{
+        component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
+    },
+    history::{history_viewer::OpenHistoryViewerAct, HistoryAct},
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsAct},
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
-    project::events::ProjectAct,
+    project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
     tile::zoom::Zoom,
     ui::{
         panel::{
-            dock::{DockWindow, DockWindows, PanelDockState},
+            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateAct},
             status::Status,
         },
         tilemap::{
@@ -78,15 +81,25 @@ pub fn ui_sy(
                 button!(
                     ui,
                     event_writer,
-                    "Select project folder",
+                    "Select Project Folder...",
                     ProjectAct::SelectFolder
                 );
-                button!(ui, event_writer, "Save project", ProjectAct::Save(false));
+                button!(ui, event_writer, "Save Project", ProjectAct::Save(false));
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
                 button!(ui, event_writer, "Undo", HistoryAct::Undo);
                 button!(ui, event_writer, "Redo", HistoryAct::Redo);
+            });
+            #[allow(clippy::cognitive_complexity)]
+            egui::menu::menu_button(ui, "View", |ui| {
+                button!(ui, event_writer, "Component List", OpenComponentListAct);
+                button!(ui, event_writer, "Component Editor", OpenComponentEditorAct);
+                button!(ui, event_writer, "Project", OpenProjectEditorAct);
+                button!(ui, event_writer, "History", OpenHistoryViewerAct);
+                button!(ui, event_writer, "Notification Log", OpenNotifLogViewerAct);
+                ui.separator();
+                button!(ui, event_writer, "Reset Layout", ResetPanelDockStateAct);
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Settings", |ui| {
@@ -97,11 +110,10 @@ pub fn ui_sy(
                 button!(ui, event_writer, "Keymap", OpenKeymapSettingsAct);
                 button!(ui, event_writer, "Misc", OpenMiscSettingsAct);
             });
-            #[allow(clippy::cognitive_complexity)]
-            egui::menu::menu_button(ui, "Notification", |ui| {
-                button!(ui, event_writer, "Log", OpenNotifLogViewerAct);
-                #[cfg(debug_assertions)]
-                {
+            #[cfg(debug_assertions)]
+            {
+                #[allow(clippy::cognitive_complexity)]
+                egui::menu::menu_button(ui, "Debug", |ui| {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
                         NOTIF_LOG.push(&"Warning Triggered", ToastLevel::Warning);
@@ -110,8 +122,8 @@ pub fn ui_sy(
                         info!(label = "Trigger Panic", "Clicked menu item");
                         panic!("Panic Triggered");
                     }
-                }
-            });
+                });
+            }
             ui.separator();
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {

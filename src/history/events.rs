@@ -187,7 +187,7 @@ pub fn history_asy(
                             _ => {
                                 continue;
                             }
-                        }))
+                        }));
                     }
                 }
             }
@@ -284,7 +284,7 @@ pub fn history_asy(
                             _ => {
                                 continue;
                             }
-                        }))
+                        }));
                     }
                 }
             }

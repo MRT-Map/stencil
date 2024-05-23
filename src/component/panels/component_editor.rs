@@ -1,3 +1,4 @@
+use bevy::prelude::{EventReader, ResMut};
 use bevy_egui::egui;
 use itertools::Itertools;
 
@@ -5,11 +6,14 @@ use crate::{
     action::Action,
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
     history::{HistoryAct, HistoryEntry},
-    ui::panel::dock::{DockWindow, PanelParams, TabViewer},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
 pub struct ComponentEditor;
+
+pub struct OpenComponentEditorAct;
 
 impl DockWindow for ComponentEditor {
     fn title(self) -> String {
@@ -119,7 +123,10 @@ impl DockWindow for ComponentEditor {
             )));
         }
     }
-    fn closeable(self) -> bool {
-        false
+}
+
+pub fn component_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+    for event in actions.read() {
+        window_action_handler(&event, &mut state, OpenComponentEditorAct, ComponentEditor);
     }
 }

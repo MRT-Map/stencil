@@ -1,3 +1,4 @@
+use bevy::prelude::{EventReader, ResMut};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
@@ -5,13 +6,16 @@ use itertools::Itertools;
 
 use crate::{
     action::Action,
+    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
     history::{HistoryAct, HistoryEntry, NamespaceAction},
     project::events::ProjectAct,
-    ui::panel::dock::{DockWindow, PanelParams, TabViewer},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
 pub struct ProjectEditor;
+
+pub struct OpenProjectEditorAct;
 
 impl DockWindow for ProjectEditor {
     fn title(self) -> String {
@@ -141,14 +145,17 @@ impl DockWindow for ProjectEditor {
                 });
             });
     }
-    fn closeable(self) -> bool {
-        false
-    }
 }
 
 impl ProjectEditor {
     #[must_use]
     pub fn select_dialog() -> FileDialog {
         FileDialog::new().title("Select project folder")
+    }
+}
+
+pub fn project_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
+    for event in actions.read() {
+        window_action_handler(&event, &mut state, OpenProjectEditorAct, ProjectEditor);
     }
 }

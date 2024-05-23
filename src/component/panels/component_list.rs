@@ -1,11 +1,19 @@
+use bevy::prelude::{EventReader, ResMut};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
-use crate::ui::panel::dock::{DockWindow, PanelParams, TabViewer};
+use crate::{
+    action::Action,
+    history::HistoryEntry::Component,
+    notification::viewer::{NotifLogViewer, OpenNotifLogViewerAct},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+};
 
 #[derive(Clone, Copy)]
 pub struct ComponentList;
+
+pub struct OpenComponentListAct;
 
 impl DockWindow for ComponentList {
     fn title(self) -> String {
@@ -57,7 +65,10 @@ impl DockWindow for ComponentList {
             });
         }
     }
-    fn closeable(self) -> bool {
-        false
+}
+
+pub fn component_list_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
+    for event in actions.read() {
+        window_action_handler(&event, &mut state, OpenComponentListAct, ComponentList);
     }
 }

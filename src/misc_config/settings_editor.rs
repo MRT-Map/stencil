@@ -2,14 +2,12 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use surf::Url;
 
-#[cfg(target_os = "linux")]
-use crate::window::settings::LinuxWindow;
 use crate::{
     action::Action,
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 pub struct OpenMiscSettingsAct;
@@ -129,13 +127,6 @@ impl DockWindow for MiscSettingsEditor {
 
 pub fn misc_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenMiscSettingsAct))
-            && !state
-                .state
-                .iter_all_tabs()
-                .any(|(_, a)| a.title() == MiscSettingsEditor.title())
-        {
-            state.state.add_window(vec![MiscSettingsEditor.into()]);
-        }
+        window_action_handler(&event, &mut state, OpenMiscSettingsAct, MiscSettingsEditor);
     }
 }

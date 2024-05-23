@@ -6,11 +6,7 @@ use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use settings::KeymapSettings;
 
-use crate::{
-    action::Action,
-    keymaps::{settings::INIT_KEYMAP_SETTINGS, settings_editor::keymap_settings_asy},
-    state::IntoSystemConfigExt,
-};
+use crate::{action::Action, keymaps::settings::INIT_KEYMAP_SETTINGS, state::IntoSystemConfigExt};
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn keymap_sy(
@@ -37,6 +33,6 @@ impl Plugin for KeymapPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_KEYMAP_SETTINGS.to_owned())
             .add_systems(Update, keymap_sy.run_if_not_loading())
-            .add_systems(Update, keymap_settings_asy);
+            .add_systems(Update, settings_editor::keymap_settings_asy);
     }
 }

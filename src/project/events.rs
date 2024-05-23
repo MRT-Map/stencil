@@ -177,6 +177,10 @@ pub fn project_asy(
                         .collect()
                 })
                 .unwrap_or_default();
+            NOTIF_LOG.push(
+                &format!("Reloaded {} namespaces", ns.len()),
+                ToastLevel::Success,
+            );
             for ns in ns {
                 let _ = namespaces.visibilities.entry(ns).or_insert(false);
             }

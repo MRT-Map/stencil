@@ -26,6 +26,9 @@ impl Plugin for PanelPlugin {
                     .in_set(UiSet::Panels)
                     .before(dock::panel_sy),
             )
-            .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels));
+            .add_systems(
+                UiSchedule,
+                (dock::panel_sy, dock::reset_panel_asy).in_set(UiSet::Panels),
+            );
     }
 }

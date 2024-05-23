@@ -185,7 +185,9 @@ use ui::tilemap::RenderingPlugin;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
-    component::{actions::ComponentActionPlugins, tools::ComponentToolPlugins},
+    component::{
+        actions::ComponentActionPlugins, panels::ComponentPanelsPlugin, tools::ComponentToolPlugins,
+    },
     history::HistoryPlugin,
     info_windows::InfoWindowsPlugin,
     init::InitPlugin,
@@ -298,6 +300,7 @@ fn main() -> eyre::Result<()> {
         .add_plugins(HistoryPlugin)
         .add_plugins(NotificationPlugin)
         .add_plugins(MiscSettingsPlugin)
+        .add_plugins(ComponentPanelsPlugin)
         .run();
     Ok(())
 }

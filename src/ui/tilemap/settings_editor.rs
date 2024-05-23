@@ -8,10 +8,13 @@ use crate::{
     action::Action,
     dirs_paths::data_path,
     file::{load_toml, save_toml},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     tile::tile_coord::URL_REPLACER,
     ui::{
-        panel::dock::{DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer},
+        panel::dock::{
+            window_action_handler, DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer,
+        },
         tilemap::settings::{Basemap, TileSettings},
     },
 };
@@ -166,14 +169,14 @@ pub fn tile_settings_asy(
         return;
     };
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(TileSettingsAct::Open))
-            && !state
-                .state
-                .iter_all_tabs()
-                .any(|(_, a)| a.title() == TileSettingsEditor.title())
-        {
-            state.state.add_window(vec![TileSettingsEditor.into()]);
-        } else if matches!(event.downcast_ref(), Some(TileSettingsAct::Import)) {
+        window_action_handler(
+            &event,
+            &mut state,
+            TileSettingsAct::Open,
+            TileSettingsEditor,
+        );
+
+        if matches!(event.downcast_ref(), Some(TileSettingsAct::Import)) {
             file_dialogs.tile_settings_import.select_file();
         } else if let Some(TileSettingsAct::Export(basemap)) = event.downcast_ref() {
             let mut fd = TileSettingsEditor::export_dialog(&basemap.url);

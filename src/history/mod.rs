@@ -89,6 +89,7 @@ pub struct HistoryPlugin;
 impl Plugin for HistoryPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<History>()
-            .add_systems(Update, events::history_asy.run_if_not_loading());
+            .add_systems(Update, events::history_asy.run_if_not_loading())
+            .add_systems(Update, history_viewer::history_viewer_asy);
     }
 }

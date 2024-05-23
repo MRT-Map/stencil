@@ -6,7 +6,8 @@ use crate::window::settings::LinuxWindow;
 use crate::{
     action::Action,
     dirs_paths::data_path,
-    ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
     window::settings::WindowSettings,
 };
 
@@ -109,13 +110,11 @@ impl DockWindow for WindowSettingsEditor {
 
 pub fn window_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenWindowSettingsAct))
-            && !state
-                .state
-                .iter_all_tabs()
-                .any(|(_, a)| a.title() == WindowSettingsEditor.title())
-        {
-            state.state.add_window(vec![WindowSettingsEditor.into()]);
-        }
+        window_action_handler(
+            &event,
+            &mut state,
+            OpenWindowSettingsAct,
+            WindowSettingsEditor,
+        );
     }
 }
