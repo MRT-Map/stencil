@@ -229,12 +229,16 @@ pub fn project_asy(
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
-        popup.send(Popup::base_choose(
-            "save-before-switching",
-            "Save before switching projects?",
-            "",
-            Action::new(ProjectAct::Load(file.to_owned(), true)),
-            Action::new(ProjectAct::Load(file, false)),
-        ));
+        if namespaces.dir == Namespaces::default().dir {
+            actions.p1().send(Action::new(ProjectAct::Load(file, true)));
+        } else {
+            popup.send(Popup::base_choose(
+                "save-before-switching",
+                "Save before switching projects?",
+                "",
+                Action::new(ProjectAct::Load(file.to_owned(), true)),
+                Action::new(ProjectAct::Load(file, false)),
+            ));
+        }
     }
 }

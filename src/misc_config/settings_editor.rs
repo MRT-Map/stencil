@@ -110,9 +110,16 @@ impl DockWindow for MiscSettingsEditor {
 
         ui.add(
             egui::Slider::new(&mut misc_settings.autosave_interval, 0..=600)
-                .text("Autosave interval"),
+                .text("Autosave interval (s)"),
         );
         ui.label("Set to 0 to disable autosave");
+        ui.separator();
+
+        ui.add(
+            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=10)
+                .text("Notification duration (s)"),
+        );
+        ui.label("Time before success and info notifications expire. Set to 0 to disable expiry");
 
         if !invalid && old_settings != **misc_settings {
             misc_settings.save().unwrap();

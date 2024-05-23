@@ -9,6 +9,8 @@ use bevy_egui::EguiContexts;
 use egui_notify::{Toast, ToastLevel, Toasts};
 use once_cell::sync::Lazy;
 
+use crate::misc_config::settings::MiscSettings;
+
 pub mod viewer;
 
 pub static NOTIF_LOG: Lazy<RwLock<NotifLog>> = Lazy::new(|| RwLock::new(NotifLog::default()));
@@ -53,7 +55,11 @@ impl Notif {
     }
 }
 
-pub fn update_notifs_asy(mut toasts: ResMut<NotifToasts>, mut ctx: EguiContexts) {
+pub fn update_notifs_asy(
+    mut toasts: ResMut<NotifToasts>,
+    mut ctx: EguiContexts,
+    misc_settings: Res<MiscSettings>,
+) {
     let Ok(mut notif_log) = NOTIF_LOG.try_write() else {
         return;
     };
@@ -71,8 +77,9 @@ pub fn update_notifs_asy(mut toasts: ResMut<NotifToasts>, mut ctx: EguiContexts)
             .0
             .add(Toast::custom(&notif.message, notif.level.to_owned()))
             .set_duration(
-                (notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
-                    .then(|| Duration::from_secs(3)),
+                ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
+                    && misc_settings.notification_duration != 0)
+                    .then(|| Duration::from_secs(misc_settings.notification_duration)),
             );
         notif_log.notifs.push(notif);
     }

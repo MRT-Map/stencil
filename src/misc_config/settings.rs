@@ -96,6 +96,13 @@ field!(
     autosave_interval,
     u64
 );
+field!(
+    MiscSettings,
+    notification_duration_is_default,
+    default_notification_duration,
+    notification_duration,
+    u64
+);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Resource)]
 pub struct MiscSettings {
@@ -154,6 +161,11 @@ pub struct MiscSettings {
         skip_serializing_if = "autosave_interval_is_default"
     )]
     pub autosave_interval: u64,
+    #[serde(
+        default = "default_notification_duration",
+        skip_serializing_if = "notification_duration_is_default"
+    )]
+    pub notification_duration: u64,
 }
 
 impl Default for MiscSettings {
@@ -169,7 +181,8 @@ impl Default for MiscSettings {
             scroll_multiplier_line: 1.0,
             scroll_multiplier_pixel: 1.0,
             additional_zoom: 3,
-            autosave_interval: 60
+            autosave_interval: 60,
+            notification_duration: 2,
         }
     }
 }
