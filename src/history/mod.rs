@@ -3,6 +3,7 @@ pub mod history_viewer;
 
 use std::{
     fmt::{Display, Formatter},
+    path::PathBuf,
     sync::{Arc, RwLock},
 };
 
@@ -22,8 +23,15 @@ pub enum HistoryEntry<T = Entity> {
     },
     Namespace {
         namespace: String,
-        visible: bool,
+        action: NamespaceAction,
     },
+}
+#[derive(Clone, Debug)]
+pub enum NamespaceAction {
+    Hide,
+    Show,
+    Create(Option<PathBuf>),
+    Delete(Option<PathBuf>),
 }
 
 impl<T> Display for HistoryEntry<T> {
@@ -49,13 +57,12 @@ impl<T> Display for HistoryEntry<T> {
                     panic!();
                 }
             },
-            Self::Namespace { namespace, visible } => {
-                if *visible {
-                    write!(f, "Show {namespace}")
-                } else {
-                    write!(f, "Hide {namespace}")
-                }
-            }
+            Self::Namespace { namespace, action } => match action {
+                NamespaceAction::Create(_) => write!(f, "Create {namespace}"),
+                NamespaceAction::Delete(_) => write!(f, "Delete {namespace}"),
+                NamespaceAction::Hide => write!(f, "Hide {namespace}"),
+                NamespaceAction::Show => write!(f, "Show {namespace}"),
+            },
         }
     }
 }
