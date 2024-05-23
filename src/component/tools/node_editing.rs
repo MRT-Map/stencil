@@ -92,7 +92,7 @@ pub fn edit_nodes_sy(
                 continue;
             };
             if mouse_pos_world.xy().distance_squared(world_pos.as_vec2())
-                > 1024.0 / zoom.0.exp2() * misc_settings.big_handle_size
+                > (2048.0 / zoom.0.exp2() * misc_settings.big_handle_size).powi(2)
             {
                 info!(?entity, "Handle is too far");
                 continue;
