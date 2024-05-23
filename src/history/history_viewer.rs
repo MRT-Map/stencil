@@ -5,7 +5,6 @@ use itertools::Itertools;
 use crate::{
     action::Action,
     history::HistoryAct,
-    notification::viewer::{NotifLogViewer, OpenNotifLogViewerAct},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -42,6 +41,6 @@ impl DockWindow for HistoryViewer {
 
 pub fn history_viewer_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
     for event in actions.read() {
-        window_action_handler(&event, &mut state, OpenHistoryViewerAct, HistoryViewer);
+        window_action_handler(event, &mut state, OpenHistoryViewerAct, HistoryViewer);
     }
 }

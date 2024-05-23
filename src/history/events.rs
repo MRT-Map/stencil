@@ -184,9 +184,6 @@ pub fn history_asy(
                                 }
                                 continue;
                             }
-                            _ => {
-                                continue;
-                            }
                         }));
                     }
                 }
@@ -279,9 +276,6 @@ pub fn history_asy(
                                     )
                                     .ok();
                                 }
-                                continue;
-                            }
-                            _ => {
                                 continue;
                             }
                         }));

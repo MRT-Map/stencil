@@ -6,7 +6,6 @@ use itertools::Itertools;
 
 use crate::{
     action::Action,
-    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
     history::{HistoryAct, HistoryEntry, NamespaceAction},
     project::events::ProjectAct,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
@@ -156,6 +155,6 @@ impl ProjectEditor {
 
 pub fn project_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        window_action_handler(&event, &mut state, OpenProjectEditorAct, ProjectEditor);
+        window_action_handler(event, &mut state, OpenProjectEditorAct, ProjectEditor);
     }
 }

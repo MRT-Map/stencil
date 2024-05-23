@@ -8,7 +8,6 @@ use crate::{
     action::Action,
     dirs_paths::data_path,
     file::{load_toml, save_toml},
-    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     tile::tile_coord::URL_REPLACER,
     ui::{
@@ -169,12 +168,7 @@ pub fn tile_settings_asy(
         return;
     };
     for event in actions.read() {
-        window_action_handler(
-            &event,
-            &mut state,
-            TileSettingsAct::Open,
-            TileSettingsEditor,
-        );
+        window_action_handler(event, &mut state, TileSettingsAct::Open, TileSettingsEditor);
 
         if matches!(event.downcast_ref(), Some(TileSettingsAct::Import)) {
             file_dialogs.tile_settings_import.select_file();

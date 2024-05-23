@@ -5,8 +5,6 @@ use itertools::Itertools;
 
 use crate::{
     action::Action,
-    history::HistoryEntry::Component,
-    notification::viewer::{NotifLogViewer, OpenNotifLogViewerAct},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -69,6 +67,6 @@ impl DockWindow for ComponentList {
 
 pub fn component_list_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
     for event in actions.read() {
-        window_action_handler(&event, &mut state, OpenComponentListAct, ComponentList);
+        window_action_handler(event, &mut state, OpenComponentListAct, ComponentList);
     }
 }

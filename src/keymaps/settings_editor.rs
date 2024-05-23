@@ -9,7 +9,6 @@ use crate::{
         key_list::KEY_LIST,
         settings::{KeymapAction, KeymapSettings},
     },
-    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     state::EditorState,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -76,7 +75,7 @@ impl DockWindow for KeymapSettingsEditor {
 pub fn keymap_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
         window_action_handler(
-            &event,
+            event,
             &mut state,
             OpenKeymapSettingsAct,
             KeymapSettingsEditor,

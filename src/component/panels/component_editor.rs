@@ -6,7 +6,6 @@ use crate::{
     action::Action,
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
     history::{HistoryAct, HistoryEntry},
-    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -127,6 +126,6 @@ impl DockWindow for ComponentEditor {
 
 pub fn component_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        window_action_handler(&event, &mut state, OpenComponentEditorAct, ComponentEditor);
+        window_action_handler(event, &mut state, OpenComponentEditorAct, ComponentEditor);
     }
 }

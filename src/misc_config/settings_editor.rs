@@ -127,6 +127,6 @@ impl DockWindow for MiscSettingsEditor {
 
 pub fn misc_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        window_action_handler(&event, &mut state, OpenMiscSettingsAct, MiscSettingsEditor);
+        window_action_handler(event, &mut state, OpenMiscSettingsAct, MiscSettingsEditor);
     }
 }
