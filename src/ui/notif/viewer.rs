@@ -4,8 +4,10 @@ use chrono::{DateTime, Utc};
 
 use crate::{
     action::Action,
-    notification::NOTIF_LOG,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::{
+        notif::NOTIF_LOG,
+        panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    },
 };
 
 #[derive(Clone, Copy)]

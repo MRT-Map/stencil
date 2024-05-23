@@ -98,9 +98,9 @@ field!(
 );
 field!(
     MiscSettings,
-    notification_duration_is_default,
-    default_notification_duration,
-    notification_duration,
+    notif_duration_is_default,
+    default_notif_duration,
+    notif_duration,
     u64
 );
 
@@ -162,10 +162,10 @@ pub struct MiscSettings {
     )]
     pub autosave_interval: u64,
     #[serde(
-        default = "default_notification_duration",
-        skip_serializing_if = "notification_duration_is_default"
+        default = "default_notif_duration",
+        skip_serializing_if = "notif_duration_is_default"
     )]
-    pub notification_duration: u64,
+    pub notif_duration: u64,
 }
 
 impl Default for MiscSettings {
@@ -182,7 +182,7 @@ impl Default for MiscSettings {
             scroll_multiplier_pixel: 1.0,
             additional_zoom: 3,
             autosave_interval: 60,
-            notification_duration: 2,
+            notif_duration: 2,
         }
     }
 }

@@ -19,9 +19,12 @@ use crate::{
     },
     file::{load_msgpack, safe_delete, save_msgpack},
     history::{History, HistoryAct, HistoryEntry, NamespaceAction},
-    notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
-    ui::{panel::dock::FileDialogs, popup::Popup},
+    ui::{
+        notif::{NotifLogRwLockExt, NOTIF_LOG},
+        panel::dock::FileDialogs,
+        popup::Popup,
+    },
 };
 
 pub enum ProjectAct {

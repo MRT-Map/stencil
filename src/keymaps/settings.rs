@@ -21,10 +21,12 @@ use crate::{
         settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
     },
     misc_config::settings_editor::OpenMiscSettingsAct,
-    notification::viewer::OpenNotifLogViewerAct,
     project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
     state::{ChangeStateAct, EditorState},
-    ui::{panel::menu::OpenAllSettingsAct, tilemap::settings_editor::TileSettingsAct},
+    ui::{
+        notif::viewer::OpenNotifLogViewerAct, panel::menu::OpenAllSettingsAct,
+        tilemap::settings_editor::TileSettingsAct,
+    },
     window::settings_editor::OpenWindowSettingsAct,
 };
 

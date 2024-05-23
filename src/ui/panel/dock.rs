@@ -19,10 +19,10 @@ use crate::{
     history::{history_viewer::HistoryViewer, History},
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     misc_config::{settings::MiscSettings, settings_editor::MiscSettingsEditor},
-    notification::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
     ui::{
+        notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
         popup::Popup,
         tilemap::{

@@ -8,9 +8,9 @@ use crate::{
     action::Action,
     dirs_paths::data_path,
     file::{load_toml, save_toml},
-    notification::{NotifLogRwLockExt, NOTIF_LOG},
     tile::tile_coord::URL_REPLACER,
     ui::{
+        notif::{NotifLogRwLockExt, NOTIF_LOG},
         panel::dock::{
             window_action_handler, DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer,
         },

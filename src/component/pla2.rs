@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     component::skin::{AreaStyle, LineStyle, PointStyle, Skin, SkinComponent},
-    notification::{NotifLogRwLockExt, NOTIF_LOG},
+    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
 };
 
 fn hex_to_color(hex: HexColor) -> Color {

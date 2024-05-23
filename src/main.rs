@@ -193,9 +193,8 @@ use crate::{
     init::InitPlugin,
     keymaps::KeymapPlugin,
     misc_config::MiscSettingsPlugin,
-    notification::NotificationPlugin,
     project::ProjectPlugin,
-    ui::UiPlugin,
+    ui::{notif::NotifPlugin, UiPlugin},
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
@@ -208,7 +207,6 @@ pub mod info_windows;
 pub mod init;
 pub mod keymaps;
 pub mod misc_config;
-pub mod notification;
 pub mod panic;
 pub mod project;
 pub mod state;
@@ -298,7 +296,7 @@ fn main() -> eyre::Result<()> {
         .add_plugins(WindowSettingsPlugin)
         .add_plugins(ProjectPlugin)
         .add_plugins(HistoryPlugin)
-        .add_plugins(NotificationPlugin)
+        .add_plugins(NotifPlugin)
         .add_plugins(MiscSettingsPlugin)
         .add_plugins(ComponentPanelsPlugin)
         .run();

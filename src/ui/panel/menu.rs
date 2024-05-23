@@ -11,7 +11,7 @@ use bevy_mouse_tracking::MousePosWorld;
 use egui_notify::ToastLevel;
 
 #[cfg(debug_assertions)]
-use crate::notification::NOTIF_LOG;
+use crate::ui::notif::NOTIF_LOG;
 use crate::{
     action::Action,
     component::panels::{
@@ -21,10 +21,10 @@ use crate::{
     info_windows::InfoWindowsAct,
     keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsAct},
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
-    notification::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
     project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
     tile::zoom::Zoom,
     ui::{
+        notif::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt},
         panel::{
             dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateAct},
             status::Status,

@@ -78,8 +78,8 @@ pub fn update_notifs_asy(
             .add(Toast::custom(&notif.message, notif.level.to_owned()))
             .set_duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
-                    && misc_settings.notification_duration != 0)
-                    .then(|| Duration::from_secs(misc_settings.notification_duration)),
+                    && misc_settings.notif_duration != 0)
+                    .then(|| Duration::from_secs(misc_settings.notif_duration)),
             );
         notif_log.notifs.push(notif);
     }
@@ -104,9 +104,9 @@ impl<T: Default, E: ToString + Debug> AddToErrorLog<T> for Result<T, E> {
     }
 }
 
-pub struct NotificationPlugin;
+pub struct NotifPlugin;
 
-impl Plugin for NotificationPlugin {
+impl Plugin for NotifPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
             .add_systems(Update, (update_notifs_asy, viewer::log_viewer_asy));

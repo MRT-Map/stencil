@@ -8,7 +8,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
     dirs_paths::cache_dir,
-    notification::{NotifLogRwLockExt, NOTIF_LOG},
+    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
 };
 
 pub fn load_file<
