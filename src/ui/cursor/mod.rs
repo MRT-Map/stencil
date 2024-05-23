@@ -4,6 +4,7 @@ use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     init::load_assets::ImageAssets,
+    misc_config::settings::MiscSettings,
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
@@ -31,6 +32,7 @@ pub fn crosshair_sy(
     mut ctx: EguiContexts,
     tile_settings: Res<TileSettings>,
     panel: Res<PanelDockState>,
+    misc_settings: Res<MiscSettings>,
 ) {
     if let Some(state) = state {
         if state.component_type().is_none()
@@ -48,7 +50,9 @@ pub fn crosshair_sy(
     let translation = mouse_pos_world.round().xy();
     let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
-        (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0).exp2() * 16f32,
+        (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0).exp2()
+            * 16f32
+            * misc_settings.crosshair_size,
     ));
     if ch.is_empty() {
         debug!("Spawning crosshair");

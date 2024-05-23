@@ -7,6 +7,7 @@ use bevy_egui::EguiContexts;
 use bevy_mouse_tracking::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
+    misc_config::settings::MiscSettings,
     tile::{
         utils::{get_map_width_height, get_window_width_height},
         zoom::Zoom,
@@ -65,6 +66,7 @@ pub fn mouse_zoom_sy(
     tile_settings: Res<TileSettings>,
     mut ctx: EguiContexts,
     panel: Res<PanelDockState>,
+    misc_settings: Res<MiscSettings>,
 ) {
     if !within_tilemap(&mut ctx, &panel) {
         return;
@@ -72,10 +74,15 @@ pub fn mouse_zoom_sy(
     let (mut ort_proj, mut transform) = camera.single_mut();
     for ev in scroll_evr.read() {
         let u = match ev.unit {
-            MouseScrollUnit::Line => ev.y * 0.125,
-            MouseScrollUnit::Pixel => ev.y * 0.0125,
+            MouseScrollUnit::Line => ev.y * 0.125 * misc_settings.scroll_multiplier_line,
+            MouseScrollUnit::Pixel => ev.y * 0.0125 * misc_settings.scroll_multiplier_pixel,
         };
-        if 1.0 <= (zoom.0 + u) && (zoom.0 + u) <= 11.0 {
+        if 1.0 <= (zoom.0 + u)
+            && (zoom.0 + u)
+                <= f32::from(
+                    tile_settings.basemaps[0].max_tile_zoom + misc_settings.additional_zoom,
+                )
+        {
             let orig = transform.translation.xy();
             let orig_scale = ort_proj.scale;
             let orig_mouse_pos = mouse_pos_world.single();

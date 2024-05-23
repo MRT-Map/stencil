@@ -12,6 +12,7 @@ use crate::{
         skin::Skin,
     },
     history::{HistoryAct, HistoryEntry},
+    misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
@@ -37,6 +38,7 @@ pub fn edit_nodes_sy(
     mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
     zoom: Res<Zoom>,
+    misc_settings: Res<MiscSettings>,
 ) {
     let Ok((mut pla, entity)) = selected.get_single_mut() else {
         return;
@@ -90,7 +92,7 @@ pub fn edit_nodes_sy(
                 continue;
             };
             if mouse_pos_world.xy().distance_squared(world_pos.as_vec2())
-                > pla.weight(&skin).unwrap_or(2) as f32 * zoom.0.exp2() / 4.0
+                > 1024.0 / zoom.0.exp2() * misc_settings.big_handle_size
             {
                 info!(?entity, "Handle is too far");
                 continue;
@@ -152,6 +154,7 @@ pub fn update_handles(
     skin: &Skin,
     mouse_pos_world: &MousePosWorld,
     zoom: &Zoom,
+    misc_settings: &MiscSettings,
 ) {
     trace!("Updating handles");
     commands
@@ -163,8 +166,9 @@ pub fn update_handles(
         .iter()
         .map(|coord| &coord.0)
         .filter(|coord| {
-            if pla.nodes.len() > 50 {
-                (coord.as_vec2() - mouse_pos_world.xy()).length_squared() < 10000.0
+            if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
+                (coord.as_vec2() - mouse_pos_world.xy()).length_squared()
+                    < misc_settings.hide_far_handles_distance
             } else {
                 true
             }
@@ -177,7 +181,7 @@ pub fn update_handles(
                 } else {
                     coord.as_vec2()
                 },
-                1.0,
+                misc_settings.big_handle_size,
                 Color::GRAY,
             )
         })
@@ -200,13 +204,21 @@ pub fn update_handles(
     }
     .map(|(c1, c2)| (c1.0 + c2.0) / 2)
     .filter(|coord| {
-        if pla.nodes.len() > 50 {
-            (coord.as_vec2() - mouse_pos_world.xy()).length_squared() < 10000.0
+        if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
+            (coord.as_vec2() - mouse_pos_world.xy()).length_squared()
+                < misc_settings.hide_far_handles_distance
         } else {
             true
         }
     })
-    .map(|coord| circle(zoom, coord.as_vec2(), 0.5, Color::GRAY))
+    .map(|coord| {
+        circle(
+            zoom,
+            coord.as_vec2(),
+            misc_settings.small_handle_size,
+            Color::GRAY,
+        )
+    })
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     trace!("Pushing second set of children");
@@ -220,9 +232,18 @@ pub fn show_handles_sy(
     skin: Res<Skin>,
     mouse_pos_world: Res<MousePosWorld>,
     zoom: Res<Zoom>,
+    misc_settings: Res<MiscSettings>,
 ) {
     for (pla, e) in selected.iter() {
-        update_handles(&mut commands, pla, e, &skin, &mouse_pos_world, &zoom);
+        update_handles(
+            &mut commands,
+            pla,
+            e,
+            &skin,
+            &mouse_pos_world,
+            &zoom,
+            &misc_settings,
+        );
     }
 }
 

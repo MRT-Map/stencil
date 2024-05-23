@@ -3,13 +3,14 @@ use bevy_egui::EguiContexts;
 use bevy_mod_picking::prelude::*;
 use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
-use crate::ui::panel::dock::{within_tilemap, PanelDockState};
+use crate::{
+    misc_config::settings::MiscSettings,
+    ui::panel::dock::{within_tilemap, PanelDockState},
+};
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct HoveredComponent;
-
-pub const CLICK_MAX_OFFSET: f32 = 25.0;
 
 #[derive(Debug, Event)]
 pub enum MouseEvent {
@@ -58,6 +59,7 @@ pub fn right_click_handler_sy(
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
     panel: Res<PanelDockState>,
+    misc_settings: Res<MiscSettings>,
 ) {
     if buttons.just_pressed(MouseButton::Right) && within_tilemap(&mut ctx, &panel) {
         debug!("RightPress detected");
@@ -68,7 +70,7 @@ pub fn right_click_handler_sy(
         debug!("RightRelease detected");
         event_writer.send(MouseEvent::RightRelease(*mouse_pos_world));
         if let Some(prev) = *prev_mouse_pos {
-            if (*prev - **mouse_pos).length_squared() <= CLICK_MAX_OFFSET
+            if (*prev - **mouse_pos).length_squared() <= misc_settings.click_max_offset
                 && within_tilemap(&mut ctx, &panel)
             {
                 debug!("RightClick detected");
@@ -89,6 +91,7 @@ pub fn left_click_handler_sy(
     mouse_pos: Res<MousePos>,
     mouse_pos_world: Res<MousePosWorld>,
     panel: Res<PanelDockState>,
+    misc_settings: Res<MiscSettings>,
 ) {
     let mut pressed_on_comp = false;
     if within_tilemap(&mut ctx, &panel) {
@@ -123,7 +126,9 @@ pub fn left_click_handler_sy(
     let curr = *mouse_pos;
     debug!(e = ?selected_entity, "LeftRelease detected");
     event_writer.send(MouseEvent::LeftRelease(*selected_entity, *mouse_pos_world));
-    if (*prev - *curr).length_squared() <= CLICK_MAX_OFFSET && within_tilemap(&mut ctx, &panel) {
+    if (*prev - *curr).length_squared() <= misc_settings.click_max_offset
+        && within_tilemap(&mut ctx, &panel)
+    {
         debug!(e = ?selected_entity, "LeftClick detected");
         event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
     }

@@ -4,12 +4,14 @@ use once_cell::sync::Lazy;
 
 use crate::{
     action::Action,
+    dirs_paths::data_path,
     keymaps::{
         key_list::KEY_LIST,
         settings::{KeymapAction, KeymapSettings},
     },
     state::EditorState,
     ui::panel::dock::{DockWindow, PanelDockState, PanelParams, TabViewer},
+    window::settings::WindowSettings,
 };
 
 pub struct OpenKeymapSettingsAct;
@@ -36,6 +38,14 @@ impl DockWindow for KeymapSettingsEditor {
         {
             **keymap_settings = KeymapSettings::default();
         }
+        ui.colored_label(
+            egui::Color32::YELLOW,
+            format!(
+                "Keymap settings can also be edited at: {}",
+                data_path("keymap_settings.toml").to_string_lossy()
+            ),
+        );
+        ui.separator();
 
         let existing_keys = keymap_settings.0.values().copied().collect::<Vec<_>>();
         for (heading, menu) in &*KEYMAP_MENU {

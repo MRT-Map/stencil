@@ -134,12 +134,7 @@ pub fn ui_sy(
 
 pub fn all_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
     for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(OpenAllSettingsAct))
-            && !state
-                .state
-                .iter_all_tabs()
-                .any(|(_, a)| a.title() == MiscSettingsEditor.title())
-        {
+        if matches!(event.downcast_ref(), Some(OpenAllSettingsAct)) {
             let all_tabs = state
                 .state
                 .iter_all_tabs()

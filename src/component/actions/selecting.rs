@@ -8,6 +8,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
+    misc_config::settings::MiscSettings,
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
@@ -46,6 +47,7 @@ pub fn highlight_selected_sy(
     query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     skin: Res<Skin>,
     zoom: Res<Zoom>,
+    misc_settings: Res<MiscSettings>,
 ) {
     if state.component_type().is_some() {
         return;
@@ -59,7 +61,7 @@ pub fn highlight_selected_sy(
                 .spawn(circle(
                     &zoom,
                     data.nodes.first().unwrap().0.as_vec2(),
-                    1.0,
+                    misc_settings.big_handle_size,
                     Color::GREEN,
                 ))
                 .id();
@@ -67,7 +69,7 @@ pub fn highlight_selected_sy(
                 .spawn(circle(
                     &zoom,
                     data.nodes.last().unwrap().0.as_vec2(),
-                    1.0,
+                    misc_settings.big_handle_size,
                     Color::RED,
                 ))
                 .id();
