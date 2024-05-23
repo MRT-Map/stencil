@@ -10,7 +10,6 @@ env:
 jobs:
   build:
     name: Build Exe
-    environment: VirusTotal
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -27,19 +26,6 @@ jobs:
       run: rustup default nightly
     - name: Activate config.toml
       run: mv .cargo/actions_config.toml .cargo/config.toml
-
-    - name: Xcode select
-      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: ${{ matrix.os == 'macos-latest' }}
-    - name: Install lld
-      run: brew install llvm;
-      if: ${{ matrix.os == 'macos-latest' }}
-    - name: Install dependencies
-      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-
-    - name: Build
-      run: cargo +nightly build --release
 
     - name: Create dmg
       run: sh build/macos/dmg.sh
@@ -75,10 +61,3 @@ jobs:
         file_glob: true
         tag: ${{ github.ref }}
       if: ${{ matrix.os == 'windows-latest' }}
-
-    - name: VirusTotal Scan
-      uses: crazy-max/ghaction-virustotal@v4
-      with:
-        vt_api_key: ${{ secrets.VT_API_KEY }}
-        files: "target/release/stencil2?(.exe)"
-        update_release_body: true
