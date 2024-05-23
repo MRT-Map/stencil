@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use bevy::{
     hierarchy::DespawnRecursiveExt,
     prelude::{
@@ -16,7 +18,7 @@ use crate::{
         skin::Skin,
     },
     file::{load_msgpack, safe_delete, save_msgpack},
-    history::{HistoryAct, HistoryEntry, NamespaceAction},
+    history::{History, HistoryAct, HistoryEntry, NamespaceAction},
     notification::{NotifLogRwLockExt, NOTIF_LOG},
     project::Namespaces,
     ui::{panel::dock::FileDialogs, popup::Popup},
@@ -24,6 +26,7 @@ use crate::{
 
 pub enum ProjectAct {
     SelectFolder,
+    LoadFolder(PathBuf, bool),
     GetNamespaces,
     Show {
         ns: String,
@@ -49,6 +52,7 @@ pub fn project_asy(
     mut file_dialogs: NonSendMut<FileDialogs>,
     skin: Res<Skin>,
     mut popup: EventWriter<Popup>,
+    mut history: ResMut<History>,
 ) {
     let mut send_queue: Vec<Action> = vec![];
     for event in actions.p0().read() {
@@ -203,6 +207,21 @@ pub fn project_asy(
                     action: NamespaceAction::Delete(delete_file),
                 },
             )));
+        } else if let Some(ProjectAct::LoadFolder(folder, true)) = event.downcast_ref() {
+            send_queue.push(Action::new(ProjectAct::Save(false)));
+            send_queue.push(Action::new(ProjectAct::LoadFolder(
+                folder.to_owned(),
+                false,
+            )));
+        } else if let Some(ProjectAct::LoadFolder(folder, false)) = event.downcast_ref() {
+            history.redo_stack.clear();
+            history.undo_stack.clear();
+            namespaces.folder = folder.to_owned();
+            namespaces.visibilities.clear();
+            for (e, _) in query.iter() {
+                commands.entity(e).despawn_recursive();
+            }
+            send_queue.push(Action::new(ProjectAct::GetNamespaces));
         }
     }
     for action in send_queue {
@@ -213,11 +232,12 @@ pub fn project_asy(
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
-        namespaces.folder = file;
-        namespaces.visibilities.clear();
-        for (e, _) in query.iter() {
-            commands.entity(e).despawn_recursive();
-        }
-        actions.p1().send(Action::new(ProjectAct::GetNamespaces));
+        popup.send(Popup::base_choose(
+            "save-before-switching",
+            "Save before switching projects?",
+            "",
+            Action::new(ProjectAct::LoadFolder(file.to_owned(), true)),
+            Action::new(ProjectAct::LoadFolder(file, false)),
+        ));
     }
 }

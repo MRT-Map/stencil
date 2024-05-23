@@ -144,6 +144,43 @@ impl Popup {
             Mutex::new(Box::new(())),
         )
     }
+    pub fn base_choose<
+        I: Display + Send + Sync + 'static,
+        T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+    >(
+        id: I,
+        title: T1,
+        text: T2,
+        action1: Action,
+        action2: Action,
+    ) -> Self {
+        let win_id = egui::Id::new(id.to_string());
+        Self::new(
+            id.to_string(),
+            move || {
+                egui::Window::new(title.to_owned())
+                    .collapsible(false)
+                    .resizable(false)
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .id(win_id)
+            },
+            move |_, ui, ew, shown| {
+                ui.label(text.to_owned());
+                ui.horizontal(|ui| {
+                    if ui.button("Yes").clicked() {
+                        ew.send(action1.to_owned());
+                        *shown = false;
+                    }
+                    if ui.button("No").clicked() {
+                        ew.send(action2.to_owned());
+                        *shown = false;
+                    }
+                });
+            },
+            Mutex::new(Box::new(())),
+        )
+    }
 }
 
 #[tracing::instrument(skip_all)]
