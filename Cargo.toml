@@ -34,7 +34,7 @@ features = [
 bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin" }
 #bevy_prototype_lyon = "0.11.0"
 bevy_prototype_lyon = { git = "https://github.com/iiiii7d/bevy_prototype_lyon" }
-bevy_mod_picking = { version = "0.18.2", default-features = false, features = [
+bevy_mod_picking = { version = "0.19.1", default-features = false, features = [
     "backend_raycast",
     "selection",
 ] }
