@@ -30,7 +30,7 @@ pub fn get_map_coords_of_edges(camera: &Camera, transform: &Transform) -> (f32, 
     let ndc_tl = Vec2::new(0.0, 0.0) - Vec2::ONE;
     let ndc_br = Vec2::new(2.0, 2.0) - Vec2::ONE;
 
-    let ndc_to_world = transform.compute_matrix() * camera.projection_matrix().inverse();
+    let ndc_to_world = transform.compute_matrix() * camera.clip_from_view().inverse();
 
     let world_pos_tl = ndc_to_world.project_point3(ndc_tl.extend(-1.0));
     let world_pos_br = ndc_to_world.project_point3(ndc_br.extend(-1.0));

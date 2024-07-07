@@ -62,5 +62,5 @@ pub fn compat_sy(mut commands: Commands) {
     v2_1_0();
     v2_2_0();
 
-    commands.insert_resource(NextState(Some(LoadingState::Compat.next())));
+    commands.insert_resource(NextState::Pending(LoadingState::Compat.next()));
 }

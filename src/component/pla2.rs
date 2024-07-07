@@ -3,7 +3,7 @@ use std::{
     fmt::{Debug, Display, Formatter},
 };
 
-use bevy::prelude::*;
+use bevy::{color::palettes::basic::YELLOW, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use egui_notify::ToastLevel;
 use hex_color::HexColor;
@@ -16,12 +16,12 @@ use crate::{
 };
 
 fn hex_to_color(hex: HexColor) -> Color {
-    Color::Rgba {
-        red: f32::from(hex.r) / 255.0,
-        green: f32::from(hex.g) / 255.0,
-        blue: f32::from(hex.b) / 255.0,
-        alpha: 1.0,
-    }
+    Color::srgba(
+        f32::from(hex.r) / 255.0,
+        f32::from(hex.g) / 255.0,
+        f32::from(hex.b) / 255.0,
+        1.0,
+    )
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Component)]
@@ -242,7 +242,7 @@ impl PlaComponent<EditorCoords> {
         }
         if self.get_type(skin) == ComponentType::Area {
             Fill::color(if let Some(hex) = self.front_colour(skin) {
-                *hex_to_color(*hex).set_a(0.25)
+                hex_to_color(*hex).with_alpha(0.25)
             } else {
                 Color::NONE
             })
@@ -289,9 +289,9 @@ pub trait Select {
 impl Select for Fill {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
-            ComponentType::Point => Color::YELLOW,
+            ComponentType::Point => YELLOW.into(),
             ComponentType::Line => Color::NONE,
-            ComponentType::Area => *Color::YELLOW.to_owned().set_a(0.25),
+            ComponentType::Area => YELLOW.with_alpha(0.25).into(),
         };
         self
     }
@@ -300,7 +300,7 @@ impl Select for Stroke {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
             ComponentType::Point => Color::NONE,
-            ComponentType::Line | ComponentType::Area => Color::YELLOW,
+            ComponentType::Line | ComponentType::Area => YELLOW.into(),
         };
         self
     }

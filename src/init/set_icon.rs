@@ -26,5 +26,5 @@ pub fn set_icon_sy(
 
     primary.set_window_icon(Some(icon));
 
-    commands.insert_resource(NextState(Some(LoadingState::SetIcon.next())));
+    commands.insert_resource(NextState::Pending(LoadingState::SetIcon.next()));
 }

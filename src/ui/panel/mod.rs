@@ -17,7 +17,8 @@ pub struct PanelPlugin;
 
 impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
-        app.world.insert_non_send_resource(FileDialogs::default());
+        app.world_mut()
+            .insert_non_send_resource(FileDialogs::default());
         app.init_resource::<PanelDockState>()
             .init_resource::<Status>()
             .add_systems(

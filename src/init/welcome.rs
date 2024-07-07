@@ -17,5 +17,5 @@ pub fn welcome_sy(mut commands: Commands, mut popup: EventWriter<Popup>) {
         let _ = std::fs::write(data_path(".welcome_shown"), "");
     }
 
-    commands.insert_resource(NextState(Some(LoadingState::Welcome.next())));
+    commands.insert_resource(NextState::Pending(LoadingState::Welcome.next()));
 }

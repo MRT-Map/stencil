@@ -55,5 +55,5 @@ fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
     status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
 
     info!("Transitioning out of idle");
-    commands.insert_resource(NextState(Some(EditorState::Idle)));
+    commands.insert_resource(NextState::Pending(EditorState::Idle));
 }

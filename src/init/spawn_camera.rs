@@ -13,5 +13,5 @@ pub fn spawn_camera_sy(mut commands: Commands) {
         //.insert(RaycastPickCamera::default())
         .add(InitWorldTracking);
 
-    commands.insert_resource(NextState(Some(LoadingState::SpawnCamera.next())));
+    commands.insert_resource(NextState::Pending(LoadingState::SpawnCamera.next()));
 }

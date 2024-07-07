@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::basic::GRAY, prelude::*};
 use bevy_mouse_tracking::MousePosWorld;
 use itertools::Itertools;
 
@@ -182,7 +182,7 @@ pub fn update_handles(
                     coord.as_vec2()
                 },
                 misc_settings.big_handle_size,
-                Color::GRAY,
+                GRAY.into(),
             )
         })
         .map(|bundle| commands.spawn(bundle).id())
@@ -216,7 +216,7 @@ pub fn update_handles(
             zoom,
             coord.as_vec2(),
             misc_settings.small_handle_size,
-            Color::GRAY,
+            GRAY.into(),
         )
     })
     .map(|bundle| commands.spawn(bundle).id())

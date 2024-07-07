@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::basic::{GREEN, RED},
+    prelude::*,
+};
 use bevy_prototype_lyon::entity::ShapeBundle;
 
 use crate::{
@@ -62,7 +65,7 @@ pub fn highlight_selected_sy(
                     &zoom,
                     data.nodes.first().unwrap().0.as_vec2(),
                     misc_settings.big_handle_size,
-                    Color::GREEN,
+                    GREEN.into(),
                 ))
                 .id();
             let end = commands
@@ -70,7 +73,7 @@ pub fn highlight_selected_sy(
                     &zoom,
                     data.nodes.last().unwrap().0.as_vec2(),
                     misc_settings.big_handle_size,
-                    Color::RED,
+                    RED.into(),
                 ))
                 .id();
             commands.entity(entity).add_child(start).add_child(end);

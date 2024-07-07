@@ -17,5 +17,5 @@ pub fn unzip_assets_sy(mut commands: Commands) {
     let dir = data_dir("assets");
     zip_file.extract(&dir).unwrap();
 
-    commands.insert_resource(NextState(Some(LoadingState::UnzipAssets.next())));
+    commands.insert_resource(NextState::Pending(LoadingState::UnzipAssets.next()));
 }

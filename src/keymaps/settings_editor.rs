@@ -55,7 +55,7 @@ impl DockWindow for KeymapSettingsEditor {
                     .selected_text(format!("{key:?}"))
                     .width(25.0)
                     .show_ui(ui, |ui| {
-                        ui.style_mut().wrap = Some(false);
+                        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                         for list_key in &*KEY_LIST {
                             if existing_keys.contains(list_key) {
                                 continue;

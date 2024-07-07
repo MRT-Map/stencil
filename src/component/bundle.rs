@@ -1,4 +1,4 @@
-use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy::{color::palettes::css::YELLOW, ecs::system::EntityCommands, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
@@ -46,7 +46,7 @@ impl ComponentBundle for PointComponentBundle {
         self
     }
     fn select(&mut self) -> &mut Self {
-        self.fill.color = Color::YELLOW;
+        self.fill.color = YELLOW.into();
         self
     }
     fn deselect(&mut self, skin: &Skin) -> &mut Self {
@@ -86,7 +86,7 @@ impl ComponentBundle for LineComponentBundle {
         self
     }
     fn select(&mut self) -> &mut Self {
-        self.stroke.color = *Color::YELLOW.clone().set_a(0.5);
+        self.stroke.color = YELLOW.with_alpha(0.5).into();
         self
     }
     fn deselect(&mut self, skin: &Skin) -> &mut Self {
@@ -129,8 +129,8 @@ impl ComponentBundle for AreaComponentBundle {
         self
     }
     fn select(&mut self) -> &mut Self {
-        self.stroke.color = *Color::YELLOW.clone().set_a(0.5);
-        self.fill.color = Color::YELLOW;
+        self.stroke.color = YELLOW.with_alpha(0.5).into();
+        self.fill.color = YELLOW.into();
         self
     }
     fn deselect(&mut self, skin: &Skin) -> &mut Self {

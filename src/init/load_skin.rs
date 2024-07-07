@@ -31,7 +31,7 @@ pub fn get_skin_sy(
         if let Ok(skin) = load_msgpack::<Skin>(&cache_path("skin.msgpack"), Some("skin")) {
             info!("Retrieved from cache");
             commands.insert_resource(skin);
-            commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
+            commands.insert_resource(NextState::Pending(LoadingState::LoadSkin.next()));
             *task_s = Step::Complete;
         }
     }
@@ -54,7 +54,7 @@ pub fn get_skin_sy(
                 info!("Retrieved");
                 let _ = save_msgpack(&skin, &cache_path("skin.msgpack"), Some("skin"));
                 commands.insert_resource(skin);
-                commands.insert_resource(NextState(Some(LoadingState::LoadSkin.next())));
+                commands.insert_resource(NextState::Pending(LoadingState::LoadSkin.next()));
                 *task_s = Step::Complete;
             }
             Some(Err(err)) => {

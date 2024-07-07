@@ -98,7 +98,7 @@ pub fn state_changer_asy(
             &mut status,
             "component",
         );
-        commands.insert_resource(NextState(Some(state)));
+        commands.insert_resource(NextState::Pending(state));
     }
 }
 

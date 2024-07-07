@@ -41,7 +41,7 @@ impl DockWindow for ComponentEditor {
                 .selected_text(&component_data.namespace)
                 .width(25.0)
                 .show_ui(ui, |ui| {
-                    ui.style_mut().wrap = Some(false);
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     for (ns, vis) in &namespaces.visibilities {
                         if !vis {
                             continue;
@@ -67,7 +67,7 @@ impl DockWindow for ComponentEditor {
         egui::ComboBox::from_label("Component type")
             .selected_text(component_data.ty.to_owned())
             .show_ui(ui, |ui| {
-                ui.style_mut().wrap = Some(false);
+                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
                     .iter()
                     .filter(|(_, data)| data.get_type() == component_type)

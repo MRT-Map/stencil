@@ -29,7 +29,7 @@ pub fn quit_asy(
             };
         } else if matches!(event.downcast_ref(), Some(InfoWindowsAct::Quit(true))) {
             {
-                exit.send(AppExit);
+                exit.send(AppExit::Success);
             }
         }
     }

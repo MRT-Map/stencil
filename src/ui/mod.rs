@@ -60,7 +60,7 @@ impl Plugin for UiPlugin {
                 };
                 egui_extras::install_image_loaders(ctx);
             });
-        let mut order = app.world.resource_mut::<MainScheduleOrder>();
+        let mut order = app.world_mut().resource_mut::<MainScheduleOrder>();
         order.insert_after(PreUpdate, UiSchedule);
     }
 }

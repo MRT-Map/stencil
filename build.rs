@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
-use color_eyre::Result;
+use eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
