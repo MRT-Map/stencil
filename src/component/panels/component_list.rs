@@ -1,11 +1,10 @@
-use bevy::prelude::{Event, EventReader, ResMut, Trigger};
+use bevy::prelude::{Event, ResMut, Trigger};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
-use crate::{
-    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+use crate::ui::panel::dock::{
+    window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer,
 };
 
 #[derive(Clone, Copy)]
@@ -66,6 +65,7 @@ impl DockWindow for ComponentList {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_component_list(
     _trigger: Trigger<OpenComponentListAct>,
     mut state: ResMut<PanelDockState>,

@@ -15,7 +15,7 @@ use crate::{
     },
     history::{HistoryAct, HistoryEntry},
     project::Namespaces,
-    state::{on_state_change, EditorState},
+    state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
 

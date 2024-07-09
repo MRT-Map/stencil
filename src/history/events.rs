@@ -5,10 +5,7 @@ use std::{
 
 use bevy::{
     hierarchy::DespawnRecursiveExt,
-    prelude::{
-        Commands, Entity, EventReader, EventWriter, Local, ParamSet, Query, Res, ResMut, Trigger,
-        With,
-    },
+    prelude::{Commands, Entity, Local, Query, Res, ResMut, Trigger, With},
 };
 use tracing::debug;
 

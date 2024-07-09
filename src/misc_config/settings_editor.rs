@@ -5,7 +5,6 @@ use surf::Url;
 use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
-    history::history_viewer::{HistoryViewer, OpenHistoryViewerAct},
     misc_config::settings::MiscSettings,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -133,6 +132,7 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsAct>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, MiscSettingsEditor);
 }

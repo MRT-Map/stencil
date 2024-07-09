@@ -10,7 +10,6 @@ use crate::{
     },
     state::EditorState,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
-    window::settings_editor::{OpenWindowSettingsAct, WindowSettingsEditor},
 };
 
 #[derive(Clone, Copy, Event)]
@@ -73,6 +72,7 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_keymap_settings(
     _trigger: Trigger<OpenKeymapSettingsAct>,
     mut state: ResMut<PanelDockState>,

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::{Commands, Event, KeyCode, Resource};
+use bevy::prelude::{Commands, KeyCode, Resource};
 use eyre::OptionExt;
 use itertools::Itertools;
 use once_cell::sync::Lazy;

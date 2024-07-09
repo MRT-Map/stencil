@@ -55,6 +55,7 @@ impl Notif {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn update_notifs_sy(
     mut toasts: ResMut<NotifToasts>,
     mut ctx: EguiContexts,
@@ -109,7 +110,7 @@ pub struct NotifPlugin;
 impl Plugin for NotifPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
-            .add_systems(Update, (update_notifs_sy))
+            .add_systems(Update, update_notifs_sy)
             .observe(viewer::on_log_viewer);
     }
 }

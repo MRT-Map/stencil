@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
 use bevy_mouse_tracking::MainCamera;
@@ -219,6 +217,7 @@ pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut pa
 #[derive(Clone, Copy, Event)]
 pub struct ResetPanelDockStateAct;
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_reset_panel(
     _trigger: Trigger<ResetPanelDockStateAct>,
     mut state: ResMut<PanelDockState>,

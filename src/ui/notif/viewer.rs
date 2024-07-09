@@ -1,13 +1,10 @@
-use bevy::prelude::{Event, EventReader, ResMut, Trigger};
+use bevy::prelude::{Event, ResMut, Trigger};
 use bevy_egui::egui;
 use chrono::{DateTime, Utc};
 
-use crate::{
-    component::panels::component_list::{ComponentList, OpenComponentListAct},
-    ui::{
-        notif::NOTIF_LOG,
-        panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
-    },
+use crate::ui::{
+    notif::NOTIF_LOG,
+    panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
@@ -43,6 +40,7 @@ impl DockWindow for NotifLogViewer {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerAct>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, NotifLogViewer);
 }

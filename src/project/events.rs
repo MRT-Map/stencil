@@ -2,10 +2,7 @@ use std::path::PathBuf;
 
 use bevy::{
     hierarchy::DespawnRecursiveExt,
-    prelude::{
-        Commands, Entity, Event, EventReader, EventWriter, NonSendMut, ParamSet, Query, Res,
-        ResMut, Trigger,
-    },
+    prelude::{Commands, Entity, Event, EventWriter, NonSendMut, Query, Res, ResMut, Trigger},
 };
 use bevy_egui::EguiContexts;
 use egui_notify::ToastLevel;
@@ -225,9 +222,10 @@ pub fn on_project(
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn project_dialog(
     mut commands: Commands,
-    mut namespaces: ResMut<Namespaces>,
+    namespaces: Res<Namespaces>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
     mut popup: EventWriter<Popup>,

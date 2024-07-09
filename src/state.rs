@@ -2,7 +2,6 @@ use bevy::{
     ecs::schedule::{SystemConfigs, SystemSetConfigs},
     prelude::*,
 };
-use bevy_egui::egui::Resize;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 

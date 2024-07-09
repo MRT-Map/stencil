@@ -1,4 +1,4 @@
-use bevy::prelude::{Event, EventReader, ResMut, Trigger};
+use bevy::prelude::{Event, ResMut, Trigger};
 use bevy_egui::egui;
 use itertools::Itertools;
 
@@ -121,6 +121,7 @@ impl DockWindow for ComponentEditor {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_component_editor(
     _trigger: Trigger<OpenComponentEditorAct>,
     mut state: ResMut<PanelDockState>,

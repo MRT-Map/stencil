@@ -6,9 +6,7 @@ use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use settings::KeymapSettings;
 
-use crate::{
-    history::history_viewer, keymaps::settings::INIT_KEYMAP_SETTINGS, state::IntoSystemConfigExt,
-};
+use crate::{keymaps::settings::INIT_KEYMAP_SETTINGS, state::IntoSystemConfigExt};
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn keymap_sy(

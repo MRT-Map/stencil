@@ -17,7 +17,7 @@ pub fn on_quit(
     match trigger.event() {
         InfoWindowsAct::Quit(false) => {
             if components.is_empty() || cfg!(debug_assertions) {
-                commands.trigger(InfoWindowsAct::Quit(true))
+                commands.trigger(InfoWindowsAct::Quit(true));
             } else {
                 popup.send(Popup::base_confirm(
                     "confirm_quit",

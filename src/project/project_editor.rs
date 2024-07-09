@@ -1,4 +1,4 @@
-use bevy::prelude::{Event, EventReader, ResMut, Trigger};
+use bevy::prelude::{Event, ResMut, Trigger};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
@@ -6,7 +6,6 @@ use itertools::Itertools;
 
 use crate::{
     history::{HistoryAct, HistoryEntry, NamespaceAction},
-    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     project::events::ProjectAct,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -152,6 +151,7 @@ impl ProjectEditor {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_project_editor(
     _trigger: Trigger<OpenProjectEditorAct>,
     mut state: ResMut<PanelDockState>,

@@ -9,10 +9,7 @@ use std::{
 
 use bevy::prelude::*;
 
-use crate::{
-    component::pla2::{EditorCoords, PlaComponent},
-    state::IntoSystemConfigExt,
-};
+use crate::component::pla2::{EditorCoords, PlaComponent};
 
 #[derive(Clone, Debug)]
 pub enum HistoryEntry<T = Entity> {

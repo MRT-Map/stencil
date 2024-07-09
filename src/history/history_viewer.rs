@@ -1,9 +1,8 @@
-use bevy::prelude::{Event, EventReader, ResMut, Trigger};
+use bevy::prelude::{Event, ResMut, Trigger};
 use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
     history::HistoryAct,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -40,6 +39,7 @@ impl DockWindow for HistoryViewer {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_history_viewer(
     _trigger: Trigger<OpenHistoryViewerAct>,
     mut state: ResMut<PanelDockState>,

@@ -14,6 +14,7 @@ static LICENSES: Lazy<LicenseRetriever> =
 #[cfg(debug_assertions)]
 static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn on_license(trigger: Trigger<InfoWindowsAct>, mut popup: EventWriter<Popup>) {
     if *trigger.event() != InfoWindowsAct::Licenses {
         return;

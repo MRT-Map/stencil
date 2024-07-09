@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::init::load_assets::ImageAssets;
-
 pub mod changelog;
 pub mod info;
 pub mod licenses;
