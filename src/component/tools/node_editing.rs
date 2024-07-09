@@ -3,7 +3,6 @@ use bevy_mouse_tracking::MousePosWorld;
 use itertools::Itertools;
 
 use crate::{
-    action::Action,
     component::{
         actions::selecting::highlight_selected_sy,
         bundle::{EntityCommandsSelectExt, SelectedComponent},
@@ -35,7 +34,6 @@ pub fn edit_nodes_sy(
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
-    mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
     zoom: Res<Zoom>,
     misc_settings: Res<MiscSettings>,
@@ -136,13 +134,11 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = node_edit_data.take() {
-            actions.send(Action::new(HistoryAct::one_history(
-                HistoryEntry::Component {
-                    entity,
-                    before: Some(orig.old_pla.into()),
-                    after: Some(pla.to_owned().into()),
-                },
-            )));
+            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                entity,
+                before: Some(orig.old_pla.into()),
+                after: Some(pla.to_owned().into()),
+            }));
         }
     }
 }

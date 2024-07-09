@@ -198,7 +198,6 @@ use crate::{
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
-pub mod action;
 pub mod component;
 pub mod dirs_paths;
 pub mod file;

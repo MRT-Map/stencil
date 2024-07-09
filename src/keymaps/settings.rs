@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::{KeyCode, Resource};
+use bevy::prelude::{Commands, Event, KeyCode, Resource};
 use eyre::OptionExt;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    action::Action,
     component::panels::{
         component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
     },
@@ -52,26 +51,25 @@ pub enum KeymapAction {
 }
 
 impl KeymapAction {
-    #[must_use]
-    pub fn action(self) -> Action {
+    pub fn trigger_action(self, commands: &mut Commands) {
         match self {
-            Self::ChangeState(state) => Action::new(ChangeStateAct(state)),
-            Self::Undo => Action::new(HistoryAct::Undo),
-            Self::Redo => Action::new(HistoryAct::Redo),
-            Self::Quit => Action::new(InfoWindowsAct::Quit(false)),
-            Self::OpenProject => Action::new(ProjectAct::Open),
-            Self::SaveProject => Action::new(ProjectAct::Save(false)),
-            Self::ReloadProject => Action::new(ProjectAct::Reload),
-            Self::TileSettings => Action::new(TileSettingsAct::Open),
-            Self::WindowSettings => Action::new(OpenWindowSettingsAct),
-            Self::KeymapSettings => Action::new(OpenKeymapSettingsAct),
-            Self::MiscSettings => Action::new(OpenMiscSettingsAct),
-            Self::AllSettings => Action::new(OpenAllSettingsAct),
-            Self::ComponentEditor => Action::new(OpenComponentEditorAct),
-            Self::Project => Action::new(OpenProjectEditorAct),
-            Self::ComponentList => Action::new(OpenComponentListAct),
-            Self::History => Action::new(OpenHistoryViewerAct),
-            Self::NotifLog => Action::new(OpenNotifLogViewerAct),
+            Self::ChangeState(state) => commands.trigger(ChangeStateAct(state)),
+            Self::Undo => commands.trigger(HistoryAct::Undo),
+            Self::Redo => commands.trigger(HistoryAct::Redo),
+            Self::Quit => commands.trigger(InfoWindowsAct::Quit(false)),
+            Self::OpenProject => commands.trigger(ProjectAct::Open),
+            Self::SaveProject => commands.trigger(ProjectAct::Save(false)),
+            Self::ReloadProject => commands.trigger(ProjectAct::Reload),
+            Self::TileSettings => commands.trigger(TileSettingsAct::Open),
+            Self::WindowSettings => commands.trigger(OpenWindowSettingsAct),
+            Self::KeymapSettings => commands.trigger(OpenKeymapSettingsAct),
+            Self::MiscSettings => commands.trigger(OpenMiscSettingsAct),
+            Self::AllSettings => commands.trigger(OpenAllSettingsAct),
+            Self::ComponentEditor => commands.trigger(OpenComponentEditorAct),
+            Self::Project => commands.trigger(OpenProjectEditorAct),
+            Self::ComponentList => commands.trigger(OpenComponentListAct),
+            Self::History => commands.trigger(OpenHistoryViewerAct),
+            Self::NotifLog => commands.trigger(OpenNotifLogViewerAct),
         }
     }
 }

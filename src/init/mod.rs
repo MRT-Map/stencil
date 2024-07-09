@@ -10,12 +10,11 @@ use bevy::prelude::*;
 use load_skin::get_skin_sy;
 
 use crate::{
-    action::Action,
     component::skin::Skin,
     dirs_paths::cache_path,
     file::safe_delete,
     panic::ack_panic_sy,
-    state::{state_changer_asy, EditorState, LoadingState},
+    state::{on_state_change, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
 };
 
@@ -26,8 +25,7 @@ impl Plugin for InitPlugin {
         app.init_state::<EditorState>()
             .init_state::<LoadingState>()
             .init_resource::<Skin>()
-            .add_event::<Action>()
-            .add_systems(Update, state_changer_asy)
+            .observe(on_state_change)
             .add_systems(Startup, ack_panic_sy);
         app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
             .add_systems(

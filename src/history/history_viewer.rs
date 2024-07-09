@@ -1,9 +1,9 @@
-use bevy::prelude::{EventReader, ResMut};
+use bevy::prelude::{Event, EventReader, ResMut, Trigger};
 use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    action::Action,
+    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
     history::HistoryAct,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -11,6 +11,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct HistoryViewer;
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenHistoryViewerAct;
 
 impl DockWindow for HistoryViewer {
@@ -19,14 +20,14 @@ impl DockWindow for HistoryViewer {
     }
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         let PanelParams {
-            history, actions, ..
+            history, commands, ..
         } = tab_viewer.params;
         ui.horizontal(|ui| {
             if ui.button("Undo").clicked() {
-                actions.send(Action::new(HistoryAct::Undo));
+                commands.trigger(HistoryAct::Undo);
             }
             if ui.button("Redo").clicked() {
-                actions.send(Action::new(HistoryAct::Redo));
+                commands.trigger(HistoryAct::Redo);
             }
         });
         for entry in &history.undo_stack {
@@ -39,8 +40,9 @@ impl DockWindow for HistoryViewer {
     }
 }
 
-pub fn history_viewer_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenHistoryViewerAct, HistoryViewer);
-    }
+pub fn on_history_viewer(
+    _trigger: Trigger<OpenHistoryViewerAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, HistoryViewer);
 }

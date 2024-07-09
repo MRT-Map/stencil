@@ -67,6 +67,7 @@ impl<T> Display for HistoryEntry<T> {
     }
 }
 
+#[derive(Clone, Event)]
 pub enum HistoryAct {
     NewHistory(Vec<HistoryEntry>),
     Undo,
@@ -89,7 +90,8 @@ pub struct HistoryPlugin;
 impl Plugin for HistoryPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<History>()
-            .add_systems(Update, events::history_asy.run_if_not_loading())
-            .add_systems(Update, history_viewer::history_viewer_asy);
+            //.add_systems(Update, events::on_history.run_if_not_loading())
+            .observe(events::on_history)
+            .observe(history_viewer::on_history_viewer);
     }
 }

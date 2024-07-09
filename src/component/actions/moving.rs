@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
-    action::Action,
     component::{
         bundle::SelectedComponent,
         pla2::{EditorCoords, PlaComponent},
@@ -28,7 +27,7 @@ pub fn move_component_sy(
     >,
     mut orig: Local<Option<(MousePosWorld, Vec3)>>,
     mut mouse: EventReader<MouseEvent>,
-    mut actions: EventWriter<Action>,
+    mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
     mut status: ResMut<Status>,
@@ -62,13 +61,11 @@ pub fn move_component_sy(
                         .round()
                         .as_ivec2();
                 }
-                actions.send(Action::new(HistoryAct::one_history(
-                    HistoryEntry::Component {
-                        entity,
-                        before: Some(old_pla.into()),
-                        after: Some(pla.to_owned().into()),
-                    },
-                )));
+                commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                    entity,
+                    before: Some(old_pla.into()),
+                    after: Some(pla.to_owned().into()),
+                }));
                 status.0 = format!("Moved component {}", &*pla).into();
             }
             info!("Ended move");

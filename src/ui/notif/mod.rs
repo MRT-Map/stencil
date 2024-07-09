@@ -55,7 +55,7 @@ impl Notif {
     }
 }
 
-pub fn update_notifs_asy(
+pub fn update_notifs_sy(
     mut toasts: ResMut<NotifToasts>,
     mut ctx: EguiContexts,
     misc_settings: Res<MiscSettings>,
@@ -109,6 +109,7 @@ pub struct NotifPlugin;
 impl Plugin for NotifPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
-            .add_systems(Update, (update_notifs_asy, viewer::log_viewer_asy));
+            .add_systems(Update, (update_notifs_sy))
+            .observe(viewer::on_log_viewer);
     }
 }

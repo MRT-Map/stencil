@@ -6,13 +6,13 @@ use std::{
 use bevy::{
     hierarchy::DespawnRecursiveExt,
     prelude::{
-        Commands, Entity, EventReader, EventWriter, Local, ParamSet, Query, Res, ResMut, With,
+        Commands, Entity, EventReader, EventWriter, Local, ParamSet, Query, Res, ResMut, Trigger,
+        With,
     },
 };
 use tracing::debug;
 
 use crate::{
-    action::Action,
     component::{
         bundle::{
             AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
@@ -32,9 +32,9 @@ use crate::{
     clippy::cognitive_complexity,
     clippy::implicit_hasher
 )]
-pub fn history_asy(
+pub fn on_history(
+    trigger: Trigger<HistoryAct>,
     mut commands: Commands,
-    mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
     mut history: ResMut<History>,
     selected_entity: Query<Entity, With<SelectedComponent>>,
@@ -43,9 +43,8 @@ pub fn history_asy(
     mut namespaces: ResMut<Namespaces>,
 ) {
     let selected = selected_entity.get_single().ok();
-    let mut send_queue: Vec<Action> = vec![];
-    for event in actions.p0().read() {
-        if let Some(HistoryAct::NewHistory(histories)) = event.downcast_ref() {
+    match trigger.event() {
+        HistoryAct::NewHistory(histories) => {
             let histories = histories
                 .iter()
                 .map(|history| match history {
@@ -91,14 +90,15 @@ pub fn history_asy(
             ) {
                 if *e1.read().unwrap() == *e2.read().unwrap() {
                     a2.clone_into(a1);
-                    continue;
+                    return;
                 }
             }
             history.undo_stack.push(histories);
-        } else if matches!(event.downcast_ref(), Some(HistoryAct::Undo)) {
+        }
+        HistoryAct::Undo => {
             let Some(mut histories) = history.undo_stack.pop() else {
                 status.0 = "Nothing to undo".into();
-                continue;
+                return;
             };
             for history in &mut histories {
                 debug!("Undid {history}");
@@ -142,7 +142,7 @@ pub fn history_asy(
                         }
                     },
                     HistoryEntry::Namespace { namespace, action } => {
-                        send_queue.push(Action::new(match action {
+                        commands.trigger(match action {
                             NamespaceAction::Show => ProjectAct::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
@@ -180,15 +180,16 @@ pub fn history_asy(
                                 }
                                 continue;
                             }
-                        }));
+                        });
                     }
                 }
             }
             history.redo_stack.push(histories);
-        } else if matches!(event.downcast_ref(), Some(HistoryAct::Redo)) {
+        }
+        HistoryAct::Redo => {
             let Some(mut histories) = history.redo_stack.pop() else {
                 status.0 = "Nothing to redo".into();
-                continue;
+                return;
             };
             for history in &mut histories {
                 debug!("Redid {history}");
@@ -232,7 +233,7 @@ pub fn history_asy(
                         }
                     },
                     HistoryEntry::Namespace { namespace, action } => {
-                        send_queue.push(Action::new(match action {
+                        commands.trigger(match action {
                             NamespaceAction::Show => ProjectAct::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
@@ -270,15 +271,11 @@ pub fn history_asy(
                                 }
                                 continue;
                             }
-                        }));
+                        });
                     }
                 }
             }
             history.undo_stack.push(histories);
         }
-    }
-
-    for action in send_queue {
-        actions.p1().send(action);
     }
 }

@@ -9,7 +9,6 @@ use egui_notify::ToastLevel;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-    action::Action,
     component::{
         bundle::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
@@ -180,7 +179,6 @@ pub struct PanelParams<'w, 's> {
     pub camera: Query<'w, 's, &'static mut Transform, With<MainCamera>>,
     pub commands: Commands<'w, 's>,
     pub skin: Res<'w, Skin>,
-    pub actions: EventWriter<'w, Action>,
     pub editor_state: Res<'w, State<EditorState>>,
     pub window_settings: ResMut<'w, WindowSettings>,
     pub tile_settings: ResMut<'w, TileSettings>,
@@ -193,25 +191,21 @@ pub struct PanelParams<'w, 's> {
     pub history: ResMut<'w, History>,
 }
 
-pub fn window_action_handler<A: Any, W: DockWindow + Into<DockWindows>>(
-    event: &Action,
+pub fn window_action_handler<W: DockWindow + Into<DockWindows>>(
     state: &mut PanelDockState,
-    _act: A,
     window: W,
 ) {
-    if matches!(event.downcast_ref::<A>(), Some(_act)) {
-        let a = state
-            .state
-            .iter_all_tabs()
-            .find(|(_, a)| a.title() == window.title());
-        if let Some((a, _)) = a {
-            info!("Focusing on {}", window.title());
-            let a = a.to_owned();
-            state.state.set_focused_node_and_surface(a);
-        } else {
-            info!("Creating new window {}", window.title());
-            state.state.add_window(vec![window.into()]);
-        }
+    let a = state
+        .state
+        .iter_all_tabs()
+        .find(|(_, a)| a.title() == window.title());
+    if let Some((a, _)) = a {
+        info!("Focusing on {}", window.title());
+        let a = a.to_owned();
+        state.state.set_focused_node_and_surface(a);
+    } else {
+        info!("Creating new window {}", window.title());
+        state.state.add_window(vec![window.into()]);
     }
 }
 
@@ -222,15 +216,15 @@ pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut pa
     state.ui(&mut params, ctx);
 }
 
+#[derive(Clone, Copy, Event)]
 pub struct ResetPanelDockStateAct;
 
-pub fn reset_panel_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
-    for event in actions.read() {
-        if matches!(event.downcast_ref(), Some(ResetPanelDockStateAct)) {
-            NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
-            *state = PanelDockState::default();
-        }
-    }
+pub fn on_reset_panel(
+    _trigger: Trigger<ResetPanelDockStateAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
+    *state = PanelDockState::default();
 }
 
 #[must_use]

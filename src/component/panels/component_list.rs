@@ -1,16 +1,17 @@
-use bevy::prelude::{EventReader, ResMut};
+use bevy::prelude::{Event, EventReader, ResMut, Trigger};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
 use crate::{
-    action::Action,
+    component::panels::component_editor::{ComponentEditor, OpenComponentEditorAct},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
 pub struct ComponentList;
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenComponentListAct;
 
 impl DockWindow for ComponentList {
@@ -65,8 +66,9 @@ impl DockWindow for ComponentList {
     }
 }
 
-pub fn component_list_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenComponentListAct, ComponentList);
-    }
+pub fn on_component_list(
+    _trigger: Trigger<OpenComponentListAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, ComponentList);
 }

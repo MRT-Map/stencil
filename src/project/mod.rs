@@ -3,9 +3,7 @@ use std::{collections::HashMap, path::PathBuf, time::Duration};
 use bevy::prelude::*;
 use events::ProjectAct;
 
-use crate::{
-    action::Action, dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState,
-};
+use crate::{dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState};
 
 pub mod events;
 pub mod project_editor;
@@ -33,7 +31,7 @@ impl Default for Namespaces {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn autosave_sy(
-    mut actions: EventWriter<Action>,
+    mut commands: Commands,
     mut last_save: Local<Option<Duration>>,
     time: Res<Time<Real>>,
     misc_settings: Res<MiscSettings>,
@@ -47,8 +45,8 @@ pub fn autosave_sy(
     };
     let time = time.elapsed();
     if time - last_save_time.to_owned() >= Duration::from_secs(misc_settings.autosave_interval) {
-        actions.send(Action::new(ProjectAct::Save(true)));
-        actions.send(Action::new(ProjectAct::Reload));
+        commands.trigger(ProjectAct::Save(true));
+        commands.trigger(ProjectAct::Reload);
         *last_save = Some(time);
     }
 }
@@ -58,24 +56,16 @@ pub struct ProjectPlugin;
 impl Plugin for ProjectPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Namespaces>()
-            .add_systems(
-                Update,
-                (
-                    events::project_asy,
-                    autosave_sy,
-                    project_editor::project_editor_asy,
-                ),
-            )
-            .add_systems(
-                OnExit(EditorState::Loading),
-                |mut actions: EventWriter<Action>| {
-                    actions.send(Action::new(ProjectAct::Reload));
-                    actions.send(Action::new(ProjectAct::Show {
-                        ns: "_misc".into(),
-                        history_invoked: true,
-                        notif: false,
-                    }));
-                },
-            );
+            .add_systems(Update, autosave_sy)
+            .observe(events::on_project)
+            .observe(project_editor::on_project_editor)
+            .add_systems(OnExit(EditorState::Loading), |mut commands: Commands| {
+                commands.trigger(ProjectAct::Reload);
+                commands.trigger(ProjectAct::Show {
+                    ns: "_misc".into(),
+                    history_invoked: true,
+                    notif: false,
+                });
+            });
     }
 }

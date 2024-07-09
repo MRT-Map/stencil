@@ -8,7 +8,7 @@ pub mod licenses;
 pub mod manual;
 pub mod quit;
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Event, PartialEq, Eq)]
 pub enum InfoWindowsAct {
     Changelog,
     Info,
@@ -21,13 +21,14 @@ pub struct InfoWindowsPlugin;
 
 impl Plugin for InfoWindowsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, quit::quit_asy)
-            .add_systems(
-                Update,
-                info::info_asy.run_if(resource_exists::<ImageAssets>),
-            )
-            .add_systems(Update, changelog::changelog_asy)
-            .add_systems(Update, manual::manual_asy)
-            .add_systems(Update, licenses::licenses_asy);
+        app.observe(quit::on_quit)
+            // .add_systems(
+            //     Update,
+            //     info::on_info.run_if(resource_exists::<ImageAssets>),
+            // )
+            .observe(info::on_info)
+            .observe(changelog::on_changelog)
+            .observe(manual::on_manual)
+            .observe(licenses::on_license);
     }
 }

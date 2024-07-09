@@ -3,13 +3,14 @@ use bevy_egui::egui;
 use surf::Url;
 
 use crate::{
-    action::Action,
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
+    history::history_viewer::{HistoryViewer, OpenHistoryViewerAct},
     misc_config::settings::MiscSettings,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenMiscSettingsAct;
 
 #[derive(Clone, Copy)]
@@ -132,8 +133,6 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
-pub fn misc_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenMiscSettingsAct, MiscSettingsEditor);
-    }
+pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsAct>, mut state: ResMut<PanelDockState>) {
+    window_action_handler(&mut state, MiscSettingsEditor);
 }

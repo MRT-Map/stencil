@@ -4,7 +4,6 @@ use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
-    action::Action,
     component::{
         actions::selecting::{deselect, DeselectQuery},
         bundle::{
@@ -16,7 +15,7 @@ use crate::{
     },
     history::{HistoryAct, HistoryEntry},
     project::Namespaces,
-    state::{state_changer_asy, EditorState},
+    state::{on_state_change, EditorState},
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
 
@@ -50,7 +49,6 @@ pub fn create_point_sy(
     skin: Res<Skin>,
     deselect_query: DeselectQuery,
     mut namespaces: ResMut<Namespaces>,
-    mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
 ) {
     for event in mouse.read() {
@@ -85,13 +83,11 @@ pub fn create_point_sy(
             deselect(&mut commands, &deselect_query);
             let pla = new_point.data.to_owned();
             let entity = commands.spawn(new_point).id();
-            actions.send(Action::new(HistoryAct::one_history(
-                HistoryEntry::Component {
-                    entity,
-                    before: None,
-                    after: Some(pla.into()),
-                },
-            )));
+            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                entity,
+                before: None,
+                after: Some(pla.into()),
+            }));
         }
     }
 }
@@ -99,13 +95,12 @@ pub fn create_point_sy(
 #[tracing::instrument(skip_all)]
 pub fn create_component_sy<const IS_AREA: bool>(
     mut set: CreatedQuery,
-    mut commands: Commands,
     skin: Res<Skin>,
     mut mouse: EventReader<MouseEvent>,
     mouse_pos_world: Res<MousePosWorld>,
     mut namespaces: ResMut<Namespaces>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut actions: EventWriter<Action>,
+    mut commands: Commands,
     mut status: ResMut<Status>,
 ) {
     let ty = if IS_AREA {
@@ -191,7 +186,6 @@ pub fn create_component_sy<const IS_AREA: bool>(
                         &mut set,
                         &skin,
                         &mut namespaces,
-                        &mut actions,
                         &mut status,
                         ty_text,
                     );
@@ -204,7 +198,6 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 &mut set,
                 &skin,
                 &mut namespaces,
-                &mut actions,
                 &mut status,
                 ty_text,
             );
@@ -218,7 +211,6 @@ pub fn clear_created_component(
     created_query: &mut CreatedQuery,
     skin: &Res<Skin>,
     namespaces: &mut ResMut<Namespaces>,
-    actions: &mut EventWriter<Action>,
     status: &mut ResMut<Status>,
     ty_text: &str,
 ) {
@@ -243,13 +235,11 @@ pub fn clear_created_component(
                 .remove::<ShapeBundle>()
                 .component_display(skin, &data)
                 .remove::<CreatedComponent>();
-            actions.send(Action::new(HistoryAct::one_history(
-                HistoryEntry::Component {
-                    entity,
-                    before: None,
-                    after: Some(data.to_owned().into()),
-                },
-            )));
+            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                entity,
+                before: None,
+                after: Some(data.to_owned().into()),
+            }));
             status.0 = format!("Created new {ty_text} {}", &*data).into();
         }
     }
@@ -260,15 +250,11 @@ impl Plugin for CreateComponentPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            create_component_sy::<false>
-                .run_if(in_state(EditorState::CreatingLine))
-                .before(state_changer_asy),
+            create_component_sy::<false>.run_if(in_state(EditorState::CreatingLine)), //.before(on_state_change),
         )
         .add_systems(
             Update,
-            create_component_sy::<true>
-                .run_if(in_state(EditorState::CreatingArea))
-                .before(state_changer_asy),
+            create_component_sy::<true>.run_if(in_state(EditorState::CreatingArea)), //.before(on_state_change),
         )
         .add_systems(
             Update,

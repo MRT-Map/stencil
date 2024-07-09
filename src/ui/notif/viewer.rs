@@ -1,9 +1,9 @@
-use bevy::prelude::{EventReader, ResMut};
+use bevy::prelude::{Event, EventReader, ResMut, Trigger};
 use bevy_egui::egui;
 use chrono::{DateTime, Utc};
 
 use crate::{
-    action::Action,
+    component::panels::component_list::{ComponentList, OpenComponentListAct},
     ui::{
         notif::NOTIF_LOG,
         panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
@@ -13,6 +13,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct NotifLogViewer;
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenNotifLogViewerAct;
 
 impl DockWindow for NotifLogViewer {
@@ -42,8 +43,6 @@ impl DockWindow for NotifLogViewer {
     }
 }
 
-pub fn log_viewer_asy(mut state: ResMut<PanelDockState>, mut actions: EventReader<Action>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenNotifLogViewerAct, NotifLogViewer);
-    }
+pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerAct>, mut state: ResMut<PanelDockState>) {
+    window_action_handler(&mut state, NotifLogViewer);
 }

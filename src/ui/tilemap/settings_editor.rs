@@ -5,7 +5,6 @@ use egui_notify::ToastLevel;
 use surf::Url;
 
 use crate::{
-    action::Action,
     dirs_paths::data_path,
     file::{load_toml, save_toml},
     tile::tile_coord::URL_REPLACER,
@@ -18,6 +17,7 @@ use crate::{
     },
 };
 
+#[derive(Clone, Event)]
 pub enum TileSettingsAct {
     Open,
     Import,
@@ -34,7 +34,7 @@ impl DockWindow for TileSettingsEditor {
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         let PanelParams {
             tile_settings,
-            actions,
+            commands,
             ..
         } = tab_viewer.params;
         let mut invalid = false;
@@ -96,7 +96,7 @@ impl DockWindow for TileSettingsEditor {
                     delete = Some(i);
                 }
                 if ui.button("Export").clicked() {
-                    actions.send(Action::new(TileSettingsAct::Export(basemap.to_owned())));
+                    commands.trigger(TileSettingsAct::Export(basemap.to_owned()));
                 }
             });
 
@@ -130,7 +130,7 @@ impl DockWindow for TileSettingsEditor {
                 tile_settings.basemaps.push(Basemap::default());
             }
             if ui.button("Import").clicked() {
-                actions.send(Action::new(TileSettingsAct::Import));
+                commands.trigger(TileSettingsAct::Import);
             }
         });
 
@@ -157,9 +157,27 @@ impl TileSettingsEditor {
     }
 }
 
-pub fn tile_settings_asy(
-    mut actions: EventReader<Action>,
+pub fn on_tile_settings(
+    trigger: Trigger<TileSettingsAct>,
     mut state: ResMut<PanelDockState>,
+    mut file_dialogs: NonSendMut<FileDialogs>,
+) {
+    match trigger.event() {
+        TileSettingsAct::Open => {
+            window_action_handler(&mut state, TileSettingsEditor);
+        }
+        TileSettingsAct::Import => {
+            file_dialogs.tile_settings_import.select_file();
+        }
+        TileSettingsAct::Export(basemap) => {
+            let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
+            fd.save_file();
+            file_dialogs.tile_settings_export = Some((basemap.to_owned(), fd));
+        }
+    }
+}
+
+pub fn tile_settings_dialog(
     mut tile_settings: ResMut<TileSettings>,
     mut ctx: EguiContexts,
     mut file_dialogs: NonSendMut<FileDialogs>,
@@ -167,18 +185,6 @@ pub fn tile_settings_asy(
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };
-    for event in actions.read() {
-        window_action_handler(event, &mut state, TileSettingsAct::Open, TileSettingsEditor);
-
-        if matches!(event.downcast_ref(), Some(TileSettingsAct::Import)) {
-            file_dialogs.tile_settings_import.select_file();
-        } else if let Some(TileSettingsAct::Export(basemap)) = event.downcast_ref() {
-            let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
-            fd.save_file();
-            file_dialogs.tile_settings_export = Some((basemap.to_owned(), fd));
-        }
-    }
-
     let file_dialog = &mut file_dialogs.tile_settings_import;
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {

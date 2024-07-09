@@ -4,12 +4,12 @@ use bevy_egui::egui;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
-    action::Action,
     dirs_paths::data_path,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
     window::settings::WindowSettings,
 };
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenWindowSettingsAct;
 
 #[derive(Clone, Copy)]
@@ -107,13 +107,9 @@ impl DockWindow for WindowSettingsEditor {
     }
 }
 
-pub fn window_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
-    for event in actions.read() {
-        window_action_handler(
-            event,
-            &mut state,
-            OpenWindowSettingsAct,
-            WindowSettingsEditor,
-        );
-    }
+pub fn on_window_settings(
+    _trigger: Trigger<OpenWindowSettingsAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, WindowSettingsEditor);
 }

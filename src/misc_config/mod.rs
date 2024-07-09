@@ -10,6 +10,6 @@ pub struct MiscSettingsPlugin;
 impl Plugin for MiscSettingsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_MISC_SETTINGS.to_owned())
-            .add_systems(Update, settings_editor::misc_settings_asy);
+            .observe(settings_editor::on_misc_settings);
     }
 }

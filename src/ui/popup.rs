@@ -10,7 +10,7 @@ use std::{
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-use crate::{action::Action, ui::UiSet};
+use crate::ui::UiSet;
 
 #[derive(Event, Hash, PartialEq, Eq, Clone)]
 pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);
@@ -32,10 +32,7 @@ pub struct PopupInner<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub id: String,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
     pub ui: Box<
-        dyn Fn(&Mutex<Box<T>>, &mut egui::Ui, &mut EventWriter<Action>, &mut bool)
-            + Sync
-            + Send
-            + 'static,
+        dyn Fn(&Mutex<Box<T>>, &mut egui::Ui, &mut Commands, &mut bool) + Sync + Send + 'static,
     >,
     pub state: Mutex<Box<T>>,
 }
@@ -58,12 +55,8 @@ impl Popup {
     pub fn new<
         I: Display,
         W: Fn() -> egui::Window<'static> + Sync + Send + 'static,
-        U: Fn(
-                &Mutex<Box<dyn Any + Send + Sync>>,
-                &mut egui::Ui,
-                &mut EventWriter<Action>,
-                &mut bool,
-            ) + Sync
+        U: Fn(&Mutex<Box<dyn Any + Send + Sync>>, &mut egui::Ui, &mut Commands, &mut bool)
+            + Sync
             + Send
             + 'static,
     >(
@@ -113,11 +106,12 @@ impl Popup {
         I: Display + Send + Sync + 'static,
         T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
         T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        E: Event + Clone + Send + Sync + 'static,
     >(
         id: I,
         title: T1,
         text: T2,
-        action: Action,
+        action: E,
     ) -> Self {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
@@ -129,11 +123,11 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, ew, shown| {
+            move |_, ui, commands, shown| {
                 ui.label(text.to_owned());
                 ui.horizontal(|ui| {
                     if ui.button("Yes").clicked() {
-                        ew.send(action.to_owned());
+                        commands.trigger(action.to_owned());
                         *shown = false;
                     }
                     if ui.button("No").clicked() {
@@ -148,12 +142,14 @@ impl Popup {
         I: Display + Send + Sync + 'static,
         T1: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
         T2: Into<egui::WidgetText> + Clone + Sync + Send + 'static,
+        E1: Event + Clone + Send + Sync + 'static,
+        E2: Event + Clone + Send + Sync + 'static,
     >(
         id: I,
         title: T1,
         text: T2,
-        action1: Action,
-        action2: Action,
+        action1: E1,
+        action2: E2,
     ) -> Self {
         let win_id = egui::Id::new(id.to_string());
         Self::new(
@@ -165,15 +161,15 @@ impl Popup {
                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
                     .id(win_id)
             },
-            move |_, ui, ew, shown| {
+            move |_, ui, commands, shown| {
                 ui.label(text.to_owned());
                 ui.horizontal(|ui| {
                     if ui.button("Yes").clicked() {
-                        ew.send(action1.to_owned());
+                        commands.trigger(action1.to_owned());
                         *shown = false;
                     }
                     if ui.button("No").clicked() {
-                        ew.send(action2.to_owned());
+                        commands.trigger(action2.to_owned());
                         *shown = false;
                     }
                 });
@@ -187,7 +183,7 @@ impl Popup {
 pub fn popup_handler_sy(
     mut ctx: EguiContexts,
     mut event_reader: EventReader<Popup>,
-    mut event_writer: EventWriter<Action>,
+    mut commands: Commands,
     mut show: Local<HashMap<String, (Popup, bool)>>,
 ) {
     for popup in event_reader.read() {
@@ -200,7 +196,7 @@ pub fn popup_handler_sy(
     for (id, (popup, shown)) in &mut show {
         (popup.window)()
             .show(ctx, |ui| {
-                (popup.ui)(&popup.state, ui, &mut event_writer, shown);
+                (popup.ui)(&popup.state, ui, &mut commands, shown);
             })
             .unwrap();
         if !*shown {

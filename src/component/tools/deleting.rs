@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::{
-    action::Action,
     component::pla2::{EditorCoords, PlaComponent},
     history::{HistoryAct, HistoryEntry},
     state::EditorState,
@@ -13,20 +12,17 @@ pub fn delete_component_sy(
     mut mouse: EventReader<MouseEvent>,
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, Entity)>,
-    mut actions: EventWriter<Action>,
     mut status: ResMut<Status>,
 ) {
     for event in mouse.read() {
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
-            actions.send(Action::new(HistoryAct::one_history(
-                HistoryEntry::Component {
-                    entity: *e,
-                    before: Some(pla.to_owned().into()),
-                    after: None,
-                },
-            )));
+            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                entity: *e,
+                before: Some(pla.to_owned().into()),
+                after: None,
+            }));
             commands.entity(*e).despawn_recursive();
             status.0 = format!("Deleted {pla}").into();
         }

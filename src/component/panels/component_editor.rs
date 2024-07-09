@@ -1,9 +1,8 @@
-use bevy::prelude::{EventReader, ResMut};
+use bevy::prelude::{Event, EventReader, ResMut, Trigger};
 use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    action::Action,
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
     history::{HistoryAct, HistoryEntry},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
@@ -12,6 +11,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct ComponentEditor;
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenComponentEditorAct;
 
 impl DockWindow for ComponentEditor {
@@ -23,7 +23,6 @@ impl DockWindow for ComponentEditor {
             queries,
             commands,
             skin,
-            actions,
             namespaces,
             ..
         } = tab_viewer.params;
@@ -113,19 +112,18 @@ impl DockWindow for ComponentEditor {
             ui.colored_label(color, format!("{}, {}", a.0.x, -a.0.y));
         }
         if *component_data != old_data {
-            actions.send(Action::new(HistoryAct::one_history(
-                HistoryEntry::Component {
-                    entity,
-                    before: Some(old_data.into()),
-                    after: Some(component_data.to_owned().into()),
-                },
-            )));
+            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                entity,
+                before: Some(old_data.into()),
+                after: Some(component_data.to_owned().into()),
+            }));
         }
     }
 }
 
-pub fn component_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenComponentEditorAct, ComponentEditor);
-    }
+pub fn on_component_editor(
+    _trigger: Trigger<OpenComponentEditorAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, ComponentEditor);
 }

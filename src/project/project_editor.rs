@@ -1,12 +1,12 @@
-use bevy::prelude::{EventReader, ResMut};
+use bevy::prelude::{Event, EventReader, ResMut, Trigger};
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 use itertools::Itertools;
 
 use crate::{
-    action::Action,
     history::{HistoryAct, HistoryEntry, NamespaceAction},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
     project::events::ProjectAct,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
@@ -14,6 +14,7 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct ProjectEditor;
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenProjectEditorAct;
 
 impl DockWindow for ProjectEditor {
@@ -24,20 +25,20 @@ impl DockWindow for ProjectEditor {
         let PanelParams {
             namespaces,
             new_namespace,
-            actions,
+            commands,
             queries,
             ..
         } = tab_viewer.params;
         let components = queries.p1().iter().counts_by(|a| a.namespace.to_owned());
         ui.horizontal(|ui| {
             if ui.button("Open").clicked() {
-                actions.send(Action::new(ProjectAct::Open));
+                commands.trigger(ProjectAct::Open);
             }
             if ui.button("Reload").clicked() {
-                actions.send(Action::new(ProjectAct::Reload));
+                commands.trigger(ProjectAct::Reload);
             }
             if ui.button("Save").clicked() {
-                actions.send(Action::new(ProjectAct::Save(false)));
+                commands.trigger(ProjectAct::Save(false));
             }
         });
         ui.label(format!(
@@ -70,17 +71,17 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             if ui.checkbox(vis, "").changed() {
                                 if *vis {
-                                    actions.send(Action::new(ProjectAct::Show {
+                                    commands.trigger(ProjectAct::Show {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
                                         notif: true,
-                                    }));
+                                    });
                                 } else {
-                                    actions.send(Action::new(ProjectAct::Hide {
+                                    commands.trigger(ProjectAct::Hide {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
                                         notif: true,
-                                    }));
+                                    });
                                 }
                             }
                         });
@@ -109,7 +110,7 @@ impl DockWindow for ProjectEditor {
                     });
                 }
                 if let Some(delete) = delete {
-                    actions.send(Action::new(ProjectAct::Delete(delete, false)));
+                    commands.trigger(ProjectAct::Delete(delete, false));
                 }
                 body.row(20.0, |mut row| {
                     row.col(|_| ());
@@ -131,12 +132,10 @@ impl DockWindow for ProjectEditor {
                                 .visibilities
                                 .insert(new_namespace.to_owned(), true);
 
-                            actions.send(Action::new(HistoryAct::one_history(
-                                HistoryEntry::Namespace {
-                                    namespace: new_namespace.to_owned(),
-                                    action: NamespaceAction::Create(None),
-                                },
-                            )));
+                            commands.trigger(HistoryAct::one_history(HistoryEntry::Namespace {
+                                namespace: new_namespace.to_owned(),
+                                action: NamespaceAction::Create(None),
+                            }));
                             new_namespace.clear();
                         }
                     });
@@ -153,8 +152,9 @@ impl ProjectEditor {
     }
 }
 
-pub fn project_editor_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
-    for event in actions.read() {
-        window_action_handler(event, &mut state, OpenProjectEditorAct, ProjectEditor);
-    }
+pub fn on_project_editor(
+    _trigger: Trigger<OpenProjectEditorAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, ProjectEditor);
 }

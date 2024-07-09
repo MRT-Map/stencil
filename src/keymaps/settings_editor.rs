@@ -3,7 +3,6 @@ use bevy_egui::egui;
 use once_cell::sync::Lazy;
 
 use crate::{
-    action::Action,
     dirs_paths::data_path,
     keymaps::{
         key_list::KEY_LIST,
@@ -11,8 +10,10 @@ use crate::{
     },
     state::EditorState,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    window::settings_editor::{OpenWindowSettingsAct, WindowSettingsEditor},
 };
 
+#[derive(Clone, Copy, Event)]
 pub struct OpenKeymapSettingsAct;
 
 #[derive(Clone, Copy)]
@@ -72,15 +73,11 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
-pub fn keymap_settings_asy(mut actions: EventReader<Action>, mut state: ResMut<PanelDockState>) {
-    for event in actions.read() {
-        window_action_handler(
-            event,
-            &mut state,
-            OpenKeymapSettingsAct,
-            KeymapSettingsEditor,
-        );
-    }
+pub fn on_keymap_settings(
+    _trigger: Trigger<OpenKeymapSettingsAct>,
+    mut state: ResMut<PanelDockState>,
+) {
+    window_action_handler(&mut state, KeymapSettingsEditor);
 }
 
 pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 5]> = Lazy::new(|| {

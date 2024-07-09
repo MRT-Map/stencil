@@ -2,11 +2,11 @@ use bevy::{
     ecs::schedule::{SystemConfigs, SystemSetConfigs},
     prelude::*,
 };
+use bevy_egui::egui::Resize;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    action::Action,
     component::{
         pla2::ComponentType,
         skin::Skin,
@@ -68,38 +68,32 @@ impl LoadingState {
     }
 }
 
+#[derive(Clone, Copy, Event)]
 pub struct ChangeStateAct(pub EditorState);
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn state_changer_asy(
+pub fn on_state_change(
+    trigger: Trigger<ChangeStateAct>,
     mut commands: Commands,
-    mut actions: ParamSet<(EventReader<Action>, EventWriter<Action>)>,
     mut created_query: CreatedQuery,
     skin: Res<Skin>,
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
+    state: Res<State<EditorState>>,
 ) {
-    let mut new_state = None;
-    let mut reader = actions.p0();
-    for event in reader.read() {
-        if let Some(ChangeStateAct(state)) = event.downcast_ref() {
-            new_state = Some(*state);
-        }
+    if trigger.event().0 == **state {
+        return;
     }
-    if let Some(state) = new_state {
-        info!(?state, "Changing state");
-        let mut writer = actions.p1();
-        clear_created_component(
-            &mut commands,
-            &mut created_query,
-            &skin,
-            &mut namespaces,
-            &mut writer,
-            &mut status,
-            "component",
-        );
-        commands.insert_resource(NextState::Pending(state));
-    }
+    info!(?state, "Changing state");
+    clear_created_component(
+        &mut commands,
+        &mut created_query,
+        &skin,
+        &mut namespaces,
+        &mut status,
+        "component",
+    );
+    commands.insert_resource(NextState::Pending(trigger.event().0));
 }
 
 pub trait IntoSystemConfigExt<Marker>: IntoSystemConfigs<Marker> {
