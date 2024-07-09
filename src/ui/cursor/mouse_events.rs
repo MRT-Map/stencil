@@ -43,10 +43,12 @@ pub fn hover_handler_sy(
         }
     }
     for e in event_reader_over.read() {
-        trace!(?e.target, "HoverOver detected");
-        *hovered_entity = Some(e.target);
-        event_writer.send(MouseEvent::HoverOver(e.target));
-        commands.entity(e.target).insert(HoveredComponent);
+        if let Some(mut commands) = commands.get_entity(e.target) {
+            trace!(?e.target, "HoverOver detected");
+            *hovered_entity = Some(e.target);
+            event_writer.send(MouseEvent::HoverOver(e.target));
+            commands.insert(HoveredComponent);
+        }
     }
 }
 
