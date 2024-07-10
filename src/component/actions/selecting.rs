@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::basic::{GREEN, LIME, RED},
+    color::palettes::basic::{LIME, RED},
     prelude::*,
 };
 use bevy_prototype_lyon::entity::ShapeBundle;
