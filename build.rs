@@ -155,7 +155,6 @@ fn gather_licenses() -> Result<()> {
             "hexf-parse",
             ["https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt"],
         )
-        .copy_license("icrate", "block2")
         .override_license_url("indenter", [
             "https://raw.githubusercontent.com/eyre-rs/indenter/master/LICENSE-MIT",
             "https://raw.githubusercontent.com/eyre-rs/indenter/master/LICENSE-APACHE"
@@ -189,7 +188,13 @@ fn gather_licenses() -> Result<()> {
             ],
         )
         .copy_license("ndk-context", "ndk")
-        .copy_license("ndk-sys", "ndk")
+        .override_license_url(
+            "ndk-sys",
+            [
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-MIT",
+                "https://raw.githubusercontent.com/rust-mobile/ndk/master/LICENSE-APACHE",
+            ],
+        )
         .override_license_url(
             "objc2-sys",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
@@ -211,7 +216,19 @@ fn gather_licenses() -> Result<()> {
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
          .override_license_url(
+            "objc2-cloud-kit",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
+            "objc2-contacts",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+         .override_license_url(
             "objc2-core-image",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2-core-location",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
         .override_license_url(
@@ -222,6 +239,10 @@ fn gather_licenses() -> Result<()> {
             "objc2-foundation",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
+        .override_license_url(
+            "objc2-link-presentation",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
          .override_license_url(
             "objc2-metal",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
@@ -230,7 +251,22 @@ fn gather_licenses() -> Result<()> {
             "objc2-quartz-core",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .copy_license("objc_exception", "block")
+        .override_license_url(
+            "objc2-symbols",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2-ui-kit",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2-uniform-type-identifiers",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
+        .override_license_url(
+            "objc2-user-notifications",
+            ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
+        )
         .override_license_url(
             "profiling",
             [
