@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenWindowSettingsAct;
+pub struct OpenWindowSettingsEv;
 
 #[derive(Clone, Copy)]
 pub struct WindowSettingsEditor;
@@ -109,7 +109,7 @@ impl DockWindow for WindowSettingsEditor {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_window_settings(
-    _trigger: Trigger<OpenWindowSettingsAct>,
+    _trigger: Trigger<OpenWindowSettingsEv>,
     mut state: ResMut<PanelDockState>,
 ) {
     window_action_handler(&mut state, WindowSettingsEditor);

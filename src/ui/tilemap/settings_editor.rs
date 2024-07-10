@@ -18,7 +18,7 @@ use crate::{
 };
 
 #[derive(Clone, Event)]
-pub enum TileSettingsAct {
+pub enum TileSettingsEv {
     Open,
     Import,
     Export(Basemap),
@@ -96,7 +96,7 @@ impl DockWindow for TileSettingsEditor {
                     delete = Some(i);
                 }
                 if ui.button("Export").clicked() {
-                    commands.trigger(TileSettingsAct::Export(basemap.to_owned()));
+                    commands.trigger(TileSettingsEv::Export(basemap.to_owned()));
                 }
             });
 
@@ -130,7 +130,7 @@ impl DockWindow for TileSettingsEditor {
                 tile_settings.basemaps.push(Basemap::default());
             }
             if ui.button("Import").clicked() {
-                commands.trigger(TileSettingsAct::Import);
+                commands.trigger(TileSettingsEv::Import);
             }
         });
 
@@ -159,18 +159,18 @@ impl TileSettingsEditor {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_tile_settings(
-    trigger: Trigger<TileSettingsAct>,
+    trigger: Trigger<TileSettingsEv>,
     mut state: ResMut<PanelDockState>,
     mut file_dialogs: NonSendMut<FileDialogs>,
 ) {
     match trigger.event() {
-        TileSettingsAct::Open => {
+        TileSettingsEv::Open => {
             window_action_handler(&mut state, TileSettingsEditor);
         }
-        TileSettingsAct::Import => {
+        TileSettingsEv::Import => {
             file_dialogs.tile_settings_import.select_file();
         }
-        TileSettingsAct::Export(basemap) => {
+        TileSettingsEv::Export(basemap) => {
             let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
             fd.save_file();
             file_dialogs.tile_settings_export = Some((basemap.to_owned(), fd));

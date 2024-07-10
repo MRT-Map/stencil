@@ -68,11 +68,11 @@ impl LoadingState {
 }
 
 #[derive(Clone, Copy, Event)]
-pub struct ChangeStateAct(pub EditorState);
+pub struct ChangeStateEv(pub EditorState);
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_state_change(
-    trigger: Trigger<ChangeStateAct>,
+    trigger: Trigger<ChangeStateEv>,
     mut commands: Commands,
     mut created_query: CreatedQuery,
     skin: Res<Skin>,

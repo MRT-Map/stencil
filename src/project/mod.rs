@@ -1,9 +1,11 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
-use events::ProjectAct;
+use events::ProjectEv;
 
-use crate::{dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState};
+use crate::{
+    dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState, ui::UiSchedule,
+};
 
 pub mod events;
 pub mod project_editor;
@@ -45,8 +47,8 @@ pub fn autosave_sy(
     };
     let time = time.elapsed();
     if time - last_save_time.to_owned() >= Duration::from_secs(misc_settings.autosave_interval) {
-        commands.trigger(ProjectAct::Save(true));
-        commands.trigger(ProjectAct::Reload);
+        commands.trigger(ProjectEv::Save(true));
+        commands.trigger(ProjectEv::Reload);
         *last_save = Some(time);
     }
 }
@@ -59,9 +61,10 @@ impl Plugin for ProjectPlugin {
             .add_systems(Update, autosave_sy)
             .observe(events::on_project)
             .observe(project_editor::on_project_editor)
+            .add_systems(UiSchedule, events::project_dialog)
             .add_systems(OnExit(EditorState::Loading), |mut commands: Commands| {
-                commands.trigger(ProjectAct::Reload);
-                commands.trigger(ProjectAct::Show {
+                commands.trigger(ProjectEv::Reload);
+                commands.trigger(ProjectEv::Show {
                     ns: "_misc".into(),
                     history_invoked: true,
                     notif: false,

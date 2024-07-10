@@ -9,24 +9,24 @@ use tracing::info;
 
 use crate::{
     component::panels::{
-        component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
+        component_editor::OpenComponentEditorEv, component_list::OpenComponentListEv,
     },
     dirs_paths::data_path,
     file::{load_toml, save_toml_with_header},
-    history::{history_viewer::OpenHistoryViewerAct, HistoryAct},
-    info_windows::InfoWindowsAct,
+    history::{history_viewer::OpenHistoryViewerEv, HistoryEv},
+    info_windows::InfoWindowsEv,
     keymaps::{
         key_list::KEY_LIST,
-        settings_editor::{OpenKeymapSettingsAct, KEYMAP_MENU},
+        settings_editor::{OpenKeymapSettingsEv, KEYMAP_MENU},
     },
-    misc_config::settings_editor::OpenMiscSettingsAct,
-    project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
-    state::{ChangeStateAct, EditorState},
+    misc_config::settings_editor::OpenMiscSettingsEv,
+    project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
+    state::{ChangeStateEv, EditorState},
     ui::{
-        notif::viewer::OpenNotifLogViewerAct, panel::menu::OpenAllSettingsAct,
-        tilemap::settings_editor::TileSettingsAct,
+        notif::viewer::OpenNotifLogViewerEv, panel::menu::OpenAllSettingsEv,
+        tilemap::settings_editor::TileSettingsEv,
     },
-    window::settings_editor::OpenWindowSettingsAct,
+    window::settings_editor::OpenWindowSettingsEv,
 };
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -53,23 +53,23 @@ pub enum KeymapAction {
 impl KeymapAction {
     pub fn trigger_action(self, commands: &mut Commands) {
         match self {
-            Self::ChangeState(state) => commands.trigger(ChangeStateAct(state)),
-            Self::Undo => commands.trigger(HistoryAct::Undo),
-            Self::Redo => commands.trigger(HistoryAct::Redo),
-            Self::Quit => commands.trigger(InfoWindowsAct::Quit(false)),
-            Self::OpenProject => commands.trigger(ProjectAct::Open),
-            Self::SaveProject => commands.trigger(ProjectAct::Save(false)),
-            Self::ReloadProject => commands.trigger(ProjectAct::Reload),
-            Self::TileSettings => commands.trigger(TileSettingsAct::Open),
-            Self::WindowSettings => commands.trigger(OpenWindowSettingsAct),
-            Self::KeymapSettings => commands.trigger(OpenKeymapSettingsAct),
-            Self::MiscSettings => commands.trigger(OpenMiscSettingsAct),
-            Self::AllSettings => commands.trigger(OpenAllSettingsAct),
-            Self::ComponentEditor => commands.trigger(OpenComponentEditorAct),
-            Self::Project => commands.trigger(OpenProjectEditorAct),
-            Self::ComponentList => commands.trigger(OpenComponentListAct),
-            Self::History => commands.trigger(OpenHistoryViewerAct),
-            Self::NotifLog => commands.trigger(OpenNotifLogViewerAct),
+            Self::ChangeState(state) => commands.trigger(ChangeStateEv(state)),
+            Self::Undo => commands.trigger(HistoryEv::Undo),
+            Self::Redo => commands.trigger(HistoryEv::Redo),
+            Self::Quit => commands.trigger(InfoWindowsEv::Quit(false)),
+            Self::OpenProject => commands.trigger(ProjectEv::Open),
+            Self::SaveProject => commands.trigger(ProjectEv::Save(false)),
+            Self::ReloadProject => commands.trigger(ProjectEv::Reload),
+            Self::TileSettings => commands.trigger(TileSettingsEv::Open),
+            Self::WindowSettings => commands.trigger(OpenWindowSettingsEv),
+            Self::KeymapSettings => commands.trigger(OpenKeymapSettingsEv),
+            Self::MiscSettings => commands.trigger(OpenMiscSettingsEv),
+            Self::AllSettings => commands.trigger(OpenAllSettingsEv),
+            Self::ComponentEditor => commands.trigger(OpenComponentEditorEv),
+            Self::Project => commands.trigger(OpenProjectEditorEv),
+            Self::ComponentList => commands.trigger(OpenComponentListEv),
+            Self::History => commands.trigger(OpenHistoryViewerEv),
+            Self::NotifLog => commands.trigger(OpenNotifLogViewerEv),
         }
     }
 }

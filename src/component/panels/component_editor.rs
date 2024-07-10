@@ -4,7 +4,7 @@ use itertools::Itertools;
 
 use crate::{
     component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
-    history::{HistoryAct, HistoryEntry},
+    history::{HistoryEntry, HistoryEv},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -12,7 +12,7 @@ use crate::{
 pub struct ComponentEditor;
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenComponentEditorAct;
+pub struct OpenComponentEditorEv;
 
 impl DockWindow for ComponentEditor {
     fn title(self) -> String {
@@ -112,7 +112,7 @@ impl DockWindow for ComponentEditor {
             ui.colored_label(color, format!("{}, {}", a.0.x, -a.0.y));
         }
         if *component_data != old_data {
-            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+            commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 entity,
                 before: Some(old_data.into()),
                 after: Some(component_data.to_owned().into()),
@@ -123,7 +123,7 @@ impl DockWindow for ComponentEditor {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_component_editor(
-    _trigger: Trigger<OpenComponentEditorAct>,
+    _trigger: Trigger<OpenComponentEditorEv>,
     mut state: ResMut<PanelDockState>,
 ) {
     window_action_handler(&mut state, ComponentEditor);

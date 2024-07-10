@@ -4,11 +4,11 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
-use crate::{info_windows::InfoWindowsAct, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_changelog(trigger: Trigger<InfoWindowsAct>, mut popup: EventWriter<Popup>) {
-    if *trigger.event() != InfoWindowsAct::Changelog {
+pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
+    if *trigger.event() != InfoWindowsEv::Changelog {
         return;
     }
     popup.send(Popup::new(

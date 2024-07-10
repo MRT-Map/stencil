@@ -10,7 +10,7 @@ use crate::{
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
-    history::{HistoryAct, HistoryEntry},
+    history::{HistoryEntry, HistoryEv},
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
@@ -134,7 +134,7 @@ pub fn edit_nodes_sy(
     }
     if clear_orig {
         if let Some(orig) = node_edit_data.take() {
-            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+            commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 entity,
                 before: Some(orig.old_pla.into()),
                 after: Some(pla.to_owned().into()),

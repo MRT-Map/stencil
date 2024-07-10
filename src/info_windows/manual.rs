@@ -3,11 +3,11 @@ use std::sync::Mutex;
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-use crate::{info_windows::InfoWindowsAct, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_manual(trigger: Trigger<InfoWindowsAct>, mut popup: EventWriter<Popup>) {
-    if *trigger.event() != InfoWindowsAct::Manual {
+pub fn on_manual(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
+    if *trigger.event() != InfoWindowsEv::Manual {
         return;
     }
     popup.send(Popup::new(

@@ -3,7 +3,7 @@ use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    history::HistoryAct,
+    history::HistoryEv,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -11,7 +11,7 @@ use crate::{
 pub struct HistoryViewer;
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenHistoryViewerAct;
+pub struct OpenHistoryViewerEv;
 
 impl DockWindow for HistoryViewer {
     fn title(self) -> String {
@@ -23,10 +23,10 @@ impl DockWindow for HistoryViewer {
         } = tab_viewer.params;
         ui.horizontal(|ui| {
             if ui.button("Undo").clicked() {
-                commands.trigger(HistoryAct::Undo);
+                commands.trigger(HistoryEv::Undo);
             }
             if ui.button("Redo").clicked() {
-                commands.trigger(HistoryAct::Redo);
+                commands.trigger(HistoryEv::Redo);
             }
         });
         for entry in &history.undo_stack {
@@ -41,7 +41,7 @@ impl DockWindow for HistoryViewer {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_history_viewer(
-    _trigger: Trigger<OpenHistoryViewerAct>,
+    _trigger: Trigger<OpenHistoryViewerEv>,
     mut state: ResMut<PanelDockState>,
 ) {
     window_action_handler(&mut state, HistoryViewer);

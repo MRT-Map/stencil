@@ -15,7 +15,7 @@ use crate::{
         skin::Skin,
     },
     file::{load_msgpack, safe_delete, save_msgpack},
-    history::{History, HistoryAct, HistoryEntry, NamespaceAction},
+    history::{History, HistoryEntry, HistoryEv, NamespaceAction},
     project::Namespaces,
     ui::{
         notif::{NotifLogRwLockExt, NOTIF_LOG},
@@ -25,7 +25,7 @@ use crate::{
 };
 
 #[derive(Clone, Event)]
-pub enum ProjectAct {
+pub enum ProjectEv {
     Open,
     Load(PathBuf, bool),
     Reload,
@@ -45,7 +45,7 @@ pub enum ProjectAct {
 
 #[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
 pub fn on_project(
-    trigger: Trigger<ProjectAct>,
+    trigger: Trigger<ProjectEv>,
     mut commands: Commands,
     mut namespaces: ResMut<Namespaces>,
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
@@ -55,7 +55,7 @@ pub fn on_project(
     mut history: ResMut<History>,
 ) {
     match trigger.event() {
-        ProjectAct::Show {
+        ProjectEv::Show {
             ns,
             history_invoked,
             notif,
@@ -85,7 +85,7 @@ pub fn on_project(
                     };
                 }
                 if !history_invoked {
-                    commands.trigger(HistoryAct::one_history(HistoryEntry::Namespace {
+                    commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
                         namespace: ns.to_owned(),
                         action: NamespaceAction::Show,
                     }));
@@ -95,7 +95,7 @@ pub fn on_project(
                 }
             }
         }
-        ProjectAct::Hide {
+        ProjectEv::Hide {
             ns,
             history_invoked,
             notif,
@@ -122,7 +122,7 @@ pub fn on_project(
                 commands.entity(e).despawn_recursive();
             }
             if !history_invoked {
-                commands.trigger(HistoryAct::one_history(HistoryEntry::Namespace {
+                commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
                     namespace: ns.to_owned(),
                     action: NamespaceAction::Hide,
                 }));
@@ -131,7 +131,7 @@ pub fn on_project(
                 NOTIF_LOG.push(&format!("Saved namespace {ns}"), ToastLevel::Success);
             }
         }
-        ProjectAct::Save(auto) => {
+        ProjectEv::Save(auto) => {
             let components = query
                 .iter()
                 .map(|(_, p)| p.to_mc_coords())
@@ -152,10 +152,10 @@ pub fn on_project(
                 ToastLevel::Success,
             );
         }
-        ProjectAct::Open => {
+        ProjectEv::Open => {
             file_dialogs.project_select.select_directory();
         }
-        ProjectAct::Reload => {
+        ProjectEv::Reload => {
             let ns: Vec<String> = namespaces
                 .dir
                 .read_dir()
@@ -178,15 +178,15 @@ pub fn on_project(
                 let _ = namespaces.visibilities.entry(ns).or_insert(false);
             }
         }
-        ProjectAct::Delete(ns, false) => {
+        ProjectEv::Delete(ns, false) => {
             popup.send(Popup::base_confirm(
                 "confirm_delete_ns",
                 format!("Are you sure you want to delete namespace {ns}?"),
                 "",
-                ProjectAct::Delete(ns.to_owned(), true),
+                ProjectEv::Delete(ns.to_owned(), true),
             ));
         }
-        ProjectAct::Delete(ns, true) => {
+        ProjectEv::Delete(ns, true) => {
             namespaces.visibilities.remove(ns);
             let delete_file = namespaces
                 .dir
@@ -200,16 +200,16 @@ pub fn on_project(
                     .ok()
                 })
                 .flatten();
-            commands.trigger(HistoryAct::one_history(HistoryEntry::Namespace {
+            commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
                 namespace: ns.to_owned(),
                 action: NamespaceAction::Delete(delete_file),
             }));
         }
-        ProjectAct::Load(dir, true) => {
-            commands.trigger(ProjectAct::Save(false));
-            commands.trigger(ProjectAct::Load(dir.to_owned(), false));
+        ProjectEv::Load(dir, true) => {
+            commands.trigger(ProjectEv::Save(false));
+            commands.trigger(ProjectEv::Load(dir.to_owned(), false));
         }
-        ProjectAct::Load(dir, false) => {
+        ProjectEv::Load(dir, false) => {
             history.redo_stack.clear();
             history.undo_stack.clear();
             namespaces.dir = dir.to_owned();
@@ -217,7 +217,7 @@ pub fn on_project(
             for (e, _) in query.iter() {
                 commands.entity(e).despawn_recursive();
             }
-            commands.trigger(ProjectAct::Reload);
+            commands.trigger(ProjectEv::Reload);
         }
     }
 }
@@ -235,14 +235,14 @@ pub fn project_dialog(
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_selected() {
         if namespaces.dir == Namespaces::default().dir {
-            commands.trigger(ProjectAct::Load(file, true));
+            commands.trigger(ProjectEv::Load(file, true));
         } else {
             popup.send(Popup::base_choose(
                 "save-before-switching",
                 "Save before switching projects?",
                 "",
-                ProjectAct::Load(file.to_owned(), true),
-                ProjectAct::Load(file, false),
+                ProjectEv::Load(file.to_owned(), true),
+                ProjectEv::Load(file, false),
             ));
         }
     }

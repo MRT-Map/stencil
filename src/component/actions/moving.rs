@@ -6,7 +6,7 @@ use crate::{
         bundle::SelectedComponent,
         pla2::{EditorCoords, PlaComponent},
     },
-    history::{HistoryAct, HistoryEntry},
+    history::{HistoryEntry, HistoryEv},
     state::{EditorState, IntoSystemConfigExt},
     ui::{
         cursor::mouse_events::{HoveredComponent, MouseEvent},
@@ -61,7 +61,7 @@ pub fn move_component_sy(
                         .round()
                         .as_ivec2();
                 }
-                commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+                commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                     entity,
                     before: Some(old_pla.into()),
                     after: Some(pla.to_owned().into()),

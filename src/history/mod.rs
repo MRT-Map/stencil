@@ -65,12 +65,12 @@ impl<T> Display for HistoryEntry<T> {
 }
 
 #[derive(Clone, Event)]
-pub enum HistoryAct {
+pub enum HistoryEv {
     NewHistory(Vec<HistoryEntry>),
     Undo,
     Redo,
 }
-impl HistoryAct {
+impl HistoryEv {
     #[must_use]
     pub fn one_history(history: HistoryEntry) -> Self {
         Self::NewHistory(vec![history])

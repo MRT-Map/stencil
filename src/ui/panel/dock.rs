@@ -215,13 +215,10 @@ pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut pa
 }
 
 #[derive(Clone, Copy, Event)]
-pub struct ResetPanelDockStateAct;
+pub struct ResetPanelDockStateEv;
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_reset_panel(
-    _trigger: Trigger<ResetPanelDockStateAct>,
-    mut state: ResMut<PanelDockState>,
-) {
+pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<PanelDockState>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
     *state = PanelDockState::default();
 }

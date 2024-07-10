@@ -11,30 +11,30 @@ use egui_notify::ToastLevel;
 
 use crate::{
     component::panels::{
-        component_editor::OpenComponentEditorAct, component_list::OpenComponentListAct,
+        component_editor::OpenComponentEditorEv, component_list::OpenComponentListEv,
     },
-    history::{history_viewer::OpenHistoryViewerAct, HistoryAct},
-    info_windows::InfoWindowsAct,
-    keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsAct},
-    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsAct},
-    project::{events::ProjectAct, project_editor::OpenProjectEditorAct},
+    history::{history_viewer::OpenHistoryViewerEv, HistoryEv},
+    info_windows::InfoWindowsEv,
+    keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsEv},
+    misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsEv},
+    project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
     tile::zoom::Zoom,
     ui::{
-        notif::{viewer::OpenNotifLogViewerAct, NotifLogRwLockExt, NOTIF_LOG},
+        notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
-            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateAct},
+            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateEv},
             status::Status,
         },
         tilemap::{
-            settings_editor::{TileSettingsAct, TileSettingsEditor},
+            settings_editor::{TileSettingsEditor, TileSettingsEv},
             tile::PendingTiles,
         },
     },
-    window::settings_editor::{OpenWindowSettingsAct, WindowSettingsEditor},
+    window::settings_editor::{OpenWindowSettingsEv, WindowSettingsEditor},
 };
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenAllSettingsAct;
+pub struct OpenAllSettingsEv;
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn ui_sy(
@@ -65,43 +65,43 @@ pub fn ui_sy(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
                 |ui| {
-                    button!(ui, commands, "Info", InfoWindowsAct::Info);
-                    button!(ui, commands, "Changelog", InfoWindowsAct::Changelog);
-                    button!(ui, commands, "Manual", InfoWindowsAct::Manual);
-                    button!(ui, commands, "Licenses", InfoWindowsAct::Licenses);
+                    button!(ui, commands, "Info", InfoWindowsEv::Info);
+                    button!(ui, commands, "Changelog", InfoWindowsEv::Changelog);
+                    button!(ui, commands, "Manual", InfoWindowsEv::Manual);
+                    button!(ui, commands, "Licenses", InfoWindowsEv::Licenses);
                     ui.separator();
-                    button!(ui, commands, "Quit", InfoWindowsAct::Quit(false));
+                    button!(ui, commands, "Quit", InfoWindowsEv::Quit(false));
                 },
             );
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "File", |ui| {
-                button!(ui, commands, "Open...", ProjectAct::Open);
-                button!(ui, commands, "Reload", ProjectAct::Reload);
-                button!(ui, commands, "Save", ProjectAct::Save(false));
+                button!(ui, commands, "Open...", ProjectEv::Open);
+                button!(ui, commands, "Reload", ProjectEv::Reload);
+                button!(ui, commands, "Save", ProjectEv::Save(false));
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
-                button!(ui, commands, "Undo", HistoryAct::Undo);
-                button!(ui, commands, "Redo", HistoryAct::Redo);
+                button!(ui, commands, "Undo", HistoryEv::Undo);
+                button!(ui, commands, "Redo", HistoryEv::Redo);
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "View", |ui| {
-                button!(ui, commands, "Component List", OpenComponentListAct);
-                button!(ui, commands, "Component Editor", OpenComponentEditorAct);
-                button!(ui, commands, "Project", OpenProjectEditorAct);
-                button!(ui, commands, "History", OpenHistoryViewerAct);
-                button!(ui, commands, "Notification Log", OpenNotifLogViewerAct);
+                button!(ui, commands, "Component List", OpenComponentListEv);
+                button!(ui, commands, "Component Editor", OpenComponentEditorEv);
+                button!(ui, commands, "Project", OpenProjectEditorEv);
+                button!(ui, commands, "History", OpenHistoryViewerEv);
+                button!(ui, commands, "Notification Log", OpenNotifLogViewerEv);
                 ui.separator();
-                button!(ui, commands, "Reset Layout", ResetPanelDockStateAct);
+                button!(ui, commands, "Reset Layout", ResetPanelDockStateEv);
             });
             #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Settings", |ui| {
-                button!(ui, commands, "Open All", OpenAllSettingsAct);
+                button!(ui, commands, "Open All", OpenAllSettingsEv);
                 ui.separator();
-                button!(ui, commands, "Tilemap", TileSettingsAct::Open);
-                button!(ui, commands, "Window", OpenWindowSettingsAct);
-                button!(ui, commands, "Keymap", OpenKeymapSettingsAct);
-                button!(ui, commands, "Misc", OpenMiscSettingsAct);
+                button!(ui, commands, "Tilemap", TileSettingsEv::Open);
+                button!(ui, commands, "Window", OpenWindowSettingsEv);
+                button!(ui, commands, "Keymap", OpenKeymapSettingsEv);
+                button!(ui, commands, "Misc", OpenMiscSettingsEv);
             });
             #[cfg(debug_assertions)]
             {
@@ -156,7 +156,7 @@ pub fn ui_sy(
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsAct>, mut state: ResMut<PanelDockState>) {
+pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<PanelDockState>) {
     let all_tabs = state
         .state
         .iter_all_tabs()

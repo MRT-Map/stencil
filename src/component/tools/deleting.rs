@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     component::pla2::{EditorCoords, PlaComponent},
-    history::{HistoryAct, HistoryEntry},
+    history::{HistoryEntry, HistoryEv},
     state::EditorState,
     ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
 };
@@ -18,7 +18,7 @@ pub fn delete_component_sy(
         if let MouseEvent::LeftClick(Some(e), _) = event {
             let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
             info!(?e, "Deleting entity");
-            commands.trigger(HistoryAct::one_history(HistoryEntry::Component {
+            commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 entity: *e,
                 before: Some(pla.to_owned().into()),
                 after: None,

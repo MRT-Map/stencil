@@ -19,8 +19,8 @@ use crate::{
         skin::Skin,
     },
     file::{restore, safe_delete},
-    history::{History, HistoryAct, HistoryEntry, NamespaceAction},
-    project::{events::ProjectAct, Namespaces},
+    history::{History, HistoryEntry, HistoryEv, NamespaceAction},
+    project::{events::ProjectEv, Namespaces},
     ui::panel::status::Status,
 };
 
@@ -30,7 +30,7 @@ use crate::{
     clippy::implicit_hasher
 )]
 pub fn on_history(
-    trigger: Trigger<HistoryAct>,
+    trigger: Trigger<HistoryEv>,
     mut commands: Commands,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
     mut history: ResMut<History>,
@@ -41,7 +41,7 @@ pub fn on_history(
 ) {
     let selected = selected_entity.get_single().ok();
     match trigger.event() {
-        HistoryAct::NewHistory(histories) => {
+        HistoryEv::NewHistory(histories) => {
             let histories = histories
                 .iter()
                 .map(|history| match history {
@@ -92,7 +92,7 @@ pub fn on_history(
             }
             history.undo_stack.push(histories);
         }
-        HistoryAct::Undo => {
+        HistoryEv::Undo => {
             let Some(mut histories) = history.undo_stack.pop() else {
                 status.0 = "Nothing to undo".into();
                 return;
@@ -140,12 +140,12 @@ pub fn on_history(
                     },
                     HistoryEntry::Namespace { namespace, action } => {
                         commands.trigger(match action {
-                            NamespaceAction::Show => ProjectAct::Hide {
+                            NamespaceAction::Show => ProjectEv::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
                             },
-                            NamespaceAction::Hide => ProjectAct::Show {
+                            NamespaceAction::Hide => ProjectEv::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
@@ -183,7 +183,7 @@ pub fn on_history(
             }
             history.redo_stack.push(histories);
         }
-        HistoryAct::Redo => {
+        HistoryEv::Redo => {
             let Some(mut histories) = history.redo_stack.pop() else {
                 status.0 = "Nothing to redo".into();
                 return;
@@ -231,12 +231,12 @@ pub fn on_history(
                     },
                     HistoryEntry::Namespace { namespace, action } => {
                         commands.trigger(match action {
-                            NamespaceAction::Show => ProjectAct::Show {
+                            NamespaceAction::Show => ProjectEv::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
                             },
-                            NamespaceAction::Hide => ProjectAct::Hide {
+                            NamespaceAction::Hide => ProjectEv::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,

@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 use crate::{
-    state::{ChangeStateAct, EditorState},
+    state::{ChangeStateEv, EditorState},
     ui::panel::dock::{PanelParams, TabViewer},
 };
 
@@ -35,8 +35,8 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResp
         });
     });
     if new_state != ***editor_state {
-        //commands.trigger(ChangeStateAct(new_state)));
-        commands.trigger(ChangeStateAct(new_state));
+        //commands.trigger(ChangeStateEv(new_state)));
+        commands.trigger(ChangeStateEv(new_state));
         tab_viewer.params.status.0 = match new_state {
             EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
             EditorState::EditingNodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",

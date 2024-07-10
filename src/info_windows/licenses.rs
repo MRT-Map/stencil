@@ -5,7 +5,7 @@ use bevy_egui::egui;
 use license_retriever::LicenseRetriever;
 use once_cell::sync::Lazy;
 
-use crate::{info_windows::InfoWindowsAct, ui::popup::Popup};
+use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
 #[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =
@@ -15,8 +15,8 @@ static LICENSES: Lazy<LicenseRetriever> =
 static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_license(trigger: Trigger<InfoWindowsAct>, mut popup: EventWriter<Popup>) {
-    if *trigger.event() != InfoWindowsAct::Licenses {
+pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
+    if *trigger.event() != InfoWindowsEv::Licenses {
         return;
     }
     popup.send(Popup::new(

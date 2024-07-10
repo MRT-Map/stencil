@@ -11,7 +11,7 @@ use crate::ui::panel::dock::{
 pub struct ComponentList;
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenComponentListAct;
+pub struct OpenComponentListEv;
 
 impl DockWindow for ComponentList {
     fn title(self) -> String {
@@ -67,7 +67,7 @@ impl DockWindow for ComponentList {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_component_list(
-    _trigger: Trigger<OpenComponentListAct>,
+    _trigger: Trigger<OpenComponentListEv>,
     mut state: ResMut<PanelDockState>,
 ) {
     window_action_handler(&mut state, ComponentList);

@@ -5,8 +5,8 @@ use egui_file_dialog::FileDialog;
 use itertools::Itertools;
 
 use crate::{
-    history::{HistoryAct, HistoryEntry, NamespaceAction},
-    project::events::ProjectAct,
+    history::{HistoryEntry, HistoryEv, NamespaceAction},
+    project::events::ProjectEv,
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
@@ -14,7 +14,7 @@ use crate::{
 pub struct ProjectEditor;
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenProjectEditorAct;
+pub struct OpenProjectEditorEv;
 
 impl DockWindow for ProjectEditor {
     fn title(self) -> String {
@@ -31,13 +31,13 @@ impl DockWindow for ProjectEditor {
         let components = queries.p1().iter().counts_by(|a| a.namespace.to_owned());
         ui.horizontal(|ui| {
             if ui.button("Open").clicked() {
-                commands.trigger(ProjectAct::Open);
+                commands.trigger(ProjectEv::Open);
             }
             if ui.button("Reload").clicked() {
-                commands.trigger(ProjectAct::Reload);
+                commands.trigger(ProjectEv::Reload);
             }
             if ui.button("Save").clicked() {
-                commands.trigger(ProjectAct::Save(false));
+                commands.trigger(ProjectEv::Save(false));
             }
         });
         ui.label(format!(
@@ -70,13 +70,13 @@ impl DockWindow for ProjectEditor {
                         row.col(|ui| {
                             if ui.checkbox(vis, "").changed() {
                                 if *vis {
-                                    commands.trigger(ProjectAct::Show {
+                                    commands.trigger(ProjectEv::Show {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
                                         notif: true,
                                     });
                                 } else {
-                                    commands.trigger(ProjectAct::Hide {
+                                    commands.trigger(ProjectEv::Hide {
                                         ns: ns.to_owned(),
                                         history_invoked: false,
                                         notif: true,
@@ -109,7 +109,7 @@ impl DockWindow for ProjectEditor {
                     });
                 }
                 if let Some(delete) = delete {
-                    commands.trigger(ProjectAct::Delete(delete, false));
+                    commands.trigger(ProjectEv::Delete(delete, false));
                 }
                 body.row(20.0, |mut row| {
                     row.col(|_| ());
@@ -131,7 +131,7 @@ impl DockWindow for ProjectEditor {
                                 .visibilities
                                 .insert(new_namespace.to_owned(), true);
 
-                            commands.trigger(HistoryAct::one_history(HistoryEntry::Namespace {
+                            commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
                                 namespace: new_namespace.to_owned(),
                                 action: NamespaceAction::Create(None),
                             }));
@@ -153,7 +153,7 @@ impl ProjectEditor {
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn on_project_editor(
-    _trigger: Trigger<OpenProjectEditorAct>,
+    _trigger: Trigger<OpenProjectEditorEv>,
     mut state: ResMut<PanelDockState>,
 ) {
     window_action_handler(&mut state, ProjectEditor);

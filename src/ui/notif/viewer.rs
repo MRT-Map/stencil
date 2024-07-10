@@ -11,7 +11,7 @@ use crate::ui::{
 pub struct NotifLogViewer;
 
 #[derive(Clone, Copy, Event)]
-pub struct OpenNotifLogViewerAct;
+pub struct OpenNotifLogViewerEv;
 
 impl DockWindow for NotifLogViewer {
     fn title(self) -> String {
@@ -41,6 +41,6 @@ impl DockWindow for NotifLogViewer {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerAct>, mut state: ResMut<PanelDockState>) {
+pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerEv>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, NotifLogViewer);
 }
