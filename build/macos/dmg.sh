@@ -21,6 +21,8 @@ lipo "$dir/../../target/x86_64-apple-darwin/release/stencil2" \
      "$dir/../../target/aarch64-apple-darwin/release/stencil2" \
      -create -output "$dir/app/stencil2.app/Contents/MacOS/stencil2"
 
+cargo clean
+
 ln -s "/Applications" "$dir/app"
 hdiutil create stencil2.dmg -volname stencil2 -srcfolder "$dir/app" -ov
 unlink "$dir/app/Applications"

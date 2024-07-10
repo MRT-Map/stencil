@@ -28,7 +28,7 @@ jobs:
       run: mv .cargo/actions_config.toml .cargo/config.toml
 
     - name: Create dmg
-      run: sh build/macos/dmg.sh
+      run: bash build/macos/dmg.sh
       if: ${{ matrix.os == 'macos-latest' }}
     - name: Upload dmg
       uses: svenstaro/upload-release-action@v2
@@ -39,7 +39,7 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
 
     - name: Create deb
-      run: sh build/linux/deb.sh
+      run: bash build/linux/deb.sh
       if: ${{ matrix.os == 'ubuntu-latest' }}
     - name: Upload deb
       uses: svenstaro/upload-release-action@v2
