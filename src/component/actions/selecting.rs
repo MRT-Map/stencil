@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::basic::{GREEN, RED},
+    color::palettes::basic::{GREEN, LIME, RED},
     prelude::*,
 };
 use bevy_prototype_lyon::entity::ShapeBundle;
@@ -65,7 +65,7 @@ pub fn highlight_selected_sy(
                     &zoom,
                     data.nodes.first().unwrap().0.as_vec2(),
                     misc_settings.big_handle_size,
-                    GREEN.into(),
+                    LIME.into(),
                 ))
                 .id();
             let end = commands
