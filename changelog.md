@@ -5,6 +5,10 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.1
+* Upgrade `bevy` to v0.14
+* Fix crash that happens sometimes (hopefully)
+
 # v2.2.0
 * Revamped UI
   * New tabs and windows / docking format from `egui_dock`
