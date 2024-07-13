@@ -21,4 +21,4 @@ jobs:
       with:
         token: ${{ secrets.PAT }}
         repository: mrt-map/homebrew-mrt-map
-        event-type: workflow_dispatch
+        event-type: update_stencil2
