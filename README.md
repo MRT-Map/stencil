@@ -1,6 +1,6 @@
 ![](./assets/ste-light.png)
 
-![GitHub Build Status](https://img.shields.io/github/actions/workflow/status/MRT-Map/stencil2/.github%2Fworkflows%2Fbuild.yml?label=build%20(pages))
+![GitHub Build Status](https://img.shields.io/github/actions/workflow/status/MRT-Map/stencil2/.github%2Fworkflows%2Fbuild.yml)
 ![Github Version](https://img.shields.io/github/v/release/MRT-Map/stencil2)
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fgithub.com%2FMRT-Map%2Fmap%2Fwiki&label=wiki)
 ![GitHub License](https://img.shields.io/github/license/MRT-Map/stencil2)
