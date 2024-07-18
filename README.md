@@ -9,7 +9,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/MRT-Map/stencil2)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/mrt-map/stencil2/dev)
 ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/mrt-map/stencil2/latest/dev?include_prereleases)
-![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/MRT-Map/stemcil2)
+![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/MRT-Map/stencil2)
 
 ![GitHub all releases](https://img.shields.io/github/downloads/MRT-Map/stencil2/total)
 ![GitHub Release Date](https://img.shields.io/github/release-date/MRT-Map/stencil2)
