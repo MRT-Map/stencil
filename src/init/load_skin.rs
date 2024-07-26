@@ -40,6 +40,7 @@ pub fn get_skin_sy(
         Step::Uninitialised => {
             let new_task = executor.spawn(async move {
                 surf::get(&INIT_MISC_SETTINGS.skin_url)
+                    .middleware(surf::middleware::Redirect::default())
                     .recv_json::<Skin>()
                     .await
             });

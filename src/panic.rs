@@ -1,4 +1,4 @@
-use std::{io::ErrorKind, panic::PanicInfo, time::SystemTime};
+use std::{io::ErrorKind, panic::PanicHookInfo, time::SystemTime};
 
 use backtrace::Backtrace;
 use bevy::prelude::*;
@@ -8,7 +8,7 @@ use tracing_error::SpanTrace;
 
 use crate::{dirs_paths::data_dir, file::safe_delete, ui::popup::Popup};
 
-pub fn panic(panic: &PanicInfo) {
+pub fn panic(panic: &PanicHookInfo) {
     error!("Caught panic: {panic:#}");
     let (log1, log2) = if let Ok(read_dir) = data_dir("logs").read_dir() {
         let mut list = read_dir.filter_map(|a| Some(a.ok()?.path())).sorted().rev();

@@ -171,7 +171,7 @@ pub struct MiscSettings {
 impl Default for MiscSettings {
     fn default() -> Self {
         Self {
-            skin_url: "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json".into(),
+            skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
             big_handle_size: 1.0,
             small_handle_size: 0.5,
             hide_far_handles_threshold: 50,
@@ -194,9 +194,12 @@ impl MiscSettings {
             let _ = s.save();
             return s;
         }
-        match load_toml(&data_path("misc_settings.toml"), Some("misc settings")) {
-            Ok(str) => {
+        match load_toml::<MiscSettings>(&data_path("misc_settings.toml"), Some("misc settings")) {
+            Ok(mut str) => {
                 info!("Found misc settings file");
+                if str.skin_url == "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json" {
+                    str.skin_url = MiscSettings::default().skin_url;
+                }
                 str
             }
             Err(e) => {

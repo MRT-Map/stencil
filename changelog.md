@@ -1,4 +1,4 @@
-***Coming soon***
+updtae bu***Coming soon***
 * Directly download namespace files from GitHub repositories
 * Show colours of component types in component type editor
 * Selecting multiple components

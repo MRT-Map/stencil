@@ -69,10 +69,14 @@ impl DockWindow for ComponentEditor {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
                     .iter()
-                    .filter(|(_, data)| data.get_type() == component_type)
-                    .sorted_by_key(|(name, _)| *name)
-                    .for_each(|(name, _)| {
-                        ui.selectable_value(&mut component_data.ty, name.to_owned(), name);
+                    .filter(|data| data.get_type() == component_type)
+                    .sorted_by_key(|data| data.name())
+                    .for_each(|data| {
+                        ui.selectable_value(
+                            &mut component_data.ty,
+                            data.name().to_owned(),
+                            data.name(),
+                        );
                     });
             });
         if old_skin_type != component_data.ty {

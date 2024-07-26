@@ -1,108 +1,127 @@
 use std::collections::HashMap;
 
+use base64::{engine::general_purpose::STANDARD, Engine};
+use base64_serde::base64_serde_type;
 use bevy::prelude::*;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
 use crate::component::pla2::ComponentType;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct SkinInfo {
-    pub size: u32,
-    pub font: HashMap<String, Vec<String>>,
-    pub background: HexColor,
-}
+base64_serde_type!(Base64Standard, STANDARD);
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "layer")]
+#[serde(tag = "ty")]
 pub enum AreaStyle {
-    #[serde(rename = "fill")]
+    #[serde(rename = "areaFill")]
     Fill {
+        zoom_multiplier: f32,
         colour: Option<HexColor>,
         outline: Option<HexColor>,
-        stripe: Option<(u32, u32, u8)>,
+        outline_width: f32,
     },
-    #[serde(rename = "centertext")]
+    #[serde(rename = "areaCentreText")]
     CenterText {
-        colour: HexColor,
-        offset: IVec2,
-        size: u32,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        offset: Vec2,
+        size: f32,
     },
-    #[serde(rename = "bordertext")]
+    #[serde(rename = "areaBorderText")]
     BorderText {
-        colour: HexColor,
-        offset: i32,
-        size: u32,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        offset: f32,
+        size: f32,
+    },
+    #[serde(rename = "areaCentreImage")]
+    CentreImage {
+        zoom_multiplier: f32,
+        #[serde(with = "Base64Standard")]
+        image: Vec<u8>,
+        extension: String,
+        size: Vec2,
+        offset: Vec2,
     },
 }
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "layer")]
+#[serde(tag = "ty")]
 pub enum LineStyle {
-    #[serde(rename = "fore")]
+    #[serde(rename = "lineFore")]
     Fore {
-        colour: HexColor,
-        width: u32,
-        dash: Option<UVec2>,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        width: f32,
+        dash: Option<Vec<f32>>,
+        unrounded: bool,
     },
-    #[serde(rename = "back")]
+    #[serde(rename = "lineBack")]
     Back {
-        colour: HexColor,
-        width: u32,
-        dash: Option<UVec2>,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        width: f32,
+        dash: Option<Vec<f32>>,
+        unrounded: bool,
     },
-    #[serde(rename = "text")]
+    #[serde(rename = "lineText")]
     Text {
-        colour: HexColor,
-        arrow_colour: HexColor,
-        size: u32,
-        offset: i32,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        arrow_colour: Option<HexColor>,
+        size: f32,
+        offset: f32,
     },
 }
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "layer")]
+#[serde(tag = "ty")]
 pub enum PointStyle {
-    #[serde(rename = "image")]
-    Image { file: String, offset: IVec2 },
-    #[serde(rename = "square")]
+    #[serde(rename = "pointImage")]
+    Image {
+        zoom_multiplier: f32,
+        #[serde(with = "Base64Standard")]
+        image: Vec<u8>,
+        extension: String,
+        size: Vec2,
+        offset: Vec2,
+    },
+    #[serde(rename = "pointSquare")]
     Square {
-        colour: HexColor,
-        outline: Option<HexColor>,
-        size: u32,
-        width: u32,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        border_radius: f32,
+        size: f32,
+        width: f32,
     },
-    #[serde(rename = "circle")]
-    Circle {
-        colour: HexColor,
-        outline: Option<HexColor>,
-        size: u32,
-        width: u32,
-    },
-    #[serde(rename = "text")]
+    #[serde(rename = "pointText")]
     Text {
-        colour: HexColor,
-        size: u32,
-        offset: IVec2,
-        anchor: Option<String>,
+        zoom_multiplier: f32,
+        colour: Option<HexColor>,
+        size: f32,
+        offset: Vec2,
+        anchor: String,
     },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "type")]
+#[serde(tag = "shape")]
 pub enum SkinComponent {
     #[serde(rename = "point")]
     Point {
+        name: String,
         tags: Vec<String>,
-        style: HashMap<String, Vec<PointStyle>>,
+        styles: HashMap<String, Vec<PointStyle>>,
     },
     #[serde(rename = "line")]
     Line {
+        name: String,
         tags: Vec<String>,
-        style: HashMap<String, Vec<LineStyle>>,
+        styles: HashMap<String, Vec<LineStyle>>,
     },
     #[serde(rename = "area")]
     Area {
+        name: String,
         tags: Vec<String>,
-        style: HashMap<String, Vec<AreaStyle>>,
+        styles: HashMap<String, Vec<AreaStyle>>,
     },
 }
 impl SkinComponent {
@@ -114,11 +133,43 @@ impl SkinComponent {
             Self::Area { .. } => ComponentType::Area,
         }
     }
+    #[must_use]
+    pub const fn name(&self) -> &String {
+        match self {
+            Self::Point { name, .. } => name,
+            Self::Line { name, .. } => name,
+            Self::Area { name, .. } => name,
+        }
+    }
+    #[must_use]
+    pub const fn tags(&self) -> &Vec<String> {
+        match self {
+            Self::Point { tags, .. } => tags,
+            Self::Line { tags, .. } => tags,
+            Self::Area { tags, .. } => tags,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Resource)]
 pub struct Skin {
-    pub info: SkinInfo,
-    pub order: Vec<String>,
-    pub types: HashMap<String, SkinComponent>,
+    pub version: u8,
+    pub name: String,
+    pub types: Vec<SkinComponent>,
+    pub font_files: Vec<(String, String)>,
+    pub font_string: String,
+    pub background: HexColor,
+    pub prune_small_text: Option<f64>,
+    pub licence: String,
+}
+
+impl Skin {
+    #[must_use]
+    pub fn get_type(&self, ty: &str) -> Option<&SkinComponent> {
+        self.types.iter().find(|a| a.name() == ty)
+    }
+    #[must_use]
+    pub fn get_order(&self, ty: &str) -> Option<usize> {
+        self.types.iter().position(|a| a.name() == ty)
+    }
 }

@@ -67,7 +67,7 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
     }
     #[must_use]
     pub fn get_type(&self, skin: &Skin) -> ComponentType {
-        if let Some(sc) = skin.types.get(self.ty.as_str()) {
+        if let Some(sc) = skin.get_type(self.ty.as_str()) {
             sc.get_type()
         } else {
             let (ty, s) = if self.nodes.len() == 1 || self.nodes.iter().dedup().count() == 1 {
@@ -89,25 +89,23 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
     }
     #[must_use]
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
-        let type_layers = skin.types.get(self.ty.as_str())?;
+        let type_layers = skin.get_type(self.ty.as_str())?;
         match type_layers {
-            SkinComponent::Point { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Point { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
-                    PointStyle::Circle { colour, .. } | PointStyle::Square { colour, .. } => {
-                        Some(colour)
-                    }
+                    PointStyle::Square { colour, .. } => colour.into(),
                     _ => None,
                 })
                 .last(),
-            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Line { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
-                    LineStyle::Fore { colour, .. } => Some(colour),
+                    LineStyle::Fore { colour, .. } => colour.into(),
                     _ => None,
                 })
                 .last(),
-            SkinComponent::Area { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { colour, .. } => colour.into(),
@@ -118,17 +116,17 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
     }
     #[must_use]
     pub fn back_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
-        let type_layers = skin.types.get(self.ty.as_str())?;
+        let type_layers = skin.get_type(self.ty.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
-            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Line { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
-                    LineStyle::Back { colour, .. } => Some(colour),
+                    LineStyle::Back { colour, .. } => colour.into(),
                     _ => None,
                 })
                 .last(),
-            SkinComponent::Area { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { outline, .. } => outline.into(),
@@ -138,18 +136,24 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
         }
     }
     #[must_use]
-    pub fn weight(&self, skin: &Skin) -> Option<u32> {
-        let type_layers = skin.types.get(self.ty.as_str())?;
+    pub fn weight(&self, skin: &Skin) -> Option<f32> {
+        let type_layers = skin.get_type(self.ty.as_str())?;
         match type_layers {
             SkinComponent::Point { .. } => None,
-            SkinComponent::Line { style, .. } => style_in_max_zoom(style)?
+            SkinComponent::Line { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
-                    LineStyle::Fore { width, .. } => Some(width / 4),
+                    LineStyle::Fore { width, .. } => Some(*width),
                     _ => None,
                 })
                 .last(),
-            SkinComponent::Area { .. } => Some(2),
+            SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { outline_width, .. } => Some(outline_width * 5.0),
+                    _ => None,
+                })
+                .last(),
         }
     }
 }
@@ -216,12 +220,7 @@ impl PlaComponent<EditorCoords> {
             pb.build()
         });
         let transform = Transform::from_xyz(0.0, 0.0, {
-            let order = skin
-                .order
-                .iter()
-                .enumerate()
-                .find(|(_, a)| **a == self.ty)
-                .map_or(0, |a| a.0);
+            let order = skin.get_order(&self.ty).unwrap_or(0);
             (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
         });
         ShapeBundle {
@@ -260,7 +259,7 @@ impl PlaComponent<EditorCoords> {
             .with_start_cap(LineCap::Round)
             .with_end_cap(LineCap::Round)
             .with_line_join(LineJoin::Round)
-            .with_line_width(self.weight(skin).unwrap_or(2) as f32);
+            .with_line_width(self.weight(skin).unwrap_or(2.0));
         if self.get_type(skin) == ComponentType::Area {
             Stroke {
                 color: if let Some(hex) = self.back_colour(skin) {
@@ -310,7 +309,7 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
     Some(
         style
             .iter()
-            .map(|(zl, data)| (zl.split(", ").next().unwrap().parse::<u8>().unwrap(), data))
+            .map(|(zl, data)| (zl.split("-").next().unwrap().parse::<u8>().unwrap(), data))
             .find(|(min, _)| *min == 0)?
             .1,
     )

@@ -110,7 +110,10 @@ pub fn on_project(
                 .map(|(_, p)| p.to_mc_coords())
                 .collect::<Vec<_>>();
             if save_msgpack(
-                &component_data,
+                &component_data
+                    .iter()
+                    .sorted_by_key(|a| &a.id)
+                    .collect::<Vec<_>>(),
                 &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             )
@@ -138,7 +141,10 @@ pub fn on_project(
                 .into_group_map_by(|a| a.namespace.to_owned());
             for (ns, components) in &components {
                 let _ = save_msgpack(
-                    &components,
+                    &components
+                        .iter()
+                        .sorted_by_key(|a| &a.id)
+                        .collect::<Vec<_>>(),
                     &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                     Some("pla2"),
                 );
