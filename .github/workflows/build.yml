@@ -60,6 +60,7 @@ jobs:
       changelog: ${{ steps.changelog.outputs.changelog }}
 
     steps:
+    - uses: actions/checkout@v4
     - id: version
       run: echo "v$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
     - id: changelog
