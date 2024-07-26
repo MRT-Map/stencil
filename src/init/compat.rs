@@ -61,10 +61,6 @@ fn v2_2_0() {
 
 fn v2_2_2() {
     info!("Running compatibility upgrades from v2.2.2");
-    if cache_path("skin.msgpack").exists() {
-        let _ = safe_delete(&cache_path("skin.msgpack"), None);
-    }
-
     #[allow(clippy::items_after_statements)]
     #[derive(Deserialize, Default)]
     pub struct GenericSkin {
