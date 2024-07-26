@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::engine::general_purpose::STANDARD;
 use base64_serde::base64_serde_type;
 use bevy::prelude::*;
 use hex_color::HexColor;

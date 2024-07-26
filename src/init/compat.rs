@@ -1,13 +1,10 @@
 use bevy::prelude::*;
 use serde::Deserialize;
-use serde_json::Value;
 use toml::Table;
 
 use crate::{
-    component::skin::Skin,
     dirs_paths::{cache_path, data_path},
-    file::{load_msgpack, safe_delete},
-    init::load_skin::Step,
+    file::safe_delete,
     state::LoadingState,
     ui::tilemap::settings::TileSettings,
 };

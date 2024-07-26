@@ -194,11 +194,11 @@ impl MiscSettings {
             let _ = s.save();
             return s;
         }
-        match load_toml::<MiscSettings>(&data_path("misc_settings.toml"), Some("misc settings")) {
+        match load_toml::<Self>(&data_path("misc_settings.toml"), Some("misc settings")) {
             Ok(mut str) => {
                 info!("Found misc settings file");
                 if str.skin_url == "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json" {
-                    str.skin_url = MiscSettings::default().skin_url;
+                    str.skin_url = Self::default().skin_url;
                 }
                 str
             }
