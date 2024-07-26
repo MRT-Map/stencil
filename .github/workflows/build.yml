@@ -61,6 +61,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - run: cargo update
     - id: version
       run: echo "v$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
     - id: changelog
