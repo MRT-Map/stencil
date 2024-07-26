@@ -1,9 +1,13 @@
-updtae bu***Coming soon***
+***Coming soon***
 * Directly download namespace files from GitHub repositories
 * Show colours of component types in component type editor
 * Selecting multiple components
 * Copying and pasting
 * Font configuration
+
+# v2.2.2
+* Update skin format for `tile-renderer` v5
+* Sort components by ID before saving
 
 # v2.2.1
 * Upgrade `bevy` to v0.14

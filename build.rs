@@ -227,7 +227,7 @@ fn gather_licenses() -> Result<()> {
             "objc2-core-image",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .override_license_url(
+         .override_license_url(
             "objc2-core-location",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
@@ -239,7 +239,7 @@ fn gather_licenses() -> Result<()> {
             "objc2-foundation",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .override_license_url(
+         .override_license_url(
             "objc2-link-presentation",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
@@ -251,19 +251,19 @@ fn gather_licenses() -> Result<()> {
             "objc2-quartz-core",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .override_license_url(
+         .override_license_url(
             "objc2-symbols",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
-        )
-        .override_license_url(
+         )
+         .override_license_url(
             "objc2-ui-kit",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .override_license_url(
+         .override_license_url(
             "objc2-uniform-type-identifiers",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
-        .override_license_url(
+         .override_license_url(
             "objc2-user-notifications",
             ["https://raw.githubusercontent.com/madsmtm/objc2/master/LICENSE.txt"],
         )
