@@ -1,63 +1,100 @@
 on:
-  push:
-    tags:
-      - '*'
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Build Exe
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-          - os: windows-latest
-          - os: macos-latest
+  build-macos:
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install nightly
-      run: rustup toolchain install nightly
-    - name: Set nightly to default
-      run: rustup default nightly
-    - name: Activate config.toml
-      run: mv .cargo/actions_config.toml .cargo/config.toml
+    - run: |
+        rustup toolchain install nightly
+        rustup default nightly
+        mv .cargo/actions_config.toml .cargo/config.toml
 
-    - name: Create dmg
-      run: bash build/macos/dmg.sh
-      if: ${{ matrix.os == 'macos-latest' }}
-    - name: Upload dmg
-      uses: svenstaro/upload-release-action@v2
+    - run: bash build/macos/dmg.sh
+    - uses: actions/upload-artifact@v4
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: stencil2.dmg
-        tag: ${{ github.ref }}
-      if: ${{ matrix.os == 'macos-latest' }}
+        name: macos
+        path: stencil2.dmg
 
-    - name: Create deb
-      run: bash build/linux/deb.sh
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-    - name: Upload deb
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/release/bundle/deb/stencil2*.deb
-        file_glob: true
-        tag: ${{ github.ref }}
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+  build-linux:
+    runs-on: ubuntu-latest
 
-    - name: Create msi
-      run: .\build\windows\build.ps1
-      if: ${{ matrix.os == 'windows-latest' }}
-    - name: Upload msi
-      uses: svenstaro/upload-release-action@v2
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        rustup toolchain install nightly
+        rustup default nightly
+        mv .cargo/actions_config.toml .cargo/config.toml
+
+    - run: bash build/linux/deb.sh
+    - uses: actions/upload-artifact@v4
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/wix/stencil2-*-x86_64.msi
-        file_glob: true
-        tag: ${{ github.ref }}
-      if: ${{ matrix.os == 'windows-latest' }}
+        name: ubuntu
+        path: target/release/bundle/deb/stencil2*.deb
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        rustup toolchain install nightly
+        rustup default nightly
+        mv .cargo/actions_config.toml .cargo/config.toml
+
+    - run: ./build/windows/build.ps1
+    - uses: actions/upload-artifact@v4
+      with:
+        name: windows
+        path: target/wix/stencil2-*-x86_64.msi
+
+  version-changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+
+    steps:
+    - id: version
+      run: echo "v$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
+    - id: changelog
+      run: |
+        {
+        echo 'changelog<<__EOF__'
+        hatch run python -c "
+        print(open('changelog.md').read().split('# ${{ steps.version.outputs.version }}')[1].split('\n')[1].split('\n##')[0])
+        "
+        echo __EOF__
+        } >> "$GITHUB_OUTPUT"
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs:
+      - build-linux
+      - build-macos
+      - build-windows
+      - version-changelog
+
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: macos
+        path: dist
+    - uses: actions/download-artifact@v4
+      with:
+        name: linux
+        path: dist
+    - uses: actions/download-artifact@v4
+      with:
+        name: windows
+        path: dist
+    - uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.version-changelog.outputs.version }}
+        body: ${{ needs.version-changelog.outputs.changelog }}
+        files: dist/*
