@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.2.2"
+version = "2.2.3"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["7d <i.third.7d@protonmail.com>"]
@@ -31,7 +31,7 @@ features = [
 
 [dependencies]
 # bevy_mouse_tracking = { version = "0.8.0", package = "bevy_mouse_tracking_plugin" }
-bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin", branch="bevy-0-14" }
+bevy_mouse_tracking = { git = "https://github.com/iiiii7d/bevy-mouse-tracking", package = "bevy_mouse_tracking_plugin", branch = "bevy-0-14" }
 bevy_prototype_lyon = { git = "https://github.com/iiiii7d/bevy_prototype_lyon" }
 bevy_mod_picking = { version = "0.20.1", default-features = false, features = [
     "backend_raycast",

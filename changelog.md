@@ -5,6 +5,9 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.3
+* Fix skin cache deletion every startup
+
 # v2.2.2
 * Update skin format for `tile-renderer` v5
 * Sort components by ID before saving
