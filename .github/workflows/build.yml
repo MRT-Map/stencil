@@ -120,3 +120,9 @@ jobs:
         with:
           default_author: github_actions
           message: update sha256 for ${{ needs.version-changelog.outputs.version }}
+
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: mrt-map/homebrew-mrt-map
+          event-type: update_stencil2
