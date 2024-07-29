@@ -60,7 +60,7 @@ pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>
             if let Some(repo) = entry.repository {
                 ui.hyperlink(repo);
             }
-            for text in licenses.as_ref() {
+            for text in &licenses {
                 ui.separator();
                 egui::ScrollArea::vertical()
                     .max_height(ui.available_height() * 0.75)
