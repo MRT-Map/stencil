@@ -16,6 +16,7 @@ use crate::{
 };
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum EditorState {
     #[default]
     Loading,
@@ -70,7 +71,7 @@ impl LoadingState {
 #[derive(Clone, Copy, Event)]
 pub struct ChangeStateEv(pub EditorState);
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_state_change(
     trigger: Trigger<ChangeStateEv>,
     mut commands: Commands,

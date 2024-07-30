@@ -6,7 +6,7 @@ use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
 use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
     if *trigger.event() != InfoWindowsEv::Changelog {
         return;

@@ -35,8 +35,8 @@ pub fn get_map_coords_of_edges(camera: &Camera, transform: &Transform) -> (f32, 
     let world_pos_tl = ndc_to_world.project_point3(ndc_tl.extend(-1.0));
     let world_pos_br = ndc_to_world.project_point3(ndc_br.extend(-1.0));
 
-    let world_pos_tl: Vec2 = world_pos_tl.truncate();
-    let world_pos_br: Vec2 = world_pos_br.truncate();
+    let world_pos_tl = world_pos_tl.truncate();
+    let world_pos_br = world_pos_br.truncate();
 
     (
         world_pos_tl.x,

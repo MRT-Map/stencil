@@ -3,7 +3,6 @@ use bevy_mouse_tracking::{prelude::*, MainCamera};
 
 use crate::state::LoadingState;
 
-#[allow(clippy::needless_pass_by_value)]
 pub fn spawn_camera_sy(mut commands: Commands) {
     info!("Spawning camera");
     commands

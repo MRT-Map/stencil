@@ -82,7 +82,7 @@ pub fn save_file<
     let old_file = file.exists().then(|| safe_delete(file, None));
 
     match serializer(o).map(move |s| std::fs::write(file, s)) {
-        Ok(Ok(_)) => Ok(()),
+        Ok(Ok(())) => Ok(()),
         Ok(Err(e)) => {
             if let Some(Ok(old_file)) = old_file {
                 let _ = restore(&old_file, file, None);

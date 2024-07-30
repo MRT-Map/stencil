@@ -27,6 +27,7 @@ fn v2_1_0() {
     let _ = safe_delete(&data_path("tile-cache"), None);
 }
 
+#[expect(clippy::cast_sign_loss)]
 fn v2_2_0() {
     info!("Running compatibility upgrades from v2.2.0");
     if let Ok(b) = std::fs::read_to_string(data_path("tile_settings.toml")) {
@@ -61,7 +62,7 @@ fn v2_2_0() {
 
 fn v2_2_2() {
     info!("Running compatibility upgrades from v2.2.2");
-    #[allow(clippy::items_after_statements)]
+    #[expect(clippy::items_after_statements)]
     #[derive(Deserialize, Default)]
     pub struct GenericSkin {
         #[serde(default)]
@@ -77,7 +78,6 @@ fn v2_2_2() {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
 pub fn compat_sy(mut commands: Commands) {
     v2_0_1();
     v2_1_0();

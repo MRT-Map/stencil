@@ -8,6 +8,7 @@ use crate::{
 #[derive(Component)]
 pub struct Tile;
 
+#[expect(clippy::partial_pub_fields)]
 #[derive(Bundle)]
 pub struct TileBundle {
     _t: Tile,

@@ -40,7 +40,7 @@ impl DockWindow for NotifLogViewer {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerEv>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, NotifLogViewer);
 }

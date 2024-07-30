@@ -23,10 +23,10 @@ impl Plugin for PanelPlugin {
             .init_resource::<Status>()
             .add_systems(
                 UiSchedule,
-                (menu::ui_sy).in_set(UiSet::Panels).before(dock::panel_sy),
+                menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
             .observe(menu::on_all_settings)
-            .add_systems(UiSchedule, (dock::panel_sy).in_set(UiSet::Panels))
+            .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels))
             .observe(dock::on_reset_panel);
     }
 }

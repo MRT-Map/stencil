@@ -8,7 +8,7 @@ use settings::KeymapSettings;
 
 use crate::{keymaps::settings::INIT_KEYMAP_SETTINGS, state::IntoSystemConfigExt};
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn keymap_sy(
     mut commands: Commands,
     hotkey_settings: Res<KeymapSettings>,

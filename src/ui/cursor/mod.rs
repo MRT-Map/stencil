@@ -58,7 +58,7 @@ pub fn crosshair_sy(
         debug!("Spawning crosshair");
         commands
             .spawn(SpriteBundle {
-                texture: images.crosshair.to_owned(),
+                texture: images.crosshair.clone(),
                 transform: new_transform,
                 sprite: Sprite {
                     custom_size: new_custom_size,
@@ -85,11 +85,7 @@ pub fn cursor_icon_sy(
     hovered_comp: Query<(), With<HoveredComponent>>,
     panel: Res<PanelDockState>,
 ) {
-    let state = if let Some(state) = state {
-        **state
-    } else {
-        EditorState::Loading
-    };
+    let state = state.map_or(EditorState::Loading, |state| **state);
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {

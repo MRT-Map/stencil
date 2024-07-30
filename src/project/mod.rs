@@ -31,7 +31,7 @@ impl Default for Namespaces {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn autosave_sy(
     mut commands: Commands,
     mut last_save: Local<Option<Duration>>,

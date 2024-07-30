@@ -6,7 +6,6 @@ use zip::ZipArchive;
 
 use crate::{dirs_paths::data_dir, state::LoadingState};
 
-#[allow(clippy::needless_pass_by_value)]
 pub fn unzip_assets_sy(mut commands: Commands) {
     info!("Unzipping assets to data directory");
     let mut zip_file = ZipArchive::new(Cursor::new(include_bytes!(concat!(

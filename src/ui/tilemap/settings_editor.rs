@@ -157,7 +157,7 @@ impl TileSettingsEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_tile_settings(
     trigger: Trigger<TileSettingsEv>,
     mut state: ResMut<PanelDockState>,

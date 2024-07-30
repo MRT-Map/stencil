@@ -81,7 +81,7 @@ pub fn edit_nodes_sy(
                     }
                     .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
                 );
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
             // TODO figure out how to fix this
             let Some((list_pos, world_pos)) = handles.min_by_key(|(_, pos)| {
                 mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
@@ -221,7 +221,7 @@ pub fn update_handles(
     commands.entity(e).push_children(&more_children);
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn show_handles_sy(
     selected: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
     mut commands: Commands,
@@ -243,7 +243,7 @@ pub fn show_handles_sy(
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut commands: Commands) {
     for e in selected.iter() {
         commands.entity(e).despawn_descendants();

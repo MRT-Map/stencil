@@ -3,7 +3,7 @@ use winit::window::Icon;
 
 use crate::state::LoadingState;
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn set_icon_sy(
     mut commands: Commands,
     windows: NonSendMut<WinitWindows>,

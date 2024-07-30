@@ -10,12 +10,12 @@ use crate::{dirs_paths::data_dir, file::safe_delete, ui::popup::Popup};
 
 pub fn panic(panic: &PanicHookInfo) {
     error!("Caught panic: {panic:#}");
-    let (log1, log2) = if let Ok(read_dir) = data_dir("logs").read_dir() {
-        let mut list = read_dir.filter_map(|a| Some(a.ok()?.path())).sorted().rev();
-        (list.next(), list.next())
-    } else {
-        (None, None)
-    };
+    let (log1, log2) = data_dir("logs")
+        .read_dir()
+        .map_or((None, None), |read_dir| {
+            let mut list = read_dir.filter_map(|a| Some(a.ok()?.path())).sorted().rev();
+            (list.next(), list.next())
+        });
     let log1_contents = log1
         .and_then(|log1| std::fs::read_to_string(log1).ok())
         .unwrap_or_default();
@@ -57,6 +57,7 @@ pub fn panic(panic: &PanicHookInfo) {
 pub fn ack_panic_sy(mut popup: EventWriter<Popup>) {
     let panics_dir = data_dir("panics");
     let to_show_file = panics_dir.join(".to_show");
+    #[expect(clippy::used_underscore_binding, reason = "ide")]
     let panic_file = match std::fs::read_to_string(&to_show_file) {
         Ok(content) => content,
         Err(e) => match e.kind() {

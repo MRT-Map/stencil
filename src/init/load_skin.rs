@@ -21,7 +21,7 @@ pub enum Step<T> {
     Complete,
 }
 
-#[allow(clippy::cognitive_complexity)]
+#[expect(clippy::cognitive_complexity)]
 pub fn get_skin_sy(
     mut commands: Commands,
     mut task_s: Local<Step<surf::Result<Skin>>>,

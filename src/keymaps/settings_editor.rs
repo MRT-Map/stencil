@@ -72,7 +72,7 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_keymap_settings(
     _trigger: Trigger<OpenKeymapSettingsEv>,
     mut state: ResMut<PanelDockState>,

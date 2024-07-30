@@ -69,7 +69,7 @@ fn main() {
                 p!("Backtrace: {:?}", a);
                 a
             })
-            .unwrap()
+            .unwrap();
     }) {
         p!("Error: {e:#?}");
         panic!()

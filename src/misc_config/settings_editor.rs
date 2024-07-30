@@ -70,8 +70,11 @@ impl DockWindow for MiscSettingsEditor {
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut misc_settings.hide_far_handles_threshold, 0..=65536)
-                .text("Threshold for hiding far handles"),
+            egui::Slider::new(
+                &mut misc_settings.hide_far_handles_threshold,
+                0..=0x0001_0000,
+            )
+            .text("Threshold for hiding far handles"),
         );
         ui.add(
             egui::Slider::new(&mut misc_settings.hide_far_handles_distance, 0.0..=65536.0)
@@ -132,7 +135,7 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, MiscSettingsEditor);
 }

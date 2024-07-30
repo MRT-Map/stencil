@@ -81,7 +81,7 @@ pub fn create_point_sy(
             )
             .into();
             deselect(&mut commands, &deselect_query);
-            let pla = new_point.data.to_owned();
+            let pla = new_point.data.clone();
             let entity = commands.spawn(new_point).id();
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 entity,
@@ -110,13 +110,13 @@ pub fn create_component_sy<const IS_AREA: bool>(
     };
     let ty_text = if IS_AREA { "area" } else { "line" };
     if let Ok((data, entity)) = set.get_single_mut() {
-        let mut data = (*data).to_owned();
+        let mut data = (*data).clone();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
         let mouse_pos_world = mouse_pos_world.xy();
         let next_point = if mouse_pos_world != Vec2::ZERO
             && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
         {
-            #[allow(clippy::cast_possible_truncation)] // TODO find some way to fix this
+            #[expect(clippy::cast_possible_truncation)] // TODO find some way to fix this
             let closest_angle_vec = ANGLE_VECTORS
                 .into_iter()
                 .chain(ANGLE_VECTORS.iter().map(|a| -*a))

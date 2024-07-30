@@ -5,7 +5,6 @@ use crate::{
     ui::panel::dock::{PanelParams, TabViewer},
 };
 
-#[allow(clippy::needless_pass_by_value)]
 pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
     let PanelParams {
         editor_state,

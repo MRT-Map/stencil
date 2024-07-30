@@ -107,7 +107,7 @@ impl DockWindow for WindowSettingsEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_window_settings(
     _trigger: Trigger<OpenWindowSettingsEv>,
     mut state: ResMut<PanelDockState>,

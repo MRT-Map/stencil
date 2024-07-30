@@ -6,7 +6,7 @@ use crate::{
     ui::popup::Popup,
 };
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_quit(
     trigger: Trigger<InfoWindowsEv>,
     mut popup: EventWriter<Popup>,

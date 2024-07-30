@@ -62,9 +62,9 @@ impl DockWindow for ComponentEditor {
         ui.end_row();
         ui.separator();
         let component_type = component_data.get_type(skin);
-        let old_skin_type = component_data.ty.to_owned();
+        let old_skin_type = component_data.ty.clone();
         egui::ComboBox::from_label("Component type")
-            .selected_text(component_data.ty.to_owned())
+            .selected_text(component_data.ty.clone())
             .show_ui(ui, |ui| {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
@@ -125,7 +125,7 @@ impl DockWindow for ComponentEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_component_editor(
     _trigger: Trigger<OpenComponentEditorEv>,
     mut state: ResMut<PanelDockState>,

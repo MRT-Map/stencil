@@ -8,7 +8,7 @@ use crate::{
     file::{load_toml, save_toml_with_header},
 };
 
-#[allow(clippy::struct_excessive_bools)]
+#[expect(clippy::struct_excessive_bools)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Copy)]
 pub struct SerializableBackends {
     pub vulkan: bool,

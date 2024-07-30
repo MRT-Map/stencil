@@ -89,7 +89,7 @@ impl Default for PanelDockState {
 }
 
 impl PanelDockState {
-    fn ui(&mut self, params: &mut PanelParams, ctx: &mut egui::Context) {
+    fn ui(&mut self, params: &mut PanelParams, ctx: &egui::Context) {
         let mut tab_viewer = TabViewer {
             params,
             viewport_rect: &mut self.viewport_rect,
@@ -127,12 +127,12 @@ impl Default for FileDialogs {
 impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
     type Tab = DockWindows;
 
-    fn title(&mut self, window: &mut Self::Tab) -> egui::WidgetText {
-        window.title().into()
+    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        tab.title().into()
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, window: &mut Self::Tab) {
-        window.ui(self, ui);
+    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
+        tab.ui(self, ui);
     }
 
     fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
@@ -217,7 +217,7 @@ pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut pa
 #[derive(Clone, Copy, Event)]
 pub struct ResetPanelDockStateEv;
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<PanelDockState>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
     *state = PanelDockState::default();

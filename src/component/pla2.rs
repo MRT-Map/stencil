@@ -67,25 +67,26 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
     }
     #[must_use]
     pub fn get_type(&self, skin: &Skin) -> ComponentType {
-        if let Some(sc) = skin.get_type(self.ty.as_str()) {
-            sc.get_type()
-        } else {
-            let (ty, s) = if self.nodes.len() == 1 || self.nodes.iter().dedup().count() == 1 {
-                (ComponentType::Point, "point")
-            } else if self.nodes.first() == self.nodes.last() && !self.nodes.is_empty() {
-                (ComponentType::Area, "area")
-            } else {
-                (ComponentType::Line, "line")
-            };
-            NOTIF_LOG.push(
-                &format!(
-                    "Unknown type {} for component {}\nAssuming it is a(n) {}",
-                    self.ty, self, s
-                ),
-                ToastLevel::Warning,
-            );
-            ty
-        }
+        skin.get_type(self.ty.as_str()).map_or_else(
+            || {
+                let (ty, s) = if self.nodes.len() == 1 || self.nodes.iter().dedup().count() == 1 {
+                    (ComponentType::Point, "point")
+                } else if self.nodes.first() == self.nodes.last() && !self.nodes.is_empty() {
+                    (ComponentType::Area, "area")
+                } else {
+                    (ComponentType::Line, "line")
+                };
+                NOTIF_LOG.push(
+                    &format!(
+                        "Unknown type {} for component {}\nAssuming it is a(n) {}",
+                        self.ty, self, s
+                    ),
+                    ToastLevel::Warning,
+                );
+                ty
+            },
+            SkinComponent::get_type,
+        )
     }
     #[must_use]
     pub fn front_colour<'a>(&self, skin: &'a Skin) -> Option<&'a HexColor> {
@@ -162,15 +163,15 @@ impl PlaComponent<MCCoords> {
     #[must_use]
     pub fn to_editor_coords(&self) -> PlaComponent<EditorCoords> {
         PlaComponent {
-            namespace: self.namespace.to_owned(),
-            id: self.id.to_owned(),
-            display_name: self.display_name.to_owned(),
-            description: self.description.to_owned(),
-            tags: self.tags.to_owned(),
+            namespace: self.namespace.clone(),
+            id: self.id.clone(),
+            display_name: self.display_name.clone(),
+            description: self.description.clone(),
+            tags: self.tags.clone(),
             layer: self.layer,
-            ty: self.ty.to_owned(),
+            ty: self.ty.clone(),
             nodes: self.nodes.iter().map(|a| (*a).into()).collect(),
-            attributes: self.attributes.to_owned(),
+            attributes: self.attributes.clone(),
         }
     }
 }
@@ -179,15 +180,15 @@ impl PlaComponent<EditorCoords> {
     #[must_use]
     pub fn to_mc_coords(&self) -> PlaComponent<MCCoords> {
         PlaComponent {
-            namespace: self.namespace.to_owned(),
-            id: self.id.to_owned(),
-            display_name: self.display_name.to_owned(),
-            description: self.description.to_owned(),
-            tags: self.tags.to_owned(),
+            namespace: self.namespace.clone(),
+            id: self.id.clone(),
+            display_name: self.display_name.clone(),
+            description: self.description.clone(),
+            tags: self.tags.clone(),
             layer: self.layer,
-            ty: self.ty.to_owned(),
+            ty: self.ty.clone(),
             nodes: self.nodes.iter().map(|a| (*a).into()).collect(),
-            attributes: self.attributes.to_owned(),
+            attributes: self.attributes.clone(),
         }
     }
 
@@ -233,18 +234,16 @@ impl PlaComponent<EditorCoords> {
     #[must_use]
     pub fn get_fill(&self, skin: &Skin) -> Fill {
         if self.get_type(skin) == ComponentType::Point {
-            return Fill::color(if let Some(hex) = self.front_colour(skin) {
-                hex_to_color(*hex)
-            } else {
-                Color::WHITE
-            });
+            return Fill::color(
+                self.front_colour(skin)
+                    .map_or(Color::WHITE, |hex| hex_to_color(*hex)),
+            );
         }
         if self.get_type(skin) == ComponentType::Area {
-            Fill::color(if let Some(hex) = self.front_colour(skin) {
-                hex_to_color(*hex).with_alpha(0.25)
-            } else {
-                Color::NONE
-            })
+            Fill::color(
+                self.front_colour(skin)
+                    .map_or(Color::NONE, |hex| hex_to_color(*hex).with_alpha(0.25)),
+            )
         } else {
             Fill::color(Color::NONE)
         }
@@ -262,20 +261,16 @@ impl PlaComponent<EditorCoords> {
             .with_line_width(self.weight(skin).unwrap_or(2.0));
         if self.get_type(skin) == ComponentType::Area {
             Stroke {
-                color: if let Some(hex) = self.back_colour(skin) {
-                    hex_to_color(*hex)
-                } else {
-                    Color::NONE
-                },
+                color: self
+                    .back_colour(skin)
+                    .map_or(Color::NONE, |hex| hex_to_color(*hex)),
                 options,
             }
         } else {
             Stroke {
-                color: if let Some(hex) = self.front_colour(skin) {
-                    hex_to_color(*hex)
-                } else {
-                    Color::WHITE
-                },
+                color: self
+                    .front_colour(skin)
+                    .map_or(Color::WHITE, |hex| hex_to_color(*hex)),
                 options,
             }
         }
@@ -309,7 +304,7 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
     Some(
         style
             .iter()
-            .map(|(zl, data)| (zl.split("-").next().unwrap().parse::<u8>().unwrap(), data))
+            .map(|(zl, data)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), data))
             .find(|(min, _)| *min == 0)?
             .1,
     )

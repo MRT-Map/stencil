@@ -188,7 +188,7 @@ pub fn popup_handler_sy(
 ) {
     for popup in event_reader.read() {
         info!(popup.id, "Showing popup");
-        show.insert(popup.id.to_owned(), (Popup::clone(popup), true));
+        show.insert(popup.id.clone(), (Popup::clone(popup), true));
     }
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;

@@ -10,6 +10,7 @@ use crate::{
 
 macro_rules! field {
     ($s:ty, $f:ident, $f2:ident, $i:ident, $t:ty) => {
+        #[expect(clippy::allow_attributes)]
         #[allow(clippy::float_cmp)]
         fn $f(v: &$t) -> bool {
             *v == <$s>::default().$i

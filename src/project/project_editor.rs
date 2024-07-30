@@ -28,7 +28,7 @@ impl DockWindow for ProjectEditor {
             queries,
             ..
         } = tab_viewer.params;
-        let components = queries.p1().iter().counts_by(|a| a.namespace.to_owned());
+        let components = queries.p1().iter().counts_by(|a| a.namespace.clone());
         ui.horizontal(|ui| {
             if ui.button("Open").clicked() {
                 commands.trigger(ProjectEv::Open);
@@ -151,7 +151,7 @@ impl ProjectEditor {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_project_editor(
     _trigger: Trigger<OpenProjectEditorEv>,
     mut state: ResMut<PanelDockState>,

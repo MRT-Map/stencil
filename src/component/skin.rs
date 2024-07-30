@@ -136,17 +136,13 @@ impl SkinComponent {
     #[must_use]
     pub const fn name(&self) -> &String {
         match self {
-            Self::Point { name, .. } => name,
-            Self::Line { name, .. } => name,
-            Self::Area { name, .. } => name,
+            Self::Point { name, .. } | Self::Line { name, .. } | Self::Area { name, .. } => name,
         }
     }
     #[must_use]
     pub const fn tags(&self) -> &Vec<String> {
         match self {
-            Self::Point { tags, .. } => tags,
-            Self::Line { tags, .. } => tags,
-            Self::Area { tags, .. } => tags,
+            Self::Point { tags, .. } | Self::Line { tags, .. } | Self::Area { tags, .. } => tags,
         }
     }
 }

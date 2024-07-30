@@ -39,7 +39,7 @@ impl DockWindow for HistoryViewer {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_history_viewer(
     _trigger: Trigger<OpenHistoryViewerEv>,
     mut state: ResMut<PanelDockState>,

@@ -55,7 +55,7 @@ impl Notif {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn update_notifs_sy(
     mut toasts: ResMut<NotifToasts>,
     mut ctx: EguiContexts,
@@ -72,11 +72,11 @@ pub fn update_notifs_sy(
     if notif_log.pending_notifs.is_empty() {
         return;
     }
-    let pending_notifs = notif_log.pending_notifs.to_owned();
+    let pending_notifs = notif_log.pending_notifs.clone();
     for notif in pending_notifs {
         toasts
             .0
-            .add(Toast::custom(&notif.message, notif.level.to_owned()))
+            .add(Toast::custom(&notif.message, notif.level.clone()))
             .set_duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
                     && misc_settings.notif_duration != 0)

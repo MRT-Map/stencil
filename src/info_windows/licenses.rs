@@ -7,14 +7,14 @@ use once_cell::sync::Lazy;
 
 use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
-#[cfg(not(debug_assertions))]
+//#[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =
     Lazy::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
 
-#[cfg(debug_assertions)]
-static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
+// #[cfg(debug_assertions)]
+// static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
     if *trigger.event() != InfoWindowsEv::Licenses {
         return;
@@ -41,7 +41,7 @@ pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>
                     LICENSES.iter().for_each(|(package, _)| {
                         ui.selectable_value(
                             selection,
-                            (package.name.to_owned(), package.version.to_string()),
+                            (package.name.clone(), package.version.to_string()),
                             format!("{} {}", package.name, package.version),
                         );
                     });

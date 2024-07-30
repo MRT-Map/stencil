@@ -5,7 +5,7 @@ use bevy_egui::egui;
 
 use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_manual(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
     if *trigger.event() != InfoWindowsEv::Manual {
         return;

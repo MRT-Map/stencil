@@ -43,7 +43,7 @@ pub enum ProjectEv {
     Save(bool),
 }
 
-#[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_project(
     trigger: Trigger<ProjectEv>,
     mut commands: Commands,
@@ -138,7 +138,7 @@ pub fn on_project(
             let components = query
                 .iter()
                 .map(|(_, p)| p.to_mc_coords())
-                .into_group_map_by(|a| a.namespace.to_owned());
+                .into_group_map_by(|a| a.namespace.clone());
             for (ns, components) in &components {
                 let _ = save_msgpack(
                     &components
@@ -218,7 +218,7 @@ pub fn on_project(
         ProjectEv::Load(dir, false) => {
             history.redo_stack.clear();
             history.undo_stack.clear();
-            namespaces.dir = dir.to_owned();
+            dir.clone_into(&mut namespaces.dir);
             namespaces.visibilities.clear();
             for (e, _) in query.iter() {
                 commands.entity(e).despawn_recursive();
@@ -228,7 +228,7 @@ pub fn on_project(
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn project_dialog(
     mut commands: Commands,
     namespaces: Res<Namespaces>,
@@ -247,7 +247,7 @@ pub fn project_dialog(
                 "save-before-switching",
                 "Save before switching projects?",
                 "",
-                ProjectEv::Load(file.to_owned(), true),
+                ProjectEv::Load(file.clone(), true),
                 ProjectEv::Load(file, false),
             ));
         }

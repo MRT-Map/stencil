@@ -23,7 +23,7 @@ impl DockWindow for ComponentList {
         } = tab_viewer.params;
         let mut transform = camera.single_mut();
         let query = queries.p1();
-        let components = query.iter().into_group_map_by(|a| a.namespace.to_owned());
+        let components = query.iter().into_group_map_by(|a| a.namespace.clone());
         for (ns, components) in components {
             ui.collapsing(&ns, |ui| {
                 TableBuilder::new(ui)
@@ -65,7 +65,7 @@ impl DockWindow for ComponentList {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_component_list(
     _trigger: Trigger<OpenComponentListEv>,
     mut state: ResMut<PanelDockState>,

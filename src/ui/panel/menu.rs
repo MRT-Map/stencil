@@ -36,7 +36,7 @@ use crate::{
 #[derive(Clone, Copy, Event)]
 pub struct OpenAllSettingsEv;
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn ui_sy(
     mut ctx: EguiContexts,
     mut commands: Commands,
@@ -60,7 +60,7 @@ pub fn ui_sy(
                 };
             }
 
-            #[allow(clippy::cognitive_complexity)]
+            #[expect(clippy::cognitive_complexity)]
             egui::menu::menu_button(
                 ui,
                 format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
@@ -73,18 +73,16 @@ pub fn ui_sy(
                     button!(ui, commands, "Quit", InfoWindowsEv::Quit(false));
                 },
             );
-            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "File", |ui| {
                 button!(ui, commands, "Open...", ProjectEv::Open);
                 button!(ui, commands, "Reload", ProjectEv::Reload);
                 button!(ui, commands, "Save", ProjectEv::Save(false));
             });
-            #[allow(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Edit", |ui| {
                 button!(ui, commands, "Undo", HistoryEv::Undo);
                 button!(ui, commands, "Redo", HistoryEv::Redo);
             });
-            #[allow(clippy::cognitive_complexity)]
+            #[expect(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "View", |ui| {
                 button!(ui, commands, "Component List", OpenComponentListEv);
                 button!(ui, commands, "Component Editor", OpenComponentEditorEv);
@@ -94,7 +92,7 @@ pub fn ui_sy(
                 ui.separator();
                 button!(ui, commands, "Reset Layout", ResetPanelDockStateEv);
             });
-            #[allow(clippy::cognitive_complexity)]
+            #[expect(clippy::cognitive_complexity)]
             egui::menu::menu_button(ui, "Settings", |ui| {
                 button!(ui, commands, "Open All", OpenAllSettingsEv);
                 ui.separator();
@@ -105,7 +103,6 @@ pub fn ui_sy(
             });
             #[cfg(debug_assertions)]
             {
-                #[allow(clippy::cognitive_complexity)]
                 egui::menu::menu_button(ui, "Debug", |ui| {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
@@ -147,7 +144,7 @@ pub fn ui_sy(
                         .max_width(ui.available_width())
                         .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
                         .show(ui, |ui| {
-                            ui.label(status.0.to_owned().color(egui::Color32::WHITE));
+                            ui.label(status.0.clone().color(egui::Color32::WHITE));
                         });
                 });
             });
@@ -155,7 +152,7 @@ pub fn ui_sy(
     });
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<PanelDockState>) {
     let all_tabs = state
         .state

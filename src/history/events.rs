@@ -24,10 +24,10 @@ use crate::{
     ui::panel::status::Status,
 };
 
-#[allow(
+#[expect(
     clippy::needless_pass_by_value,
     clippy::cognitive_complexity,
-    clippy::implicit_hasher
+    clippy::significant_drop_tightening
 )]
 pub fn on_history(
     trigger: Trigger<HistoryEv>,
@@ -109,11 +109,11 @@ pub fn on_history(
                         (Some(before), None) => {
                             let entity = match before.get_type(&skin) {
                                 ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new((**before).to_owned(), &skin)),
+                                    .spawn(PointComponentBundle::new((**before).clone(), &skin)),
                                 ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new((**before).to_owned(), &skin)),
+                                    .spawn(LineComponentBundle::new((**before).clone(), &skin)),
                                 ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new((**before).to_owned(), &skin)),
+                                    .spawn(AreaComponentBundle::new((**before).clone(), &skin)),
                             }
                             .id();
                             *component_id.write().unwrap() = entity;
@@ -121,7 +121,7 @@ pub fn on_history(
                         }
                         (Some(before), Some(_)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**before).to_owned());
+                            commands.entity(*component_id).insert((**before).clone());
                             if Some(*component_id) == selected {
                                 commands
                                     .entity(*component_id)
@@ -200,11 +200,11 @@ pub fn on_history(
                         (None, Some(after)) => {
                             let entity = match after.get_type(&skin) {
                                 ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new((**after).to_owned(), &skin)),
+                                    .spawn(PointComponentBundle::new((**after).clone(), &skin)),
                                 ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new((**after).to_owned(), &skin)),
+                                    .spawn(LineComponentBundle::new((**after).clone(), &skin)),
                                 ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new((**after).to_owned(), &skin)),
+                                    .spawn(AreaComponentBundle::new((**after).clone(), &skin)),
                             }
                             .id();
                             *component_id.write().unwrap() = entity;
@@ -212,7 +212,7 @@ pub fn on_history(
                         }
                         (Some(_), Some(after)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**after).to_owned());
+                            commands.entity(*component_id).insert((**after).clone());
                             if Some(*component_id) == selected {
                                 commands
                                     .entity(*component_id)

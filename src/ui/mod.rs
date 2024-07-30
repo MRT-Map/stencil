@@ -65,7 +65,7 @@ impl Plugin for UiPlugin {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     if let Some(f) = focus.0 {
@@ -73,7 +73,6 @@ pub fn init_focus(mut ctx: EguiContexts, focus: Res<Focus>) {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
 pub fn save_focus(mut ctx: EguiContexts, mut focus: ResMut<Focus>) {
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     focus.0 = ctx.memory(egui::Memory::focused);
