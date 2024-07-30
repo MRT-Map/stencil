@@ -2,17 +2,18 @@ use std::sync::Mutex;
 
 use bevy::prelude::*;
 use bevy_egui::egui;
+use itertools::Itertools;
 use license_retriever::LicenseRetriever;
 use once_cell::sync::Lazy;
 
 use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
-//#[cfg(not(debug_assertions))]
+#[cfg(not(debug_assertions))]
 static LICENSES: Lazy<LicenseRetriever> =
     Lazy::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
 
-// #[cfg(debug_assertions)]
-// static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
+#[cfg(debug_assertions)]
+static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
 
 #[expect(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
@@ -30,44 +31,60 @@ pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>
         |state, ui, _, shown| {
             let mut state = state.lock().unwrap();
             let selection: &mut (String, String) = state.downcast_mut().unwrap();
-            if cfg!(debug_assertions) {
-                *shown = false;
-                return;
-            }
+
             egui::ComboBox::from_label("Library")
                 .selected_text(format!("{} {}", selection.0, selection.1))
                 .show_ui(ui, |ui| {
                     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-                    LICENSES.iter().for_each(|(package, _)| {
-                        ui.selectable_value(
-                            selection,
-                            (package.name.clone(), package.version.to_string()),
-                            format!("{} {}", package.name, package.version),
-                        );
-                    });
+                    LICENSES
+                        .iter()
+                        .sorted_by_key(|(package, _)| (&package.name, &package.version))
+                        .for_each(|(package, _)| {
+                            ui.selectable_value(
+                                selection,
+                                (package.name.clone(), package.version.to_string()),
+                                format!("{} {}", package.name, package.version),
+                            );
+                        });
                 });
-            let (entry, licenses) = LICENSES
+            let Some((entry, licenses)) = LICENSES
                 .iter()
                 .find(|(p, _)| p.name == selection.0 && p.version.to_string() == selection.1)
-                .unwrap()
-                .to_owned();
+            else {
+                ui.label("Invalid selection");
+                if ui.button("Close").clicked() {
+                    *shown = false;
+                }
+                return;
+            };
             ui.heading(format!("{} v{}", entry.name, entry.version));
             ui.label(format!("by: {}", entry.authors.join(", ")));
             ui.label(format!(
                 "is licensed under: {}",
-                entry.license.unwrap_or_else(|| "unknown".into())
+                entry.license.clone().unwrap_or_else(|| "unknown".into())
             ));
-            if let Some(repo) = entry.repository {
-                ui.hyperlink(repo);
+            if let Some(repo) = &entry.repository {
+                ui.horizontal(|ui| {
+                    ui.label("Repository:");
+                    ui.hyperlink(repo);
+                });
             }
-            for text in &licenses {
-                ui.separator();
-                egui::ScrollArea::vertical()
-                    .max_height(ui.available_height() * 0.75)
-                    .show(ui, |ui| {
+            if let Some(home) = &entry.homepage {
+                ui.horizontal(|ui| {
+                    ui.label("Homepage:");
+                    ui.hyperlink(home);
+                });
+            }
+            ui.separator();
+
+            egui::ScrollArea::vertical()
+                .max_height(ui.available_height() * 0.75)
+                .show(ui, |ui| {
+                    for text in licenses {
                         ui.label(text);
-                    });
-            }
+                        ui.separator();
+                    }
+                });
             ui.separator();
             if ui.button("Close").clicked() {
                 *shown = false;

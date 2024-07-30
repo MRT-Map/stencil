@@ -50,9 +50,9 @@ fn embed_resource() -> Result<()> {
 }
 
 fn inner() -> Result<()> {
-    // if std::env::var("PROFILE")? != "debug" {
-    gather_licenses()?;
-    // }
+    if std::env::var("PROFILE")? != "debug" {
+        gather_licenses()?;
+    }
     zip_assets()?;
     embed_resource()?;
 
