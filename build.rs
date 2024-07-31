@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
 use eyre::Result;
-use license_retriever::{config::Config, LicenseRetriever};
+use license_retriever::{Config, LicenseRetriever};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
 macro_rules! p {

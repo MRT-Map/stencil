@@ -84,10 +84,10 @@ once_cell = "1.19.0"
 enum_dispatch = "0.3.13"
 eyre = "0.6.12"
 
-license-retriever = { git = "https://github.com/MRT-Map/license-retriever", branch = "v2" }
+license-retriever = "1.0.0"
 
 [build-dependencies]
-license-retriever = { git = "https://github.com/MRT-Map/license-retriever", branch = "v2" }
+license-retriever = "1.0.0"
 #color-eyre = "0.6.3"
 eyre = "0.6.12"
 zip = "2.1.5"
