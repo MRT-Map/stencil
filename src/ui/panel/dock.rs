@@ -8,7 +8,6 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{
     component::{
-        actions::selecting::DeselectQuery,
         bundle::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
         pla2::{EditorCoords, PlaComponent},

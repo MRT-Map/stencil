@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::{prelude::*, MainCamera};
 use egui_notify::ToastLevel;
 
 use crate::{
@@ -53,12 +52,12 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) {
     for (name, bytes) in fonts {
         font_definitions
             .font_data
-            .insert(name.to_owned().into(), egui::FontData::from_owned(bytes));
+            .insert(name.clone(), egui::FontData::from_owned(bytes));
         font_definitions
             .families
             .get_mut(&egui::FontFamily::Proportional)
             .unwrap()
-            .push(name.into());
+            .push(name);
     }
     ctx.ctx_mut().set_fonts(font_definitions);
 

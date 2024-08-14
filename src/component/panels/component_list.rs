@@ -3,9 +3,8 @@ use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
-use crate::{
-    component::actions::selecting::select_entity,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+use crate::ui::panel::dock::{
+    window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer,
 };
 
 #[derive(Clone, Copy)]

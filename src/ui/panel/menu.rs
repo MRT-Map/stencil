@@ -6,7 +6,6 @@ use bevy::{
 };
 use bevy_egui::{egui, EguiContexts};
 use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
-use bevy_mouse_tracking::MousePosWorld;
 use egui_notify::ToastLevel;
 
 use crate::{
@@ -18,17 +17,13 @@ use crate::{
     keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsEv},
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsEv},
     project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
-    tile::zoom::Zoom,
     ui::{
         notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
             dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateEv},
             status::Status,
         },
-        tilemap::{
-            settings_editor::{TileSettingsEditor, TileSettingsEv},
-            tile::PendingTiles,
-        },
+        tilemap::settings_editor::{TileSettingsEditor, TileSettingsEv},
     },
     window::settings_editor::{OpenWindowSettingsEv, WindowSettingsEditor},
 };

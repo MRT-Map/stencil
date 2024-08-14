@@ -1,13 +1,8 @@
 use bevy_egui::egui;
-use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     state::{ChangeStateEv, EditorState},
-    tile::zoom::Zoom,
-    ui::{
-        panel::dock::{PanelParams, TabViewer},
-        tilemap::tile::PendingTiles,
-    },
+    ui::panel::dock::{PanelParams, TabViewer},
 };
 
 pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
