@@ -1,5 +1,6 @@
 pub mod compat;
 pub mod load_assets;
+mod load_fonts;
 mod load_skin;
 pub mod set_icon;
 pub mod spawn_camera;
@@ -13,6 +14,7 @@ use crate::{
     component::skin::Skin,
     dirs_paths::cache_path,
     file::safe_delete,
+    init::load_fonts::get_fonts_sy,
     panic::ack_panic_sy,
     state::{on_state_change, EditorState, LoadingState},
     ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
@@ -35,6 +37,10 @@ impl Plugin for InitPlugin {
             .add_plugins(load_assets::LoadAssetsPlugin)
             .add_systems(OnEnter(LoadingState::Compat), compat::compat_sy)
             .add_systems(Update, get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
+            .add_systems(
+                Update,
+                get_fonts_sy.run_if(in_state(LoadingState::LoadFonts)),
+            )
             .add_systems(
                 OnEnter(LoadingState::SpawnCamera),
                 spawn_camera::spawn_camera_sy,
