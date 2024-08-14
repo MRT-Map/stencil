@@ -5,6 +5,16 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.4
+* The order _should_ be more closely followed when selecting components that are at a higher order/layer over others
+* Image file extension field in basemaps
+* Default maximum GET requests is now 65536
+* Map should no longer move when moving tabs or layout
+* Component list is now stable with more than 1 namespace
+* Custom font loading in `fonts` folder in the data directory
+  * A proper UI will be done in v2.3
+* Move coordinates and pending number of tiles from the top menu to the toolbar
+
 # v2.2.3
 * Fix skin cache deletion every startup
 
