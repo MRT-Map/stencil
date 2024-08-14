@@ -33,7 +33,7 @@ pub fn mouse_drag_sy(
         return;
     }
     let (camera, mut transform) = camera.single_mut();
-    if buttons.pressed(MouseButton::Left) {
+    if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
         if let Some(origin_pos) = *mouse_origin_pos {
             if !mouse_pos.is_changed() {
                 return;
