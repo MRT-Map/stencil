@@ -3,8 +3,9 @@ use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 
-use crate::ui::panel::dock::{
-    window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer,
+use crate::{
+    component::actions::selecting::select_entity,
+    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
 
 #[derive(Clone, Copy)]
@@ -24,8 +25,8 @@ impl DockWindow for ComponentList {
         let mut transform = camera.single_mut();
         let query = queries.p1();
         let components = query.iter().into_group_map_by(|a| a.namespace.clone());
-        for (ns, components) in components {
-            ui.collapsing(&ns, |ui| {
+        for (ns, components) in components.iter().sorted_by_key(|(a, _)| *a) {
+            ui.collapsing(ns, |ui| {
                 TableBuilder::new(ui)
                     .striped(true)
                     .column(Column::auto().at_least(150.0))

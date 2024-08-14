@@ -1,14 +1,22 @@
 use bevy_egui::egui;
+use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     state::{ChangeStateEv, EditorState},
-    ui::panel::dock::{PanelParams, TabViewer},
+    tile::zoom::Zoom,
+    ui::{
+        panel::dock::{PanelParams, TabViewer},
+        tilemap::tile::PendingTiles,
+    },
 };
 
 pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
     let PanelParams {
         editor_state,
         commands,
+        mouse_pos_world,
+        pending_tiles,
+        zoom,
         ..
     } = tab_viewer.params;
     let mut new_state = ***editor_state;
@@ -31,6 +39,18 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResp
             button!("Point", EditorState::CreatingPoint);
             button!("Line", EditorState::CreatingLine);
             button!("Area", EditorState::CreatingArea);
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
+                ui.label(format!(
+                    "x: {} z: {} \u{1f50d}: {:.2}",
+                    mouse_pos_world.round().x as i32,
+                    -mouse_pos_world.round().y as i32,
+                    zoom.0
+                ));
+                ui.separator();
+                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
+                ui.separator();
+            });
         });
     });
     if new_state != ***editor_state {

@@ -41,10 +41,7 @@ pub fn ui_sy(
     mut ctx: EguiContexts,
     mut commands: Commands,
     diagnostics: Res<DiagnosticsStore>,
-    mouse_pos_world: Res<MousePosWorld>,
-    pending_tiles: Res<PendingTiles>,
     status: Res<Status>,
-    zoom: Res<Zoom>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
@@ -128,15 +125,6 @@ pub fn ui_sy(
                         .and_then(Diagnostic::average)
                         .map_or_else(|| "???".into(), |ft| format!("{ft:.2}ms")),
                 ));
-                ui.separator();
-                ui.label(format!(
-                    "x: {} z: {} \u{1f50d}: {:.2}",
-                    mouse_pos_world.round().x as i32,
-                    -mouse_pos_world.round().y as i32,
-                    zoom.0
-                ));
-                ui.separator();
-                ui.label(format!("# Pending Tiles: {}", pending_tiles.0.len()));
                 ui.separator();
 
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {

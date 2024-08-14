@@ -1,6 +1,6 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::MainCamera;
+use bevy_mouse_tracking::{MainCamera, MousePosWorld};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;
 use egui_notify::ToastLevel;
@@ -8,6 +8,7 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{
     component::{
+        actions::selecting::DeselectQuery,
         bundle::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
         pla2::{EditorCoords, PlaComponent},
@@ -18,6 +19,7 @@ use crate::{
     misc_config::{settings::MiscSettings, settings_editor::MiscSettingsEditor},
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
+    tile::zoom::Zoom,
     ui::{
         notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
@@ -25,6 +27,7 @@ use crate::{
         tilemap::{
             settings::{Basemap, TileSettings},
             settings_editor::TileSettingsEditor,
+            tile::PendingTiles,
             window::Tilemap,
         },
     },
@@ -187,6 +190,9 @@ pub struct PanelParams<'w, 's> {
     pub namespaces: ResMut<'w, Namespaces>,
     pub new_namespace: Local<'s, String>,
     pub history: ResMut<'w, History>,
+    pub mouse_pos_world: Res<'w, MousePosWorld>,
+    pub pending_tiles: Res<'w, PendingTiles>,
+    pub zoom: Res<'w, Zoom>,
 }
 
 pub fn window_action_handler<W: DockWindow + Into<DockWindows>>(
