@@ -222,7 +222,7 @@ impl PlaComponent<EditorCoords> {
         });
         let transform = Transform::from_xyz(0.0, 0.0, {
             let order = skin.get_order(&self.ty).unwrap_or(0);
-            (order as f32).mul_add(f32::EPSILON, self.layer as f32 + 20.0)
+            (order as f32).mul_add(10.0 * f32::EPSILON, self.layer as f32 + 20.0)
         });
         ShapeBundle {
             path,
