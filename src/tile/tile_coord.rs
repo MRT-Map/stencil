@@ -64,8 +64,8 @@ impl TileCoord {
             zzz += "_";
         };
         format!(
-            "{}/{}_{}/{zzz}{}_{}.png",
-            basemap.url, group.x, group.y, num_in_group.x, num_in_group.y
+            "{}/{}_{}/{zzz}{}_{}.{}",
+            basemap.url, group.x, group.y, num_in_group.x, num_in_group.y, basemap.extension
         )
     }
 
@@ -75,6 +75,6 @@ impl TileCoord {
             .join(self.z.to_string())
             .join(self.x.to_string());
         let _ = std::fs::create_dir_all(&path);
-        path.join(format!("{}.png", self.y))
+        path.join(format!("{}.{}", self.y, basemap.extension))
     }
 }

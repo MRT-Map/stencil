@@ -48,11 +48,47 @@ field!(
     basemaps,
     Vec<Basemap>
 );
+field!(Basemap, url_is_default, default_url, url, String);
+field!(
+    Basemap,
+    extension_is_default,
+    default_extension,
+    extension,
+    String
+);
+field!(
+    Basemap,
+    max_tile_zoom_is_default,
+    default_max_tile_zoom,
+    max_tile_zoom,
+    i8
+);
+field!(
+    Basemap,
+    max_zoom_range_is_default,
+    default_max_zoom_range,
+    max_zoom_range,
+    f64
+);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct Basemap {
+    #[serde(default = "default_url", skip_serializing_if = "url_is_default")]
     pub url: String,
+    #[serde(
+        default = "default_extension",
+        skip_serializing_if = "extension_is_default"
+    )]
+    pub extension: String,
+    #[serde(
+        default = "default_max_tile_zoom",
+        skip_serializing_if = "max_tile_zoom_is_default"
+    )]
     pub max_tile_zoom: i8,
+    #[serde(
+        default = "default_max_zoom_range",
+        skip_serializing_if = "max_zoom_range_is_default"
+    )]
     pub max_zoom_range: f64,
 }
 
@@ -95,6 +131,7 @@ impl Default for Basemap {
     fn default() -> Self {
         Self {
             url: "https://dynmap.minecartrapidtransit.net/main/tiles/new/flat".into(),
+            extension: "png".into(),
             max_tile_zoom: 8,
             max_zoom_range: 32.0,
         }

@@ -103,10 +103,11 @@ impl DockWindow for TileSettingsEditor {
             ui.add(
                 egui::Slider::new(&mut basemap.max_tile_zoom, -5..=15).text("Maximum tile zoom"),
             );
-            ui.label("...I don't know how to explain this");
+            ui.label("The number corresponding to the highest zoom level");
             ui.add(
                 egui::Slider::new(&mut basemap.max_zoom_range, 1.0..=256.0)
-                    .text("Maximum tile zoom range"),
+                    .text("Maximum tile zoom range")
+                    .max_decimals(5),
             );
             ui.label("In tiles of the highest zoom level, the distance across its width / height that each tile represents");
             ui.add(egui::TextEdit::singleline(&mut basemap.url).hint_text("Base URL"));
@@ -115,6 +116,8 @@ impl DockWindow for TileSettingsEditor {
                 invalid = true;
             }
             ui.label("The base URL of the tile source");
+            ui.add(egui::TextEdit::singleline(&mut basemap.extension).hint_text("Image Extension"));
+            ui.label("The extension/format of the tile images (what is after the last `.`)");
         }
 
         if new_map != 0 {

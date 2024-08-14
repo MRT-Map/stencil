@@ -106,10 +106,13 @@ jobs:
       with:
         name: windows
         path: dist
+    - run: echo $CHANGELOG > changelog.md
+      env:
+        CHANGELOG: ${{ needs.version-changelog.outputs.changelog }}
     - uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.version-changelog.outputs.version }}
-        body: ${{ needs.version-changelog.outputs.changelog }}
+        body_path: changelog.md
         files: dist/*
 
   update-hash:
@@ -123,9 +126,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$(curl 'https://github.com/MRT-Map/stencil2/releases/download/${{ needs.version-changelog.outputs.version }}/stencil2.dmg' -L | shasum -a 256 | cut -d ' ' -f1)\"/" > build/macos/brew2.rb
-          cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$(echo '${{ needs.version-changelog.outputs.version }}' | sed s/v//)\"/" > build/macos/brew.rb
+          cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$(curl 'https://github.com/MRT-Map/stencil2/releases/download/$VERSION/stencil2.dmg' -L | shasum -a 256 | cut -d ' ' -f1)\"/" > build/macos/brew2.rb
+          cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$(echo '$VERSION' | sed s/v//)\"/" > build/macos/brew.rb
           rm build/macos/brew2.rb
+        env:
+          VERSION: ${{ needs.version-changelog.outputs.version }}
           
       - uses: EndBug/add-and-commit@v9
         with:

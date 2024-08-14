@@ -124,6 +124,7 @@ pub fn show_tiles_sy(
                     let url = tile_coord.url(basemap);
                     let tile_coord = *tile_coord;
                     let path = tile_coord.path(basemap);
+                    let extension = basemap.extension.clone();
                     let new_task = executor.spawn(async move {
                         if std::env::var("NO_DOWNLOAD").is_ok() {
                             let col = if (tile_coord.x + tile_coord.y) % 2 == 0 {
@@ -132,7 +133,11 @@ pub fn show_tiles_sy(
                                 200
                             };
                             RgbaImage::from_pixel(1, 1, Rgba::from([col, col, col, 255]))
-                                .save_with_format(path, ImageFormat::Png)?;
+                                .save_with_format(
+                                    path,
+                                    ImageFormat::from_extension(extension)
+                                        .unwrap_or(ImageFormat::Png),
+                                )?;
                         } else {
                             let lock = SEMAPHORE.acquire().await;
                             let bytes = surf::get(url).recv_bytes().await?;
