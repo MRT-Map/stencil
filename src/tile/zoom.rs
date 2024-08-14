@@ -11,8 +11,7 @@ impl Zoom {
         f64::from(f32::from(basemap.max_tile_zoom) - self.0).exp2() * basemap.max_zoom_range
     }
     #[must_use]
-    pub fn world_size(self, basemap: &Basemap) -> i32 {
-        (f64::from(f32::from(basemap.max_tile_zoom) - self.0).exp2() * basemap.max_zoom_range)
-            as i32
+    pub fn world_size(self, basemap: &Basemap) -> f64 {
+        f64::from(f32::from(basemap.max_tile_zoom) - self.0).exp2() * basemap.max_zoom_range
     }
 }

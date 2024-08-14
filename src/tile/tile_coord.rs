@@ -28,8 +28,8 @@ impl TileCoord {
     #[must_use]
     pub fn from_world_coords(x: f64, y: f64, z: i8, basemap: &Basemap) -> Self {
         Self {
-            x: (x / f64::from(Zoom(f32::from(z)).world_size(basemap))) as i32,
-            y: (y / f64::from(Zoom(f32::from(z)).world_size(basemap))) as i32,
+            x: (x / Zoom(f32::from(z)).world_size(basemap)) as i32,
+            y: (y / Zoom(f32::from(z)).world_size(basemap)) as i32,
             z,
         }
     }

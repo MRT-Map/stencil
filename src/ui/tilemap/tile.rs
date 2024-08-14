@@ -140,9 +140,11 @@ pub fn show_tiles_sy(
                                 )?;
                         } else {
                             let lock = SEMAPHORE.acquire().await;
-                            let bytes = surf::get(url).recv_bytes().await?;
+                            let mut response = surf::get(url).await?;
                             drop(lock);
-                            async_fs::write(path, &bytes).await?;
+                            if !response.status().is_server_error() {
+                                async_fs::write(path, response.body_bytes().await?).await?;
+                            }
                         };
 
                         Ok(())
