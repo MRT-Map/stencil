@@ -67,7 +67,7 @@ impl DockWindow for TileSettingsEditor {
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut tile_settings.max_get_requests, 1..=1000)
+            egui::Slider::new(&mut tile_settings.max_get_requests, 1..=0x10000)
                 .text("Maximum HTTP GET requests"),
         );
         ui.label("Maximum number of tiles to download at a time");

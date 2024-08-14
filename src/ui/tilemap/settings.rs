@@ -120,7 +120,7 @@ impl Default for TileSettings {
     fn default() -> Self {
         Self {
             init_zoom: 7.0,
-            max_get_requests: 50,
+            max_get_requests: 0x10000,
             clear_cache_on_startup: false,
             basemaps: vec![Basemap::default()],
         }
