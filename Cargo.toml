@@ -40,7 +40,7 @@ bevy_mod_picking = { version = "0.20.1", default-features = false, features = [
 bevy_asset_loader = "0.21.0"
 bevy-inspector-egui = "0.25.2"
 
-bevy_egui = "0.28.0"
+bevy_egui = "0.29.0"
 egui_commonmark = "0.17.0"
 egui_extras = "0.28.1"
 egui_dock = "0.13.0"
