@@ -45,7 +45,7 @@ egui_commonmark = "0.18.0"
 egui_extras = "0.29.0"
 egui_dock = "0.13.0"
 egui-file-dialog = "0.7.0"
-egui-notify = "0.15.0"
+egui-notify = "0.16.0"
 
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
