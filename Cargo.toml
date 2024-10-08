@@ -43,7 +43,7 @@ bevy-inspector-egui = "0.26.0"
 bevy_egui = "0.30.0"
 egui_commonmark = "0.18.0"
 egui_extras = "0.29.0"
-egui_dock = "0.13.0"
+egui_dock = "0.14.0"
 egui-file-dialog = "0.7.0"
 egui-notify = "0.15.0"
 
