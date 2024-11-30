@@ -1,6 +1,6 @@
 cask "stencil2" do
-  version "2.2.3"
-  sha256 "7b304c59d010f335ce0c9818dc4202e23e7f800106feefa83150b8ec212e8e52"
+  version "2.2.4"
+  sha256 "f6175e232aba8676a02ecabd168447173c19177caa4d5165f3a6feffabb8f695"
 
   url "https://github.com/MRT-Map/stencil2/releases/download/v#{version}/stencil2.dmg"
   name "stencil2"

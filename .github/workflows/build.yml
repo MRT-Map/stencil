@@ -19,6 +19,8 @@ jobs:
         crate: cargo-bundle
 
     - run: bash build/macos/dmg.sh
+      env:
+        PKG_CONFIG_SYSROOT_DIR: /
     - uses: actions/upload-artifact@v4
       with:
         name: macos
@@ -125,12 +127,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$(curl 'https://github.com/MRT-Map/stencil2/releases/download/$VERSION/stencil2.dmg' -L | shasum -a 256 | cut -d ' ' -f1)\"/" > build/macos/brew2.rb
-          cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$(echo '$VERSION' | sed s/v//)\"/" > build/macos/brew.rb
-          rm build/macos/brew2.rb
-        env:
+      - env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
+        run: |
+          cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$(curl 'https://github.com/MRT-Map/stencil2/releases/download/$VERSION/stencil2.dmg' -L | shasum -a 256 | cut -d ' ' -f1)\"/" > build/macos/brew2.rb
+          cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$(echo $VERSION | sed s/v//)\"/" > build/macos/brew.rb
+          rm build/macos/brew2.rb
           
       - uses: EndBug/add-and-commit@v9
         with:
