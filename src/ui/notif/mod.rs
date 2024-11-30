@@ -77,7 +77,7 @@ pub fn update_notifs_sy(
         toasts
             .0
             .add(Toast::custom(&notif.message, notif.level.clone()))
-            .set_duration(
+            .duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
                     && misc_settings.notif_duration != 0)
                     .then(|| Duration::from_secs(misc_settings.notif_duration)),

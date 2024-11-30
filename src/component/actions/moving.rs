@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     component::{
@@ -9,7 +8,10 @@ use crate::{
     history::{HistoryEntry, HistoryEv},
     state::{EditorState, IntoSystemConfigExt},
     ui::{
-        cursor::mouse_events::{HoveredComponent, MouseEvent},
+        cursor::{
+            mouse_events::{HoveredComponent, MouseEvent},
+            mouse_pos::MousePosWorld,
+        },
         panel::status::Status,
     },
 };
@@ -57,7 +59,7 @@ pub fn move_component_sy(
             if let Some((orig_mouse_pos_world, _)) = *orig {
                 let old_pla = pla.to_owned();
                 for node in &mut pla.nodes {
-                    node.0 += (mouse_pos_world.xy() - orig_mouse_pos_world.xy())
+                    node.0 += (**mouse_pos_world - *orig_mouse_pos_world)
                         .round()
                         .as_ivec2();
                 }

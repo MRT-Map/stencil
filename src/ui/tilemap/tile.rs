@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
 use bevy::{ecs::query::QueryFilter, prelude::*};
-use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
 use once_cell::sync::Lazy;
@@ -69,7 +68,7 @@ pub struct PendingTiles(pub HashMap<TileCoord, Task<surf::Result<()>>>);
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
-    q_camera: Query<(&Camera, Ref<Transform>), With<MainCamera>>,
+    q_camera: Query<(&Camera, Ref<Transform>)>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,

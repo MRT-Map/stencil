@@ -11,7 +11,6 @@ use bevy::{
 };
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
-use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use dirs_paths::data_dir;
 use tracing::Level;
@@ -117,7 +116,6 @@ fn main() {
     .add_plugins(FrameTimeDiagnosticsPlugin);
 
     app.add_plugins(DefaultPickingPlugins)
-        .add_plugins(MousePosPlugin)
         .add_plugins(EguiPlugin)
         .add_plugins(ShapePlugin);
 

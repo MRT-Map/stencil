@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use bevy_mod_picking::prelude::*;
-use bevy_mouse_tracking::{MousePos, MousePosWorld};
 
 use crate::{
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{within_tilemap, PanelDockState},
+    ui::{
+        cursor::mouse_pos::{MousePos, MousePosWorld},
+        panel::dock::{within_tilemap, PanelDockState},
+    },
 };
 
 #[derive(Component)]

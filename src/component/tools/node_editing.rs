@@ -1,5 +1,4 @@
 use bevy::{color::palettes::basic::GRAY, prelude::*};
-use bevy_mouse_tracking::MousePosWorld;
 use itertools::Itertools;
 
 use crate::{
@@ -14,7 +13,11 @@ use crate::{
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
-    ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
+    ui::{
+        cursor::{mouse_events::MouseEvent, mouse_pos::MousePosWorld},
+        panel::status::Status,
+        UiSet,
+    },
 };
 
 #[derive(Debug)]
@@ -43,7 +46,7 @@ pub fn edit_nodes_sy(
     };
     if let Some(orig) = &*node_edit_data {
         debug!(?entity, "Moving node");
-        pla.nodes[orig.node_list_pos].0 = (mouse_pos_world.xy() - orig.mouse_pos_world.xy()
+        pla.nodes[orig.node_list_pos].0 = (**mouse_pos_world - *orig.mouse_pos_world
             + orig.node_pos_world.as_vec2())
         .round()
         .as_ivec2();
@@ -83,13 +86,13 @@ pub fn edit_nodes_sy(
                 );
             #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
             // TODO figure out how to fix this
-            let Some((list_pos, world_pos)) = handles.min_by_key(|(_, pos)| {
-                mouse_pos_world.xy().distance_squared(pos.as_vec2()) as usize
-            }) else {
+            let Some((list_pos, world_pos)) = handles
+                .min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
+            else {
                 warn!(?entity, "Component has no points");
                 continue;
             };
-            if mouse_pos_world.xy().distance_squared(world_pos.as_vec2())
+            if mouse_pos_world.distance_squared(world_pos.as_vec2())
                 > (2048.0 / zoom.0.exp2() * misc_settings.big_handle_size).powi(2)
             {
                 info!(?entity, "Handle is too far");
@@ -163,7 +166,7 @@ pub fn update_handles(
         .map(|coord| &coord.0)
         .filter(|coord| {
             if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
-                (coord.as_vec2() - mouse_pos_world.xy()).length_squared()
+                (coord.as_vec2() - **mouse_pos_world).length_squared()
                     < misc_settings.hide_far_handles_distance
             } else {
                 true
@@ -201,7 +204,7 @@ pub fn update_handles(
     .map(|(c1, c2)| (c1.0 + c2.0) / 2)
     .filter(|coord| {
         if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
-            (coord.as_vec2() - mouse_pos_world.xy()).length_squared()
+            (coord.as_vec2() - **mouse_pos_world).length_squared()
                 < misc_settings.hide_far_handles_distance
         } else {
             true

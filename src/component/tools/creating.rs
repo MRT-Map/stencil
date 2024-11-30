@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking::MousePosWorld;
 use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distributions::{Alphanumeric, DistString};
 
@@ -16,7 +15,10 @@ use crate::{
     history::{HistoryEntry, HistoryEv},
     project::Namespaces,
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
+    ui::{
+        cursor::{mouse_events::MouseEvent, mouse_pos::MousePosWorld},
+        panel::status::Status,
+    },
 };
 
 const ANGLE_VECTORS: [Vec2; 20] = [
@@ -56,9 +58,7 @@ pub fn create_point_sy(
             let new_point = PointComponentBundle::new(
                 {
                     let mut point = PlaComponent::new(ComponentType::Point);
-                    point
-                        .nodes
-                        .push(mouse_pos_world.xy().round().as_ivec2().into());
+                    point.nodes.push(mouse_pos_world.round().as_ivec2().into());
                     if !namespaces
                         .visibilities
                         .get(&namespaces.prev_used)
@@ -77,7 +77,7 @@ pub fn create_point_sy(
             status.0 = format!(
                 "Created new point {} at {:?}",
                 new_point.data,
-                mouse_pos_world.xy().round().as_ivec2()
+                mouse_pos_world.round().as_ivec2()
             )
             .into();
             deselect(&mut commands, &deselect_query);
@@ -112,8 +112,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
     if let Ok((data, entity)) = set.get_single_mut() {
         let mut data = (*data).clone();
         let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
-        let mouse_pos_world = mouse_pos_world.xy();
-        let next_point = if mouse_pos_world != Vec2::ZERO
+        let next_point = if **mouse_pos_world != Vec2::ZERO
             && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
         {
             #[expect(clippy::cast_possible_truncation)] // TODO find some way to fix this
@@ -121,19 +120,19 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 .into_iter()
                 .chain(ANGLE_VECTORS.iter().map(|a| -*a))
                 .min_by_key(|v| {
-                    (v.angle_between(mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
+                    (v.angle_between(**mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
                 })
                 .unwrap();
-            (mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
+            (**mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos
         } else {
-            mouse_pos_world
+            **mouse_pos_world
         };
         data.nodes.push(next_point.round().as_ivec2().into());
         commands.entity(entity).component_display(&skin, &data);
     }
     for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
-            let new = mouse_pos_world.xy().round().as_ivec2().into();
+            let new = mouse_pos_world.round().as_ivec2().into();
             if set.is_empty() {
                 let data = {
                     let mut point = PlaComponent::new(ty);
@@ -143,7 +142,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 debug!("Starting new {ty_text} at {mouse_pos_world:?}");
                 status.0 = format!(
                     "Starting new {ty_text} at {:?}",
-                    mouse_pos_world.xy().round().as_ivec2()
+                    mouse_pos_world.round().as_ivec2()
                 )
                 .into();
                 if IS_AREA {
@@ -166,11 +165,11 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 debug!(
                     ?entity,
                     "Continuing {ty_text} at {:?}",
-                    mouse_pos_world.xy().round().as_ivec2()
+                    mouse_pos_world.round().as_ivec2()
                 );
                 status.0 = format!(
                     "Continuing {ty_text} at {:?}",
-                    mouse_pos_world.xy().round().as_ivec2()
+                    mouse_pos_world.round().as_ivec2()
                 )
                 .into();
                 commands.entity(entity).component_display(&skin, &data);

@@ -1,6 +1,5 @@
 use bevy::{prelude::*, sprite::Anchor};
 use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::MousePosWorld;
 
 use crate::{
     init::load_assets::ImageAssets,
@@ -8,7 +7,10 @@ use crate::{
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
-        cursor::mouse_events::{HoveredComponent, MouseEvent},
+        cursor::{
+            mouse_events::{HoveredComponent, MouseEvent},
+            mouse_pos::{MousePos, MousePosWorld},
+        },
         panel::dock::{within_tilemap, PanelDockState},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
@@ -16,6 +18,7 @@ use crate::{
 };
 
 pub mod mouse_events;
+pub mod mouse_pos;
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
@@ -47,7 +50,7 @@ pub fn crosshair_sy(
     } else {
         return;
     }
-    let translation = mouse_pos_world.round().xy();
+    let translation = mouse_pos_world.round();
     let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
         (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0).exp2()
@@ -97,7 +100,7 @@ pub fn cursor_icon_sy(
             continue;
         }
 
-        ctx.ctx_for_window_mut(e).set_cursor_icon(match state {
+        ctx.ctx_for_entity_mut(e).set_cursor_icon(match state {
             EditorState::Loading => egui::CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if !hovered_comp.is_empty() {
@@ -119,19 +122,22 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            UiSchedule,
-            (
-                mouse_events::left_click_handler_sy,
-                mouse_events::right_click_handler_sy,
-                mouse_events::hover_handler_sy,
+        app.init_resource::<MousePos>()
+            .init_resource::<MousePosWorld>()
+            .add_systems(
+                UiSchedule,
+                (
+                    mouse_events::left_click_handler_sy,
+                    mouse_events::right_click_handler_sy,
+                    mouse_events::hover_handler_sy,
+                )
+                    .in_set(UiSet::Mouse),
             )
-                .in_set(UiSet::Mouse),
-        )
-        .add_systems(
-            PostUpdate,
-            (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
-        )
-        .add_event::<MouseEvent>();
+            .add_systems(
+                PostUpdate,
+                (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
+            )
+            .add_systems(First, mouse_pos::update_mouse_pos_sy)
+            .add_event::<MouseEvent>();
     }
 }

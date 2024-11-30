@@ -1,6 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
-use bevy_mouse_tracking::{MainCamera, MousePosWorld};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_file_dialog::FileDialog;
 use egui_notify::ToastLevel;
@@ -20,6 +19,7 @@ use crate::{
     state::EditorState,
     tile::zoom::Zoom,
     ui::{
+        cursor::mouse_pos::MousePosWorld,
         notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
         popup::Popup,
@@ -176,7 +176,7 @@ pub struct PanelParams<'w, 's> {
             Query<'w, 's, &'static PlaComponent<EditorCoords>>,
         ),
     >,
-    pub camera: Query<'w, 's, &'static mut Transform, With<MainCamera>>,
+    pub camera: Query<'w, 's, &'static mut Transform, With<Camera>>,
     pub commands: Commands<'w, 's>,
     pub skin: Res<'w, Skin>,
     pub editor_state: Res<'w, State<EditorState>>,
