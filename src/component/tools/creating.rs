@@ -174,10 +174,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 .into();
                 commands.entity(entity).component_display(&skin, &data);
 
-                if IS_AREA
-                    && data.nodes.first() == data.nodes.last()
-                    && data.nodes.first().is_some()
-                {
+                if IS_AREA && data.nodes.first() == data.nodes.last() && !data.nodes.is_empty() {
                     debug!("Ended on same point, completing area");
                     data.nodes.pop();
                     clear_created_component(

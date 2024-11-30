@@ -65,7 +65,6 @@ impl DockWindow for ComponentList {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_component_list(
     _trigger: Trigger<OpenComponentListEv>,
     mut state: ResMut<PanelDockState>,

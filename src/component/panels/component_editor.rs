@@ -125,7 +125,6 @@ impl DockWindow for ComponentEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_component_editor(
     _trigger: Trigger<OpenComponentEditorEv>,
     mut state: ResMut<PanelDockState>,

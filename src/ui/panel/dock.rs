@@ -222,7 +222,6 @@ pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut pa
 #[derive(Clone, Copy, Event)]
 pub struct ResetPanelDockStateEv;
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<PanelDockState>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
     *state = PanelDockState::default();
@@ -230,7 +229,6 @@ pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMu
 
 #[must_use]
 pub fn within_tilemap(ctx: &mut EguiContexts, panel: &Res<PanelDockState>) -> bool {
-    ctx.try_ctx_mut().map_or(true, |a| {
-        a.rect_contains_pointer(panel.layer_id, panel.viewport_rect)
-    })
+    ctx.try_ctx_mut()
+        .is_none_or(|a| a.rect_contains_pointer(panel.layer_id, panel.viewport_rect))
 }

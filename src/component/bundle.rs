@@ -145,7 +145,7 @@ pub trait EntityCommandsSelectExt {
     fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self;
 }
 
-impl<'a> EntityCommandsSelectExt for EntityCommands<'a> {
+impl EntityCommandsSelectExt for EntityCommands<'_> {
     fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
         let ty = data.get_type(skin);
         let fill = data.get_fill(skin).select(ty).to_owned();

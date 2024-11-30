@@ -12,7 +12,7 @@ use crate::{
         zoom::Zoom,
     },
     ui::{
-        cursor::mouse_pos::{MousePos, MousePosWorld},
+        cursor::mouse_pos::MousePos,
         panel::dock::{within_tilemap, PanelDockState},
         tilemap::settings::TileSettings,
     },

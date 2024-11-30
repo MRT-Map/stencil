@@ -134,7 +134,6 @@ pub fn ui_sy(
     });
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<PanelDockState>) {
     let all_tabs = state
         .state

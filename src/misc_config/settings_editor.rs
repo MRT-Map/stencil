@@ -135,7 +135,6 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<PanelDockState>) {
     window_action_handler(&mut state, MiscSettingsEditor);
 }
