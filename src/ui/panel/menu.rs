@@ -4,8 +4,7 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, EguiContexts};
-use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
+use bevy_egui::{egui, egui::scroll_area::ScrollBarVisibility, EguiContexts};
 use egui_notify::ToastLevel;
 
 use crate::{
