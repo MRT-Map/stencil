@@ -199,12 +199,13 @@ impl PlaComponent<EditorCoords> {
                 path: GeometryBuilder::build_as(&shapes::Rectangle {
                     extents: Vec2::splat(2.0),
                     origin: RectangleOrigin::Center,
+                    ..default()
                 }),
-                spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                transform: Transform::from_xyz(
                     self.nodes[0].0.x as f32,
                     self.nodes[0].0.y as f32,
                     10.0,
-                )),
+                ),
                 ..default()
             };
         }
@@ -226,7 +227,7 @@ impl PlaComponent<EditorCoords> {
         });
         ShapeBundle {
             path,
-            spatial: SpatialBundle::from_transform(transform),
+            transform,
             ..default()
         }
     }

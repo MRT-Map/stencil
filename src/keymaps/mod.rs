@@ -33,6 +33,6 @@ impl Plugin for KeymapPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_KEYMAP_SETTINGS.to_owned())
             .add_systems(Update, keymap_sy.run_if_not_loading())
-            .observe(settings_editor::on_keymap_settings);
+            .add_observer(settings_editor::on_keymap_settings);
     }
 }

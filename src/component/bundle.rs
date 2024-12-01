@@ -1,5 +1,4 @@
 use bevy::{color::palettes::css::YELLOW, ecs::system::EntityCommands, prelude::*};
-use bevy_mod_picking::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
 use crate::component::{
@@ -18,7 +17,6 @@ pub trait ComponentBundle {
 #[derive(Bundle)]
 pub struct PointComponentBundle {
     pub data: PlaComponent<EditorCoords>,
-    pub pickable: PickableBundle,
     pub shape: ShapeBundle,
     pub fill: Fill,
 }
@@ -26,7 +24,6 @@ impl PointComponentBundle {
     #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            pickable: PickableBundle::default(),
             shape: data.get_shape(skin),
             fill: data.get_fill(skin),
             data,
@@ -58,7 +55,6 @@ impl ComponentBundle for PointComponentBundle {
 #[derive(Bundle)]
 pub struct LineComponentBundle {
     pub data: PlaComponent<EditorCoords>,
-    pub pickable: PickableBundle,
     pub shape: ShapeBundle,
     pub stroke: Stroke,
 }
@@ -66,7 +62,6 @@ impl LineComponentBundle {
     #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            pickable: PickableBundle::default(),
             shape: data.get_shape(skin),
             stroke: data.get_stroke(skin),
             data,
@@ -98,7 +93,6 @@ impl ComponentBundle for LineComponentBundle {
 #[derive(Bundle)]
 pub struct AreaComponentBundle {
     pub data: PlaComponent<EditorCoords>,
-    pub pickable: PickableBundle,
     pub shape: ShapeBundle,
     pub fill: Fill,
     pub stroke: Stroke,
@@ -107,7 +101,6 @@ impl AreaComponentBundle {
     #[must_use]
     pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            pickable: PickableBundle::default(),
             shape: data.get_shape(skin),
             fill: data.get_fill(skin),
             stroke: data.get_stroke(skin),

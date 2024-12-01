@@ -4,7 +4,13 @@ use crate::state::LoadingState;
 
 pub fn spawn_camera_sy(mut commands: Commands) {
     info!("Spawning camera");
-    commands.spawn(Camera2dBundle::new_with_far(1e5));
+    commands.spawn((
+        Camera2d,
+        OrthographicProjection {
+            far: 1e5,
+            ..OrthographicProjection::default_2d()
+        },
+    ));
     //.insert(UiCameraConfig { show_ui: true })
     //.insert(RaycastPickCamera::default())
 

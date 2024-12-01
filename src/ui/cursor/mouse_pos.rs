@@ -40,7 +40,7 @@ pub fn update_mouse_pos_sy(
     };
     mouse_pos.0 = new_mouse_pos;
 
-    let Some(new_mouse_pos_world) = camera.viewport_to_world_2d(transform, new_mouse_pos) else {
+    let Ok(new_mouse_pos_world) = camera.viewport_to_world_2d(transform, new_mouse_pos) else {
         return;
     };
     mouse_pos_world.0 = new_mouse_pos_world;

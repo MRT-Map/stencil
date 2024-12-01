@@ -21,7 +21,7 @@ pub fn circle(
                 radius: 1024.0 / zoom.0.exp2() * multiplier,
                 center,
             }),
-            spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
+            transform: Transform::from_xyz(0.0, 0.0, 100.0),
             ..default()
         },
         Fill::color(Color::WHITE),

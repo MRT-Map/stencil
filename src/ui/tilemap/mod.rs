@@ -44,6 +44,6 @@ impl Plugin for RenderingPlugin {
                 (tile::show_tiles_sy, settings_editor::tile_settings_dialog)
                     .in_set(RenderingSet::Tiles),
             )
-            .observe(settings_editor::on_tile_settings);
+            .add_observer(settings_editor::on_tile_settings);
     }
 }

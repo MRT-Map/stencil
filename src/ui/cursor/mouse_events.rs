@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
-use bevy_mod_picking::prelude::*;
 
 use crate::{
     misc_config::settings::MiscSettings,

@@ -187,7 +187,7 @@ pub fn update_handles(
         .map(|bundle| commands.spawn(bundle).id())
         .collect::<Vec<_>>();
     trace!("Pushing first set of children");
-    commands.entity(e).push_children(&children);
+    commands.entity(e).add_children(&children);
     let more_children = if pla.get_type(skin) == ComponentType::Area {
         pla.nodes
             .iter()
@@ -221,7 +221,7 @@ pub fn update_handles(
     .map(|bundle| commands.spawn(bundle).id())
     .collect::<Vec<_>>();
     trace!("Pushing second set of children");
-    commands.entity(e).push_children(&more_children);
+    commands.entity(e).add_children(&more_children);
 }
 
 #[expect(clippy::needless_pass_by_value)]

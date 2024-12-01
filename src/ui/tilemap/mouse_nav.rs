@@ -90,7 +90,7 @@ pub fn mouse_zoom_sy(
         {
             let orig = transform.translation.xy();
             let orig_scale = ort_proj.scale;
-            let Some(orig_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
+            let Ok(orig_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
             else {
                 continue;
             };
@@ -101,7 +101,7 @@ pub fn mouse_zoom_sy(
                 ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
 
             let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
-            let Some(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
+            let Ok(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
             else {
                 continue;
             };

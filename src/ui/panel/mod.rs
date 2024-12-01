@@ -25,8 +25,8 @@ impl Plugin for PanelPlugin {
                 UiSchedule,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
-            .observe(menu::on_all_settings)
+            .add_observer(menu::on_all_settings)
             .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels))
-            .observe(dock::on_reset_panel);
+            .add_observer(dock::on_reset_panel);
     }
 }

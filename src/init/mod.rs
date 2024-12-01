@@ -27,7 +27,7 @@ impl Plugin for InitPlugin {
         app.init_state::<EditorState>()
             .init_state::<LoadingState>()
             .init_resource::<Skin>()
-            .observe(on_state_change)
+            .add_observer(on_state_change)
             .add_systems(Startup, ack_panic_sy);
         app.add_systems(OnEnter(LoadingState::SetIcon), set_icon::set_icon_sy)
             .add_systems(

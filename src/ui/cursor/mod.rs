@@ -60,16 +60,15 @@ pub fn crosshair_sy(
     if ch.is_empty() {
         debug!("Spawning crosshair");
         commands
-            .spawn(SpriteBundle {
-                texture: images.crosshair.clone(),
-                transform: new_transform,
-                sprite: Sprite {
+            .spawn((
+                Sprite {
                     custom_size: new_custom_size,
                     anchor: Anchor::Center,
+                    image: images.crosshair.clone(),
                     ..default()
                 },
-                ..default()
-            })
+                new_transform,
+            ))
             .insert(Crosshair);
     } else {
         trace!("Updating crosshair location");
@@ -92,10 +91,10 @@ pub fn cursor_icon_sy(
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
-            window.cursor.visible = !within_tilemap(&mut ctx, &panel);
+            window.cursor_options.visible = !within_tilemap(&mut ctx, &panel);
             continue;
         }
-        window.cursor.visible = true;
+        window.cursor_options.visible = true;
         if !within_tilemap(&mut ctx, &panel) {
             continue;
         }

@@ -120,7 +120,7 @@ pub fn create_component_sy<const IS_AREA: bool>(
                 .into_iter()
                 .chain(ANGLE_VECTORS.iter().map(|a| -*a))
                 .min_by_key(|v| {
-                    (v.angle_between(**mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
+                    (v.angle_to(**mouse_pos_world - prev_node_pos).abs() * 1000.0) as i32
                 })
                 .unwrap();
             (**mouse_pos_world - prev_node_pos).project_onto(closest_angle_vec) + prev_node_pos

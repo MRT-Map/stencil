@@ -66,17 +66,17 @@ impl DockWindow for WindowSettingsEditor {
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::BorderlessFullscreen,
+            WindowMode::BorderlessFullscreen(MonitorSelection::Current),
             "Borderless Fullscreen",
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::SizedFullscreen,
+            WindowMode::SizedFullscreen(MonitorSelection::Current),
             "Sized Fullscreen",
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::Fullscreen,
+            WindowMode::Fullscreen(MonitorSelection::Current),
             "Fullscreen",
         );
 
