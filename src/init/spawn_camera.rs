@@ -10,6 +10,7 @@ pub fn spawn_camera_sy(mut commands: Commands) {
             far: 1e5,
             ..OrthographicProjection::default_2d()
         },
+        RayCastPickable,
     ));
     //.insert(UiCameraConfig { show_ui: true })
     //.insert(RaycastPickCamera::default())

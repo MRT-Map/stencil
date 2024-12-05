@@ -1,5 +1,15 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{
+    picking::{
+        backend::HitData,
+        pointer::{Location, PointerAction, PointerId, PointerInput, PressDirection},
+    },
+    prelude::*,
+    render::camera::NormalizedRenderTarget,
+};
 use bevy_egui::EguiContexts;
+use itertools::Itertools;
 
 use crate::{
     misc_config::settings::MiscSettings,
@@ -13,127 +23,50 @@ use crate::{
 #[component(storage = "SparseSet")]
 pub struct HoveredComponent;
 
-#[derive(Debug, Event)]
-pub enum MouseEvent {
-    HoverOver(Entity),
-    HoverLeave(Entity),
-    LeftPress(Option<Entity>, MousePosWorld),
-    LeftRelease(Option<Entity>, MousePosWorld),
-    LeftClick(Option<Entity>, MousePosWorld),
-    RightPress(MousePosWorld),
-    RightRelease(MousePosWorld),
-    RightClick(MousePosWorld),
-}
-
 #[tracing::instrument(skip_all)]
-pub fn hover_handler_sy(
+pub fn click_handler_sy(
+    mut pointer_event: ParamSet<(EventReader<Pointer<Click>>, EventWriter<Pointer<Click>>)>,
     mut commands: Commands,
-    mut hovered_entity: Local<Option<Entity>>,
-    mut event_reader_over: EventReader<Pointer<Over>>,
-    mut event_reader_out: EventReader<Pointer<Out>>,
-    mut event_writer: EventWriter<MouseEvent>,
-) {
-    for _ in event_reader_out.read() {
-        let Some(target) = hovered_entity.take() else {
-            break;
-        };
-        trace!(?target, "HoverLeave detected");
-        event_writer.send(MouseEvent::HoverLeave(target));
-        if let Some(mut commands) = commands.get_entity(target) {
-            commands.remove::<HoveredComponent>();
-        }
-    }
-    for e in event_reader_over.read() {
-        if let Some(mut commands) = commands.get_entity(e.target) {
-            trace!(?e.target, "HoverOver detected");
-            *hovered_entity = Some(e.target);
-            event_writer.send(MouseEvent::HoverOver(e.target));
-            commands.insert(HoveredComponent);
-        }
-    }
-}
-
-#[tracing::instrument(skip_all)]
-pub fn right_click_handler_sy(
-    mut event_writer: EventWriter<MouseEvent>,
+    mut input_event: EventReader<PointerInput>,
     mut ctx: EguiContexts,
-    buttons: Res<ButtonInput<MouseButton>>,
-    mut prev_mouse_pos: Local<Option<MousePos>>,
-    mouse_pos: Res<MousePos>,
-    mouse_pos_world: Res<MousePosWorld>,
     panel: Res<PanelDockState>,
-    misc_settings: Res<MiscSettings>,
+    mouse_pos_world: Res<MousePosWorld>,
 ) {
-    if buttons.just_pressed(MouseButton::Right) && within_tilemap(&mut ctx, &panel) {
-        debug!("RightPress detected");
-        *prev_mouse_pos = Some(*mouse_pos);
-        event_writer.send(MouseEvent::RightPress(*mouse_pos_world));
+    if !within_tilemap(&mut ctx, &panel) {
+        return;
     }
-    if buttons.just_released(MouseButton::Right) && within_tilemap(&mut ctx, &panel) {
-        debug!("RightRelease detected");
-        event_writer.send(MouseEvent::RightRelease(*mouse_pos_world));
-        if let Some(prev) = *prev_mouse_pos {
-            if (*prev - **mouse_pos).length_squared() <= misc_settings.click_max_offset
-                && within_tilemap(&mut ctx, &panel)
-            {
-                debug!("RightClick detected");
-                event_writer.send(MouseEvent::RightClick(*mouse_pos_world));
+    let events = pointer_event.p0().read().counts_by(|a| a.button);
+    let inputs = input_event.read().collect::<Vec<_>>();
+    for button in PointerButton::iter() {
+        if events.get(&button).cloned().unwrap_or_default() == 0 {
+            if let Some(input) = inputs.iter().find(|a| {
+                matches!(
+                    a.action,
+                    PointerAction::Pressed {
+                        direction: PressDirection::Up,
+                        button
+                    }
+                )
+            }) {
+                debug!(?button, "Click on no component detected");
+                let event = Pointer::new(
+                    Entity::PLACEHOLDER,
+                    input.pointer_id,
+                    input.location.to_owned(),
+                    Click {
+                        button,
+                        hit: HitData::new(
+                            Entity::PLACEHOLDER,
+                            0.0,
+                            Some(mouse_pos_world.extend(0.0)),
+                            None,
+                        ),
+                        duration: Duration::default(),
+                    },
+                );
+                pointer_event.p1().send(event.to_owned());
+                commands.trigger(event);
             }
         }
     }
-}
-
-#[tracing::instrument(skip_all)]
-pub fn left_click_handler_sy(
-    mut event_reader_down: EventReader<Pointer<Down>>,
-    mut event_writer: EventWriter<MouseEvent>,
-    mut ctx: EguiContexts,
-    buttons: Res<ButtonInput<MouseButton>>,
-    mut selected_entity: Local<Option<Entity>>,
-    mut prev_mouse_pos: Local<Option<MousePos>>,
-    mouse_pos: Res<MousePos>,
-    mouse_pos_world: Res<MousePosWorld>,
-    panel: Res<PanelDockState>,
-    misc_settings: Res<MiscSettings>,
-) {
-    let mut pressed_on_comp = false;
-    if within_tilemap(&mut ctx, &panel) {
-        for e in event_reader_down.read() {
-            if e.button != PointerButton::Primary {
-                continue;
-            }
-            debug!(?e.target, "LeftPress detected");
-            *selected_entity = Some(e.target);
-            *prev_mouse_pos = Some(*mouse_pos);
-            event_writer.send(MouseEvent::LeftPress(Some(e.target), *mouse_pos_world));
-            pressed_on_comp = true;
-        }
-    }
-
-    if buttons.just_pressed(MouseButton::Left) && !pressed_on_comp {
-        debug!(e = ?Option::<Entity>::None, "LeftPress detected");
-        *prev_mouse_pos = Some(*mouse_pos);
-        *selected_entity = None;
-        event_writer.send(MouseEvent::LeftPress(None, *mouse_pos_world));
-    }
-
-    if !buttons.just_released(MouseButton::Left) {
-        return;
-    }
-    let prev = if let Some(prev) = *prev_mouse_pos {
-        *prev_mouse_pos = None;
-        prev
-    } else {
-        return;
-    };
-    let curr = *mouse_pos;
-    debug!(e = ?selected_entity, "LeftRelease detected");
-    event_writer.send(MouseEvent::LeftRelease(*selected_entity, *mouse_pos_world));
-    if (*prev - *curr).length_squared() <= misc_settings.click_max_offset
-        && within_tilemap(&mut ctx, &panel)
-    {
-        debug!(e = ?selected_entity, "LeftClick detected");
-        event_writer.send(MouseEvent::LeftClick(*selected_entity, *mouse_pos_world));
-    }
-    *selected_entity = None;
 }

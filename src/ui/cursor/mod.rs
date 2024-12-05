@@ -125,18 +125,12 @@ impl Plugin for CursorPlugin {
             .init_resource::<MousePosWorld>()
             .add_systems(
                 UiSchedule,
-                (
-                    mouse_events::left_click_handler_sy,
-                    mouse_events::right_click_handler_sy,
-                    mouse_events::hover_handler_sy,
-                )
-                    .in_set(UiSet::Mouse),
+                (mouse_events::click_handler_sy,).in_set(UiSet::Mouse),
             )
             .add_systems(
                 PostUpdate,
                 (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
             )
             .add_systems(First, mouse_pos::update_mouse_pos_sy)
-            .add_event::<MouseEvent>();
     }
 }

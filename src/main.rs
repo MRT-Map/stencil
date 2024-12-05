@@ -115,6 +115,10 @@ fn main() {
     .add_plugins(FrameTimeDiagnosticsPlugin);
 
     app.add_plugins(MeshPickingPlugin)
+        .insert_resource(MeshPickingSettings {
+            require_markers: true,
+            ..default()
+        })
         .add_plugins(EguiPlugin)
         .add_plugins(ShapePlugin);
 

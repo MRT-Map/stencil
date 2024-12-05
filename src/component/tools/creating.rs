@@ -4,7 +4,7 @@ use rand::distributions::{Alphanumeric, DistString};
 
 use crate::{
     component::{
-        actions::selecting::{deselect, DeselectQuery},
+        actions::selecting::{deselect, DeselectQuery, SelectEv},
         bundle::{
             AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
             PointComponentBundle,
@@ -45,50 +45,127 @@ const ANGLE_VECTORS: [Vec2; 20] = [
 ];
 
 #[tracing::instrument(skip_all)]
-pub fn create_point_sy(
+pub fn on_point_left_click(
+    trigger: Trigger<Pointer<Click>>,
     mut commands: Commands,
-    mut mouse: EventReader<MouseEvent>,
     skin: Res<Skin>,
-    deselect_query: DeselectQuery,
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
+    state: Res<State<EditorState>>,
 ) {
-    for event in mouse.read() {
-        if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
-            let new_point = PointComponentBundle::new(
-                {
-                    let mut point = PlaComponent::new(ComponentType::Point);
-                    point.nodes.push(mouse_pos_world.round().as_ivec2().into());
-                    if !namespaces
-                        .visibilities
-                        .get(&namespaces.prev_used)
-                        .copied()
-                        .unwrap_or_default()
-                    {
-                        namespaces.prev_used = "_misc".into();
-                    }
-                    namespaces.prev_used.clone_into(&mut point.namespace);
-                    point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
-                    point
-                },
-                &skin,
-            );
-            debug!("Placing new point at {mouse_pos_world:?}");
-            status.0 = format!(
-                "Created new point {} at {:?}",
-                new_point.data,
-                mouse_pos_world.round().as_ivec2()
-            )
-            .into();
-            deselect(&mut commands, &deselect_query);
-            let pla = new_point.data.clone();
-            let entity = commands.spawn(new_point).id();
-            commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-                entity,
-                before: None,
-                after: Some(pla.into()),
-            }));
+    if **state != EditorState::CreatingPoint {
+        return;
+    }
+    let node = trigger
+        .hit
+        .position
+        .unwrap_or_default()
+        .xy()
+        .round()
+        .as_ivec2();
+    let new_point = PointComponentBundle::new(
+        {
+            let mut point = PlaComponent::new(ComponentType::Point);
+            point.nodes.push(node.into());
+            if !namespaces
+                .visibilities
+                .get(&namespaces.prev_used)
+                .copied()
+                .unwrap_or_default()
+            {
+                namespaces.prev_used = "_misc".into();
+            }
+            namespaces.prev_used.clone_into(&mut point.namespace);
+            point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+            point
+        },
+        &skin,
+    );
+    debug!("Placing new point at {node:?}");
+    status.0 = format!("Created new point {} at {:?}", new_point.data, node).into();
+
+    commands.trigger(SelectEv::DeselectAll);
+
+    let pla = new_point.data.clone();
+    let entity = commands.spawn(new_point).id();
+    commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
+        entity,
+        before: None,
+        after: Some(pla.into()),
+    }));
+}
+
+#[tracing::instrument(skip_all)]
+pub fn on_line_area_left_click(
+    trigger: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    state: Res<State<EditorState>>,
+    mut set: CreatedQuery,
+    mut status: ResMut<Status>,
+    skin: Res<Skin>,
+) {
+    if trigger.button != PointerButton::Primary {
+        return;
+    }
+    let (ty, ty_text) = match **state {
+        EditorState::CreatingArea => (ComponentType::Area, "area"),
+        EditorState::CreatingLine => (ComponentType::Line, "line"),
+        _ => {
+            return;
         }
+    };
+
+    let new = trigger
+        .hit
+        .position
+        .unwrap_or_default()
+        .xy()
+        .round()
+        .as_ivec2();
+    if let Ok((entity, mut data)) = set.get_single_mut() {
+        if data.nodes.last().map(|a| a.0) == Some(new) {
+            data.nodes.pop();
+            if data.nodes.is_empty() {
+                commands.entity(entity).despawn_recursive();
+                return;
+            }
+        } else {
+            data.nodes.push(new.into());
+        }
+        debug!(?entity, "Continuing {ty_text} at {:?}", new);
+        status.0 = format!("Continuing {ty_text} at {:?}", new).into();
+        commands.entity(entity).component_display(&skin, &data);
+
+        if ty_text == "area" && data.nodes.first() == data.nodes.last() && !data.nodes.is_empty() {
+            debug!("Ended on same point, completing area");
+            data.nodes.pop();
+            clear_created_component(
+                &mut commands,
+                &mut set,
+                &skin,
+                &mut namespaces,
+                &mut status,
+                ty_text,
+            );
+        }
+    } else {
+        let data = {
+            let mut point = PlaComponent::new(ty);
+            point.nodes.push(new);
+            point
+        };
+        debug!("Starting new {ty_text} at {mouse_pos_world:?}");
+        status.0 = format!(
+            "Starting new {ty_text} at {:?}",
+            mouse_pos_world.round().as_ivec2()
+        )
+        .into();
+        if IS_AREA {
+            commands.spawn(AreaComponentBundle::new(data, &skin))
+        } else {
+            commands.spawn(LineComponentBundle::new(data, &skin))
+        }
+        .insert(CreatedComponent);
     }
 }
 
@@ -132,61 +209,6 @@ pub fn create_component_sy<const IS_AREA: bool>(
     }
     for event in mouse.read() {
         if let MouseEvent::LeftClick(_, mouse_pos_world) = event {
-            let new = mouse_pos_world.round().as_ivec2().into();
-            if set.is_empty() {
-                let data = {
-                    let mut point = PlaComponent::new(ty);
-                    point.nodes.push(new);
-                    point
-                };
-                debug!("Starting new {ty_text} at {mouse_pos_world:?}");
-                status.0 = format!(
-                    "Starting new {ty_text} at {:?}",
-                    mouse_pos_world.round().as_ivec2()
-                )
-                .into();
-                if IS_AREA {
-                    commands.spawn(AreaComponentBundle::new(data, &skin))
-                } else {
-                    commands.spawn(LineComponentBundle::new(data, &skin))
-                }
-                .insert(CreatedComponent);
-            } else {
-                let (mut data, entity) = set.single_mut();
-                if data.nodes.last() == Some(&new) {
-                    data.nodes.pop();
-                    if data.nodes.is_empty() {
-                        commands.entity(entity).despawn_recursive();
-                        continue;
-                    }
-                } else {
-                    data.nodes.push(new);
-                }
-                debug!(
-                    ?entity,
-                    "Continuing {ty_text} at {:?}",
-                    mouse_pos_world.round().as_ivec2()
-                );
-                status.0 = format!(
-                    "Continuing {ty_text} at {:?}",
-                    mouse_pos_world.round().as_ivec2()
-                )
-                .into();
-                commands.entity(entity).component_display(&skin, &data);
-
-                if IS_AREA && data.nodes.first() == data.nodes.last() && !data.nodes.is_empty() {
-                    debug!("Ended on same point, completing area");
-                    data.nodes.pop();
-                    clear_created_component(
-                        &mut commands,
-                        &mut set,
-                        &skin,
-                        &mut namespaces,
-                        &mut status,
-                        ty_text,
-                    );
-                }
-            }
         } else if let MouseEvent::RightClick(_) = event {
             debug!("Completing line/area");
             clear_created_component(
@@ -260,4 +282,4 @@ impl Plugin for CreateComponentPlugin {
 }
 
 pub type CreatedQuery<'world, 'state, 'a> =
-    Query<'world, 'state, (&'a mut PlaComponent<EditorCoords>, Entity), With<CreatedComponent>>;
+    Query<'world, 'state, (Entity, &'a mut PlaComponent<EditorCoords>), With<CreatedComponent>>;

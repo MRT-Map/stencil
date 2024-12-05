@@ -1,4 +1,4 @@
-use bevy::{color::palettes::css::YELLOW, ecs::system::EntityCommands, prelude::*};
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 
 use crate::component::{
@@ -6,19 +6,12 @@ use crate::component::{
     skin::Skin,
 };
 
-pub trait ComponentBundle {
-    fn data(&self) -> &PlaComponent<EditorCoords>;
-    fn data_mut(&mut self) -> &mut PlaComponent<EditorCoords>;
-    fn update_display(&mut self, skin: &Skin) -> &mut Self;
-    fn select(&mut self) -> &mut Self;
-    fn deselect(&mut self, skin: &Skin) -> &mut Self;
-}
-
 #[derive(Bundle)]
 pub struct PointComponentBundle {
     pub data: PlaComponent<EditorCoords>,
     pub shape: ShapeBundle,
     pub fill: Fill,
+    pub pickable: (RayCastPickable, RayCastBackfaces),
 }
 impl PointComponentBundle {
     #[must_use]
@@ -27,28 +20,8 @@ impl PointComponentBundle {
             shape: data.get_shape(skin),
             fill: data.get_fill(skin),
             data,
+            pickable: (RayCastPickable, RayCastBackfaces),
         }
-    }
-}
-impl ComponentBundle for PointComponentBundle {
-    fn data(&self) -> &PlaComponent<EditorCoords> {
-        &self.data
-    }
-    fn data_mut(&mut self) -> &mut PlaComponent<EditorCoords> {
-        &mut self.data
-    }
-    fn update_display(&mut self, skin: &Skin) -> &mut Self {
-        self.shape = self.data.get_shape(skin);
-        self.fill = self.data.get_fill(skin);
-        self
-    }
-    fn select(&mut self) -> &mut Self {
-        self.fill.color = YELLOW.into();
-        self
-    }
-    fn deselect(&mut self, skin: &Skin) -> &mut Self {
-        self.fill = self.data.get_fill(skin);
-        self
     }
 }
 
@@ -57,6 +30,7 @@ pub struct LineComponentBundle {
     pub data: PlaComponent<EditorCoords>,
     pub shape: ShapeBundle,
     pub stroke: Stroke,
+    pub pickable: (RayCastPickable, RayCastBackfaces),
 }
 impl LineComponentBundle {
     #[must_use]
@@ -65,28 +39,8 @@ impl LineComponentBundle {
             shape: data.get_shape(skin),
             stroke: data.get_stroke(skin),
             data,
+            pickable: (RayCastPickable, RayCastBackfaces),
         }
-    }
-}
-impl ComponentBundle for LineComponentBundle {
-    fn data(&self) -> &PlaComponent<EditorCoords> {
-        &self.data
-    }
-    fn data_mut(&mut self) -> &mut PlaComponent<EditorCoords> {
-        &mut self.data
-    }
-    fn update_display(&mut self, skin: &Skin) -> &mut Self {
-        self.shape = self.data.get_shape(skin);
-        self.stroke = self.data.get_stroke(skin);
-        self
-    }
-    fn select(&mut self) -> &mut Self {
-        self.stroke.color = YELLOW.with_alpha(0.5).into();
-        self
-    }
-    fn deselect(&mut self, skin: &Skin) -> &mut Self {
-        self.stroke = self.data.get_stroke(skin);
-        self
     }
 }
 
@@ -96,6 +50,7 @@ pub struct AreaComponentBundle {
     pub shape: ShapeBundle,
     pub fill: Fill,
     pub stroke: Stroke,
+    pub pickable: (RayCastPickable, RayCastBackfaces),
 }
 impl AreaComponentBundle {
     #[must_use]
@@ -105,31 +60,8 @@ impl AreaComponentBundle {
             fill: data.get_fill(skin),
             stroke: data.get_stroke(skin),
             data,
+            pickable: (RayCastPickable, RayCastBackfaces),
         }
-    }
-}
-impl ComponentBundle for AreaComponentBundle {
-    fn data(&self) -> &PlaComponent<EditorCoords> {
-        &self.data
-    }
-    fn data_mut(&mut self) -> &mut PlaComponent<EditorCoords> {
-        &mut self.data
-    }
-    fn update_display(&mut self, skin: &Skin) -> &mut Self {
-        self.shape = self.data.get_shape(skin);
-        self.fill = self.data.get_fill(skin);
-        self.stroke = self.data.get_stroke(skin);
-        self
-    }
-    fn select(&mut self) -> &mut Self {
-        self.stroke.color = YELLOW.with_alpha(0.5).into();
-        self.fill.color = YELLOW.into();
-        self
-    }
-    fn deselect(&mut self, skin: &Skin) -> &mut Self {
-        self.stroke = self.data.get_stroke(skin);
-        self.fill = self.data.get_fill(skin);
-        self
     }
 }
 
@@ -173,33 +105,6 @@ impl EntityCommandsSelectExt for EntityCommands<'_> {
         self
     }
 }
-
-/*#[derive(Bundle)]
-pub struct ComponentBundle {
-    pub data: PlaComponent<EditorCoords>,
-
-    pub shape: (ShapeBundle, Fill, Stroke),
-    pub pickable: PickableBundle,
-}
-
-impl ComponentBundle {
-    #[must_use]
-    pub fn new(data: PlaComponent<EditorCoords>) -> Self {
-        Self {
-            data,
-            shape: (
-                ShapeBundle::default(),
-                Fill::color(Color::NONE),
-                Stroke::color(Color::NONE),
-            ),
-            pickable: PickableBundle::default(),
-        }
-    }
-    pub fn update_shape(&mut self, skin: &Skin) {
-        debug!(selected = false, "Updating shape of component");
-        self.shape = self.data.get_shape(skin, false);
-    }
-}*/
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
