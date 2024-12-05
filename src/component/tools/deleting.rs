@@ -4,38 +4,38 @@ use crate::{
     component::pla2::{EditorCoords, PlaComponent},
     history::{HistoryEntry, HistoryEv},
     state::EditorState,
-    ui::{cursor::mouse_events::MouseEvent, panel::status::Status},
+    ui::panel::status::Status,
 };
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(
-    mut mouse: EventReader<MouseEvent>,
+    trigger: Trigger<Pointer<Click>>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, Entity)>,
+    query: Query<(&PlaComponent<EditorCoords>)>,
     mut status: ResMut<Status>,
+    state: Res<State<EditorState>>,
 ) {
-    for event in mouse.read() {
-        if let MouseEvent::LeftClick(Some(e), _) = event {
-            let (pla, _) = query.iter().find(|(_, a)| a == e).unwrap();
-            info!(?e, "Deleting entity");
-            commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-                entity: *e,
-                before: Some(pla.to_owned().into()),
-                after: None,
-            }));
-            commands.entity(*e).despawn_recursive();
-            status.0 = format!("Deleted {pla}").into();
-        }
+    if **state != EditorState::DeletingComponent {
+        return;
     }
+    let entity = trigger.entity();
+    let Ok(pla) = query.get(entity) else {
+        return;
+    };
+    info!(?entity, "Deleting entity");
+    commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
+        entity,
+        before: Some(pla.to_owned().into()),
+        after: None,
+    }));
+    commands.entity(entity).despawn_recursive();
+    status.0 = format!("Deleted {pla}").into();
 }
 
 pub struct DeleteComponentPlugin;
 
 impl Plugin for DeleteComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            delete_component_sy.run_if(in_state(EditorState::DeletingComponent)),
-        );
+        app.add_observer(delete_component_sy);
     }
 }
