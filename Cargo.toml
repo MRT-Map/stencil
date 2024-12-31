@@ -39,7 +39,7 @@ bevy_asset_loader = { git="https://github.com/NiklasEi/bevy_asset_loader", branc
 bevy_egui = "0.31.1"
 egui_commonmark = "0.19.0"
 egui_extras = "0.30.0"
-egui_dock = "0.14.0"
+egui_dock = "0.15.0"
 egui-file-dialog = "0.8.0"
 egui-notify = "0.18.0"
 
