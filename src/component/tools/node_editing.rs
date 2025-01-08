@@ -14,13 +14,13 @@ use crate::{
     state::EditorState,
     tile::zoom::Zoom,
     ui::{
-        cursor::{mouse_events::MouseEvent, mouse_pos::MousePosWorld},
+        cursor::{mouse_pos::MousePosWorld},
         panel::status::Status,
         UiSet,
     },
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Component)]
 pub struct NodeEditData {
     pub old_pla: PlaComponent<EditorCoords>,
     pub mouse_pos_world: MousePosWorld,
@@ -28,6 +28,113 @@ pub struct NodeEditData {
     pub node_list_pos: usize,
     pub was_new: bool,
 }
+
+#[tracing::instrument(skip_all)]
+pub fn on_node_edit_right_down(
+    trigger: Trigger<Pointer<Down>>,
+    mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
+    mut commands: Commands,
+    mouse_pos_world: Res<MousePosWorld>,
+    skin: Res<Skin>,
+    mut status: ResMut<Status>,
+    zoom: Res<Zoom>,
+    misc_settings: Res<MiscSettings>,
+) {
+    if trigger.button != PointerButton::Secondary {
+        return;
+    }
+    if trigger.entity() == Entity::PLACEHOLDER {
+        return;
+    }
+    let Ok((entity, mut pla)) = selected.get_single_mut() else {
+        return;
+    };
+
+    #[derive(Debug, Eq, PartialEq, Hash)]
+    enum Pos {
+        Existing(usize),
+        NewBefore(usize),
+    }
+    let handles = pla
+        .nodes
+        .iter()
+        .enumerate()
+        .map(|(i, ec)| (Pos::Existing(i), ec.0))
+        .chain(
+            if pla.get_type(&skin) == ComponentType::Area {
+                pla.nodes
+                    .iter()
+                    .enumerate()
+                    .circular_tuple_windows::<(_, _)>()
+                    .collect::<Vec<_>>()
+                    .into_iter()
+            } else {
+                pla.nodes
+                    .iter()
+                    .enumerate()
+                    .tuple_windows::<(_, _)>()
+                    .collect::<Vec<_>>()
+                    .into_iter()
+            }
+                .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
+        );
+    #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+    // TODO figure out how to fix this
+    let Some((list_pos, world_pos)) = handles
+        .min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
+    else {
+        warn!(?entity, "Component has no points");
+        return;
+    };
+    if mouse_pos_world.distance_squared(world_pos.as_vec2())
+        > (2048.0 / zoom.0.exp2() * misc_settings.big_handle_size).powi(2)
+    {
+        info!(?entity, "Handle is too far");
+        return;
+    }
+    info!(?entity, ?list_pos, "Starting movement of node");
+    status.0 = format!("Started movement of node of {}", &*pla).into();
+    let (list_pos, was_new) = match list_pos {
+        Pos::Existing(i) => (i, false),
+        Pos::NewBefore(i) => {
+            pla.nodes.insert(i, EditorCoords(world_pos));
+            (i, true)
+        }
+    };
+    commands.entity(entity).insert(NodeEditData {
+        old_pla: pla.to_owned(),
+        mouse_pos_world: *mouse_pos_world,
+        node_pos_world: world_pos,
+        node_list_pos: list_pos,
+        was_new,
+    });
+}
+
+#[tracing::instrument(skip_all)]
+pub fn on_node_edit_right_up(
+    trigger: Trigger<Pointer<Up>>,
+    mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), (With<SelectedComponent>, With<NodeEditData>)>,
+    mut commands: Commands,
+    mut status: ResMut<Status>,
+) {
+    if trigger.button != PointerButton::Secondary {
+        return;
+    }
+    if trigger.entity() == Entity::PLACEHOLDER {
+        return;
+    }
+    let Ok((entity, mut pla)) = selected.get_single_mut() else {
+        return;
+    };
+
+    info!(?entity, "Ending movement of node");
+    status.0 = format!("Ended movement of node of {}", &*pla).into();
+
+    commands.trigger_targets(EditNodesEv::ClearEventData, entity);
+}
+
+#[tracing::instrument(skip_all)]
+pub fn on_node_edit_right_click()
 
 #[tracing::instrument(skip_all)]
 pub fn edit_nodes_sy(
@@ -56,64 +163,7 @@ pub fn edit_nodes_sy(
     let mut clear_orig = false;
     for event in mouse.read() {
         if let MouseEvent::RightPress(mouse_pos_world) = event {
-            #[derive(Debug, Eq, PartialEq, Hash)]
-            enum Pos {
-                Existing(usize),
-                NewBefore(usize),
-            }
-            let handles = pla
-                .nodes
-                .iter()
-                .enumerate()
-                .map(|(i, ec)| (Pos::Existing(i), ec.0))
-                .chain(
-                    if pla.get_type(&skin) == ComponentType::Area {
-                        pla.nodes
-                            .iter()
-                            .enumerate()
-                            .circular_tuple_windows::<(_, _)>()
-                            .collect::<Vec<_>>()
-                            .into_iter()
-                    } else {
-                        pla.nodes
-                            .iter()
-                            .enumerate()
-                            .tuple_windows::<(_, _)>()
-                            .collect::<Vec<_>>()
-                            .into_iter()
-                    }
-                    .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
-                );
-            #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-            // TODO figure out how to fix this
-            let Some((list_pos, world_pos)) = handles
-                .min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
-            else {
-                warn!(?entity, "Component has no points");
-                continue;
-            };
-            if mouse_pos_world.distance_squared(world_pos.as_vec2())
-                > (2048.0 / zoom.0.exp2() * misc_settings.big_handle_size).powi(2)
-            {
-                info!(?entity, "Handle is too far");
-                continue;
-            }
-            info!(?entity, ?list_pos, "Starting movement of node");
-            status.0 = format!("Started movement of node of {}", &*pla).into();
-            let (list_pos, was_new) = match list_pos {
-                Pos::Existing(i) => (i, false),
-                Pos::NewBefore(i) => {
-                    pla.nodes.insert(i, EditorCoords(world_pos));
-                    (i, true)
-                }
-            };
-            *node_edit_data = Some(NodeEditData {
-                old_pla: pla.to_owned(),
-                mouse_pos_world: *mouse_pos_world,
-                node_pos_world: world_pos,
-                node_list_pos: list_pos,
-                was_new,
-            });
+
         } else if let MouseEvent::RightRelease(_) = event {
             info!(?entity, "Ending movement of node");
             status.0 = format!("Ended movement of node of {}", &*pla).into();
