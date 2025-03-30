@@ -1,9 +1,8 @@
 use std::{collections::BTreeSet, iter::IntoIterator};
 
-use bevy::prelude::{KeyCode, KeyCode::*};
-use once_cell::sync::Lazy;
+use bevy::prelude::{KeyCode::*, *};
 
-pub static KEY_LIST: Lazy<BTreeSet<KeyCode>> = Lazy::new(|| {
+pub static KEY_LIST: std::sync::LazyLock<BTreeSet<KeyCode>> = std::sync::LazyLock::new(|| {
     [
         Backquote,
         Backslash,

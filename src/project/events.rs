@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use bevy::{
-    hierarchy::DespawnRecursiveExt,
-    prelude::{Commands, Entity, Event, EventWriter, NonSendMut, Query, Res, ResMut, Trigger},
-};
+use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
 use bevy_egui::EguiContexts;
 use egui_notify::ToastLevel;
 use itertools::Itertools;
@@ -70,18 +67,24 @@ pub fn on_project(
             ) {
                 for component in components {
                     match component.get_type(&skin) {
-                        ComponentType::Point => commands.spawn(PointComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
-                        ComponentType::Line => commands.spawn(LineComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
-                        ComponentType::Area => commands.spawn(AreaComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
+                        ComponentType::Point => commands
+                            .spawn(PointComponentBundle::new(
+                                component.to_editor_coords(),
+                                &skin,
+                            ))
+                            .observe(|_: Trigger<Pointer<Down>>| println!("a")),
+                        ComponentType::Line => commands
+                            .spawn(LineComponentBundle::new(
+                                component.to_editor_coords(),
+                                &skin,
+                            ))
+                            .observe(|_: Trigger<Pointer<Down>>| println!("b")),
+                        ComponentType::Area => commands
+                            .spawn(AreaComponentBundle::new(
+                                component.to_editor_coords(),
+                                &skin,
+                            ))
+                            .observe(|_: Trigger<Pointer<Down>>| println!("c")),
                     };
                 }
                 if !history_invoked {

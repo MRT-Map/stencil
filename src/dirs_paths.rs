@@ -1,8 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use once_cell::sync::Lazy;
-
-pub static DATA_DIR: Lazy<PathBuf> = Lazy::new(|| {
+pub static DATA_DIR: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
     let dir = dirs::data_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil2");
@@ -20,7 +18,7 @@ pub fn data_path<T: AsRef<Path>>(next: T) -> PathBuf {
     DATA_DIR.join(next)
 }
 
-pub static CACHE_DIR: Lazy<PathBuf> = Lazy::new(|| {
+pub static CACHE_DIR: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
     let dir = dirs::cache_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil2");

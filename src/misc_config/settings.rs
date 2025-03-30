@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -215,4 +214,5 @@ impl MiscSettings {
     }
 }
 
-pub static INIT_MISC_SETTINGS: Lazy<MiscSettings> = Lazy::new(MiscSettings::load);
+pub static INIT_MISC_SETTINGS: std::sync::LazyLock<MiscSettings> =
+    std::sync::LazyLock::new(MiscSettings::load);

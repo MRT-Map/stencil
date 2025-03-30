@@ -5,15 +5,7 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{
-    component::{
-        pla2::ComponentType,
-        skin::Skin,
-        tools::creating::{ClearCreatedComponentEv, CreatedQuery},
-    },
-    project::Namespaces,
-    ui::panel::status::Status,
-};
+use crate::component::{pla2::ComponentType, tools::creating::ClearCreatedComponentEv};
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 #[non_exhaustive]

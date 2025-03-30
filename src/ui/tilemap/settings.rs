@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -162,4 +161,5 @@ impl TileSettings {
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(TileSettings::load);
+pub static INIT_TILE_SETTINGS: std::sync::LazyLock<TileSettings> =
+    std::sync::LazyLock::new(TileSettings::load);

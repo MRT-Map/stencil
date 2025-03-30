@@ -35,7 +35,11 @@ pub fn on_node_edit_right_down(
     mut status: ResMut<Status>,
     zoom: Res<Zoom>,
     misc_settings: Res<MiscSettings>,
+    state: Res<State<EditorState>>,
 ) {
+    if **state != EditorState::EditingNodes {
+        return;
+    }
     if trigger.button != PointerButton::Secondary {
         return;
     }
@@ -115,14 +119,18 @@ pub fn on_node_edit_right_up(
     >,
     mut commands: Commands,
     mut status: ResMut<Status>,
+    state: Res<State<EditorState>>,
 ) {
+    if **state != EditorState::EditingNodes {
+        return;
+    }
     if trigger.button != PointerButton::Secondary {
         return;
     }
     if trigger.entity() == Entity::PLACEHOLDER {
         return;
     }
-    let Ok((entity, mut pla)) = selected.get_single_mut() else {
+    let Ok((entity, pla)) = selected.get_single_mut() else {
         return;
     };
 
@@ -142,7 +150,11 @@ pub fn on_node_edit_right_click(
     mut commands: Commands,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
+    state: Res<State<EditorState>>,
 ) {
+    if **state != EditorState::EditingNodes {
+        return;
+    }
     if trigger.button != PointerButton::Secondary {
         return;
     }
@@ -334,7 +346,11 @@ impl Plugin for EditNodePlugin {
                 .run_if(in_state(EditorState::EditingNodes))
                 .after(UiSet::Reset)
                 .after(highlight_selected_sy),
-        );
+        )
+        .add_observer(on_node_edit_right_down)
+        .add_observer(on_node_edit_right_up)
+        .add_observer(on_node_edit_right_click)
+        .add_observer(on_edit_nodes);
     }
 }
 

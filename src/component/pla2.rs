@@ -98,21 +98,21 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     PointStyle::Square { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Line { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     LineStyle::Fore { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
     #[must_use]
@@ -126,14 +126,14 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     LineStyle::Back { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { outline, .. } => outline.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
     #[must_use]
@@ -147,14 +147,14 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     LineStyle::Fore { width, .. } => Some(*width),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { outline_width, .. } => Some(outline_width * 5.0),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
 }

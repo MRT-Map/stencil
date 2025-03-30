@@ -3,20 +3,16 @@ use std::time::Duration;
 use bevy::{
     picking::{
         backend::HitData,
-        pointer::{Location, PointerAction, PointerId, PointerInput, PressDirection},
+        pointer::{PointerAction, PointerInput, PressDirection},
     },
     prelude::*,
-    render::camera::NormalizedRenderTarget,
 };
 use bevy_egui::EguiContexts;
 use itertools::Itertools;
 
-use crate::{
-    misc_config::settings::MiscSettings,
-    ui::{
-        cursor::mouse_pos::{MousePos, MousePosWorld},
-        panel::dock::{within_tilemap, PanelDockState},
-    },
+use crate::ui::{
+    cursor::mouse_pos::MousePosWorld,
+    panel::dock::{within_tilemap, PanelDockState},
 };
 
 #[derive(Component)]
@@ -38,7 +34,7 @@ pub fn click_handler_sy(
     let events = pointer_event.p0().read().counts_by(|a| a.button);
     let inputs = input_event.read().collect::<Vec<_>>();
     for button in PointerButton::iter() {
-        if events.get(&button).cloned().unwrap_or_default() == 0 {
+        if events.get(&button).copied().unwrap_or_default() == 0 {
             if let Some(input) = inputs.iter().find(|a| {
                 matches!(
                     a.action,
@@ -52,7 +48,7 @@ pub fn click_handler_sy(
                 let event = Pointer::new(
                     Entity::PLACEHOLDER,
                     input.pointer_id,
-                    input.location.to_owned(),
+                    input.location.clone(),
                     Click {
                         button,
                         hit: HitData::new(
@@ -64,7 +60,7 @@ pub fn click_handler_sy(
                         duration: Duration::default(),
                     },
                 );
-                pointer_event.p1().send(event.to_owned());
+                pointer_event.p1().send(event.clone());
                 commands.trigger(event);
             }
         }

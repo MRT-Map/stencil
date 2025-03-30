@@ -32,7 +32,7 @@ pub fn on_select_left_click(
         return;
     }
     let entity = trigger.entity();
-    if entity != Entity::PLACEHOLDER || !components.contains(trigger.entity()) {
+    if entity != Entity::PLACEHOLDER && !components.contains(trigger.entity()) {
         return;
     }
 
@@ -95,6 +95,9 @@ pub fn on_select(
     )>,
 ) {
     let entity = trigger.entity();
+    if entity == Entity::PLACEHOLDER {
+        return;
+    }
     match trigger.event() {
         SelectEv::Select => {
             info!(?entity, "Selecting entity");
@@ -106,15 +109,15 @@ pub fn on_select(
                 .entity(entity)
                 .remove::<SelectedComponent>()
                 .remove::<ShapeBundle>()
-                .component_display(&skin, &query.p0().get(entity).unwrap())
+                .component_display(&skin, query.p0().get(entity).unwrap())
                 .despawn_descendants();
         }
         SelectEv::SelectOne => {
             commands.trigger(SelectEv::DeselectAll);
-            commands.trigger_targets(SelectEv::Select, entity)
+            commands.trigger_targets(SelectEv::Select, entity);
         }
         SelectEv::DeselectAll => {
-            commands.trigger_targets(SelectEv::Deselect, query.p1().iter().collect::<Vec<_>>())
+            commands.trigger_targets(SelectEv::Deselect, query.p1().iter().collect::<Vec<_>>());
         }
     }
 }

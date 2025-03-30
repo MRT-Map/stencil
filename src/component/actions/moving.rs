@@ -6,17 +6,13 @@ use crate::{
         pla2::{EditorCoords, PlaComponent},
     },
     history::{HistoryEntry, HistoryEv},
-    state::{EditorState, IntoSystemConfigExt},
-    ui::{
-        cursor::{mouse_events::HoveredComponent, mouse_pos::MousePosWorld},
-        panel::status::Status,
-    },
+    ui::panel::status::Status,
 };
 
 #[tracing::instrument(skip_all)]
 pub fn on_right_click_drag(
     trigger: Trigger<Pointer<Drag>>,
-    mut query: Query<(&mut Transform), With<SelectedComponent>>,
+    mut query: Query<&mut Transform, With<SelectedComponent>>,
 ) {
     if trigger.button != PointerButton::Secondary {
         return;
@@ -42,7 +38,7 @@ pub fn on_right_click_drag_start(
         return;
     };
     info!("Started move");
-    status.0 = format!("Started moving {}", &*pla).into();
+    status.0 = format!("Started moving {pla}").into();
 }
 
 #[tracing::instrument(skip_all)]

@@ -9,6 +9,7 @@ use once_cell::sync::Lazy;
 
 use crate::{dirs_paths::cache_dir, tile::zoom::Zoom, ui::tilemap::settings::Basemap};
 
+#[expect(clippy::non_std_lazy_statics)]
 pub static URL_REPLACER: Lazy<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
@@ -62,7 +63,7 @@ impl TileCoord {
 
         if !zzz.is_empty() {
             zzz += "_";
-        };
+        }
         format!(
             "{}/{}_{}/{zzz}{}_{}.{}",
             basemap.url, group.x, group.y, num_in_group.x, num_in_group.y, basemap.extension

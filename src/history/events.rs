@@ -3,10 +3,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use bevy::{
-    hierarchy::DespawnRecursiveExt,
-    prelude::{Commands, Entity, Local, Query, Res, ResMut, Trigger, With},
-};
+use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
 use tracing::debug;
 
 use crate::{

@@ -5,7 +5,6 @@ use async_lock::Semaphore;
 use bevy::{ecs::query::QueryFilter, prelude::*};
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
-use once_cell::sync::Lazy;
 
 use crate::{
     tile::{
@@ -17,8 +16,8 @@ use crate::{
     ui::tilemap::settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
 };
 
-static SEMAPHORE: Lazy<Semaphore> =
-    Lazy::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
+static SEMAPHORE: std::sync::LazyLock<Semaphore> =
+    std::sync::LazyLock::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
 pub fn get_shown_tiles<R: QueryFilter>(
@@ -144,7 +143,7 @@ pub fn show_tiles_sy(
                             if !response.status().is_server_error() {
                                 async_fs::write(path, response.body_bytes().await?).await?;
                             }
-                        };
+                        }
 
                         Ok(())
                     });
@@ -164,7 +163,7 @@ pub fn show_tiles_sy(
         if task.is_finished() {
             if matches!(future::block_on(task), Ok(())) {
                 commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
-            };
+            }
             to_remove.push((*tile_coord, false));
         }
     }

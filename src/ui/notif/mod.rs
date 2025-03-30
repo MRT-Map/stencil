@@ -7,13 +7,13 @@ use std::{
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use egui_notify::{Toast, ToastLevel, Toasts};
-use once_cell::sync::Lazy;
 
 use crate::misc_config::settings::MiscSettings;
 
 pub mod viewer;
 
-pub static NOTIF_LOG: Lazy<RwLock<NotifLog>> = Lazy::new(|| RwLock::new(NotifLog::default()));
+pub static NOTIF_LOG: std::sync::LazyLock<RwLock<NotifLog>> =
+    std::sync::LazyLock::new(|| RwLock::new(NotifLog::default()));
 
 #[derive(Default, Resource)]
 pub struct NotifToasts(pub Toasts);
@@ -67,7 +67,7 @@ pub fn update_notifs_sy(
 
     if let Some(ctx) = ctx.try_ctx_mut() {
         toasts.0.show(ctx);
-    };
+    }
 
     if notif_log.pending_notifs.is_empty() {
         return;

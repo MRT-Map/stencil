@@ -11,7 +11,7 @@ use crate::{
 pub fn delete_component_sy(
     trigger: Trigger<Pointer<Click>>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>)>,
+    query: Query<&PlaComponent<EditorCoords>>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
 ) {

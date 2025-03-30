@@ -1,4 +1,4 @@
-use bevy::prelude::{Event, ResMut, Trigger};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 
@@ -99,7 +99,7 @@ impl DockWindow for ComponentEditor {
         if component_data.get_type(skin) == ComponentType::Line {
             if ui.button("Reverse direction").clicked() {
                 component_data.nodes.reverse();
-            };
+            }
             ui.end_row();
             ui.separator();
         }
