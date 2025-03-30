@@ -8,7 +8,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::{
-            mouse_events::{HoveredComponent, MouseEvent},
+            mouse_events::HoveredComponent,
             mouse_pos::{MousePos, MousePosWorld},
         },
         panel::dock::{within_tilemap, PanelDockState},
@@ -131,6 +131,6 @@ impl Plugin for CursorPlugin {
                 PostUpdate,
                 (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
             )
-            .add_systems(First, mouse_pos::update_mouse_pos_sy)
+            .add_systems(First, mouse_pos::update_mouse_pos_sy);
     }
 }

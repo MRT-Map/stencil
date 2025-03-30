@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
@@ -52,7 +52,7 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) {
     for (name, bytes) in fonts {
         font_definitions
             .font_data
-            .insert(name.clone(), egui::FontData::from_owned(bytes));
+            .insert(name.clone(), Arc::new(egui::FontData::from_owned(bytes)));
         font_definitions
             .families
             .get_mut(&egui::FontFamily::Proportional)

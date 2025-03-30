@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::entity::ShapeBundle;
-use rand::distributions::{Alphanumeric, DistString};
+use rand::distr::{Alphanumeric, SampleString};
 
 use crate::{
     component::{
@@ -73,7 +73,7 @@ pub fn on_point_left_click(
                 namespaces.prev_used = "_misc".into();
             }
             namespaces.prev_used.clone_into(&mut point.namespace);
-            point.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+            point.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
             point
         },
         &skin,
@@ -230,7 +230,7 @@ pub fn on_clear_created_component(
             namespaces.prev_used = "_misc".into();
         }
         namespaces.prev_used.clone_into(&mut data.namespace);
-        data.id = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+        data.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         commands
             .entity(entity)
             .remove::<ShapeBundle>()

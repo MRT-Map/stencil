@@ -13,11 +13,7 @@ use crate::{
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
-    ui::{
-        cursor::{mouse_pos::MousePosWorld},
-        panel::status::Status,
-        UiSet,
-    },
+    ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status, UiSet},
 };
 
 #[derive(Debug, Clone, Component)]
@@ -76,12 +72,12 @@ pub fn on_node_edit_right_down(
                     .collect::<Vec<_>>()
                     .into_iter()
             }
-                .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
+            .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
         );
     #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
     // TODO figure out how to fix this
-    let Some((list_pos, world_pos)) = handles
-        .min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
+    let Some((list_pos, world_pos)) =
+        handles.min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
     else {
         warn!(?entity, "Component has no points");
         return;
@@ -113,7 +109,10 @@ pub fn on_node_edit_right_down(
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_up(
     trigger: Trigger<Pointer<Up>>,
-    mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), (With<SelectedComponent>, With<NodeEditData>)>,
+    mut selected: Query<
+        (Entity, &mut PlaComponent<EditorCoords>),
+        (With<SelectedComponent>, With<NodeEditData>),
+    >,
     mut commands: Commands,
     mut status: ResMut<Status>,
 ) {
@@ -134,66 +133,84 @@ pub fn on_node_edit_right_up(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn on_node_edit_right_click()
-
-#[tracing::instrument(skip_all)]
-pub fn edit_nodes_sy(
-    mut selected: Query<(&mut PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
+pub fn on_node_edit_right_click(
+    trigger: Trigger<Pointer<Click>>,
+    mut selected: Query<
+        (Entity, &mut PlaComponent<EditorCoords>, &NodeEditData),
+        With<SelectedComponent>,
+    >,
     mut commands: Commands,
-    mut node_edit_data: Local<Option<NodeEditData>>,
-    mut mouse: EventReader<MouseEvent>,
-    mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
-    zoom: Res<Zoom>,
-    misc_settings: Res<MiscSettings>,
 ) {
-    let Ok((mut pla, entity)) = selected.get_single_mut() else {
+    if trigger.button != PointerButton::Secondary {
+        return;
+    }
+    if trigger.entity() == Entity::PLACEHOLDER {
+        return;
+    }
+    let Ok((entity, mut pla, orig)) = selected.get_single_mut() else {
         return;
     };
-    if let Some(orig) = &*node_edit_data {
-        debug!(?entity, "Moving node");
-        pla.nodes[orig.node_list_pos].0 = (**mouse_pos_world - *orig.mouse_pos_world
-            + orig.node_pos_world.as_vec2())
-        .round()
-        .as_ivec2();
+
+    if orig.was_new || pla.get_type(&skin) == ComponentType::Point {
+        return;
+    }
+    info!(?entity, "Deleting node");
+    status.0 = format!("Deleted node of {}", &*pla).into();
+    pla.nodes.remove(orig.node_list_pos);
+    if pla.nodes.len() < 2 {
+        info!(?entity, "Deleting entity");
+        status.0 = format!("Deleting {}", &*pla).into();
+        commands.entity(entity).despawn_recursive();
+    } else {
         commands.entity(entity).select_component(&skin, &pla);
     }
-
-    let mut clear_orig = false;
-    for event in mouse.read() {
-        if let MouseEvent::RightPress(mouse_pos_world) = event {
-
-        } else if let MouseEvent::RightRelease(_) = event {
-            info!(?entity, "Ending movement of node");
-            status.0 = format!("Ended movement of node of {}", &*pla).into();
-            clear_orig = true;
-        } else if let MouseEvent::RightClick(_) = event {
-            if let Some(orig) = &*node_edit_data {
-                if !orig.was_new && pla.get_type(&skin) != ComponentType::Point {
-                    info!(?entity, "Deleting node");
-                    status.0 = format!("Deleted node of {}", &*pla).into();
-                    pla.nodes.remove(orig.node_list_pos);
-                    if pla.nodes.len() < 2 {
-                        info!(?entity, "Deleting entity");
-                        status.0 = format!("Deleting {}", &*pla).into();
-                        commands.entity(entity).despawn_recursive();
-                    } else {
-                        commands.entity(entity).select_component(&skin, &pla);
-                    }
-                }
-            }
-        }
-    }
-    if clear_orig {
-        if let Some(orig) = node_edit_data.take() {
+}
+#[tracing::instrument(skip_all)]
+pub fn on_edit_nodes(
+    trigger: Trigger<EditNodesEv>,
+    mut selected: Query<
+        (Entity, &PlaComponent<EditorCoords>, &NodeEditData),
+        With<SelectedComponent>,
+    >,
+    mut commands: Commands,
+) {
+    let Ok((entity, pla, orig)) = selected.get_single_mut() else {
+        return;
+    };
+    match trigger.event() {
+        EditNodesEv::ClearEventData => {
+            commands.entity(entity).remove::<NodeEditData>();
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 entity,
-                before: Some(orig.old_pla.into()),
+                before: Some(orig.to_owned().old_pla.into()),
                 after: Some(pla.to_owned().into()),
             }));
         }
     }
+}
+
+#[tracing::instrument(skip_all)]
+pub fn move_selected_node_sy(
+    mut selected: Query<
+        (Entity, &mut PlaComponent<EditorCoords>, &NodeEditData),
+        With<SelectedComponent>,
+    >,
+    mut commands: Commands,
+    mouse_pos_world: Res<MousePosWorld>,
+    skin: Res<Skin>,
+) {
+    let Ok((entity, mut pla, orig)) = selected.get_single_mut() else {
+        return;
+    };
+
+    debug!(?entity, "Moving node");
+    pla.nodes[orig.node_list_pos].0 = (**mouse_pos_world - *orig.mouse_pos_world
+        + orig.node_pos_world.as_vec2())
+    .round()
+    .as_ivec2();
+    commands.entity(entity).select_component(&skin, &pla);
 }
 
 pub fn update_handles(
@@ -308,7 +325,7 @@ impl Plugin for EditNodePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            edit_nodes_sy.run_if(in_state(EditorState::EditingNodes)),
+            move_selected_node_sy.run_if(in_state(EditorState::EditingNodes)),
         )
         .add_systems(OnExit(EditorState::EditingNodes), remove_handles_sy)
         .add_systems(
@@ -319,4 +336,9 @@ impl Plugin for EditNodePlugin {
                 .after(highlight_selected_sy),
         );
     }
+}
+
+#[derive(Copy, Clone, Event)]
+pub enum EditNodesEv {
+    ClearEventData,
 }

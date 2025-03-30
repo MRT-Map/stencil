@@ -159,7 +159,7 @@ pub fn on_project(
             );
         }
         ProjectEv::Open => {
-            file_dialogs.project_select.select_directory();
+            file_dialogs.project_select.pick_directory();
         }
         ProjectEv::Reload => {
             let ns: Vec<String> = namespaces
@@ -239,7 +239,7 @@ pub fn project_dialog(
     let file_dialog = &mut file_dialogs.project_select;
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     file_dialog.update(ctx);
-    if let Some(file) = file_dialog.take_selected() {
+    if let Some(file) = file_dialog.take_picked() {
         if namespaces.dir == Namespaces::default().dir {
             commands.trigger(ProjectEv::Load(file, true));
         } else {

@@ -52,7 +52,7 @@ impl DockWindow for MiscSettingsEditor {
                 cache_path("skin.msgpack").exists(),
                 egui::Button::new("Clear skin cache"),
             )
-            .clicked
+            .clicked()
             && cache_path("skin.msgpack").exists()
         {
             let _ = safe_delete(&cache_path("skin.msgpack"), Some("cached skin file"));

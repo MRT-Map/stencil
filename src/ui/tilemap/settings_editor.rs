@@ -171,7 +171,7 @@ pub fn on_tile_settings(
             window_action_handler(&mut state, TileSettingsEditor);
         }
         TileSettingsEv::Import => {
-            file_dialogs.tile_settings_import.select_file();
+            file_dialogs.tile_settings_import.save_file();
         }
         TileSettingsEv::Export(basemap) => {
             let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
@@ -191,7 +191,7 @@ pub fn tile_settings_dialog(
     };
     let file_dialog = &mut file_dialogs.tile_settings_import;
     file_dialog.update(ctx);
-    if let Some(file) = file_dialog.take_selected() {
+    if let Some(file) = file_dialog.take_picked() {
         if let Ok(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
             NOTIF_LOG.push(
@@ -203,7 +203,7 @@ pub fn tile_settings_dialog(
 
     if let Some((basemap, file_dialog)) = &mut file_dialogs.tile_settings_export {
         file_dialog.update(ctx);
-        if let Some(file) = file_dialog.take_selected() {
+        if let Some(file) = file_dialog.take_picked() {
             if save_toml(basemap, &file, Some("basemap")).is_ok() {
                 NOTIF_LOG.push(
                     &format!("Exported basemap to {}", file.to_string_lossy()),
