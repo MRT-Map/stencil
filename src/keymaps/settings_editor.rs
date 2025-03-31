@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use bevy::prelude::*;
 use bevy_egui::egui;
 
@@ -78,74 +80,73 @@ pub fn on_keymap_settings(
     window_action_handler(&mut state, KeymapSettingsEditor);
 }
 
-pub static KEYMAP_MENU: std::sync::LazyLock<[(&str, Vec<(KeymapAction, &str)>); 5]> =
-    std::sync::LazyLock::new(|| {
-        [
-            (
-                "State",
-                [
-                    (KeymapAction::ChangeState(EditorState::Idle), "Select"),
-                    (
-                        KeymapAction::ChangeState(EditorState::EditingNodes),
-                        "Edit Nodes",
-                    ),
-                    (
-                        KeymapAction::ChangeState(EditorState::DeletingComponent),
-                        "Delete",
-                    ),
-                    (
-                        KeymapAction::ChangeState(EditorState::CreatingPoint),
-                        "Point",
-                    ),
-                    (KeymapAction::ChangeState(EditorState::CreatingLine), "Line"),
-                    (KeymapAction::ChangeState(EditorState::CreatingArea), "Area"),
-                ]
-                .into_iter()
-                .collect(),
-            ),
-            (
-                "Settings",
-                [
-                    (KeymapAction::TileSettings, "Tile"),
-                    (KeymapAction::WindowSettings, "Window"),
-                    (KeymapAction::KeymapSettings, "Keymap"),
-                    (KeymapAction::MiscSettings, "Misc"),
-                    (KeymapAction::AllSettings, "All"),
-                ]
-                .into_iter()
-                .collect(),
-            ),
-            (
-                "Project",
-                [
-                    (KeymapAction::OpenProject, "Open Project"),
-                    (KeymapAction::SaveProject, "Save Project"),
-                    (KeymapAction::ReloadProject, "Reload Project"),
-                ]
-                .into_iter()
-                .collect(),
-            ),
-            (
-                "Windows",
-                [
-                    (KeymapAction::ComponentEditor, "Component Editor"),
-                    (KeymapAction::Project, "Project"),
-                    (KeymapAction::ComponentList, "Component List"),
-                    (KeymapAction::History, "History"),
-                    (KeymapAction::NotifLog, "Notification Log"),
-                ]
-                .into_iter()
-                .collect(),
-            ),
-            (
-                "Other",
-                [
-                    (KeymapAction::Undo, "Undo"),
-                    (KeymapAction::Redo, "Redo"),
-                    (KeymapAction::Quit, "Quit"),
-                ]
-                .into_iter()
-                .collect(),
-            ),
-        ]
-    });
+pub static KEYMAP_MENU: LazyLock<[(&str, Vec<(KeymapAction, &str)>); 5]> = LazyLock::new(|| {
+    [
+        (
+            "State",
+            [
+                (KeymapAction::ChangeState(EditorState::Idle), "Select"),
+                (
+                    KeymapAction::ChangeState(EditorState::EditingNodes),
+                    "Edit Nodes",
+                ),
+                (
+                    KeymapAction::ChangeState(EditorState::DeletingComponent),
+                    "Delete",
+                ),
+                (
+                    KeymapAction::ChangeState(EditorState::CreatingPoint),
+                    "Point",
+                ),
+                (KeymapAction::ChangeState(EditorState::CreatingLine), "Line"),
+                (KeymapAction::ChangeState(EditorState::CreatingArea), "Area"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Settings",
+            [
+                (KeymapAction::TileSettings, "Tile"),
+                (KeymapAction::WindowSettings, "Window"),
+                (KeymapAction::KeymapSettings, "Keymap"),
+                (KeymapAction::MiscSettings, "Misc"),
+                (KeymapAction::AllSettings, "All"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Project",
+            [
+                (KeymapAction::OpenProject, "Open Project"),
+                (KeymapAction::SaveProject, "Save Project"),
+                (KeymapAction::ReloadProject, "Reload Project"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Windows",
+            [
+                (KeymapAction::ComponentEditor, "Component Editor"),
+                (KeymapAction::Project, "Project"),
+                (KeymapAction::ComponentList, "Component List"),
+                (KeymapAction::History, "History"),
+                (KeymapAction::NotifLog, "Notification Log"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+        (
+            "Other",
+            [
+                (KeymapAction::Undo, "Undo"),
+                (KeymapAction::Redo, "Redo"),
+                (KeymapAction::Quit, "Quit"),
+            ]
+            .into_iter()
+            .collect(),
+        ),
+    ]
+});

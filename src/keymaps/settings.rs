@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
 use bevy::prelude::*;
 use eyre::OptionExt;
@@ -200,5 +200,4 @@ impl KeymapSettings {
     }
 }
 
-pub static INIT_KEYMAP_SETTINGS: std::sync::LazyLock<KeymapSettings> =
-    std::sync::LazyLock::new(KeymapSettings::load);
+pub static INIT_KEYMAP_SETTINGS: LazyLock<KeymapSettings> = LazyLock::new(KeymapSettings::load);

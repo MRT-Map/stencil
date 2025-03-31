@@ -1,6 +1,9 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
 
-pub static DATA_DIR: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
+pub static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     let dir = dirs::data_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil2");
@@ -18,7 +21,7 @@ pub fn data_path<T: AsRef<Path>>(next: T) -> PathBuf {
     DATA_DIR.join(next)
 }
 
-pub static CACHE_DIR: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
+pub static CACHE_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     let dir = dirs::cache_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil2");

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
@@ -16,8 +16,8 @@ use crate::{
     ui::tilemap::settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
 };
 
-static SEMAPHORE: std::sync::LazyLock<Semaphore> =
-    std::sync::LazyLock::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
+static SEMAPHORE: LazyLock<Semaphore> =
+    LazyLock::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
 pub fn get_shown_tiles<R: QueryFilter>(

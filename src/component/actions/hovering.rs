@@ -1,18 +1,5 @@
 use bevy::prelude::*;
 
-use crate::{
-    component::{
-        actions::selecting::{highlight_selected_sy, on_select, on_select_left_click},
-        bundle::SelectedComponent,
-        pla2::{EditorCoords, PlaComponent},
-        skin::Skin,
-    },
-    misc_config::settings::MiscSettings,
-    state::EditorState,
-    tile::zoom::Zoom,
-    ui::UiSet,
-};
-
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct HoveredComponent;

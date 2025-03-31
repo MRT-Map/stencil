@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -214,5 +216,4 @@ impl MiscSettings {
     }
 }
 
-pub static INIT_MISC_SETTINGS: std::sync::LazyLock<MiscSettings> =
-    std::sync::LazyLock::new(MiscSettings::load);
+pub static INIT_MISC_SETTINGS: LazyLock<MiscSettings> = LazyLock::new(MiscSettings::load);

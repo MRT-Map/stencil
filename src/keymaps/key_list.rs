@@ -1,8 +1,8 @@
-use std::{collections::BTreeSet, iter::IntoIterator};
+use std::{collections::BTreeSet, iter::IntoIterator, sync::LazyLock};
 
 use bevy::prelude::{KeyCode::*, *};
 
-pub static KEY_LIST: std::sync::LazyLock<BTreeSet<KeyCode>> = std::sync::LazyLock::new(|| {
+pub static KEY_LIST: LazyLock<BTreeSet<KeyCode>> = LazyLock::new(|| {
     [
         Backquote,
         Backslash,

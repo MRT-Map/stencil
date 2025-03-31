@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    sync::RwLock,
+    sync::{LazyLock, RwLock},
     time::{Duration, SystemTime},
 };
 
@@ -12,8 +12,8 @@ use crate::misc_config::settings::MiscSettings;
 
 pub mod viewer;
 
-pub static NOTIF_LOG: std::sync::LazyLock<RwLock<NotifLog>> =
-    std::sync::LazyLock::new(|| RwLock::new(NotifLog::default()));
+pub static NOTIF_LOG: LazyLock<RwLock<NotifLog>> =
+    LazyLock::new(|| RwLock::new(NotifLog::default()));
 
 #[derive(Default, Resource)]
 pub struct NotifToasts(pub Toasts);

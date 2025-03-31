@@ -51,6 +51,7 @@ pub fn on_node_edit_right_down(
     };
 
     #[derive(Debug, Eq, PartialEq, Hash)]
+    #[expect(clippy::items_after_statements)]
     enum Pos {
         Existing(usize),
         NewBefore(usize),

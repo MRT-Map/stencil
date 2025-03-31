@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use bevy::{prelude::*, render::settings::Backends, window::WindowMode};
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -109,5 +111,4 @@ impl WindowSettings {
     }
 }
 
-pub static INIT_WINDOW_SETTINGS: std::sync::LazyLock<WindowSettings> =
-    std::sync::LazyLock::new(WindowSettings::load);
+pub static INIT_WINDOW_SETTINGS: LazyLock<WindowSettings> = LazyLock::new(WindowSettings::load);
