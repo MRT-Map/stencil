@@ -16,6 +16,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{panel::status::Status, UiSet},
 };
+use crate::ui::panel::dock::PanelDockState;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
@@ -24,8 +25,9 @@ pub fn on_select_left_click(
     state: Res<State<EditorState>>,
     components: Query<(), With<PlaComponent<EditorCoords>>>,
     mut status: ResMut<Status>,
+    panel: Res<PanelDockState>,
 ) {
-    if state.component_type().is_some()
+    if !panel.pointer_within_tilemap || state.component_type().is_some()
         || *state == EditorState::DeletingComponent
         || trigger.button != PointerButton::Primary
     {

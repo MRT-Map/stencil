@@ -6,6 +6,7 @@ use crate::{
     state::EditorState,
     ui::panel::status::Status,
 };
+use crate::ui::panel::dock::PanelDockState;
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(
@@ -14,8 +15,9 @@ pub fn delete_component_sy(
     query: Query<&PlaComponent<EditorCoords>>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if **state != EditorState::DeletingComponent {
+    if !panel.pointer_within_tilemap || **state != EditorState::DeletingComponent {
         return;
     }
     let entity = trigger.entity();

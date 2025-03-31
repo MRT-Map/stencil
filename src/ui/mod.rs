@@ -1,5 +1,6 @@
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_egui::{egui, EguiContexts};
+use bevy::window::PrimaryWindow;
+use bevy_egui::{egui, EguiContextSettings, EguiContexts};
 
 use crate::state::IntoSystemSetConfigExt;
 
@@ -54,14 +55,16 @@ impl Plugin for UiPlugin {
             .add_plugins(cursor::CursorPlugin)
             .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
             .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset))
-            .add_systems(Startup, |mut ctx: EguiContexts| {
+            .add_systems(Startup, |mut ctx: EguiContexts, mut settings: Query<&mut EguiContextSettings, With<PrimaryWindow>>| {
                 let Some(ctx) = ctx.try_ctx_mut() else {
                     return;
                 };
                 egui_extras::install_image_loaders(ctx);
+                
+                settings.single_mut().capture_pointer_input = false;
             });
         let mut order = app.world_mut().resource_mut::<MainScheduleOrder>();
-        order.insert_after(PostUpdate, UiSchedule);
+        order.insert_after(PreUpdate, UiSchedule);
     }
 }
 

@@ -9,7 +9,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_pos::{MousePos, MousePosWorld},
-        panel::dock::{within_tilemap, PanelDockState},
+        panel::dock::{PanelDockState},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
     },
@@ -30,14 +30,13 @@ pub fn crosshair_sy(
     images: Res<ImageAssets>,
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
-    mut ctx: EguiContexts,
     tile_settings: Res<TileSettings>,
     panel: Res<PanelDockState>,
     misc_settings: Res<MiscSettings>,
 ) {
     if let Some(state) = state {
         if state.component_type().is_none()
-            || (state.component_type().is_some() && !within_tilemap(&mut ctx, &panel))
+            || (state.component_type().is_some() && !panel.pointer_within_tilemap)
         {
             for (e, _, _) in ch.iter() {
                 debug!("Despawning crosshair");
@@ -89,11 +88,11 @@ pub fn cursor_icon_sy(
 
     for (e, mut window) in &mut windows {
         if state.component_type().is_some() {
-            window.cursor_options.visible = !within_tilemap(&mut ctx, &panel);
+            window.cursor_options.visible = !panel.pointer_within_tilemap;
             continue;
         }
         window.cursor_options.visible = true;
-        if !within_tilemap(&mut ctx, &panel) {
+        if !panel.pointer_within_tilemap {
             continue;
         }
 
@@ -126,7 +125,7 @@ impl Plugin for CursorPlugin {
                 (mouse_events::click_handler_sy,).in_set(UiSet::Mouse),
             )
             .add_systems(
-                PostUpdate,
+                Last,
                 (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
             )
             .add_systems(First, mouse_pos::update_mouse_pos_sy);

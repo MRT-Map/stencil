@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::ui::panel::dock::PanelDockState;
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
@@ -9,9 +10,10 @@ pub fn on_hover_over(
     trigger: Trigger<Pointer<Over>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
+    panel: Res<PanelDockState>,
 ) {
     let entity = trigger.entity();
-    if !pickables.contains(entity) {
+    if !panel.pointer_within_tilemap || !pickables.contains(entity) {
         return;
     }
     debug!(?entity, "Entered hover over component");
@@ -23,9 +25,10 @@ pub fn on_hover_out(
     trigger: Trigger<Pointer<Out>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
+    panel: Res<PanelDockState>,
 ) {
     let entity = trigger.entity();
-    if !pickables.contains(entity) {
+    if !panel.pointer_within_tilemap || !pickables.contains(entity) {
         return;
     }
     debug!(?entity, "Entered hover out of component");

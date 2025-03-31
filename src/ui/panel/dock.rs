@@ -63,8 +63,7 @@ pub enum DockWindows {
 #[derive(Resource)]
 pub struct PanelDockState {
     pub state: DockState<DockWindows>,
-    pub viewport_rect: egui::Rect,
-    pub layer_id: egui::LayerId,
+    pub pointer_within_tilemap: bool,
 }
 
 impl Default for PanelDockState {
@@ -84,8 +83,7 @@ impl Default for PanelDockState {
 
         Self {
             state,
-            layer_id: egui::LayerId::background(),
-            viewport_rect: egui::Rect::NOTHING,
+            pointer_within_tilemap: false,
         }
     }
 }
@@ -94,8 +92,7 @@ impl PanelDockState {
     fn ui(&mut self, params: &mut PanelParams, ctx: &egui::Context) {
         let mut tab_viewer = TabViewer {
             params,
-            viewport_rect: &mut self.viewport_rect,
-            layer_id: &mut self.layer_id,
+            pointer_within_tilemap: &mut self.pointer_within_tilemap
         };
 
         DockArea::new(&mut self.state)
@@ -106,8 +103,7 @@ impl PanelDockState {
 
 pub struct TabViewer<'a, 'w, 's> {
     pub params: &'a mut PanelParams<'w, 's>,
-    pub viewport_rect: &'a mut egui::Rect,
-    pub layer_id: &'a mut egui::LayerId,
+    pub pointer_within_tilemap: &'a mut bool,
 }
 
 pub struct FileDialogs {
@@ -225,10 +221,4 @@ pub struct ResetPanelDockStateEv;
 pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<PanelDockState>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
     *state = PanelDockState::default();
-}
-
-#[must_use]
-pub fn within_tilemap(ctx: &mut EguiContexts, panel: &Res<PanelDockState>) -> bool {
-    ctx.try_ctx_mut()
-        .is_none_or(|a| a.rect_contains_pointer(panel.layer_id, panel.viewport_rect))
 }

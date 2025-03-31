@@ -7,12 +7,11 @@ use bevy::{
     },
     prelude::*,
 };
-use bevy_egui::EguiContexts;
 use itertools::Itertools;
 
 use crate::ui::{
     cursor::mouse_pos::MousePosWorld,
-    panel::dock::{within_tilemap, PanelDockState},
+    panel::dock::{PanelDockState},
 };
 
 #[tracing::instrument(skip_all)]
@@ -20,12 +19,11 @@ pub fn click_handler_sy(
     mut pointer_event: ParamSet<(EventReader<Pointer<Click>>, EventWriter<Pointer<Click>>)>,
     mut commands: Commands,
     mut input_event: EventReader<PointerInput>,
-    mut ctx: EguiContexts,
     pickables: Query<(), With<RayCastPickable>>,
     panel: Res<PanelDockState>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    if !within_tilemap(&mut ctx, &panel) {
+    if !panel.pointer_within_tilemap {
         return;
     }
     let events = pointer_event

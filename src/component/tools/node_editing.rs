@@ -15,6 +15,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status, UiSet},
 };
+use crate::ui::panel::dock::PanelDockState;
 
 #[derive(Debug, Clone, Component)]
 pub struct NodeEditData {
@@ -36,8 +37,9 @@ pub fn on_node_edit_right_down(
     zoom: Res<Zoom>,
     misc_settings: Res<MiscSettings>,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
         return;
     }
     if trigger.button != PointerButton::Secondary {
@@ -121,8 +123,9 @@ pub fn on_node_edit_right_up(
     mut commands: Commands,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
         return;
     }
     if trigger.button != PointerButton::Secondary {
@@ -152,8 +155,9 @@ pub fn on_node_edit_right_click(
     skin: Res<Skin>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
         return;
     }
     if trigger.button != PointerButton::Secondary {

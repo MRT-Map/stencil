@@ -8,13 +8,15 @@ use crate::{
     history::{HistoryEntry, HistoryEv},
     ui::panel::status::Status,
 };
+use crate::ui::panel::dock::PanelDockState;
 
 #[tracing::instrument(skip_all)]
 pub fn on_right_click_drag(
     trigger: Trigger<Pointer<Drag>>,
     mut query: Query<&mut Transform, With<SelectedComponent>>,
+    panel: Res<PanelDockState>,
 ) {
-    if trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
         return;
     }
     let Ok(mut transform) = query.get_mut(trigger.entity()) else {
@@ -30,8 +32,9 @@ pub fn on_right_click_drag_start(
     trigger: Trigger<Pointer<DragStart>>,
     query: Query<&PlaComponent<EditorCoords>, With<SelectedComponent>>,
     mut status: ResMut<Status>,
+    panel: Res<PanelDockState>,
 ) {
-    if trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
         return;
     }
     let Ok(pla) = query.get(trigger.entity()) else {
@@ -47,8 +50,9 @@ pub fn on_right_click_drag_end(
     mut commands: Commands,
     mut query: Query<(&mut Transform, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut status: ResMut<Status>,
+    panel: Res<PanelDockState>,
 ) {
-    if trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
         return;
     }
     let Ok((mut transform, mut pla)) = query.get_mut(trigger.entity()) else {

@@ -17,6 +17,7 @@ use crate::{
     state::EditorState,
     ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
 };
+use crate::ui::panel::dock::PanelDockState;
 
 const ANGLE_VECTORS: [Vec2; 20] = [
     Vec2::new(4.0, 0.0),
@@ -49,8 +50,9 @@ pub fn on_point_left_click(
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if **state != EditorState::CreatingPoint {
+    if !panel.pointer_within_tilemap || **state != EditorState::CreatingPoint {
         return;
     }
     let node = trigger
@@ -100,8 +102,9 @@ pub fn on_line_area_left_click(
     mut set: CreatedQuery,
     mut status: ResMut<Status>,
     skin: Res<Skin>,
+    panel: Res<PanelDockState>,
 ) {
-    if trigger.button != PointerButton::Primary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Primary {
         return;
     }
     let (ty, ty_text) = match **state {
@@ -162,8 +165,9 @@ pub fn on_line_area_right_click(
     trigger: Trigger<Pointer<Click>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
+    panel: Res<PanelDockState>,
 ) {
-    if trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
         return;
     }
     if ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {

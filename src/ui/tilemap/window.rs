@@ -14,8 +14,7 @@ impl DockWindow for Tilemap {
     }
     fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
         toolbar(ui, tab_viewer);
-        *tab_viewer.layer_id = ui.layer_id();
-        *tab_viewer.viewport_rect = ui.available_rect_before_wrap();
+        *tab_viewer.pointer_within_tilemap = ui.rect_contains_pointer(ui.available_rect_before_wrap());
     }
     fn allowed_in_windows(self) -> bool {
         false

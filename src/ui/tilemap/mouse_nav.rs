@@ -13,7 +13,7 @@ use crate::{
     },
     ui::{
         cursor::mouse_pos::MousePos,
-        panel::dock::{within_tilemap, PanelDockState},
+        panel::dock::{PanelDockState},
         tilemap::settings::TileSettings,
     },
 };
@@ -29,7 +29,7 @@ pub fn mouse_drag_sy(
     mut ctx: EguiContexts,
     panel: Res<PanelDockState>,
 ) {
-    if !within_tilemap(&mut ctx, &panel) {
+    if !panel.pointer_within_tilemap {
         return;
     }
     let (camera, mut transform) = camera.single_mut();
@@ -69,11 +69,10 @@ pub fn mouse_zoom_sy(
     mut zoom: ResMut<Zoom>,
     mouse_pos: Res<MousePos>,
     tile_settings: Res<TileSettings>,
-    mut ctx: EguiContexts,
     panel: Res<PanelDockState>,
     misc_settings: Res<MiscSettings>,
 ) {
-    if !within_tilemap(&mut ctx, &panel) {
+    if !panel.pointer_within_tilemap {
         return;
     }
     let (camera, global_transform, mut ort_proj, mut transform) = camera.single_mut();
