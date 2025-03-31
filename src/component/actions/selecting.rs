@@ -12,9 +12,9 @@ use crate::{
         skin::Skin,
     },
     misc_config::settings::MiscSettings,
-    state::{EditorState, IntoSystemConfigExt},
+    state::EditorState,
     tile::zoom::Zoom,
-    ui::{panel::status::Status, UiSet},
+    ui::panel::status::Status,
 };
 use crate::ui::panel::dock::PanelDockState;
 
@@ -61,8 +61,6 @@ pub fn highlight_selected_sy(
         return;
     }
     for (data, entity) in query.iter() {
-        trace!(?entity, "Highlighting selected component");
-        commands.entity(entity).select_component(&skin, data);
         if data.get_type(&skin) == ComponentType::Line && !data.nodes.is_empty() {
             commands.entity(entity).despawn_descendants();
             let start = commands
@@ -104,6 +102,7 @@ pub fn on_select(
         SelectEv::Select => {
             info!(?entity, "Selecting entity");
             commands.entity(entity).insert(SelectedComponent);
+            commands.entity(entity).select_component(&skin, query.p0().get(entity).unwrap());
         }
         SelectEv::Deselect => {
             debug!(?entity, "Deselecting component");
@@ -134,12 +133,12 @@ pub fn on_select(
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PreUpdate,
-            highlight_selected_sy
-                .run_if_not_loading()
-                .after(UiSet::Reset),
-        )
+        app//.add_systems(
+        //     PreUpdate,
+        //     highlight_selected_sy
+        //         .run_if_not_loading()
+        //         .after(UiSet::Reset),
+        // )
         .add_observer(on_select_left_click)
         .add_observer(on_select);
     }

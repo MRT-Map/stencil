@@ -16,7 +16,7 @@ pub fn on_hover_over(
     if !panel.pointer_within_tilemap || !pickables.contains(entity) {
         return;
     }
-    debug!(?entity, "Entered hover over component");
+    debug!(?entity, "Hovering over component");
     commands.entity(entity).insert(HoveredComponent);
 }
 
@@ -31,7 +31,7 @@ pub fn on_hover_out(
     if !panel.pointer_within_tilemap || !pickables.contains(entity) {
         return;
     }
-    debug!(?entity, "Entered hover out of component");
+    debug!(?entity, "Hovering out of component");
     commands.entity(entity).remove::<HoveredComponent>();
 }
 

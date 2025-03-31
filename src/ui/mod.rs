@@ -53,8 +53,8 @@ impl Plugin for UiPlugin {
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
-            .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
-            .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset))
+            // .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
+            // .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset))
             .add_systems(Startup, |mut ctx: EguiContexts, mut settings: Query<&mut EguiContextSettings, With<PrimaryWindow>>| {
                 let Some(ctx) = ctx.try_ctx_mut() else {
                     return;

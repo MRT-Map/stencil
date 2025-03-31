@@ -1,4 +1,5 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy::render::primitives::Aabb;
 use bevy_prototype_lyon::prelude::*;
 
 use crate::component::{
@@ -72,6 +73,7 @@ pub trait EntityCommandsSelectExt {
 
 impl EntityCommandsSelectExt for EntityCommands<'_> {
     fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
+        self.remove::<Aabb>();
         let ty = data.get_type(skin);
         let fill = data.get_fill(skin).select(ty).to_owned();
         if fill.color == Color::NONE {
@@ -89,6 +91,7 @@ impl EntityCommandsSelectExt for EntityCommands<'_> {
         self
     }
     fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
+        self.remove::<Aabb>();
         let fill = data.get_fill(skin);
         if fill.color == Color::NONE {
             self.remove::<Fill>();
