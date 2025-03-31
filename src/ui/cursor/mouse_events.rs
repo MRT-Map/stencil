@@ -15,34 +15,37 @@ use crate::ui::{
     panel::dock::{within_tilemap, PanelDockState},
 };
 
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct HoveredComponent;
-
 #[tracing::instrument(skip_all)]
 pub fn click_handler_sy(
     mut pointer_event: ParamSet<(EventReader<Pointer<Click>>, EventWriter<Pointer<Click>>)>,
     mut commands: Commands,
     mut input_event: EventReader<PointerInput>,
     mut ctx: EguiContexts,
+    pickables: Query<(), With<RayCastPickable>>,
     panel: Res<PanelDockState>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
     if !within_tilemap(&mut ctx, &panel) {
         return;
     }
-    let events = pointer_event.p0().read().counts_by(|a| a.button);
+    let events = pointer_event
+        .p0()
+        .read()
+        .filter(|a| a.target != Entity::PLACEHOLDER && pickables.contains(a.target))
+        .counts_by(|a| a.button);
     let inputs = input_event.read().collect::<Vec<_>>();
     for button in PointerButton::iter() {
         if events.get(&button).copied().unwrap_or_default() == 0 {
             if let Some(input) = inputs.iter().find(|a| {
-                matches!(
-                    a.action,
-                    PointerAction::Pressed {
-                        direction: PressDirection::Up,
-                        button
-                    }
-                )
+                if let PointerAction::Pressed {
+                    direction: PressDirection::Up,
+                    button: b,
+                } = a.action
+                {
+                    b == button
+                } else {
+                    false
+                }
             }) {
                 debug!(?button, "Click on no component detected");
                 let event = Pointer::new(

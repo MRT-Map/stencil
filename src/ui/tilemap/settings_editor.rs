@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Event)]
+#[derive(Clone, PartialEq, Event)]
 pub enum TileSettingsEv {
     Open,
     Import,

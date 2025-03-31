@@ -2,15 +2,13 @@ use bevy::{prelude::*, sprite::Anchor};
 use bevy_egui::{egui, EguiContexts};
 
 use crate::{
+    component::actions::hovering::HoveredComponent,
     init::load_assets::ImageAssets,
     misc_config::settings::MiscSettings,
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
-        cursor::{
-            mouse_events::HoveredComponent,
-            mouse_pos::{MousePos, MousePosWorld},
-        },
+        cursor::mouse_pos::{MousePos, MousePosWorld},
         panel::dock::{within_tilemap, PanelDockState},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
@@ -102,10 +100,10 @@ pub fn cursor_icon_sy(
         ctx.ctx_for_entity_mut(e).set_cursor_icon(match state {
             EditorState::Loading => egui::CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
-                if !hovered_comp.is_empty() {
-                    egui::CursorIcon::PointingHand
-                } else if buttons.pressed(MouseButton::Left) {
+                if buttons.pressed(MouseButton::Left) {
                     egui::CursorIcon::Grabbing
+                } else if !hovered_comp.is_empty() {
+                    egui::CursorIcon::PointingHand
                 } else {
                     egui::CursorIcon::Grab
                 }

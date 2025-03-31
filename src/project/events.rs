@@ -21,7 +21,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Event)]
+#[derive(Clone, PartialEq, Eq, Event)]
 pub enum ProjectEv {
     Open,
     Load(PathBuf, bool),
@@ -67,24 +67,18 @@ pub fn on_project(
             ) {
                 for component in components {
                     match component.get_type(&skin) {
-                        ComponentType::Point => commands
-                            .spawn(PointComponentBundle::new(
-                                component.to_editor_coords(),
-                                &skin,
-                            ))
-                            .observe(|_: Trigger<Pointer<Down>>| println!("a")),
-                        ComponentType::Line => commands
-                            .spawn(LineComponentBundle::new(
-                                component.to_editor_coords(),
-                                &skin,
-                            ))
-                            .observe(|_: Trigger<Pointer<Down>>| println!("b")),
-                        ComponentType::Area => commands
-                            .spawn(AreaComponentBundle::new(
-                                component.to_editor_coords(),
-                                &skin,
-                            ))
-                            .observe(|_: Trigger<Pointer<Down>>| println!("c")),
+                        ComponentType::Point => commands.spawn(PointComponentBundle::new(
+                            component.to_editor_coords(),
+                            &skin,
+                        )),
+                        ComponentType::Line => commands.spawn(LineComponentBundle::new(
+                            component.to_editor_coords(),
+                            &skin,
+                        )),
+                        ComponentType::Area => commands.spawn(AreaComponentBundle::new(
+                            component.to_editor_coords(),
+                            &skin,
+                        )),
                     };
                 }
                 if !history_invoked {

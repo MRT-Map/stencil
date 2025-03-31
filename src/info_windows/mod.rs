@@ -6,7 +6,7 @@ pub mod licenses;
 pub mod manual;
 pub mod quit;
 
-#[derive(Clone, Copy, Event, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Event)]
 pub enum InfoWindowsEv {
     Changelog,
     Info,

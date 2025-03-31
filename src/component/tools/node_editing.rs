@@ -354,7 +354,7 @@ impl Plugin for EditNodePlugin {
     }
 }
 
-#[derive(Copy, Clone, Event)]
+#[derive(Copy, Clone, PartialEq, Eq, Event)]
 pub enum EditNodesEv {
     ClearEventData,
 }

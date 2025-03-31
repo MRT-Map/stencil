@@ -95,7 +95,7 @@ pub fn on_select(
     )>,
 ) {
     let entity = trigger.entity();
-    if entity == Entity::PLACEHOLDER {
+    if entity == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {
         return;
     }
     match trigger.event() {
@@ -117,7 +117,14 @@ pub fn on_select(
             commands.trigger_targets(SelectEv::Select, entity);
         }
         SelectEv::DeselectAll => {
-            commands.trigger_targets(SelectEv::Deselect, query.p1().iter().collect::<Vec<_>>());
+            commands.trigger_targets(
+                SelectEv::Deselect,
+                query
+                    .p1()
+                    .iter()
+                    .filter(|a| *a != Entity::PLACEHOLDER)
+                    .collect::<Vec<_>>(),
+            );
         }
     }
 }
@@ -136,7 +143,7 @@ impl Plugin for SelectComponentPlugin {
     }
 }
 
-#[derive(Copy, Clone, Event)]
+#[derive(Copy, Clone, PartialEq, Eq, Event)]
 pub enum SelectEv {
     Select,
     Deselect,
