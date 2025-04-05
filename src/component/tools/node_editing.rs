@@ -1,4 +1,5 @@
-use bevy::{color::palettes::basic::GRAY, prelude::*};
+use bevy::prelude::*;
+use bevy::color::palettes::basic::BLACK;
 use itertools::Itertools;
 
 use crate::{
@@ -266,7 +267,7 @@ pub fn update_handles(
                     coord.as_vec2()
                 },
                 misc_settings.big_handle_size,
-                GRAY.into(),
+                BLACK.into(),
             )
         })
         .map(|bundle| commands.spawn(bundle).id())
@@ -300,7 +301,7 @@ pub fn update_handles(
             zoom,
             coord.as_vec2(),
             misc_settings.small_handle_size,
-            GRAY.into(),
+            BLACK.into(),
         )
     })
     .map(|bundle| commands.spawn(bundle).id())
