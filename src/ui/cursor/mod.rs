@@ -87,11 +87,7 @@ pub fn cursor_icon_sy(
     let state = state.map_or(EditorState::Loading, |state| **state);
 
     for (e, mut window) in &mut windows {
-        if state.component_type().is_some() {
-            window.cursor_options.visible = !panel.pointer_within_tilemap;
-            continue;
-        }
-        window.cursor_options.visible = true;
+        window.cursor_options.visible = state.component_type().is_none() || !panel.pointer_within_tilemap;
         if !panel.pointer_within_tilemap {
             continue;
         }
@@ -108,7 +104,7 @@ pub fn cursor_icon_sy(
                 }
             }
             EditorState::CreatingLine | EditorState::CreatingArea | EditorState::CreatingPoint => {
-                unreachable!()
+                egui::CursorIcon::Cell
             }
         });
     }
