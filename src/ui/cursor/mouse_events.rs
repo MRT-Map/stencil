@@ -14,8 +14,50 @@ use crate::ui::{
     panel::dock::{PanelDockState},
 };
 
+#[derive(Debug, Clone, Component, Reflect)]
+pub struct Click2 {
+    pub button: PointerButton,
+    pub hit: HitData,
+}
+
 #[tracing::instrument(skip_all)]
-pub fn click_handler_sy(
+pub fn on_emit_click2_down(
+    trigger: Trigger<Pointer<Down>>,
+    mut commands: Commands
+) {
+    commands.entity(trigger.entity()).insert(Click2 {
+        button: trigger.event.button,
+        hit: trigger.event.hit.clone(),
+    });
+}
+
+#[tracing::instrument(skip_all)]
+pub fn on_emit_click2_up(
+    trigger: Trigger<Pointer<Up>>,
+    click_data: Query<&Click2>,
+    mut commands: Commands,
+    mut event_writer: EventWriter<Pointer<Click2>>
+) {
+    let Ok(click_data) = click_data.get(trigger.entity()) else {
+        return;
+    };
+    if trigger.event.button != click_data.button || trigger.event.hit != click_data.hit {
+        return;
+    }
+    commands.entity(trigger.entity()).remove::<Click2>();
+
+    let event = Pointer::new(
+        trigger.entity(),
+        trigger.pointer_id,
+        trigger.pointer_location.clone(),
+        click_data.to_owned(),
+    );
+    event_writer.send(event.clone());
+    commands.trigger(event);
+}
+
+#[tracing::instrument(skip_all)]
+pub fn emit_deselect_click_sy(
     mut pointer_event: ParamSet<(EventReader<Pointer<Click>>, EventWriter<Pointer<Click>>)>,
     mut commands: Commands,
     mut input_event: EventReader<PointerInput>,

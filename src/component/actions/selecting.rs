@@ -16,7 +16,9 @@ use crate::{
     tile::zoom::Zoom,
     ui::panel::status::Status,
 };
+use crate::state::IntoSystemConfigExt;
 use crate::ui::panel::dock::PanelDockState;
+use crate::ui::UiSet;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
@@ -133,12 +135,12 @@ pub fn on_select(
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app//.add_systems(
-        //     PreUpdate,
-        //     highlight_selected_sy
-        //         .run_if_not_loading()
-        //         .after(UiSet::Reset),
-        // )
+        app.add_systems(
+            PreUpdate,
+            highlight_selected_sy
+                .run_if_not_loading()
+                .after(UiSet::Reset),
+        )
         .add_observer(on_select_left_click)
         .add_observer(on_select);
     }

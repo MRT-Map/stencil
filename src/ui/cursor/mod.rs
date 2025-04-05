@@ -14,6 +14,7 @@ use crate::{
         UiSchedule, UiSet,
     },
 };
+use crate::ui::cursor::mouse_events::{on_emit_click2_down, on_emit_click2_up};
 
 pub mod mouse_events;
 pub mod mouse_pos;
@@ -118,8 +119,10 @@ impl Plugin for CursorPlugin {
             .init_resource::<MousePosWorld>()
             .add_systems(
                 UiSchedule,
-                (mouse_events::click_handler_sy,).in_set(UiSet::Mouse),
+                (mouse_events::emit_deselect_click_sy,).in_set(UiSet::Mouse),
             )
+            .add_observer(on_emit_click2_down)
+            .add_observer(on_emit_click2_up)
             .add_systems(
                 Last,
                 (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
