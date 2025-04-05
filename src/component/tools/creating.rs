@@ -101,6 +101,7 @@ pub fn on_point_left_click(
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_left_click(
     trigger: Trigger<Pointer<Click>>,
+    pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
     mut set: CreatedQuery,
@@ -111,6 +112,10 @@ pub fn on_line_area_left_click(
     if !panel.pointer_within_tilemap || trigger.button != PointerButton::Primary {
         return;
     }
+    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+        return;
+    }
+
     let (ty, ty_text) = match **state {
         EditorState::CreatingArea => (ComponentType::Area, "area"),
         EditorState::CreatingLine => (ComponentType::Line, "line"),
@@ -167,11 +172,15 @@ pub fn on_line_area_left_click(
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_right_click(
     trigger: Trigger<Pointer<Click>>,
+    pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
     if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
+        return;
+    }
+    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
     if ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
