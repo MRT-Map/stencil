@@ -34,6 +34,7 @@ use crate::{
     ui::{notif::NotifPlugin, UiPlugin},
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
+use crate::inspector::InspectorPlugin;
 
 pub mod component;
 pub mod dirs_paths;
@@ -49,6 +50,8 @@ pub mod state;
 pub mod tile;
 pub mod ui;
 pub mod window;
+#[cfg(debug_assertions)]
+pub mod inspector;
 
 fn init_logger() {
     tracing_subscriber::registry()
@@ -134,6 +137,10 @@ fn main() {
         .add_plugins(HistoryPlugin)
         .add_plugins(NotifPlugin)
         .add_plugins(MiscSettingsPlugin)
-        .add_plugins(ComponentPanelsPlugin)
-        .run();
+        .add_plugins(ComponentPanelsPlugin);
+    
+    #[cfg(debug_assertions)]
+    app.add_plugins(InspectorPlugin);
+    
+    app.run();
 }

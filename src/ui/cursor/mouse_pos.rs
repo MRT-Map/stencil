@@ -14,7 +14,7 @@ impl Deref for MousePos {
 }
 
 #[derive(Debug, Resource, Clone, Copy, PartialEq, Default)]
-pub struct MousePosWorld(Vec2);
+pub struct MousePosWorld(pub(crate) Vec2);
 
 impl Deref for MousePosWorld {
     type Target = Vec2;

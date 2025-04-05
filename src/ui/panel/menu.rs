@@ -26,6 +26,8 @@ use crate::{
     },
     window::settings_editor::{OpenWindowSettingsEv, WindowSettingsEditor},
 };
+#[cfg(debug_assertions)]
+use crate::inspector::ShowInspector;
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenAllSettingsEv;
@@ -36,6 +38,8 @@ pub fn ui_sy(
     mut commands: Commands,
     diagnostics: Res<DiagnosticsStore>,
     status: Res<Status>,
+    #[cfg(debug_assertions)]
+    inspector: Option<Res<ShowInspector>>
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
@@ -102,6 +106,13 @@ pub fn ui_sy(
                     if ui.button("Trigger Panic").clicked() {
                         info!(label = "Trigger Panic", "Clicked menu item");
                         panic!("Panic Triggered");
+                    }
+                    if ui.button("Show Inspector").clicked() {
+                        if inspector.is_some() {
+                            commands.remove_resource::<ShowInspector>();
+                        } else {
+                            commands.init_resource::<ShowInspector>();
+                        }
                     }
                 });
             }
