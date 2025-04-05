@@ -119,7 +119,7 @@ impl DockWindow for MiscSettingsEditor {
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=10)
+            egui::Slider::new(&mut misc_settings.notif_duration, 0..=10)
                 .text("Notification duration (s)"),
         );
         ui.label("Time before success and info notifications expire. Set to 0 to disable expiry");

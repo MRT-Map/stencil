@@ -34,6 +34,7 @@ use crate::{
     ui::{notif::NotifPlugin, UiPlugin},
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
+#[cfg(debug_assertions)]
 use crate::inspector::InspectorPlugin;
 
 pub mod component;
