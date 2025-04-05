@@ -85,10 +85,12 @@ fn main() {
     info!("Logger initialised");
 
     #[cfg(target_os = "linux")]
-    match INIT_WINDOW_SETTINGS.display_server_protocol {
-        LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
-        LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
-        LinuxWindow::Auto => (),
+    unsafe {
+        match INIT_WINDOW_SETTINGS.display_server_protocol {
+            LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
+            LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
+            LinuxWindow::Auto => (),
+        }
     }
 
     let mut app = App::new();
