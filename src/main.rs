@@ -138,9 +138,9 @@ fn main() {
         .add_plugins(NotifPlugin)
         .add_plugins(MiscSettingsPlugin)
         .add_plugins(ComponentPanelsPlugin);
-    
+
     #[cfg(debug_assertions)]
     app.add_plugins(InspectorPlugin);
-    
+
     app.run();
 }

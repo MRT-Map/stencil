@@ -45,6 +45,7 @@ const ANGLE_VECTORS: [Vec2; 20] = [
 #[tracing::instrument(skip_all)]
 pub fn on_point_left_click(
     trigger: Trigger<Pointer<Click>>,
+    pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     skin: Res<Skin>,
     mut namespaces: ResMut<Namespaces>,
@@ -53,6 +54,9 @@ pub fn on_point_left_click(
     panel: Res<PanelDockState>,
 ) {
     if !panel.pointer_within_tilemap || **state != EditorState::CreatingPoint {
+        return;
+    }
+    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
     let node = trigger
