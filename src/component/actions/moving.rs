@@ -33,8 +33,8 @@ pub fn on_right_click_drag(
         return;
     };
 
-    transform.translation.x = move_data.old_translation.x + mouse_pos_world.x - move_data.old_mouse_pos_world.x;
-    transform.translation.y = move_data.old_translation.x + mouse_pos_world.y - move_data.old_mouse_pos_world.y;
+    transform.translation.x = (move_data.old_translation.x + mouse_pos_world.x - move_data.old_mouse_pos_world.x).round();
+    transform.translation.y = (move_data.old_translation.x + mouse_pos_world.y - move_data.old_mouse_pos_world.y).round();
 }
 
 #[tracing::instrument(skip_all)]

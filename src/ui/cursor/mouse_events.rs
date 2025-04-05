@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::time::Duration;
 
 use bevy::{
     picking::{
@@ -10,7 +9,6 @@ use bevy::{
 };
 use bevy::picking::pointer::Location;
 use itertools::Itertools;
-use itertools::Position::Middle;
 use crate::ui::{
     cursor::mouse_pos::MousePosWorld,
     panel::dock::{PanelDockState},
