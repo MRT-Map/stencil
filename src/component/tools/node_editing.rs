@@ -15,6 +15,7 @@ use crate::{
     tile::zoom::Zoom,
     ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status, UiSet},
 };
+use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 
 #[derive(Debug, Clone, Component)]
@@ -146,7 +147,7 @@ pub fn on_node_edit_right_up(
 
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     mut selected: Query<
         (Entity, &mut PlaComponent<EditorCoords>, &NodeEditData),
         With<SelectedComponent>,

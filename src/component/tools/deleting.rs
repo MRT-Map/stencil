@@ -6,11 +6,12 @@ use crate::{
     state::EditorState,
     ui::panel::status::Status,
 };
+use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     mut commands: Commands,
     query: Query<&PlaComponent<EditorCoords>>,
     mut status: ResMut<Status>,

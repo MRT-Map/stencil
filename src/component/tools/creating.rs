@@ -17,6 +17,7 @@ use crate::{
     state::EditorState,
     ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
 };
+use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 
 const ANGLE_VECTORS: [Vec2; 20] = [
@@ -44,7 +45,7 @@ const ANGLE_VECTORS: [Vec2; 20] = [
 
 #[tracing::instrument(skip_all)]
 pub fn on_point_left_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     skin: Res<Skin>,
@@ -100,7 +101,7 @@ pub fn on_point_left_click(
 
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_left_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
@@ -171,7 +172,7 @@ pub fn on_line_area_left_click(
 
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_right_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,

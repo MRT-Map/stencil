@@ -17,12 +17,13 @@ use crate::{
     ui::panel::status::Status,
 };
 use crate::state::IntoSystemConfigExt;
+use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 use crate::ui::UiSet;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: Trigger<Pointer<Click2>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
     components: Query<(), With<PlaComponent<EditorCoords>>>,
