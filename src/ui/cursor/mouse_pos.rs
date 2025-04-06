@@ -38,10 +38,14 @@ pub fn update_mouse_pos_sy(
     let Some(new_mouse_pos) = window.cursor_position() else {
         return;
     };
-    mouse_pos.0 = new_mouse_pos;
+    if mouse_pos.0 != new_mouse_pos {
+        mouse_pos.0 = new_mouse_pos;
+    }
 
     let Ok(new_mouse_pos_world) = camera.viewport_to_world_2d(transform, new_mouse_pos) else {
         return;
     };
-    mouse_pos_world.0 = new_mouse_pos_world;
+    if mouse_pos_world.0 != new_mouse_pos_world {
+        mouse_pos_world.0 = new_mouse_pos_world;
+    }
 }

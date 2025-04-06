@@ -72,7 +72,7 @@ field!(
     f64
 );
 
-#[derive(Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Basemap {
     #[serde(default = "default_url", skip_serializing_if = "url_is_default")]
     pub url: String,

@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_file_dialog::FileDialog;
@@ -147,6 +148,7 @@ impl TileSettingsEditor {
     #[must_use]
     pub fn import_dialog() -> FileDialog {
         FileDialog::new().title("Import Basemap")
+            .add_file_filter("TOML file", Arc::new(|path| path.extension().is_some_and(|a| a == "toml"))).default_file_filter("TOML file")
     }
 
     #[must_use]
@@ -164,7 +166,7 @@ impl TileSettingsEditor {
 pub fn on_tile_settings(
     trigger: Trigger<TileSettingsEv>,
     mut state: ResMut<PanelDockState>,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
 ) {
     match trigger.event() {
         TileSettingsEv::Open => {
@@ -184,7 +186,7 @@ pub fn on_tile_settings(
 pub fn tile_settings_dialog(
     mut tile_settings: ResMut<TileSettings>,
     mut ctx: EguiContexts,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;

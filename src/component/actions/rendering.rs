@@ -145,7 +145,7 @@ impl Plugin for RenderComponentPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_observer(on_render)
-            .add_systems(UiSchedule, rerender_selected_sy.run_if(resource_changed::<Zoom>.or(state_changed::<EditorState>)));
+            .add_systems(UiSchedule, rerender_selected_sy.run_if(resource_changed::<Zoom>.or(in_state(EditorState::EditingNodes).and(resource_changed::<MousePosWorld>)).or(state_changed::<EditorState>)));
     }
 }
 

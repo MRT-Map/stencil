@@ -106,6 +106,7 @@ pub struct TabViewer<'a, 'w, 's> {
     pub pointer_within_tilemap: &'a mut bool,
 }
 
+#[derive(Debug, Resource)]
 pub struct FileDialogs {
     pub tile_settings_import: FileDialog,
     pub tile_settings_export: Option<(Basemap, FileDialog)>,

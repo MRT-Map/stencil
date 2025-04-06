@@ -46,7 +46,7 @@ pub fn on_project(
     mut commands: Commands,
     mut namespaces: ResMut<Namespaces>,
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
     skin: Res<Skin>,
     mut popup: EventWriter<Popup>,
     mut history: ResMut<History>,
@@ -230,7 +230,7 @@ pub fn project_dialog(
     mut commands: Commands,
     namespaces: Res<Namespaces>,
     mut ctx: EguiContexts,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
     mut popup: EventWriter<Popup>,
 ) {
     let file_dialog = &mut file_dialogs.project_select;

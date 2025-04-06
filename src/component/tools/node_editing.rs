@@ -40,7 +40,7 @@ pub fn on_node_edit_right_down(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, mut pla)) = selected.get_single_mut() else {
@@ -120,7 +120,7 @@ pub fn on_node_edit_right_up(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, pla)) = selected.get_single_mut() else {
@@ -146,7 +146,7 @@ pub fn on_node_edit_right_click(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
