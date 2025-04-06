@@ -1,6 +1,5 @@
 use bevy::color::palettes::basic::{BLACK, LIME, RED};
 use bevy::prelude::*;
-use bevy::render::primitives::Aabb;
 use bevy_prototype_lyon::draw::{Fill, Stroke};
 use itertools::Itertools;
 use crate::component::actions::hovering::HoveredComponent;

@@ -9,6 +9,7 @@ use crate::component::actions::rendering::RenderEv;
 use crate::component::actions::selecting::SelectedComponent;
 use crate::component::pla2::ComponentType;
 use crate::component::skin::Skin;
+use crate::state::EditorState;
 use crate::ui::cursor::mouse_pos::MousePosWorld;
 use crate::ui::panel::dock::PanelDockState;
 
@@ -23,9 +24,10 @@ pub fn on_right_click_drag(
     trigger: Trigger<Pointer<Drag>>,
     mut query: Query<(&mut Transform, &MoveData), With<SelectedComponent>>,
     panel: Res<PanelDockState>,
-    mouse_pos_world: Res<MousePosWorld>
+    mouse_pos_world: Res<MousePosWorld>,
+    state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let Ok((mut transform, move_data)) = query.get_mut(trigger.entity()) else {
@@ -43,9 +45,10 @@ pub fn on_right_click_drag_start(
     query: Query<(&PlaComponent<EditorCoords>, &Transform), With<SelectedComponent>>,
     mut status: ResMut<Status>,
     panel: Res<PanelDockState>,
-    mouse_pos_world: Res<MousePosWorld>
+    mouse_pos_world: Res<MousePosWorld>,
+    state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let Ok((pla, transform)) = query.get(trigger.entity()) else {
@@ -67,9 +70,10 @@ pub fn on_right_click_drag_end(
     mut status: ResMut<Status>,
     panel: Res<PanelDockState>,
     skin: Res<Skin>,
-    mouse_pos_world: Res<MousePosWorld>
+    mouse_pos_world: Res<MousePosWorld>,
+    state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let Ok((entity, mut transform, mut pla, move_data)) = query.get_mut(trigger.entity()) else {
