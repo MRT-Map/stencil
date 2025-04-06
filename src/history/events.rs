@@ -3,18 +3,13 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use bevy::{
-    hierarchy::DespawnRecursiveExt,
-    prelude::{Commands, Entity, Local, Query, Res, ResMut, Trigger, With},
-};
+use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
 use tracing::debug;
 
 use crate::{
     component::{
-        bundle::{
-            AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
-            PointComponentBundle, SelectedComponent,
-        },
+        actions::rendering::RenderEv,
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::ComponentType,
         skin::Skin,
     },
@@ -34,12 +29,10 @@ pub fn on_history(
     mut commands: Commands,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
     mut history: ResMut<History>,
-    selected_entity: Query<Entity, With<SelectedComponent>>,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
     mut namespaces: ResMut<Namespaces>,
 ) {
-    let selected = selected_entity.get_single().ok();
     match trigger.event() {
         HistoryEv::NewHistory(histories) => {
             let histories = histories
@@ -48,11 +41,11 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => HistoryEntry::Component {
                         before: before.to_owned(),
                         after: after.to_owned(),
-                        entity: {
+                        e: {
                             let component_id = Arc::clone(
                                 ids.entry(*component_id)
                                     .or_insert_with(|| Arc::new(RwLock::new(*component_id))),
@@ -71,15 +64,11 @@ pub fn on_history(
             if let (
                 Some(
                     [HistoryEntry::Component {
-                        entity: e1,
-                        after: a1,
-                        ..
+                        e: e1, after: a1, ..
                     }],
                 ),
                 [HistoryEntry::Component {
-                    entity: e2,
-                    after: a2,
-                    ..
+                    e: e2, after: a2, ..
                 }],
             ) = (
                 history.undo_stack.last_mut().map(Vec::as_mut_slice),
@@ -104,10 +93,10 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => match (before, after) {
                         (Some(before), None) => {
-                            let entity = match before.get_type(&skin) {
+                            let e = match before.get_type(&skin) {
                                 ComponentType::Point => commands
                                     .spawn(PointComponentBundle::new((**before).clone(), &skin)),
                                 ComponentType::Line => commands
@@ -116,21 +105,15 @@ pub fn on_history(
                                     .spawn(AreaComponentBundle::new((**before).clone(), &skin)),
                             }
                             .id();
-                            *component_id.write().unwrap() = entity;
-                            ids.insert(entity, Arc::clone(component_id));
+                            *component_id.write().unwrap() = e;
+                            ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(before), Some(_)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**before).clone());
-                            if Some(*component_id) == selected {
-                                commands
-                                    .entity(*component_id)
-                                    .select_component(&skin, before);
-                            } else {
-                                commands
-                                    .entity(*component_id)
-                                    .component_display(&skin, before);
-                            }
+                            commands
+                                .entity(*component_id)
+                                .insert((**before).clone())
+                                .trigger(RenderEv::default());
                         }
                         (None, _) => {
                             let component_id = component_id.read().unwrap();
@@ -195,10 +178,10 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => match (before, after) {
                         (None, Some(after)) => {
-                            let entity = match after.get_type(&skin) {
+                            let e = match after.get_type(&skin) {
                                 ComponentType::Point => commands
                                     .spawn(PointComponentBundle::new((**after).clone(), &skin)),
                                 ComponentType::Line => commands
@@ -207,21 +190,15 @@ pub fn on_history(
                                     .spawn(AreaComponentBundle::new((**after).clone(), &skin)),
                             }
                             .id();
-                            *component_id.write().unwrap() = entity;
-                            ids.insert(entity, Arc::clone(component_id));
+                            *component_id.write().unwrap() = e;
+                            ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(_), Some(after)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**after).clone());
-                            if Some(*component_id) == selected {
-                                commands
-                                    .entity(*component_id)
-                                    .select_component(&skin, after);
-                            } else {
-                                commands
-                                    .entity(*component_id)
-                                    .component_display(&skin, after);
-                            }
+                            commands
+                                .entity(*component_id)
+                                .insert((**after).clone())
+                                .trigger(RenderEv::default());
                         }
                         (_, None) => {
                             let component_id = component_id.read().unwrap();

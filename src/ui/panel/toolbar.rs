@@ -2,10 +2,10 @@ use bevy_egui::egui;
 
 use crate::{
     state::{ChangeStateEv, EditorState},
-    ui::panel::dock::{PanelParams, TabViewer},
+    ui::panel::dock::PanelParams,
 };
 
-pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResponse<()> {
+pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerResponse<()> {
     let PanelParams {
         editor_state,
         commands,
@@ -13,7 +13,7 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResp
         pending_tiles,
         zoom,
         ..
-    } = tab_viewer.params;
+    } = params;
     let mut new_state = ***editor_state;
     let resp = egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
         egui::menu::bar(ui, |ui| {
@@ -51,7 +51,7 @@ pub fn toolbar(ui: &mut egui::Ui, tab_viewer: &mut TabViewer) -> egui::InnerResp
     if new_state != ***editor_state {
         //commands.trigger(ChangeStateEv(new_state)));
         commands.trigger(ChangeStateEv(new_state));
-        tab_viewer.params.status.0 = match new_state {
+        params.status.0 = match new_state {
             EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
             EditorState::EditingNodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
             EditorState::CreatingPoint => "Creating points: L-click to create point.",

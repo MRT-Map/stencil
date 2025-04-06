@@ -1,6 +1,8 @@
+use std::sync::LazyLock;
+
 use bevy::prelude::*;
 use bevy_egui::egui;
-use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     dirs_paths::data_path,
@@ -9,23 +11,23 @@ use crate::{
         settings::{KeymapAction, KeymapSettings},
     },
     state::EditorState,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenKeymapSettingsEv;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct KeymapSettingsEditor;
 
 impl DockWindow for KeymapSettingsEditor {
     fn title(self) -> String {
         "Keymap Settings".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             keymap_settings, ..
-        } = tab_viewer.params;
+        } = params;
         let old_settings = keymap_settings.to_owned();
 
         if ui
@@ -72,15 +74,11 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_keymap_settings(
-    _trigger: Trigger<OpenKeymapSettingsEv>,
-    mut state: ResMut<PanelDockState>,
-) {
-    window_action_handler(&mut state, KeymapSettingsEditor);
+pub fn on_keymap_settings(_trigger: Trigger<OpenKeymapSettingsEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, KeymapSettingsEditor);
 }
 
-pub static KEYMAP_MENU: Lazy<[(&str, Vec<(KeymapAction, &str)>); 5]> = Lazy::new(|| {
+pub static KEYMAP_MENU: LazyLock<[(&str, Vec<(KeymapAction, &str)>); 5]> = LazyLock::new(|| {
     [
         (
             "State",

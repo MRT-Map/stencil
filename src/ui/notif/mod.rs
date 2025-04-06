@@ -1,19 +1,19 @@
 use std::{
     fmt::Debug,
-    sync::RwLock,
+    sync::{LazyLock, RwLock},
     time::{Duration, SystemTime},
 };
 
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use egui_notify::{Toast, ToastLevel, Toasts};
-use once_cell::sync::Lazy;
 
 use crate::misc_config::settings::MiscSettings;
 
 pub mod viewer;
 
-pub static NOTIF_LOG: Lazy<RwLock<NotifLog>> = Lazy::new(|| RwLock::new(NotifLog::default()));
+pub static NOTIF_LOG: LazyLock<RwLock<NotifLog>> =
+    LazyLock::new(|| RwLock::new(NotifLog::default()));
 
 #[derive(Default, Resource)]
 pub struct NotifToasts(pub Toasts);
@@ -67,7 +67,7 @@ pub fn update_notifs_sy(
 
     if let Some(ctx) = ctx.try_ctx_mut() {
         toasts.0.show(ctx);
-    };
+    }
 
     if notif_log.pending_notifs.is_empty() {
         return;
@@ -77,7 +77,7 @@ pub fn update_notifs_sy(
         toasts
             .0
             .add(Toast::custom(&notif.message, notif.level.clone()))
-            .set_duration(
+            .duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
                     && misc_settings.notif_duration != 0)
                     .then(|| Duration::from_secs(misc_settings.notif_duration)),
@@ -111,6 +111,6 @@ impl Plugin for NotifPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
             .add_systems(Update, update_notifs_sy)
-            .observe(viewer::on_log_viewer);
+            .add_observer(viewer::on_log_viewer);
     }
 }

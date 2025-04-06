@@ -1,9 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
-use bevy::prelude::{Commands, KeyCode, Resource};
+use bevy::prelude::*;
 use eyre::OptionExt;
 use itertools::Itertools;
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -201,4 +200,4 @@ impl KeymapSettings {
     }
 }
 
-pub static INIT_KEYMAP_SETTINGS: Lazy<KeymapSettings> = Lazy::new(KeymapSettings::load);
+pub static INIT_KEYMAP_SETTINGS: LazyLock<KeymapSettings> = LazyLock::new(KeymapSettings::load);

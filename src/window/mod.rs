@@ -10,6 +10,6 @@ pub struct WindowSettingsPlugin;
 impl Plugin for WindowSettingsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_WINDOW_SETTINGS.to_owned())
-            .observe(on_window_settings);
+            .add_observer(on_window_settings);
     }
 }

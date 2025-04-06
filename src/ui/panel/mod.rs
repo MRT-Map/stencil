@@ -6,10 +6,8 @@ pub mod toolbar;
 use bevy::prelude::*;
 
 use crate::ui::{
-    panel::{
-        dock::{FileDialogs, PanelDockState},
-        status::Status,
-    },
+    file_dialogs::FileDialogs,
+    panel::{dock::DockLayout, status::Status},
     UiSchedule, UiSet,
 };
 
@@ -17,16 +15,15 @@ pub struct PanelPlugin;
 
 impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
-        app.world_mut()
-            .insert_non_send_resource(FileDialogs::default());
-        app.init_resource::<PanelDockState>()
+        app.world_mut().init_resource::<FileDialogs>();
+        app.insert_resource(DockLayout::load())
             .init_resource::<Status>()
             .add_systems(
                 UiSchedule,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
-            .observe(menu::on_all_settings)
+            .add_observer(menu::on_all_settings)
             .add_systems(UiSchedule, dock::panel_sy.in_set(UiSet::Panels))
-            .observe(dock::on_reset_panel);
+            .add_observer(dock::on_reset_panel);
     }
 }

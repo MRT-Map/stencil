@@ -1,15 +1,15 @@
 use std::{
     fmt::{Display, Formatter},
     path::PathBuf,
+    sync::LazyLock,
 };
 
 use bevy::prelude::*;
 use lazy_regex::{lazy_regex, Regex};
-use once_cell::sync::Lazy;
 
 use crate::{dirs_paths::cache_dir, tile::zoom::Zoom, ui::tilemap::settings::Basemap};
 
-pub static URL_REPLACER: Lazy<Regex> = lazy_regex!("[<>:/\\|?*\"]");
+pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 #[derive(Component, Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -62,7 +62,7 @@ impl TileCoord {
 
         if !zzz.is_empty() {
             zzz += "_";
-        };
+        }
         format!(
             "{}/{}_{}/{zzz}{}_{}.{}",
             basemap.url, group.x, group.y, num_in_group.x, num_in_group.y, basemap.extension

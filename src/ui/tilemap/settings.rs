@@ -1,5 +1,6 @@
+use std::sync::LazyLock;
+
 use bevy::prelude::*;
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -71,7 +72,7 @@ field!(
     f64
 );
 
-#[derive(Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Basemap {
     #[serde(default = "default_url", skip_serializing_if = "url_is_default")]
     pub url: String,
@@ -162,4 +163,4 @@ impl TileSettings {
     }
 }
 
-pub static INIT_TILE_SETTINGS: Lazy<TileSettings> = Lazy::new(TileSettings::load);
+pub static INIT_TILE_SETTINGS: LazyLock<TileSettings> = LazyLock::new(TileSettings::load);

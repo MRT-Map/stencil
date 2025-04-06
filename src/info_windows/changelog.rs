@@ -23,7 +23,7 @@ pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popu
                 .max_height(ui.available_height() * 0.75)
                 .show(ui, |ui| {
                     let mut cache = CommonMarkCache::default();
-                    CommonMarkViewer::new("viewer").show(
+                    CommonMarkViewer::new().show(
                         ui,
                         &mut cache,
                         include_str!("../../changelog.md"),

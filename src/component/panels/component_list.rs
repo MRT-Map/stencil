@@ -1,13 +1,12 @@
-use bevy::prelude::{Event, ResMut, Trigger};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
-use crate::ui::panel::dock::{
-    window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer,
-};
+use crate::ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentList;
 
 #[derive(Clone, Copy, Event)]
@@ -17,10 +16,10 @@ impl DockWindow for ComponentList {
     fn title(self) -> String {
         "Component List".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             queries, camera, ..
-        } = tab_viewer.params;
+        } = params;
         let mut transform = camera.single_mut();
         let query = queries.p1();
         let components = query.iter().into_group_map_by(|a| a.namespace.clone());
@@ -65,10 +64,6 @@ impl DockWindow for ComponentList {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_component_list(
-    _trigger: Trigger<OpenComponentListEv>,
-    mut state: ResMut<PanelDockState>,
-) {
-    window_action_handler(&mut state, ComponentList);
+pub fn on_component_list(_trigger: Trigger<OpenComponentListEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, ComponentList);
 }

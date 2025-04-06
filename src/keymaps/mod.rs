@@ -19,7 +19,7 @@ pub fn keymap_sy(
         if keys.just_released(*key)
             && ctx
                 .try_ctx_mut()
-                .map_or(true, |a| a.memory(|a| a.focused().is_none()))
+                .is_none_or(|a| a.memory(|a| a.focused().is_none()))
         {
             info!(?action, ?key, "Processing hotkey");
             action.trigger_action(&mut commands);
@@ -33,6 +33,6 @@ impl Plugin for KeymapPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(INIT_KEYMAP_SETTINGS.to_owned())
             .add_systems(Update, keymap_sy.run_if_not_loading())
-            .observe(settings_editor::on_keymap_settings);
+            .add_observer(settings_editor::on_keymap_settings);
     }
 }

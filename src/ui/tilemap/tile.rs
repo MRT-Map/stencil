@@ -1,12 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
 use async_executor::{Executor, Task};
 use async_lock::Semaphore;
 use bevy::{ecs::query::QueryFilter, prelude::*};
-use bevy_mouse_tracking::MainCamera;
 use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
-use once_cell::sync::Lazy;
 
 use crate::{
     tile::{
@@ -18,8 +16,8 @@ use crate::{
     ui::tilemap::settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
 };
 
-static SEMAPHORE: Lazy<Semaphore> =
-    Lazy::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
+static SEMAPHORE: LazyLock<Semaphore> =
+    LazyLock::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
 #[must_use]
 pub fn get_shown_tiles<R: QueryFilter>(
@@ -69,7 +67,7 @@ pub struct PendingTiles(pub HashMap<TileCoord, Task<surf::Result<()>>>);
 #[tracing::instrument(skip_all)]
 pub fn show_tiles_sy(
     mut commands: Commands,
-    q_camera: Query<(&Camera, Ref<Transform>), With<MainCamera>>,
+    q_camera: Query<(&Camera, Ref<Transform>)>,
     mut query: Query<(Entity, &TileCoord), With<Tile>>,
     zoom: Res<Zoom>,
     server: Res<AssetServer>,
@@ -96,7 +94,7 @@ pub fn show_tiles_sy(
     executor.try_tick();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
-        for (entity, tile_coord) in &mut query {
+        for (e, tile_coord) in &mut query {
             if (zoom.0 <= f32::from(basemap.max_tile_zoom) && tile_coord.z > zoom.0.round() as i8)
                 || (zoom.0 > f32::from(basemap.max_tile_zoom)
                     && tile_coord.z != basemap.max_tile_zoom)
@@ -109,7 +107,7 @@ pub fn show_tiles_sy(
                     && !shown_tiles.contains(tile_coord))
             {
                 trace!("Hiding {tile_coord}");
-                commands.entity(entity).despawn_recursive();
+                commands.entity(e).despawn_recursive();
             } else {
                 shown_tiles.retain(|t| t != tile_coord);
                 trace!("Showing {tile_coord}");
@@ -145,7 +143,7 @@ pub fn show_tiles_sy(
                             if !response.status().is_server_error() {
                                 async_fs::write(path, response.body_bytes().await?).await?;
                             }
-                        };
+                        }
 
                         Ok(())
                     });
@@ -165,7 +163,7 @@ pub fn show_tiles_sy(
         if task.is_finished() {
             if matches!(future::block_on(task), Ok(())) {
                 commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
-            };
+            }
             to_remove.push((*tile_coord, false));
         }
     }

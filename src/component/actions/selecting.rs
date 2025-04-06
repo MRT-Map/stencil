@@ -1,118 +1,105 @@
-use bevy::{
-    color::palettes::basic::{LIME, RED},
-    prelude::*,
-};
-use bevy_prototype_lyon::entity::ShapeBundle;
+use bevy::prelude::*;
 
 use crate::{
     component::{
-        bundle::{EntityCommandsSelectExt, SelectedComponent},
-        circle::circle,
-        pla2::{ComponentType, EditorCoords, PlaComponent},
-        skin::Skin,
+        actions::rendering::RenderEv,
+        pla2::{EditorCoords, PlaComponent},
     },
-    misc_config::settings::MiscSettings,
-    state::{EditorState, IntoSystemConfigExt},
-    tile::zoom::Zoom,
-    ui::{cursor::mouse_events::MouseEvent, panel::status::Status, UiSet},
+    state::EditorState,
+    ui::{
+        cursor::mouse_events::Click2, panel::status::Status, tilemap::window::PointerWithinTilemap,
+    },
 };
 
 #[tracing::instrument(skip_all)]
-pub fn selector_sy(
+pub fn on_select_left_click(
+    trigger: Trigger<Pointer<Click2>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
-    mut mouse: EventReader<MouseEvent>,
-    deselect_query: DeselectQuery,
+    components: Query<(), With<PlaComponent<EditorCoords>>>,
     mut status: ResMut<Status>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if state.component_type().is_some() || *state == EditorState::DeletingComponent {
-        mouse.clear();
+    if pointer_within_tilemap.is_none()
+        || state.component_type().is_some()
+        || *state == EditorState::DeletingComponent
+        || trigger.button != PointerButton::Primary
+    {
         return;
     }
-    for event in mouse.read() {
-        if let MouseEvent::LeftClick(e, _) = event {
-            if let Some(e) = e {
-                select_entity(&mut commands, &deselect_query, *e);
-                status.0 = "Selected component".into();
-            } else {
-                info!("Selected nothing, deselecting");
-                deselect(&mut commands, &deselect_query);
-                status.0 = "Deselected component".into();
-            }
-        }
+
+    let e = trigger.entity();
+    if e == Entity::PLACEHOLDER {
+        info!("Selected nothing, deselecting");
+        commands.trigger(SelectEv::DeselectAll);
+        status.0 = "Deselected component".into();
+    } else if components.contains(e) {
+        commands.trigger_targets(SelectEv::SelectOne, e);
+        status.0 = "Selected component".into();
     }
 }
 
 #[tracing::instrument(skip_all)]
-pub fn highlight_selected_sy(
-    state: Res<State<EditorState>>,
+pub fn on_select(
+    trigger: Trigger<SelectEv>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
-    skin: Res<Skin>,
-    zoom: Res<Zoom>,
-    misc_settings: Res<MiscSettings>,
+    mut query: ParamSet<(
+        Query<&PlaComponent<EditorCoords>>,
+        Query<Entity, With<SelectedComponent>>,
+    )>,
 ) {
-    if state.component_type().is_some() {
+    let e = trigger.entity();
+    if e == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {
         return;
     }
-    for (data, entity) in query.iter() {
-        trace!(?entity, "Highlighting selected component");
-        commands.entity(entity).select_component(&skin, data);
-        if data.get_type(&skin) == ComponentType::Line && !data.nodes.is_empty() {
-            commands.entity(entity).despawn_descendants();
-            let start = commands
-                .spawn(circle(
-                    &zoom,
-                    data.nodes.first().unwrap().0.as_vec2(),
-                    misc_settings.big_handle_size,
-                    LIME.into(),
-                ))
-                .id();
-            let end = commands
-                .spawn(circle(
-                    &zoom,
-                    data.nodes.last().unwrap().0.as_vec2(),
-                    misc_settings.big_handle_size,
-                    RED.into(),
-                ))
-                .id();
-            commands.entity(entity).add_child(start).add_child(end);
+    match trigger.event() {
+        SelectEv::Select => {
+            info!(?e, "Selecting entity");
+            commands
+                .entity(e)
+                .insert(SelectedComponent)
+                .trigger(RenderEv::default());
+        }
+        SelectEv::Deselect => {
+            debug!(?e, "Deselecting component");
+            commands
+                .entity(e)
+                .remove::<SelectedComponent>()
+                .trigger(RenderEv::default());
+        }
+        SelectEv::SelectOne => {
+            commands.trigger(SelectEv::DeselectAll);
+            commands.trigger_targets(SelectEv::Select, e);
+        }
+        SelectEv::DeselectAll => {
+            commands.trigger_targets(
+                SelectEv::Deselect,
+                query
+                    .p1()
+                    .iter()
+                    .filter(|a| *a != Entity::PLACEHOLDER)
+                    .collect::<Vec<_>>(),
+            );
         }
     }
-}
-
-pub fn deselect(commands: &mut Commands, (selected_query, skin): &DeselectQuery) {
-    for (data, entity) in selected_query.iter() {
-        debug!(?entity, "Deselecting component");
-        commands
-            .entity(entity)
-            .remove::<SelectedComponent>()
-            .remove::<ShapeBundle>()
-            .component_display(skin, data)
-            .despawn_descendants();
-    }
-}
-
-pub fn select_entity(commands: &mut Commands, deselect_query: &DeselectQuery, entity: Entity) {
-    info!(?entity, "Selecting entity");
-    deselect(commands, deselect_query);
-    commands.entity(entity).insert(SelectedComponent);
 }
 
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, selector_sy.run_if_not_loading())
-            .add_systems(
-                PreUpdate,
-                highlight_selected_sy
-                    .run_if_not_loading()
-                    .after(UiSet::Reset),
-            );
+        app.add_observer(on_select_left_click)
+            .add_observer(on_select);
     }
 }
 
-pub type DeselectQuery<'world, 'state, 'a> = (
-    Query<'world, 'state, (&'a PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
-    Res<'world, Skin>,
-);
+#[derive(Copy, Clone, PartialEq, Eq, Event)]
+pub enum SelectEv {
+    Select,
+    Deselect,
+    SelectOne,
+    DeselectAll,
+}
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct SelectedComponent;

@@ -1,28 +1,29 @@
 use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::egui;
+use serde::{Deserialize, Serialize};
 
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
     dirs_paths::data_path,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
     window::settings::WindowSettings,
 };
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenWindowSettingsEv;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct WindowSettingsEditor;
 
 impl DockWindow for WindowSettingsEditor {
     fn title(self) -> String {
         "Window Settings".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             window_settings, ..
-        } = tab_viewer.params;
+        } = params;
         let mut invalid = false;
         let old_settings = window_settings.to_owned();
 
@@ -66,17 +67,17 @@ impl DockWindow for WindowSettingsEditor {
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::BorderlessFullscreen,
+            WindowMode::BorderlessFullscreen(MonitorSelection::Current),
             "Borderless Fullscreen",
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::SizedFullscreen,
+            WindowMode::SizedFullscreen(MonitorSelection::Current),
             "Sized Fullscreen",
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::Fullscreen,
+            WindowMode::Fullscreen(MonitorSelection::Current),
             "Fullscreen",
         );
 
@@ -107,10 +108,6 @@ impl DockWindow for WindowSettingsEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_window_settings(
-    _trigger: Trigger<OpenWindowSettingsEv>,
-    mut state: ResMut<PanelDockState>,
-) {
-    window_action_handler(&mut state, WindowSettingsEditor);
+pub fn on_window_settings(_trigger: Trigger<OpenWindowSettingsEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, WindowSettingsEditor);
 }

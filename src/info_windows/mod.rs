@@ -6,7 +6,7 @@ pub mod licenses;
 pub mod manual;
 pub mod quit;
 
-#[derive(Clone, Copy, Event, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Event)]
 pub enum InfoWindowsEv {
     Changelog,
     Info,
@@ -19,14 +19,14 @@ pub struct InfoWindowsPlugin;
 
 impl Plugin for InfoWindowsPlugin {
     fn build(&self, app: &mut App) {
-        app.observe(quit::on_quit)
+        app.add_observer(quit::on_quit)
             // .add_systems(
             //     Update,
             //     info::on_info.run_if(resource_exists::<ImageAssets>),
             // )
-            .observe(info::on_info)
-            .observe(changelog::on_changelog)
-            .observe(manual::on_manual)
-            .observe(licenses::on_license);
+            .add_observer(info::on_info)
+            .add_observer(changelog::on_changelog)
+            .add_observer(manual::on_manual)
+            .add_observer(licenses::on_license);
     }
 }

@@ -18,13 +18,13 @@ pub fn circle(
     (
         ShapeBundle {
             path: GeometryBuilder::build_as(&Circle {
-                radius: 1024.0 / zoom.0.exp2() * multiplier,
+                radius: 768.0 / zoom.0.exp2() * multiplier,
                 center,
             }),
-            spatial: SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.0, 100.0)),
+            transform: Transform::from_xyz(0.0, 0.0, 100.0),
             ..default()
         },
         Fill::color(Color::WHITE),
-        Stroke::new(color, 1024.0 / zoom.0.exp2() * multiplier),
+        Stroke::new(color, 512.0 / zoom.0.exp2() * multiplier),
     )
 }

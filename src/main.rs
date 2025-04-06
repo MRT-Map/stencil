@@ -10,8 +10,6 @@ use bevy::{
     },
 };
 use bevy_egui::EguiPlugin;
-use bevy_mod_picking::DefaultPickingPlugins;
-use bevy_mouse_tracking::prelude::MousePosPlugin;
 use bevy_prototype_lyon::prelude::ShapePlugin;
 use dirs_paths::data_dir;
 use tracing::Level;
@@ -21,6 +19,8 @@ use tracing_subscriber::{
 };
 use ui::tilemap::RenderingPlugin;
 
+#[cfg(debug_assertions)]
+use crate::inspector::InspectorPlugin;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
@@ -43,6 +43,8 @@ pub mod file;
 pub mod history;
 pub mod info_windows;
 pub mod init;
+#[cfg(debug_assertions)]
+pub mod inspector;
 pub mod keymaps;
 pub mod misc_config;
 pub mod panic;
@@ -83,10 +85,12 @@ fn main() {
     info!("Logger initialised");
 
     #[cfg(target_os = "linux")]
-    match INIT_WINDOW_SETTINGS.display_server_protocol {
-        LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
-        LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
-        LinuxWindow::Auto => (),
+    unsafe {
+        match INIT_WINDOW_SETTINGS.display_server_protocol {
+            LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
+            LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
+            LinuxWindow::Auto => (),
+        }
     }
 
     let mut app = App::new();
@@ -116,8 +120,11 @@ fn main() {
     })
     .add_plugins(FrameTimeDiagnosticsPlugin);
 
-    app.add_plugins(DefaultPickingPlugins)
-        .add_plugins(MousePosPlugin)
+    app.add_plugins(MeshPickingPlugin)
+        .insert_resource(MeshPickingSettings {
+            require_markers: true,
+            ..default()
+        })
         .add_plugins(EguiPlugin)
         .add_plugins(ShapePlugin);
 
@@ -133,6 +140,10 @@ fn main() {
         .add_plugins(HistoryPlugin)
         .add_plugins(NotifPlugin)
         .add_plugins(MiscSettingsPlugin)
-        .add_plugins(ComponentPanelsPlugin)
-        .run();
+        .add_plugins(ComponentPanelsPlugin);
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(InspectorPlugin);
+
+    app.run();
 }

@@ -5,15 +5,7 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{
-    component::{
-        pla2::ComponentType,
-        skin::Skin,
-        tools::creating::{clear_created_component, CreatedQuery},
-    },
-    project::Namespaces,
-    ui::panel::status::Status,
-};
+use crate::component::{pla2::ComponentType, tools::creating::ClearCreatedComponentEv};
 
 #[derive(States, Deserialize, Serialize, Default, Copy, Clone, PartialEq, Eq, Hash, Debug)]
 #[non_exhaustive]
@@ -77,24 +69,13 @@ pub struct ChangeStateEv(pub EditorState);
 pub fn on_state_change(
     trigger: Trigger<ChangeStateEv>,
     mut commands: Commands,
-    mut created_query: CreatedQuery,
-    skin: Res<Skin>,
-    mut namespaces: ResMut<Namespaces>,
-    mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
 ) {
     if trigger.event().0 == **state {
         return;
     }
     info!(?state, "Changing state");
-    clear_created_component(
-        &mut commands,
-        &mut created_query,
-        &skin,
-        &mut namespaces,
-        &mut status,
-        "component",
-    );
+    commands.trigger(ClearCreatedComponentEv);
     commands.insert_resource(NextState::Pending(trigger.event().0));
 }
 

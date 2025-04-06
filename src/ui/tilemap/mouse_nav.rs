@@ -4,7 +4,6 @@ use bevy::{
     window::PrimaryWindow,
 };
 use bevy_egui::EguiContexts;
-use bevy_mouse_tracking::{MainCamera, MousePos, MousePosWorld};
 
 use crate::{
     misc_config::settings::MiscSettings,
@@ -13,8 +12,8 @@ use crate::{
         zoom::Zoom,
     },
     ui::{
-        panel::dock::{within_tilemap, PanelDockState},
-        tilemap::settings::TileSettings,
+        cursor::mouse_pos::MousePos,
+        tilemap::{settings::TileSettings, window::PointerWithinTilemap},
     },
 };
 
@@ -24,12 +23,12 @@ pub fn mouse_drag_sy(
     mut mouse_origin_pos: Local<Option<MousePos>>,
     mut camera_origin_pos: Local<Option<Vec2>>,
     mouse_pos: Res<MousePos>,
-    mut camera: Query<(&Camera, &mut Transform), With<MainCamera>>,
+    mut camera: Query<(&Camera, &mut Transform)>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !within_tilemap(&mut ctx, &panel) {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     let (camera, mut transform) = camera.single_mut();
@@ -60,18 +59,22 @@ pub fn mouse_drag_sy(
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom_sy(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut camera: Query<(&mut OrthographicProjection, &mut Transform), With<MainCamera>>,
+    mut camera: Query<(
+        &Camera,
+        &GlobalTransform,
+        &mut OrthographicProjection,
+        &mut Transform,
+    )>,
     mut zoom: ResMut<Zoom>,
-    mouse_pos_world: Query<&MousePosWorld>,
+    mouse_pos: Res<MousePos>,
     tile_settings: Res<TileSettings>,
-    mut ctx: EguiContexts,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
 ) {
-    if !within_tilemap(&mut ctx, &panel) {
+    if pointer_within_tilemap.is_none() {
         return;
     }
-    let (mut ort_proj, mut transform) = camera.single_mut();
+    let (camera, global_transform, mut ort_proj, mut transform) = camera.single_mut();
     for ev in scroll_evr.read() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125 * misc_settings.scroll_multiplier_line,
@@ -85,15 +88,21 @@ pub fn mouse_zoom_sy(
         {
             let orig = transform.translation.xy();
             let orig_scale = ort_proj.scale;
-            let orig_mouse_pos = mouse_pos_world.single();
+            let Ok(orig_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
+            else {
+                continue;
+            };
             zoom.0 += u;
             trace!("Zoom changed from {orig_scale} to {}", zoom.0);
 
             ort_proj.scale =
                 ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
 
-            let d = (orig_mouse_pos.xy() - orig) * (ort_proj.scale / orig_scale);
-            let new_mouse_pos = mouse_pos_world.single();
+            let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
+            let Ok(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
+            else {
+                continue;
+            };
             trace!("View moved by {d:?}");
             transform.translation.x = new_mouse_pos.x - d.x;
             transform.translation.y = new_mouse_pos.y - d.y;

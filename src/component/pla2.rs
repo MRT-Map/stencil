@@ -3,7 +3,10 @@ use std::{
     fmt::{Debug, Display, Formatter},
 };
 
-use bevy::{color::palettes::basic::YELLOW, prelude::*};
+use bevy::{
+    color::palettes::basic::{OLIVE, YELLOW},
+    prelude::*,
+};
 use bevy_prototype_lyon::prelude::*;
 use egui_notify::ToastLevel;
 use hex_color::HexColor;
@@ -98,21 +101,21 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     PointStyle::Square { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Line { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     LineStyle::Fore { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
     #[must_use]
@@ -126,14 +129,14 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     LineStyle::Back { colour, .. } => colour.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { outline, .. } => outline.into(),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
     #[must_use]
@@ -147,14 +150,14 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     LineStyle::Fore { width, .. } => Some(*width),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
             SkinComponent::Area { styles, .. } => style_in_max_zoom(styles)?
                 .iter()
                 .filter_map(|style| match style {
                     AreaStyle::Fill { outline_width, .. } => Some(outline_width * 5.0),
                     _ => None,
                 })
-                .last(),
+                .next_back(),
         }
     }
 }
@@ -199,12 +202,13 @@ impl PlaComponent<EditorCoords> {
                 path: GeometryBuilder::build_as(&shapes::Rectangle {
                     extents: Vec2::splat(2.0),
                     origin: RectangleOrigin::Center,
+                    ..default()
                 }),
-                spatial: SpatialBundle::from_transform(Transform::from_xyz(
+                transform: Transform::from_xyz(
                     self.nodes[0].0.x as f32,
                     self.nodes[0].0.y as f32,
                     10.0,
-                )),
+                ),
                 ..default()
             };
         }
@@ -226,7 +230,7 @@ impl PlaComponent<EditorCoords> {
         });
         ShapeBundle {
             path,
-            spatial: SpatialBundle::from_transform(transform),
+            transform,
             ..default()
         }
     }
@@ -277,10 +281,11 @@ impl PlaComponent<EditorCoords> {
     }
 }
 
-pub trait Select {
+pub trait HighlightExt {
     fn select(&mut self, ty: ComponentType) -> &mut Self;
+    fn hover(&mut self, ty: ComponentType) -> &mut Self;
 }
-impl Select for Fill {
+impl HighlightExt for Fill {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
             ComponentType::Point => YELLOW.into(),
@@ -289,12 +294,27 @@ impl Select for Fill {
         };
         self
     }
+    fn hover(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => OLIVE.into(),
+            ComponentType::Line => Color::NONE,
+            ComponentType::Area => OLIVE.with_alpha(0.25).into(),
+        };
+        self
+    }
 }
-impl Select for Stroke {
+impl HighlightExt for Stroke {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
             ComponentType::Point => Color::NONE,
             ComponentType::Line | ComponentType::Area => YELLOW.into(),
+        };
+        self
+    }
+    fn hover(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => Color::NONE,
+            ComponentType::Line | ComponentType::Area => OLIVE.into(),
         };
         self
     }
@@ -304,7 +324,7 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
     Some(
         style
             .iter()
-            .map(|(zl, data)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), data))
+            .map(|(zl, v)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), v))
             .find(|(min, _)| *min == 0)?
             .1,
     )

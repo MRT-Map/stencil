@@ -1,14 +1,15 @@
-use bevy::prelude::{Event, ResMut, Trigger};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
+    component::{actions::rendering::RenderEv, pla2::ComponentType},
     history::{HistoryEntry, HistoryEv},
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentEditor;
 
 #[derive(Clone, Copy, Event)]
@@ -18,20 +19,20 @@ impl DockWindow for ComponentEditor {
     fn title(self) -> String {
         "Component".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             queries,
             commands,
             skin,
             namespaces,
             ..
-        } = tab_viewer.params;
+        } = params;
         let mut selected = queries.p0();
         if selected.is_empty() {
             ui.heading("Select a component...");
             return;
         }
-        let (entity, mut component_data) = selected.single_mut();
+        let (e, mut component_data) = selected.single_mut();
         let old_data = component_data.to_owned();
         ui.heading("Edit component data");
         ui.end_row();
@@ -69,20 +70,18 @@ impl DockWindow for ComponentEditor {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
                     .iter()
-                    .filter(|data| data.get_type() == component_type)
-                    .sorted_by_key(|data| data.name())
-                    .for_each(|data| {
+                    .filter(|skin_comp| skin_comp.get_type() == component_type)
+                    .sorted_by_key(|skin_comp| skin_comp.name())
+                    .for_each(|skin_comp| {
                         ui.selectable_value(
                             &mut component_data.ty,
-                            data.name().to_owned(),
-                            data.name(),
+                            skin_comp.name().to_owned(),
+                            skin_comp.name(),
                         );
                     });
             });
         if old_skin_type != component_data.ty {
-            commands
-                .entity(entity)
-                .select_component(skin, &component_data);
+            commands.entity(e).trigger(RenderEv::default());
         }
         ui.end_row();
         let mut tags = component_data.tags.join(",");
@@ -99,7 +98,7 @@ impl DockWindow for ComponentEditor {
         if component_data.get_type(skin) == ComponentType::Line {
             if ui.button("Reverse direction").clicked() {
                 component_data.nodes.reverse();
-            };
+            }
             ui.end_row();
             ui.separator();
         }
@@ -117,7 +116,7 @@ impl DockWindow for ComponentEditor {
         }
         if *component_data != old_data {
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-                entity,
+                e,
                 before: Some(old_data.into()),
                 after: Some(component_data.to_owned().into()),
             }));
@@ -125,10 +124,9 @@ impl DockWindow for ComponentEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn on_component_editor(
     _trigger: Trigger<OpenComponentEditorEv>,
-    mut state: ResMut<PanelDockState>,
+    mut state: ResMut<DockLayout>,
 ) {
-    window_action_handler(&mut state, ComponentEditor);
+    open_dock_window(&mut state, ComponentEditor);
 }

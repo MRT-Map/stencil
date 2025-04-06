@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_file_dialog::FileDialog;
 use egui_notify::ToastLevel;
+use serde::{Deserialize, Serialize};
 use surf::Url;
 
 use crate::{
@@ -9,34 +12,33 @@ use crate::{
     file::{load_toml, save_toml},
     tile::tile_coord::URL_REPLACER,
     ui::{
+        file_dialogs::FileDialogs,
         notif::{NotifLogRwLockExt, NOTIF_LOG},
-        panel::dock::{
-            window_action_handler, DockWindow, FileDialogs, PanelDockState, PanelParams, TabViewer,
-        },
+        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
         tilemap::settings::{Basemap, TileSettings},
     },
 };
 
-#[derive(Clone, Event)]
+#[derive(Clone, PartialEq, Event)]
 pub enum TileSettingsEv {
     Open,
     Import,
     Export(Basemap),
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct TileSettingsEditor;
 
 impl DockWindow for TileSettingsEditor {
     fn title(self) -> String {
         "Tile Settings".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             tile_settings,
             commands,
             ..
-        } = tab_viewer.params;
+        } = params;
         let mut invalid = false;
         let old_settings = tile_settings.to_owned();
 
@@ -146,7 +148,14 @@ impl DockWindow for TileSettingsEditor {
 impl TileSettingsEditor {
     #[must_use]
     pub fn import_dialog() -> FileDialog {
-        FileDialog::new().title("Import Basemap")
+        FileDialog::new()
+            .title("Import Basemap")
+            .add_file_filter(
+                "TOML file",
+                Arc::new(|path| path.extension().is_some_and(|a| a == "toml")),
+            )
+            .default_file_filter("TOML file")
+            .storage(FileDialogs::load_storage())
     }
 
     #[must_use]
@@ -157,21 +166,22 @@ impl TileSettingsEditor {
                 "{}.toml",
                 URL_REPLACER.replace_all(url, "").as_ref()
             ))
+            .storage(FileDialogs::load_storage())
     }
 }
 
 #[expect(clippy::needless_pass_by_value)]
 pub fn on_tile_settings(
     trigger: Trigger<TileSettingsEv>,
-    mut state: ResMut<PanelDockState>,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut state: ResMut<DockLayout>,
+    mut file_dialogs: ResMut<FileDialogs>,
 ) {
     match trigger.event() {
         TileSettingsEv::Open => {
-            window_action_handler(&mut state, TileSettingsEditor);
+            open_dock_window(&mut state, TileSettingsEditor);
         }
         TileSettingsEv::Import => {
-            file_dialogs.tile_settings_import.select_file();
+            file_dialogs.tile_settings_import.save_file();
         }
         TileSettingsEv::Export(basemap) => {
             let mut fd = TileSettingsEditor::export_dialog(&basemap.url);
@@ -184,14 +194,15 @@ pub fn on_tile_settings(
 pub fn tile_settings_dialog(
     mut tile_settings: ResMut<TileSettings>,
     mut ctx: EguiContexts,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };
     let file_dialog = &mut file_dialogs.tile_settings_import;
     file_dialog.update(ctx);
-    if let Some(file) = file_dialog.take_selected() {
+    if let Some(file) = file_dialog.take_picked() {
+        let _ = FileDialogs::save_storage(file_dialog.storage_mut());
         if let Ok(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
             NOTIF_LOG.push(
@@ -203,7 +214,8 @@ pub fn tile_settings_dialog(
 
     if let Some((basemap, file_dialog)) = &mut file_dialogs.tile_settings_export {
         file_dialog.update(ctx);
-        if let Some(file) = file_dialog.take_selected() {
+        if let Some(file) = file_dialog.take_picked() {
+            let _ = FileDialogs::save_storage(file_dialog.storage_mut());
             if save_toml(basemap, &file, Some("basemap")).is_ok() {
                 NOTIF_LOG.push(
                     &format!("Exported basemap to {}", file.to_string_lossy()),

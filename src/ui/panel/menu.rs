@@ -4,10 +4,11 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, EguiContexts};
-use bevy_inspector_egui::egui::scroll_area::ScrollBarVisibility;
+use bevy_egui::{egui, egui::scroll_area::ScrollBarVisibility, EguiContexts};
 use egui_notify::ToastLevel;
 
+#[cfg(debug_assertions)]
+use crate::inspector::ShowInspector;
 use crate::{
     component::panels::{
         component_editor::OpenComponentEditorEv, component_list::OpenComponentListEv,
@@ -20,7 +21,7 @@ use crate::{
     ui::{
         notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
-            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateEv},
+            dock::{DockLayout, DockWindow, DockWindows, ResetPanelDockStateEv},
             status::Status,
         },
         tilemap::settings_editor::{TileSettingsEditor, TileSettingsEv},
@@ -37,6 +38,7 @@ pub fn ui_sy(
     mut commands: Commands,
     diagnostics: Res<DiagnosticsStore>,
     status: Res<Status>,
+    #[cfg(debug_assertions)] inspector: Option<Res<ShowInspector>>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
@@ -104,6 +106,13 @@ pub fn ui_sy(
                         info!(label = "Trigger Panic", "Clicked menu item");
                         panic!("Panic Triggered");
                     }
+                    if ui.button("Show Inspector").clicked() {
+                        if inspector.is_some() {
+                            commands.remove_resource::<ShowInspector>();
+                        } else {
+                            commands.init_resource::<ShowInspector>();
+                        }
+                    }
                 });
             }
             ui.separator();
@@ -135,10 +144,9 @@ pub fn ui_sy(
     });
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<PanelDockState>) {
+pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<DockLayout>) {
     let all_tabs = state
-        .state
+        .0
         .iter_all_tabs()
         .map(|(_, a)| a.title())
         .collect::<HashSet<_>>();
@@ -154,6 +162,6 @@ pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<P
     if settings_tabs.is_empty() {
         NOTIF_LOG.push(&"All settings tabs are already open", ToastLevel::Info);
     } else {
-        state.state.add_window(settings_tabs);
+        state.0.add_window(settings_tabs);
     }
 }

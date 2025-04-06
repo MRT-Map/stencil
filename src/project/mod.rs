@@ -59,8 +59,8 @@ impl Plugin for ProjectPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Namespaces>()
             .add_systems(Update, autosave_sy)
-            .observe(events::on_project)
-            .observe(project_editor::on_project_editor)
+            .add_observer(events::on_project)
+            .add_observer(project_editor::on_project_editor)
             .add_systems(UiSchedule, events::project_dialog)
             .add_systems(OnExit(EditorState::Loading), |mut commands: Commands| {
                 commands.trigger(ProjectEv::Reload);

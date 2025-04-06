@@ -1,26 +1,27 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use serde::{Deserialize, Serialize};
 use surf::Url;
 
 use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenMiscSettingsEv;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct MiscSettingsEditor;
 
 impl DockWindow for MiscSettingsEditor {
     fn title(self) -> String {
         "Misc Settings".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        let PanelParams { misc_settings, .. } = tab_viewer.params;
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
+        let PanelParams { misc_settings, .. } = params;
         let mut invalid = false;
         let old_settings = misc_settings.to_owned();
         if ui
@@ -52,7 +53,7 @@ impl DockWindow for MiscSettingsEditor {
                 cache_path("skin.msgpack").exists(),
                 egui::Button::new("Clear skin cache"),
             )
-            .clicked
+            .clicked()
             && cache_path("skin.msgpack").exists()
         {
             let _ = safe_delete(&cache_path("skin.msgpack"), Some("cached skin file"));
@@ -119,7 +120,7 @@ impl DockWindow for MiscSettingsEditor {
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut misc_settings.autosave_interval, 0..=10)
+            egui::Slider::new(&mut misc_settings.notif_duration, 0..=10)
                 .text("Notification duration (s)"),
         );
         ui.label("Time before success and info notifications expire. Set to 0 to disable expiry");
@@ -135,7 +136,6 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<PanelDockState>) {
-    window_action_handler(&mut state, MiscSettingsEditor);
+pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, MiscSettingsEditor);
 }

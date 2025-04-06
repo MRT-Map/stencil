@@ -42,7 +42,7 @@ fn embed_resource() -> Result<()> {
         let icons_dir = root_dir.join("icons");
         std::fs::copy(icons_dir.join("icon.rc"), root_dir.join("icon.rc"))?;
         std::fs::copy(icons_dir.join("icon.ico"), root_dir.join("icon.ico"))?;
-        embed_resource::compile("icon.rc", embed_resource::NONE);
+        let _ = embed_resource::compile("icon.rc", embed_resource::NONE);
         std::fs::remove_file(root_dir.join("icon.rc"))?;
         std::fs::remove_file(root_dir.join("icon.ico"))?;
     }

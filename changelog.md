@@ -5,6 +5,22 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.5
+* Upgrade `bevy` to v0.15
+  * This involves major internal refactors
+  * Slight movements between mouse down and up will no longer count as a click
+* Upgrade `egui_dock` to v0.16, close buttons are now available on the top-right corner of windows
+* if the cursor in creation modes is not hidden, a cell cursor is shown instead of a default pointer
+* Moving components now snap them to the grid
+* Make node-editing circle black instead of grey
+* Decrease size and border of all node circles
+* Fix `notif_duration` miscellaneous setting not being able to be updated
+* Components and their node circles are now only rerendered when needed
+* `toml` file filter when importing basemap
+* File dialogue states and dock layout are now preserved across sessions
+  * they are stored in the cache and data directories respectively
+* `bevy_inspector_egui` in debug builds
+
 # v2.2.4
 * The order _should_ be more closely followed when selecting components that are at a higher order/layer over others
 * Image file extension field in basemaps

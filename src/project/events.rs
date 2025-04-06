@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use bevy::{
-    hierarchy::DespawnRecursiveExt,
-    prelude::{Commands, Entity, Event, EventWriter, NonSendMut, Query, Res, ResMut, Trigger},
-};
+use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
 use bevy_egui::EguiContexts;
 use egui_notify::ToastLevel;
 use itertools::Itertools;
@@ -18,13 +15,13 @@ use crate::{
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
     project::Namespaces,
     ui::{
+        file_dialogs::FileDialogs,
         notif::{NotifLogRwLockExt, NOTIF_LOG},
-        panel::dock::FileDialogs,
         popup::Popup,
     },
 };
 
-#[derive(Clone, Event)]
+#[derive(Clone, PartialEq, Eq, Event)]
 pub enum ProjectEv {
     Open,
     Load(PathBuf, bool),
@@ -49,7 +46,7 @@ pub fn on_project(
     mut commands: Commands,
     mut namespaces: ResMut<Namespaces>,
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
     skin: Res<Skin>,
     mut popup: EventWriter<Popup>,
     mut history: ResMut<History>,
@@ -159,7 +156,7 @@ pub fn on_project(
             );
         }
         ProjectEv::Open => {
-            file_dialogs.project_select.select_directory();
+            file_dialogs.project_select.pick_directory();
         }
         ProjectEv::Reload => {
             let ns: Vec<String> = namespaces
@@ -233,13 +230,14 @@ pub fn project_dialog(
     mut commands: Commands,
     namespaces: Res<Namespaces>,
     mut ctx: EguiContexts,
-    mut file_dialogs: NonSendMut<FileDialogs>,
+    mut file_dialogs: ResMut<FileDialogs>,
     mut popup: EventWriter<Popup>,
 ) {
     let file_dialog = &mut file_dialogs.project_select;
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     file_dialog.update(ctx);
-    if let Some(file) = file_dialog.take_selected() {
+    if let Some(file) = file_dialog.take_picked() {
+        let _ = FileDialogs::save_storage(file_dialog.storage_mut());
         if namespaces.dir == Namespaces::default().dir {
             commands.trigger(ProjectEv::Load(file, true));
         } else {

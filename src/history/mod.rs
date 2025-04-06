@@ -14,7 +14,7 @@ use crate::component::pla2::{EditorCoords, PlaComponent};
 #[derive(Clone, Debug)]
 pub enum HistoryEntry<T = Entity> {
     Component {
-        entity: T,
+        e: T,
         before: Option<Box<PlaComponent<EditorCoords>>>,
         after: Option<Box<PlaComponent<EditorCoords>>>,
     },
@@ -88,7 +88,7 @@ impl Plugin for HistoryPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<History>()
             //.add_systems(Update, events::on_history.run_if_not_loading())
-            .observe(events::on_history)
-            .observe(history_viewer::on_history_viewer);
+            .add_observer(events::on_history)
+            .add_observer(history_viewer::on_history_viewer);
     }
 }

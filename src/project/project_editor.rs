@@ -1,16 +1,20 @@
-use bevy::prelude::{Event, ResMut, Trigger};
+use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     history::{HistoryEntry, HistoryEv, NamespaceAction},
     project::events::ProjectEv,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::{
+        file_dialogs::FileDialogs,
+        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    },
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ProjectEditor;
 
 #[derive(Clone, Copy, Event)]
@@ -20,14 +24,14 @@ impl DockWindow for ProjectEditor {
     fn title(self) -> String {
         "Project".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             namespaces,
             new_namespace,
             commands,
             queries,
             ..
-        } = tab_viewer.params;
+        } = params;
         let components = queries.p1().iter().counts_by(|a| a.namespace.clone());
         ui.horizontal(|ui| {
             if ui.button("Open").clicked() {
@@ -147,14 +151,12 @@ impl DockWindow for ProjectEditor {
 impl ProjectEditor {
     #[must_use]
     pub fn select_dialog() -> FileDialog {
-        FileDialog::new().title("Open project")
+        FileDialog::new()
+            .title("Open project")
+            .storage(FileDialogs::load_storage())
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_project_editor(
-    _trigger: Trigger<OpenProjectEditorEv>,
-    mut state: ResMut<PanelDockState>,
-) {
-    window_action_handler(&mut state, ProjectEditor);
+pub fn on_project_editor(_trigger: Trigger<OpenProjectEditorEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, ProjectEditor);
 }

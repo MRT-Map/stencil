@@ -25,7 +25,7 @@ pub fn on_quit(
                     "You may have unsaved changes",
                     InfoWindowsEv::Quit(true),
                 ));
-            };
+            }
         }
         InfoWindowsEv::Quit(true) => {
             exit.send(AppExit::Success);

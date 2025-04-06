@@ -146,8 +146,7 @@ pub fn save_msgpack<T: Serialize>(
 pub fn safe_delete(path: &Path, error: Option<&'static str>) -> eyre::Result<PathBuf> {
     let trash_dir = cache_dir("trash");
     let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
+        .duration_since(SystemTime::UNIX_EPOCH)?
         .as_nanos();
     let new_path = trash_dir.join(timestamp.to_string());
     match std::fs::rename(path, &new_path) {

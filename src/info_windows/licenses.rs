@@ -1,19 +1,18 @@
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 
 use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 use license_retriever::LicenseRetriever;
-use once_cell::sync::Lazy;
 
 use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
 #[cfg(not(debug_assertions))]
-static LICENSES: Lazy<LicenseRetriever> =
-    Lazy::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
+static LICENSES: LazyLock<LicenseRetriever> =
+    LazyLock::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
 
 #[cfg(debug_assertions)]
-static LICENSES: Lazy<LicenseRetriever> = Lazy::new(LicenseRetriever::default);
+static LICENSES: LazyLock<LicenseRetriever> = LazyLock::new(LicenseRetriever::default);
 
 #[expect(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
