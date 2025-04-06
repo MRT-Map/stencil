@@ -1,15 +1,16 @@
-use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
-use bevy::window::PrimaryWindow;
+use bevy::{
+    app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, window::PrimaryWindow,
+};
 use bevy_egui::{egui, EguiContextSettings, EguiContexts};
 
 use crate::state::IntoSystemSetConfigExt;
 
 pub mod cursor;
+pub mod file_dialogs;
 pub mod notif;
 pub mod panel;
 pub mod popup;
 pub mod tilemap;
-pub mod file_dialogs;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct Focus(pub Option<egui::Id>);
@@ -61,7 +62,7 @@ impl Plugin for UiPlugin {
                     return;
                 };
                 egui_extras::install_image_loaders(ctx);
-                
+
                 settings.single_mut().capture_pointer_input = false;
             });
         let mut order = app.world_mut().resource_mut::<MainScheduleOrder>();

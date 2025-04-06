@@ -6,20 +6,16 @@ pub mod toolbar;
 use bevy::prelude::*;
 
 use crate::ui::{
-    panel::{
-        dock::DockLayout,
-        status::Status,
-    },
+    file_dialogs::FileDialogs,
+    panel::{dock::DockLayout, status::Status},
     UiSchedule, UiSet,
 };
-use crate::ui::file_dialogs::FileDialogs;
 
 pub struct PanelPlugin;
 
 impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
-        app.world_mut()
-            .init_resource::<FileDialogs>();
+        app.world_mut().init_resource::<FileDialogs>();
         app.insert_resource(DockLayout::load())
             .init_resource::<Status>()
             .add_systems(

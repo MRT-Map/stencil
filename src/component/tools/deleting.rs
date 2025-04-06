@@ -4,10 +4,10 @@ use crate::{
     component::pla2::{EditorCoords, PlaComponent},
     history::{HistoryEntry, HistoryEv},
     state::EditorState,
-    ui::panel::status::Status,
+    ui::{
+        cursor::mouse_events::Click2, panel::status::Status, tilemap::window::PointerWithinTilemap,
+    },
 };
-use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(

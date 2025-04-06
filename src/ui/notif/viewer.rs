@@ -2,9 +2,10 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+
 use crate::ui::{
     notif::NOTIF_LOG,
-    panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Serialize, Deserialize)]

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use crate::component::actions::rendering::RenderEv;
-use crate::ui::tilemap::window::PointerWithinTilemap;
+
+use crate::{component::actions::rendering::RenderEv, ui::tilemap::window::PointerWithinTilemap};
 
 #[tracing::instrument(skip_all)]
 pub fn on_hover_over(
@@ -14,7 +14,10 @@ pub fn on_hover_over(
         return;
     }
     debug!(?e, "Hovering over component");
-    commands.entity(e).insert(HoveredComponent).trigger(RenderEv::default());
+    commands
+        .entity(e)
+        .insert(HoveredComponent)
+        .trigger(RenderEv::default());
 }
 
 #[tracing::instrument(skip_all)]
@@ -29,7 +32,10 @@ pub fn on_hover_out(
         return;
     }
     debug!(?e, "Hovering out of component");
-    commands.entity(e).remove::<HoveredComponent>().trigger(RenderEv::default());
+    commands
+        .entity(e)
+        .remove::<HoveredComponent>()
+        .trigger(RenderEv::default());
 }
 
 pub struct HoverComponentPlugin;

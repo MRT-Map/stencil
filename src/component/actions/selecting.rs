@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::pla2::{EditorCoords, PlaComponent},
+    component::{
+        actions::rendering::RenderEv,
+        pla2::{EditorCoords, PlaComponent},
+    },
     state::EditorState,
-    ui::panel::status::Status,
+    ui::{
+        cursor::mouse_events::Click2, panel::status::Status, tilemap::window::PointerWithinTilemap,
+    },
 };
-use crate::component::actions::rendering::RenderEv;
-use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
@@ -18,7 +20,8 @@ pub fn on_select_left_click(
     mut status: ResMut<Status>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || state.component_type().is_some()
+    if pointer_within_tilemap.is_none()
+        || state.component_type().is_some()
         || *state == EditorState::DeletingComponent
         || trigger.button != PointerButton::Primary
     {
@@ -52,7 +55,10 @@ pub fn on_select(
     match trigger.event() {
         SelectEv::Select => {
             info!(?e, "Selecting entity");
-            commands.entity(e).insert(SelectedComponent).trigger(RenderEv::default());
+            commands
+                .entity(e)
+                .insert(SelectedComponent)
+                .trigger(RenderEv::default());
         }
         SelectEv::Deselect => {
             debug!(?e, "Deselecting component");
@@ -81,9 +87,8 @@ pub fn on_select(
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_observer(on_select_left_click)
-        .add_observer(on_select);
+        app.add_observer(on_select_left_click)
+            .add_observer(on_select);
     }
 }
 

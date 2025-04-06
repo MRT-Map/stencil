@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+
 use crate::{
-    component::{pla2::ComponentType},
+    component::{actions::rendering::RenderEv, pla2::ComponentType},
     history::{HistoryEntry, HistoryEv},
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
-use crate::component::actions::rendering::RenderEv;
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentEditor;
@@ -81,8 +81,7 @@ impl DockWindow for ComponentEditor {
                     });
             });
         if old_skin_type != component_data.ty {
-            commands
-                .entity(e).trigger(RenderEv::default());
+            commands.entity(e).trigger(RenderEv::default());
         }
         ui.end_row();
         let mut tags = component_data.tags.join(",");

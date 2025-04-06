@@ -3,9 +3,8 @@ use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use crate::ui::panel::dock::{
-    open_dock_window, DockWindow, DockLayout, PanelParams,
-};
+
+use crate::ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams};
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentList;
@@ -65,9 +64,6 @@ impl DockWindow for ComponentList {
     }
 }
 
-pub fn on_component_list(
-    _trigger: Trigger<OpenComponentListEv>,
-    mut state: ResMut<DockLayout>,
-) {
+pub fn on_component_list(_trigger: Trigger<OpenComponentListEv>, mut state: ResMut<DockLayout>) {
     open_dock_window(&mut state, ComponentList);
 }

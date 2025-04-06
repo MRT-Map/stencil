@@ -4,12 +4,16 @@ use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_notify::ToastLevel;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
+
 use crate::{
     component::{
+        actions::selecting::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
     },
+    dirs_paths::data_path,
+    file::{load_msgpack, save_msgpack},
     history::{history_viewer::HistoryViewer, History},
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     misc_config::{settings::MiscSettings, settings_editor::MiscSettingsEditor},
@@ -22,17 +26,12 @@ use crate::{
         panel::status::Status,
         popup::Popup,
         tilemap::{
-            settings::TileSettings,
-            settings_editor::TileSettingsEditor,
-            tile::PendingTiles,
+            settings::TileSettings, settings_editor::TileSettingsEditor, tile::PendingTiles,
             window::Tilemap,
         },
     },
     window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
-use crate::component::actions::selecting::SelectedComponent;
-use crate::dirs_paths::data_path;
-use crate::file::{load_msgpack, save_msgpack};
 
 #[enum_dispatch(DockWindows)]
 pub trait DockWindow: Copy {
@@ -102,7 +101,11 @@ impl DockLayout {
         }
     }
     pub fn save(&self) -> eyre::Result<()> {
-        save_msgpack(&self.0, &data_path("dock_layout.msgpack"), Some("dock layout"))
+        save_msgpack(
+            &self.0,
+            &data_path("dock_layout.msgpack"),
+            Some("dock layout"),
+        )
     }
 }
 
@@ -113,7 +116,6 @@ impl DockLayout {
             .show(ctx, params);
     }
 }
-
 
 #[derive(SystemParam)]
 #[non_exhaustive]
@@ -183,12 +185,9 @@ impl egui_dock::TabViewer for PanelParams<'_, '_> {
     }
 }
 
-
-pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(
-    state: &mut DockLayout,
-    window: W,
-) {
-    let a = state.0
+pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(state: &mut DockLayout, window: W) {
+    let a = state
+        .0
         .iter_all_tabs()
         .find(|(_, a)| a.title() == window.title());
     if let Some((a, _)) = a {
@@ -201,7 +200,12 @@ pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(
     }
 }
 
-pub fn panel_sy(mut state: ResMut<DockLayout>, mut ctx: EguiContexts, mut params: PanelParams, mut tick: Local<u8>) {
+pub fn panel_sy(
+    mut state: ResMut<DockLayout>,
+    mut ctx: EguiContexts,
+    mut params: PanelParams,
+    mut tick: Local<u8>,
+) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };

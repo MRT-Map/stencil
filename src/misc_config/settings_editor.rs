@@ -7,7 +7,7 @@ use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Event)]

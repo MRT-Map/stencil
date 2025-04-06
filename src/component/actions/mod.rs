@@ -2,8 +2,8 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 pub mod hovering;
 pub mod moving;
-pub mod selecting;
 pub mod rendering;
+pub mod selecting;
 
 pub struct ComponentActionPlugins;
 

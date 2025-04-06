@@ -15,11 +15,11 @@ use crate::{
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
     project::Namespaces,
     ui::{
+        file_dialogs::FileDialogs,
         notif::{NotifLogRwLockExt, NOTIF_LOG},
         popup::Popup,
     },
 };
-use crate::ui::file_dialogs::FileDialogs;
 
 #[derive(Clone, PartialEq, Eq, Event)]
 pub enum ProjectEv {

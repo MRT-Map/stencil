@@ -1,11 +1,12 @@
 use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::egui;
 use serde::{Deserialize, Serialize};
+
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
     dirs_paths::data_path,
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
     window::settings::WindowSettings,
 };
 
@@ -107,9 +108,6 @@ impl DockWindow for WindowSettingsEditor {
     }
 }
 
-pub fn on_window_settings(
-    _trigger: Trigger<OpenWindowSettingsEv>,
-    mut state: ResMut<DockLayout>,
-) {
+pub fn on_window_settings(_trigger: Trigger<OpenWindowSettingsEv>, mut state: ResMut<DockLayout>) {
     open_dock_window(&mut state, WindowSettingsEditor);
 }

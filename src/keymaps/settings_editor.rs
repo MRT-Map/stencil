@@ -3,6 +3,7 @@ use std::sync::LazyLock;
 use bevy::prelude::*;
 use bevy_egui::egui;
 use serde::{Deserialize, Serialize};
+
 use crate::{
     dirs_paths::data_path,
     keymaps::{
@@ -10,7 +11,7 @@ use crate::{
         settings::{KeymapAction, KeymapSettings},
     },
     state::EditorState,
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Event)]
@@ -73,10 +74,7 @@ impl DockWindow for KeymapSettingsEditor {
     }
 }
 
-pub fn on_keymap_settings(
-    _trigger: Trigger<OpenKeymapSettingsEv>,
-    mut state: ResMut<DockLayout>,
-) {
+pub fn on_keymap_settings(_trigger: Trigger<OpenKeymapSettingsEv>, mut state: ResMut<DockLayout>) {
     open_dock_window(&mut state, KeymapSettingsEditor);
 }
 

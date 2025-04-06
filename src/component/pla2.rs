@@ -3,8 +3,10 @@ use std::{
     fmt::{Debug, Display, Formatter},
 };
 
-use bevy::{color::palettes::basic::YELLOW, prelude::*};
-use bevy::color::palettes::basic::OLIVE;
+use bevy::{
+    color::palettes::basic::{OLIVE, YELLOW},
+    prelude::*,
+};
 use bevy_prototype_lyon::prelude::*;
 use egui_notify::ToastLevel;
 use hex_color::HexColor;

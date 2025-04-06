@@ -1,4 +1,5 @@
 use std::sync::Arc;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use egui_file_dialog::FileDialog;
@@ -11,14 +12,12 @@ use crate::{
     file::{load_toml, save_toml},
     tile::tile_coord::URL_REPLACER,
     ui::{
+        file_dialogs::FileDialogs,
         notif::{NotifLogRwLockExt, NOTIF_LOG},
-        panel::dock::{
-            open_dock_window, DockWindow, DockLayout, PanelParams,
-        },
+        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
         tilemap::settings::{Basemap, TileSettings},
     },
 };
-use crate::ui::file_dialogs::FileDialogs;
 
 #[derive(Clone, PartialEq, Event)]
 pub enum TileSettingsEv {
@@ -149,8 +148,14 @@ impl DockWindow for TileSettingsEditor {
 impl TileSettingsEditor {
     #[must_use]
     pub fn import_dialog() -> FileDialog {
-        FileDialog::new().title("Import Basemap")
-            .add_file_filter("TOML file", Arc::new(|path| path.extension().is_some_and(|a| a == "toml"))).default_file_filter("TOML file").storage(FileDialogs::load_storage())
+        FileDialog::new()
+            .title("Import Basemap")
+            .add_file_filter(
+                "TOML file",
+                Arc::new(|path| path.extension().is_some_and(|a| a == "toml")),
+            )
+            .default_file_filter("TOML file")
+            .storage(FileDialogs::load_storage())
     }
 
     #[must_use]
@@ -160,7 +165,8 @@ impl TileSettingsEditor {
             .default_file_name(&format!(
                 "{}.toml",
                 URL_REPLACER.replace_all(url, "").as_ref()
-            )).storage(FileDialogs::load_storage())
+            ))
+            .storage(FileDialogs::load_storage())
     }
 }
 

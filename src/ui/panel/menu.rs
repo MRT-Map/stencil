@@ -7,6 +7,8 @@ use bevy::{
 use bevy_egui::{egui, egui::scroll_area::ScrollBarVisibility, EguiContexts};
 use egui_notify::ToastLevel;
 
+#[cfg(debug_assertions)]
+use crate::inspector::ShowInspector;
 use crate::{
     component::panels::{
         component_editor::OpenComponentEditorEv, component_list::OpenComponentListEv,
@@ -19,15 +21,13 @@ use crate::{
     ui::{
         notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
-            dock::{DockWindow, DockWindows, DockLayout, ResetPanelDockStateEv},
+            dock::{DockLayout, DockWindow, DockWindows, ResetPanelDockStateEv},
             status::Status,
         },
         tilemap::settings_editor::{TileSettingsEditor, TileSettingsEv},
     },
     window::settings_editor::{OpenWindowSettingsEv, WindowSettingsEditor},
 };
-#[cfg(debug_assertions)]
-use crate::inspector::ShowInspector;
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenAllSettingsEv;
@@ -38,8 +38,7 @@ pub fn ui_sy(
     mut commands: Commands,
     diagnostics: Res<DiagnosticsStore>,
     status: Res<Status>,
-    #[cfg(debug_assertions)]
-    inspector: Option<Res<ShowInspector>>
+    #[cfg(debug_assertions)] inspector: Option<Res<ShowInspector>>,
 ) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
@@ -146,7 +145,8 @@ pub fn ui_sy(
 }
 
 pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<DockLayout>) {
-    let all_tabs = state.0
+    let all_tabs = state
+        .0
         .iter_all_tabs()
         .map(|(_, a)| a.title())
         .collect::<HashSet<_>>();

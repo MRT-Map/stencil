@@ -19,6 +19,8 @@ use tracing_subscriber::{
 };
 use ui::tilemap::RenderingPlugin;
 
+#[cfg(debug_assertions)]
+use crate::inspector::InspectorPlugin;
 #[cfg(target_os = "linux")]
 use crate::window::settings::LinuxWindow;
 use crate::{
@@ -34,8 +36,6 @@ use crate::{
     ui::{notif::NotifPlugin, UiPlugin},
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
-#[cfg(debug_assertions)]
-use crate::inspector::InspectorPlugin;
 
 pub mod component;
 pub mod dirs_paths;
@@ -43,6 +43,8 @@ pub mod file;
 pub mod history;
 pub mod info_windows;
 pub mod init;
+#[cfg(debug_assertions)]
+pub mod inspector;
 pub mod keymaps;
 pub mod misc_config;
 pub mod panic;
@@ -51,8 +53,6 @@ pub mod state;
 pub mod tile;
 pub mod ui;
 pub mod window;
-#[cfg(debug_assertions)]
-pub mod inspector;
 
 fn init_logger() {
     tracing_subscriber::registry()

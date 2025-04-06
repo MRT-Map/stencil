@@ -1,9 +1,9 @@
-use bevy::prelude::*;
-use bevy::render::primitives::Aabb;
+use bevy::{prelude::*, render::primitives::Aabb};
 use itertools::Itertools;
 
 use crate::{
     component::{
+        actions::{rendering::RenderEv, selecting::SelectedComponent},
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -11,12 +11,12 @@ use crate::{
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
-    ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
+    ui::{
+        cursor::{mouse_events::Click2, mouse_pos::MousePosWorld},
+        panel::status::Status,
+        tilemap::window::PointerWithinTilemap,
+    },
 };
-use crate::component::actions::rendering::RenderEv;
-use crate::component::actions::selecting::SelectedComponent;
-use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]
 pub struct NodeEditData {
@@ -40,7 +40,10 @@ pub fn on_node_edit_right_down(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || **state != EditorState::EditingNodes
+    {
         return;
     }
     let Ok((e, mut pla)) = selected.get_single_mut() else {
@@ -120,7 +123,10 @@ pub fn on_node_edit_right_up(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || **state != EditorState::EditingNodes
+    {
         return;
     }
     let Ok((e, pla)) = selected.get_single_mut() else {
@@ -146,7 +152,10 @@ pub fn on_node_edit_right_click(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || **state != EditorState::EditingNodes
+    {
         return;
     }
     let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
@@ -181,7 +190,10 @@ pub fn on_edit_nodes(
     };
     match trigger.event() {
         EditNodesEv::ClearEventData => {
-            commands.entity(e).remove::<(Aabb, NodeEditData)>().trigger(RenderEv::default());
+            commands
+                .entity(e)
+                .remove::<(Aabb, NodeEditData)>()
+                .trigger(RenderEv::default());
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 e,
                 before: Some(orig.to_owned().old_pla.into()),

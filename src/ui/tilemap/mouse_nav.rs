@@ -13,10 +13,9 @@ use crate::{
     },
     ui::{
         cursor::mouse_pos::MousePos,
-        tilemap::settings::TileSettings,
+        tilemap::{settings::TileSettings, window::PointerWithinTilemap},
     },
 };
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag_sy(

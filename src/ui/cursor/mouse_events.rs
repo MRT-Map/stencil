@@ -3,14 +3,13 @@ use std::collections::HashMap;
 use bevy::{
     picking::{
         backend::HitData,
-        pointer::{PointerAction, PointerInput, PressDirection},
+        pointer::{Location, PointerAction, PointerInput, PressDirection},
     },
     prelude::*,
 };
-use bevy::picking::pointer::Location;
 use itertools::Itertools;
-use crate::ui::cursor::mouse_pos::MousePosWorld;
-use crate::ui::tilemap::window::PointerWithinTilemap;
+
+use crate::ui::{cursor::mouse_pos::MousePosWorld, tilemap::window::PointerWithinTilemap};
 
 #[derive(Debug, Clone, Reflect)]
 pub struct Click2 {
@@ -29,10 +28,7 @@ pub struct MiddleClick(pub Click2);
 pub struct RightClick(pub Click2);
 
 #[tracing::instrument(skip_all)]
-pub fn on_emit_click2_down(
-    trigger: Trigger<Pointer<Down>>,
-    mut commands: Commands
-) {
+pub fn on_emit_click2_down(trigger: Trigger<Pointer<Down>>, mut commands: Commands) {
     let event = Click2 {
         button: trigger.event.button,
         hit: trigger.event.hit.clone(),
@@ -53,12 +49,21 @@ pub fn on_emit_click2_up(
     middle_click: Query<&MiddleClick>,
     right_click: Query<&RightClick>,
     mut commands: Commands,
-    mut event_writer: EventWriter<Pointer<Click2>>
+    mut event_writer: EventWriter<Pointer<Click2>>,
 ) {
     let Ok(click_data) = (match trigger.button {
-        PointerButton::Primary => left_click.get(trigger.entity()).map(|a| {commands.entity(trigger.entity()).remove::<LeftClick>(); &a.0}),
-        PointerButton::Middle => middle_click.get(trigger.entity()).map(|a|{commands.entity(trigger.entity()).remove::<MiddleClick>(); &a.0}),
-        PointerButton::Secondary => right_click.get(trigger.entity()).map(|a|{commands.entity(trigger.entity()).remove::<RightClick>(); &a.0}),
+        PointerButton::Primary => left_click.get(trigger.entity()).map(|a| {
+            commands.entity(trigger.entity()).remove::<LeftClick>();
+            &a.0
+        }),
+        PointerButton::Middle => middle_click.get(trigger.entity()).map(|a| {
+            commands.entity(trigger.entity()).remove::<MiddleClick>();
+            &a.0
+        }),
+        PointerButton::Secondary => right_click.get(trigger.entity()).map(|a| {
+            commands.entity(trigger.entity()).remove::<RightClick>();
+            &a.0
+        }),
     }) else {
         return;
     };
@@ -109,18 +114,24 @@ pub fn emit_deselect_click_sy(
         }) {
             old_locations.insert(button, input.location.clone());
         }
-        if let Some((input, old_location)) = inputs.iter().find(|a| {
-            if let PointerAction::Pressed {
-                direction: PressDirection::Up,
-                button: b,
-            } = a.action
+        if let Some((input, old_location)) = inputs
+            .iter()
+            .find(|a| {
+                if let PointerAction::Pressed {
+                    direction: PressDirection::Up,
+                    button: b,
+                } = a.action
+                {
+                    b == button
+                } else {
+                    false
+                }
+            })
+            .and_then(|input| Some((input, old_locations.remove(&button)?)))
+        {
+            if events.get(&button).copied().unwrap_or_default() == 0
+                && old_location == input.location
             {
-                b == button
-            } else {
-                false
-            }
-        }).and_then(|input| Some((input, old_locations.remove(&button)?))) {
-            if events.get(&button).copied().unwrap_or_default() == 0 && old_location == input.location {
                 debug!(?button, "Click on no component detected");
                 let event = Pointer::new(
                     Entity::PLACEHOLDER,

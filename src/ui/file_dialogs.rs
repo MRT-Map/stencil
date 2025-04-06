@@ -1,11 +1,13 @@
+use bevy::prelude::*;
 use egui_file_dialog::{FileDialog, FileDialogStorage};
 use tracing::info;
-use bevy::prelude::*;
-use crate::dirs_paths::cache_path;
-use crate::file::{load_toml, save_toml};
-use crate::project::project_editor::ProjectEditor;
-use crate::ui::tilemap::settings::Basemap;
-use crate::ui::tilemap::settings_editor::TileSettingsEditor;
+
+use crate::{
+    dirs_paths::cache_path,
+    file::{load_toml, save_toml},
+    project::project_editor::ProjectEditor,
+    ui::tilemap::{settings::Basemap, settings_editor::TileSettingsEditor},
+};
 
 #[derive(Debug, Resource)]
 pub struct FileDialogs {
@@ -31,7 +33,10 @@ impl FileDialogs {
             let _ = Self::save_storage(&s);
             return s;
         }
-        match load_toml(&cache_path("file_dialog_storage.toml"), Some("file dialog storage")) {
+        match load_toml(
+            &cache_path("file_dialog_storage.toml"),
+            Some("file dialog storage"),
+        ) {
             Ok(str) => {
                 info!("Found file dialog storage file");
                 str
@@ -44,6 +49,10 @@ impl FileDialogs {
         }
     }
     pub fn save_storage(storage: &FileDialogStorage) -> eyre::Result<()> {
-        save_toml(storage, &cache_path("file_dialog_storage.toml"), Some("file dialog storage"))
+        save_toml(
+            storage,
+            &cache_path("file_dialog_storage.toml"),
+            Some("file dialog storage"),
+        )
     }
 }

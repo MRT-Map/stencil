@@ -8,13 +8,14 @@ use crate::{
     state::{EditorState, IntoSystemConfigExt},
     tile::zoom::Zoom,
     ui::{
-        cursor::mouse_pos::{MousePos, MousePosWorld},
-        tilemap::settings::TileSettings,
+        cursor::{
+            mouse_events::{on_emit_click2_down, on_emit_click2_up, Click2},
+            mouse_pos::{MousePos, MousePosWorld},
+        },
+        tilemap::{settings::TileSettings, window::PointerWithinTilemap},
         UiSchedule, UiSet,
     },
 };
-use crate::ui::cursor::mouse_events::{on_emit_click2_down, on_emit_click2_up, Click2};
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 pub mod mouse_events;
 pub mod mouse_pos;
@@ -44,7 +45,7 @@ pub fn crosshair_sy(
         }
         return;
     }
-    
+
     let translation = mouse_pos_world.round();
     let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
@@ -83,7 +84,8 @@ pub fn cursor_icon_sy(
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     for (e, mut window) in &mut windows {
-        window.cursor_options.visible = state.component_type().is_none() || pointer_within_tilemap.is_none();
+        window.cursor_options.visible =
+            state.component_type().is_none() || pointer_within_tilemap.is_none();
         if pointer_within_tilemap.is_none() {
             continue;
         }
@@ -119,10 +121,7 @@ impl Plugin for CursorPlugin {
             .add_event::<Pointer<Click2>>()
             .add_observer(on_emit_click2_down)
             .add_observer(on_emit_click2_up)
-            .add_systems(
-                Last,
-                (cursor_icon_sy, crosshair_sy.run_if_not_loading()),
-            )
+            .add_systems(Last, (cursor_icon_sy, crosshair_sy.run_if_not_loading()))
             .add_systems(First, mouse_pos::update_mouse_pos_sy);
     }
 }

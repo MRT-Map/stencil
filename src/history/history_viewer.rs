@@ -2,9 +2,10 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+
 use crate::{
     history::HistoryEv,
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
@@ -39,9 +40,6 @@ impl DockWindow for HistoryViewer {
     }
 }
 
-pub fn on_history_viewer(
-    _trigger: Trigger<OpenHistoryViewerEv>,
-    mut state: ResMut<DockLayout>,
-) {
+pub fn on_history_viewer(_trigger: Trigger<OpenHistoryViewerEv>, mut state: ResMut<DockLayout>) {
     open_dock_window(&mut state, HistoryViewer);
 }

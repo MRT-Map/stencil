@@ -4,12 +4,15 @@ use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+
 use crate::{
     history::{HistoryEntry, HistoryEv, NamespaceAction},
     project::events::ProjectEv,
-    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
+    ui::{
+        file_dialogs::FileDialogs,
+        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    },
 };
-use crate::ui::file_dialogs::FileDialogs;
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ProjectEditor;
@@ -148,13 +151,12 @@ impl DockWindow for ProjectEditor {
 impl ProjectEditor {
     #[must_use]
     pub fn select_dialog() -> FileDialog {
-        FileDialog::new().title("Open project").storage(FileDialogs::load_storage())
+        FileDialog::new()
+            .title("Open project")
+            .storage(FileDialogs::load_storage())
     }
 }
 
-pub fn on_project_editor(
-    _trigger: Trigger<OpenProjectEditorEv>,
-    mut state: ResMut<DockLayout>,
-) {
+pub fn on_project_editor(_trigger: Trigger<OpenProjectEditorEv>, mut state: ResMut<DockLayout>) {
     open_dock_window(&mut state, ProjectEditor);
 }

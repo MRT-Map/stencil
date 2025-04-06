@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 use crate::{
     state::{ChangeStateEv, EditorState},
-    ui::panel::dock::{PanelParams},
+    ui::panel::dock::PanelParams,
 };
 
 pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerResponse<()> {

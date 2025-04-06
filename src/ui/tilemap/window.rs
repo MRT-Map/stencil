@@ -1,11 +1,11 @@
 use bevy::prelude::Resource;
 use bevy_egui::egui;
 use serde::{Deserialize, Serialize};
+
 use crate::ui::panel::{
-    dock::{DockWindow},
+    dock::{DockWindow, PanelParams},
     toolbar::toolbar,
 };
-use crate::ui::panel::dock::PanelParams;
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct Tilemap;

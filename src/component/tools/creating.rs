@@ -3,22 +3,20 @@ use rand::distr::{Alphanumeric, SampleString};
 
 use crate::{
     component::{
-        actions::selecting::SelectEv,
-        bundle::{
-            AreaComponentBundle, LineComponentBundle,
-            PointComponentBundle,
-        },
+        actions::{rendering::RenderEv, selecting::SelectEv},
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
     history::{HistoryEntry, HistoryEv},
     project::Namespaces,
     state::EditorState,
-    ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
+    ui::{
+        cursor::{mouse_events::Click2, mouse_pos::MousePosWorld},
+        panel::status::Status,
+        tilemap::window::PointerWithinTilemap,
+    },
 };
-use crate::component::actions::rendering::RenderEv;
-use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 const ANGLE_VECTORS: [Vec2; 20] = [
     Vec2::new(4.0, 0.0),
@@ -54,7 +52,10 @@ pub fn on_point_left_click(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || **state != EditorState::CreatingPoint || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+    if pointer_within_tilemap.is_none()
+        || **state != EditorState::CreatingPoint
+        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+    {
         return;
     }
 
@@ -108,7 +109,10 @@ pub fn on_line_area_left_click(
     skin: Res<Skin>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Primary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Primary
+        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+    {
         return;
     }
 
@@ -173,7 +177,11 @@ pub fn on_line_area_right_click(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+        || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state)
+    {
         return;
     }
 

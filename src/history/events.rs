@@ -8,10 +8,8 @@ use tracing::debug;
 
 use crate::{
     component::{
-        bundle::{
-            AreaComponentBundle, LineComponentBundle,
-            PointComponentBundle,
-        },
+        actions::rendering::RenderEv,
+        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
         pla2::ComponentType,
         skin::Skin,
     },
@@ -20,7 +18,6 @@ use crate::{
     project::{events::ProjectEv, Namespaces},
     ui::panel::status::Status,
 };
-use crate::component::actions::rendering::RenderEv;
 
 #[expect(
     clippy::needless_pass_by_value,
@@ -67,15 +64,11 @@ pub fn on_history(
             if let (
                 Some(
                     [HistoryEntry::Component {
-                        e: e1,
-                        after: a1,
-                        ..
+                        e: e1, after: a1, ..
                     }],
                 ),
                 [HistoryEntry::Component {
-                    e: e2,
-                    after: a2,
-                    ..
+                    e: e2, after: a2, ..
                 }],
             ) = (
                 history.undo_stack.last_mut().map(Vec::as_mut_slice),
@@ -117,7 +110,10 @@ pub fn on_history(
                         }
                         (Some(before), Some(_)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**before).clone()).trigger(RenderEv::default());
+                            commands
+                                .entity(*component_id)
+                                .insert((**before).clone())
+                                .trigger(RenderEv::default());
                         }
                         (None, _) => {
                             let component_id = component_id.read().unwrap();
@@ -199,7 +195,10 @@ pub fn on_history(
                         }
                         (Some(_), Some(after)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**after).clone()).trigger(RenderEv::default());
+                            commands
+                                .entity(*component_id)
+                                .insert((**after).clone())
+                                .trigger(RenderEv::default());
                         }
                         (_, None) => {
                             let component_id = component_id.read().unwrap();

@@ -1,17 +1,18 @@
-use bevy::prelude::*;
-use bevy::render::primitives::Aabb;
+use bevy::{prelude::*, render::primitives::Aabb};
+
 use crate::{
-    component::pla2::{EditorCoords, PlaComponent},
+    component::{
+        actions::{rendering::RenderEv, selecting::SelectedComponent},
+        pla2::{ComponentType, EditorCoords, PlaComponent},
+        skin::Skin,
+    },
     history::{HistoryEntry, HistoryEv},
-    ui::panel::status::Status,
+    state::EditorState,
+    ui::{
+        cursor::mouse_pos::MousePosWorld, panel::status::Status,
+        tilemap::window::PointerWithinTilemap,
+    },
 };
-use crate::component::actions::rendering::RenderEv;
-use crate::component::actions::selecting::SelectedComponent;
-use crate::component::pla2::ComponentType;
-use crate::component::skin::Skin;
-use crate::state::EditorState;
-use crate::ui::cursor::mouse_pos::MousePosWorld;
-use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]
 pub struct MoveData {
@@ -27,15 +28,20 @@ pub fn on_right_click_drag(
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || *state != EditorState::Idle
+    {
         return;
     }
     let Ok((mut transform, move_data)) = query.get_mut(trigger.entity()) else {
         return;
     };
 
-    transform.translation.x = (move_data.old_translation.x + mouse_pos_world.x - move_data.old_mouse_pos_world.x).round();
-    transform.translation.y = (move_data.old_translation.x + mouse_pos_world.y - move_data.old_mouse_pos_world.y).round();
+    transform.translation.x =
+        (move_data.old_translation.x + mouse_pos_world.x - move_data.old_mouse_pos_world.x).round();
+    transform.translation.y =
+        (move_data.old_translation.x + mouse_pos_world.y - move_data.old_mouse_pos_world.y).round();
 }
 
 #[tracing::instrument(skip_all)]
@@ -48,7 +54,10 @@ pub fn on_right_click_drag_start(
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || *state != EditorState::Idle
+    {
         return;
     }
     let e = trigger.entity();
@@ -67,14 +76,20 @@ pub fn on_right_click_drag_start(
 pub fn on_right_click_drag_end(
     trigger: Trigger<Pointer<DragEnd>>,
     mut commands: Commands,
-    mut query: Query<(&mut Transform, &mut PlaComponent<EditorCoords>, &MoveData), With<SelectedComponent>>,
+    mut query: Query<
+        (&mut Transform, &mut PlaComponent<EditorCoords>, &MoveData),
+        With<SelectedComponent>,
+    >,
     mut status: ResMut<Status>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     skin: Res<Skin>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none()
+        || trigger.button != PointerButton::Secondary
+        || *state != EditorState::Idle
+    {
         return;
     }
     let e = trigger.entity();
@@ -88,14 +103,19 @@ pub fn on_right_click_drag_end(
 
     let old_pla = pla.to_owned();
     for node in &mut pla.nodes {
-        node.0 += (**mouse_pos_world - *move_data.old_mouse_pos_world).round().as_ivec2();
+        node.0 += (**mouse_pos_world - *move_data.old_mouse_pos_world)
+            .round()
+            .as_ivec2();
     }
     commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
         e,
         before: Some(old_pla.into()),
         after: Some(pla.to_owned().into()),
     }));
-    commands.entity(e).remove::<(Aabb, MoveData)>().trigger(RenderEv::default());
+    commands
+        .entity(e)
+        .remove::<(Aabb, MoveData)>()
+        .trigger(RenderEv::default());
     status.0 = format!("Moved component {}", &*pla).into();
     info!("Ended move");
 }
