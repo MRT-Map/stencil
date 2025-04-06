@@ -1,13 +1,12 @@
 use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
 use crate::{
-    component::{
-        bundle::SelectedComponent,
-        pla2::{EditorCoords, PlaComponent},
-    },
+    component::pla2::{EditorCoords, PlaComponent},
     history::{HistoryEntry, HistoryEv},
     ui::panel::status::Status,
 };
-use crate::component::bundle::EntityCommandsSelectExt;
+use crate::component::actions::rendering::RenderEv;
+use crate::component::actions::selecting::SelectedComponent;
 use crate::component::pla2::ComponentType;
 use crate::component::skin::Skin;
 use crate::ui::cursor::mouse_pos::MousePosWorld;
@@ -90,7 +89,7 @@ pub fn on_right_click_drag_end(
         before: Some(old_pla.into()),
         after: Some(pla.to_owned().into()),
     }));
-    commands.entity(entity).remove::<MoveData>().select_component(&skin, &pla).log_components();
+    commands.entity(entity).remove::<(Aabb, MoveData)>().trigger(RenderEv::default());
     status.0 = format!("Moved component {}", &*pla).into();
     info!("Ended move");
 }

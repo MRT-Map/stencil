@@ -1,25 +1,13 @@
-use bevy::{
-    color::palettes::basic::{LIME, RED},
-    prelude::*,
-};
-use bevy_prototype_lyon::entity::ShapeBundle;
+use bevy::prelude::*;
 
 use crate::{
-    component::{
-        bundle::{EntityCommandsSelectExt, SelectedComponent},
-        circle::circle,
-        pla2::{ComponentType, EditorCoords, PlaComponent},
-        skin::Skin,
-    },
-    misc_config::settings::MiscSettings,
+    component::pla2::{EditorCoords, PlaComponent},
     state::EditorState,
-    tile::zoom::Zoom,
     ui::panel::status::Status,
 };
-use crate::state::IntoSystemConfigExt;
+use crate::component::actions::rendering::RenderEv;
 use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
-use crate::ui::UiSet;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
@@ -52,46 +40,9 @@ pub fn on_select_left_click(
 }
 
 #[tracing::instrument(skip_all)]
-pub fn highlight_selected_sy(
-    state: Res<State<EditorState>>,
-    mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
-    skin: Res<Skin>,
-    zoom: Res<Zoom>,
-    misc_settings: Res<MiscSettings>,
-) {
-    if state.component_type().is_some() {
-        return;
-    }
-    for (data, entity) in query.iter() {
-        if data.get_type(&skin) == ComponentType::Line && !data.nodes.is_empty() {
-            commands.entity(entity).despawn_descendants();
-            let start = commands
-                .spawn(circle(
-                    &zoom,
-                    data.nodes.first().unwrap().0.as_vec2(),
-                    misc_settings.big_handle_size,
-                    LIME.into(),
-                ))
-                .id();
-            let end = commands
-                .spawn(circle(
-                    &zoom,
-                    data.nodes.last().unwrap().0.as_vec2(),
-                    misc_settings.big_handle_size,
-                    RED.into(),
-                ))
-                .id();
-            commands.entity(entity).add_child(start).add_child(end);
-        }
-    }
-}
-
-#[tracing::instrument(skip_all)]
 pub fn on_select(
     trigger: Trigger<SelectEv>,
     mut commands: Commands,
-    skin: Res<Skin>,
     mut query: ParamSet<(
         Query<&PlaComponent<EditorCoords>>,
         Query<Entity, With<SelectedComponent>>,
@@ -104,17 +55,14 @@ pub fn on_select(
     match trigger.event() {
         SelectEv::Select => {
             info!(?entity, "Selecting entity");
-            commands.entity(entity).insert(SelectedComponent);
-            commands.entity(entity).select_component(&skin, query.p0().get(entity).unwrap());
+            commands.entity(entity).insert(SelectedComponent).trigger(RenderEv::default());
         }
         SelectEv::Deselect => {
             debug!(?entity, "Deselecting component");
             commands
                 .entity(entity)
                 .remove::<SelectedComponent>()
-                .remove::<ShapeBundle>()
-                .component_display(&skin, query.p0().get(entity).unwrap())
-                .despawn_descendants();
+                .trigger(RenderEv::default());
         }
         SelectEv::SelectOne => {
             commands.trigger(SelectEv::DeselectAll);
@@ -136,12 +84,7 @@ pub fn on_select(
 pub struct SelectComponentPlugin;
 impl Plugin for SelectComponentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PreUpdate,
-            highlight_selected_sy
-                .run_if_not_loading()
-                .after(UiSet::Reset),
-        )
+        app
         .add_observer(on_select_left_click)
         .add_observer(on_select);
     }
@@ -154,3 +97,7 @@ pub enum SelectEv {
     SelectOne,
     DeselectAll,
 }
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct SelectedComponent;

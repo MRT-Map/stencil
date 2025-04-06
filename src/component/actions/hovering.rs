@@ -1,9 +1,6 @@
 use bevy::prelude::*;
+use crate::component::actions::rendering::RenderEv;
 use crate::ui::panel::dock::PanelDockState;
-
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct HoveredComponent;
 
 #[tracing::instrument(skip_all)]
 pub fn on_hover_over(
@@ -17,7 +14,7 @@ pub fn on_hover_over(
         return;
     }
     debug!(?entity, "Hovering over component");
-    commands.entity(entity).insert(HoveredComponent);
+    commands.entity(entity).insert(HoveredComponent).trigger(RenderEv::default());
 }
 
 #[tracing::instrument(skip_all)]
@@ -32,7 +29,7 @@ pub fn on_hover_out(
         return;
     }
     debug!(?entity, "Hovering out of component");
-    commands.entity(entity).remove::<HoveredComponent>();
+    commands.entity(entity).remove::<HoveredComponent>().trigger(RenderEv::default());
 }
 
 pub struct HoverComponentPlugin;
@@ -41,3 +38,7 @@ impl Plugin for HoverComponentPlugin {
         app.add_observer(on_hover_over).add_observer(on_hover_out);
     }
 }
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct HoveredComponent;

@@ -7,7 +7,6 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{
     component::{
-        bundle::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
         pla2::{EditorCoords, PlaComponent},
         skin::Skin,
@@ -32,6 +31,7 @@ use crate::{
     },
     window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
+use crate::component::actions::selecting::SelectedComponent;
 
 #[enum_dispatch(DockWindows)]
 pub trait DockWindow: Copy {

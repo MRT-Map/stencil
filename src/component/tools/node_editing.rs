@@ -1,12 +1,8 @@
 use bevy::prelude::*;
-use bevy::color::palettes::basic::BLACK;
 use itertools::Itertools;
 
 use crate::{
     component::{
-        actions::selecting::highlight_selected_sy,
-        bundle::{EntityCommandsSelectExt, SelectedComponent},
-        circle::circle,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -14,8 +10,10 @@ use crate::{
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
-    ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status, UiSet},
+    ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
 };
+use crate::component::actions::rendering::RenderEv;
+use crate::component::actions::selecting::SelectedComponent;
 use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 
@@ -183,7 +181,7 @@ pub fn on_node_edit_right_click(
         status.0 = format!("Deleting {}", &*pla).into();
         commands.entity(entity).despawn_recursive();
     } else {
-        commands.entity(entity).select_component(&skin, &pla);
+        commands.entity(entity).trigger(RenderEv::default());
     }
 }
 #[tracing::instrument(skip_all)]
@@ -218,7 +216,6 @@ pub fn move_selected_node_sy(
     >,
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
-    skin: Res<Skin>,
 ) {
     let Ok((entity, mut pla, orig)) = selected.get_single_mut() else {
         return;
@@ -229,114 +226,7 @@ pub fn move_selected_node_sy(
         + orig.node_pos_world.as_vec2())
     .round()
     .as_ivec2();
-    commands.entity(entity).select_component(&skin, &pla);
-}
-
-pub fn update_handles(
-    commands: &mut Commands,
-    pla: &PlaComponent<EditorCoords>,
-    e: Entity,
-    skin: &Skin,
-    mouse_pos_world: &MousePosWorld,
-    zoom: &Zoom,
-    misc_settings: &MiscSettings,
-) {
-    trace!("Updating handles");
-    commands
-        .entity(e)
-        .select_component(skin, pla)
-        .despawn_descendants();
-    let children = pla
-        .nodes
-        .iter()
-        .map(|coord| &coord.0)
-        .filter(|coord| {
-            if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
-                (coord.as_vec2() - **mouse_pos_world).length_squared()
-                    < misc_settings.hide_far_handles_distance
-            } else {
-                true
-            }
-        })
-        .map(|coord| {
-            circle(
-                zoom,
-                if pla.get_type(skin) == ComponentType::Point {
-                    Vec2::ZERO
-                } else {
-                    coord.as_vec2()
-                },
-                misc_settings.big_handle_size,
-                BLACK.into(),
-            )
-        })
-        .map(|bundle| commands.spawn(bundle).id())
-        .collect::<Vec<_>>();
-    trace!("Pushing first set of children");
-    commands.entity(e).add_children(&children);
-    let more_children = if pla.get_type(skin) == ComponentType::Area {
-        pla.nodes
-            .iter()
-            .circular_tuple_windows::<(_, _)>()
-            .collect::<Vec<_>>()
-            .into_iter()
-    } else {
-        pla.nodes
-            .iter()
-            .tuple_windows::<(_, _)>()
-            .collect::<Vec<_>>()
-            .into_iter()
-    }
-    .map(|(c1, c2)| (c1.0 + c2.0) / 2)
-    .filter(|coord| {
-        if pla.nodes.len() > misc_settings.hide_far_handles_threshold {
-            (coord.as_vec2() - **mouse_pos_world).length_squared()
-                < misc_settings.hide_far_handles_distance
-        } else {
-            true
-        }
-    })
-    .map(|coord| {
-        circle(
-            zoom,
-            coord.as_vec2(),
-            misc_settings.small_handle_size,
-            BLACK.into(),
-        )
-    })
-    .map(|bundle| commands.spawn(bundle).id())
-    .collect::<Vec<_>>();
-    trace!("Pushing second set of children");
-    commands.entity(e).add_children(&more_children);
-}
-
-#[expect(clippy::needless_pass_by_value)]
-pub fn show_handles_sy(
-    selected: Query<(&PlaComponent<EditorCoords>, Entity), With<SelectedComponent>>,
-    mut commands: Commands,
-    skin: Res<Skin>,
-    mouse_pos_world: Res<MousePosWorld>,
-    zoom: Res<Zoom>,
-    misc_settings: Res<MiscSettings>,
-) {
-    for (pla, e) in selected.iter() {
-        update_handles(
-            &mut commands,
-            pla,
-            e,
-            &skin,
-            &mouse_pos_world,
-            &zoom,
-            &misc_settings,
-        );
-    }
-}
-
-#[expect(clippy::needless_pass_by_value)]
-pub fn remove_handles_sy(selected: Query<Entity, With<SelectedComponent>>, mut commands: Commands) {
-    for e in selected.iter() {
-        commands.entity(e).despawn_descendants();
-    }
+    commands.entity(entity).trigger(RenderEv::default());
 }
 
 pub struct EditNodePlugin;
@@ -345,14 +235,6 @@ impl Plugin for EditNodePlugin {
         app.add_systems(
             Update,
             move_selected_node_sy.run_if(in_state(EditorState::EditingNodes)),
-        )
-        .add_systems(OnExit(EditorState::EditingNodes), remove_handles_sy)
-        .add_systems(
-            PreUpdate,
-            show_handles_sy
-                .run_if(in_state(EditorState::EditingNodes))
-                .after(UiSet::Reset)
-                .after(highlight_selected_sy),
         )
         .add_observer(on_node_edit_right_down)
         .add_observer(on_node_edit_right_up)

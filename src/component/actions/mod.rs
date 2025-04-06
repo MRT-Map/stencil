@@ -3,6 +3,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 pub mod hovering;
 pub mod moving;
 pub mod selecting;
+pub mod rendering;
 
 pub struct ComponentActionPlugins;
 
@@ -12,5 +13,6 @@ impl PluginGroup for ComponentActionPlugins {
             .add(moving::MoveComponentPlugin)
             .add(selecting::SelectComponentPlugin)
             .add(hovering::HoverComponentPlugin)
+            .add(rendering::RenderComponentPlugin)
     }
 }

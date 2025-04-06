@@ -1,12 +1,11 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
 use rand::distr::{Alphanumeric, SampleString};
 
 use crate::{
     component::{
         actions::selecting::SelectEv,
         bundle::{
-            AreaComponentBundle, CreatedComponent, EntityCommandsSelectExt, LineComponentBundle,
+            AreaComponentBundle, LineComponentBundle,
             PointComponentBundle,
         },
         pla2::{ComponentType, EditorCoords, PlaComponent},
@@ -17,6 +16,7 @@ use crate::{
     state::EditorState,
     ui::{cursor::mouse_pos::MousePosWorld, panel::status::Status},
 };
+use crate::component::actions::rendering::RenderEv;
 use crate::ui::cursor::mouse_events::Click2;
 use crate::ui::panel::dock::PanelDockState;
 
@@ -144,7 +144,7 @@ pub fn on_line_area_left_click(
         }
         debug!(?entity, "Continuing {ty_text} at {new:?}");
         status.0 = format!("Continuing {ty_text} at {new:?}").into();
-        commands.entity(entity).component_display(&skin, &data);
+        commands.entity(entity).trigger(RenderEv::default());
 
         if ty_text == "area" && data.nodes.first() == data.nodes.last() && !data.nodes.is_empty() {
             debug!("Ended on same point, completing area");
@@ -155,9 +155,9 @@ pub fn on_line_area_left_click(
         commands.trigger(SelectEv::DeselectAll);
 
         let data = {
-            let mut point = PlaComponent::new(ty);
-            point.nodes.push(new.into());
-            point
+            let mut line_area = PlaComponent::new(ty);
+            line_area.nodes.push(new.into());
+            line_area
         };
         debug!("Starting new {ty_text} at {new:?}");
         status.0 = format!("Starting new {ty_text} at {new:?}",).into();
@@ -194,8 +194,7 @@ pub fn on_line_area_right_click(
 
 #[tracing::instrument(skip_all)]
 pub fn create_component_sy(
-    set: CreatedQuery,
-    skin: Res<Skin>,
+    set: Query<(Entity, &PlaComponent<EditorCoords>), With<CreatedComponent>>,
     mouse_pos_world: Res<MousePosWorld>,
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
@@ -219,7 +218,7 @@ pub fn create_component_sy(
         **mouse_pos_world
     };
     data.nodes.push(next_point.round().as_ivec2().into());
-    commands.entity(entity).component_display(&skin, &data);
+    commands.entity(entity).trigger(RenderEv(Some(data)));
 }
 
 #[tracing::instrument(skip_all)]
@@ -251,8 +250,7 @@ pub fn on_clear_created_component(
         data.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         commands
             .entity(entity)
-            .remove::<ShapeBundle>()
-            .component_display(&skin, &data)
+            .trigger(RenderEv::default())
             .remove::<CreatedComponent>();
         commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
             entity,
@@ -293,3 +291,7 @@ pub type CreatedQuery<'world, 'state, 'a> =
 
 #[derive(Copy, Clone, Event)]
 pub struct ClearCreatedComponentEv;
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct CreatedComponent;

@@ -4,6 +4,7 @@ use std::{
 };
 
 use bevy::{color::palettes::basic::YELLOW, prelude::*};
+use bevy::color::palettes::basic::OLIVE;
 use bevy_prototype_lyon::prelude::*;
 use egui_notify::ToastLevel;
 use hex_color::HexColor;
@@ -278,10 +279,11 @@ impl PlaComponent<EditorCoords> {
     }
 }
 
-pub trait Select {
+pub trait HighlightExt {
     fn select(&mut self, ty: ComponentType) -> &mut Self;
+    fn hover(&mut self, ty: ComponentType) -> &mut Self;
 }
-impl Select for Fill {
+impl HighlightExt for Fill {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
             ComponentType::Point => YELLOW.into(),
@@ -290,12 +292,27 @@ impl Select for Fill {
         };
         self
     }
+    fn hover(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => OLIVE.into(),
+            ComponentType::Line => Color::NONE,
+            ComponentType::Area => OLIVE.with_alpha(0.25).into(),
+        };
+        self
+    }
 }
-impl Select for Stroke {
+impl HighlightExt for Stroke {
     fn select(&mut self, ty: ComponentType) -> &mut Self {
         self.color = match ty {
             ComponentType::Point => Color::NONE,
             ComponentType::Line | ComponentType::Area => YELLOW.into(),
+        };
+        self
+    }
+    fn hover(&mut self, ty: ComponentType) -> &mut Self {
+        self.color = match ty {
+            ComponentType::Point => Color::NONE,
+            ComponentType::Line | ComponentType::Area => OLIVE.into(),
         };
         self
     }

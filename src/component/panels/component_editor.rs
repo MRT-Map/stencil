@@ -3,10 +3,11 @@ use bevy_egui::egui;
 use itertools::Itertools;
 
 use crate::{
-    component::{bundle::EntityCommandsSelectExt, pla2::ComponentType},
+    component::{pla2::ComponentType},
     history::{HistoryEntry, HistoryEv},
     ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
 };
+use crate::component::actions::rendering::RenderEv;
 
 #[derive(Clone, Copy)]
 pub struct ComponentEditor;
@@ -81,8 +82,7 @@ impl DockWindow for ComponentEditor {
             });
         if old_skin_type != component_data.ty {
             commands
-                .entity(entity)
-                .select_component(skin, &component_data);
+                .entity(entity).trigger(RenderEv::default());
         }
         ui.end_row();
         let mut tags = component_data.tags.join(",");

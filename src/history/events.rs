@@ -9,8 +9,8 @@ use tracing::debug;
 use crate::{
     component::{
         bundle::{
-            AreaComponentBundle, EntityCommandsSelectExt, LineComponentBundle,
-            PointComponentBundle, SelectedComponent,
+            AreaComponentBundle, LineComponentBundle,
+            PointComponentBundle,
         },
         pla2::ComponentType,
         skin::Skin,
@@ -20,6 +20,7 @@ use crate::{
     project::{events::ProjectEv, Namespaces},
     ui::panel::status::Status,
 };
+use crate::component::actions::rendering::RenderEv;
 
 #[expect(
     clippy::needless_pass_by_value,
@@ -31,12 +32,10 @@ pub fn on_history(
     mut commands: Commands,
     mut ids: Local<HashMap<Entity, Arc<RwLock<Entity>>>>,
     mut history: ResMut<History>,
-    selected_entity: Query<Entity, With<SelectedComponent>>,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
     mut namespaces: ResMut<Namespaces>,
 ) {
-    let selected = selected_entity.get_single().ok();
     match trigger.event() {
         HistoryEv::NewHistory(histories) => {
             let histories = histories
@@ -118,16 +117,7 @@ pub fn on_history(
                         }
                         (Some(before), Some(_)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**before).clone());
-                            if Some(*component_id) == selected {
-                                commands
-                                    .entity(*component_id)
-                                    .select_component(&skin, before);
-                            } else {
-                                commands
-                                    .entity(*component_id)
-                                    .component_display(&skin, before);
-                            }
+                            commands.entity(*component_id).insert((**before).clone()).trigger(RenderEv::default());
                         }
                         (None, _) => {
                             let component_id = component_id.read().unwrap();
@@ -209,16 +199,7 @@ pub fn on_history(
                         }
                         (Some(_), Some(after)) => {
                             let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).insert((**after).clone());
-                            if Some(*component_id) == selected {
-                                commands
-                                    .entity(*component_id)
-                                    .select_component(&skin, after);
-                            } else {
-                                commands
-                                    .entity(*component_id)
-                                    .component_display(&skin, after);
-                            }
+                            commands.entity(*component_id).insert((**after).clone()).trigger(RenderEv::default());
                         }
                         (_, None) => {
                             let component_id = component_id.read().unwrap();

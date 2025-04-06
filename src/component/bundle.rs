@@ -1,9 +1,8 @@
-use bevy::{ecs::system::EntityCommands, prelude::*};
-use bevy::render::primitives::Aabb;
+use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
 use crate::component::{
-    pla2::{EditorCoords, PlaComponent, Select},
+    pla2::{EditorCoords, PlaComponent},
     skin::Skin,
 };
 
@@ -65,54 +64,3 @@ impl AreaComponentBundle {
         }
     }
 }
-
-pub trait EntityCommandsSelectExt {
-    fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self;
-    fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self;
-}
-
-impl EntityCommandsSelectExt for EntityCommands<'_> {
-    fn select_component(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
-        self.remove::<Aabb>();
-        let ty = data.get_type(skin);
-        let fill = data.get_fill(skin).select(ty).to_owned();
-        if fill.color == Color::NONE {
-            self.remove::<Fill>();
-        } else {
-            self.insert(fill);
-        }
-        let stroke = data.get_stroke(skin).select(ty).to_owned();
-        if stroke.color == Color::NONE {
-            self.remove::<Stroke>();
-        } else {
-            self.insert(stroke);
-        }
-        self.insert(data.get_shape(skin));
-        self
-    }
-    fn component_display(&mut self, skin: &Skin, data: &PlaComponent<EditorCoords>) -> &mut Self {
-        self.remove::<Aabb>();
-        let fill = data.get_fill(skin);
-        if fill.color == Color::NONE {
-            self.remove::<Fill>();
-        } else {
-            self.insert(fill);
-        }
-        let stroke = data.get_stroke(skin);
-        if stroke.color == Color::NONE {
-            self.remove::<Stroke>();
-        } else {
-            self.insert(stroke);
-        }
-        self.insert(data.get_shape(skin));
-        self
-    }
-}
-
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct CreatedComponent;
-
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct SelectedComponent;
