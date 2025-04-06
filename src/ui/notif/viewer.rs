@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use chrono::{DateTime, Utc};
-
+use serde::{Deserialize, Serialize};
 use crate::ui::{
     notif::NOTIF_LOG,
-    panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct NotifLogViewer;
 
 #[derive(Clone, Copy, Event)]
@@ -17,8 +17,8 @@ impl DockWindow for NotifLogViewer {
     fn title(self) -> String {
         "Notification Log".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        let PanelParams { .. } = tab_viewer.params;
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
+        let PanelParams { .. } = params;
         let Ok(notif_log) = NOTIF_LOG.try_read() else {
             ui.label("Loading...");
             return;
@@ -40,6 +40,6 @@ impl DockWindow for NotifLogViewer {
     }
 }
 
-pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerEv>, mut state: ResMut<PanelDockState>) {
-    window_action_handler(&mut state, NotifLogViewer);
+pub fn on_log_viewer(_trigger: Trigger<OpenNotifLogViewerEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, NotifLogViewer);
 }

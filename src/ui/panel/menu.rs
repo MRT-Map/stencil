@@ -19,7 +19,7 @@ use crate::{
     ui::{
         notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
-            dock::{DockWindow, DockWindows, PanelDockState, ResetPanelDockStateEv},
+            dock::{DockWindow, DockWindows, DockLayout, ResetPanelDockStateEv},
             status::Status,
         },
         tilemap::settings_editor::{TileSettingsEditor, TileSettingsEv},
@@ -145,9 +145,8 @@ pub fn ui_sy(
     });
 }
 
-pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<PanelDockState>) {
-    let all_tabs = state
-        .state
+pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<DockLayout>) {
+    let all_tabs = state.0
         .iter_all_tabs()
         .map(|(_, a)| a.title())
         .collect::<HashSet<_>>();
@@ -163,6 +162,6 @@ pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<P
     if settings_tabs.is_empty() {
         NOTIF_LOG.push(&"All settings tabs are already open", ToastLevel::Info);
     } else {
-        state.state.add_window(settings_tabs);
+        state.0.add_window(settings_tabs);
     }
 }

@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use egui_extras::{Column, TableBuilder};
 use itertools::Itertools;
-
+use serde::{Deserialize, Serialize};
 use crate::ui::panel::dock::{
-    window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer,
+    open_dock_window, DockWindow, DockLayout, PanelParams,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentList;
 
 #[derive(Clone, Copy, Event)]
@@ -17,10 +17,10 @@ impl DockWindow for ComponentList {
     fn title(self) -> String {
         "Component List".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             queries, camera, ..
-        } = tab_viewer.params;
+        } = params;
         let mut transform = camera.single_mut();
         let query = queries.p1();
         let components = query.iter().into_group_map_by(|a| a.namespace.clone());
@@ -67,7 +67,7 @@ impl DockWindow for ComponentList {
 
 pub fn on_component_list(
     _trigger: Trigger<OpenComponentListEv>,
-    mut state: ResMut<PanelDockState>,
+    mut state: ResMut<DockLayout>,
 ) {
-    window_action_handler(&mut state, ComponentList);
+    open_dock_window(&mut state, ComponentList);
 }

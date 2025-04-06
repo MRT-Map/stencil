@@ -7,11 +7,12 @@ use bevy::prelude::*;
 
 use crate::ui::{
     panel::{
-        dock::{FileDialogs, PanelDockState},
+        dock::DockLayout,
         status::Status,
     },
     UiSchedule, UiSet,
 };
+use crate::ui::file_dialogs::FileDialogs;
 
 pub struct PanelPlugin;
 
@@ -19,7 +20,7 @@ impl Plugin for PanelPlugin {
     fn build(&self, app: &mut App) {
         app.world_mut()
             .init_resource::<FileDialogs>();
-        app.init_resource::<PanelDockState>()
+        app.insert_resource(DockLayout::load())
             .init_resource::<Status>()
             .add_systems(
                 UiSchedule,

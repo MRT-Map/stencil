@@ -9,12 +9,13 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_pos::{MousePos, MousePosWorld},
-        panel::dock::{PanelDockState},
+        panel::dock::{DockLayout},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
     },
 };
 use crate::ui::cursor::mouse_events::{on_emit_click2_down, on_emit_click2_up, Click2};
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 pub mod mouse_events;
 pub mod mouse_pos;
@@ -32,11 +33,11 @@ pub fn crosshair_sy(
     zoom: Res<Zoom>,
     mouse_pos_world: Res<MousePosWorld>,
     tile_settings: Res<TileSettings>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
 ) {
     if state.component_type().is_none()
-        || (state.component_type().is_some() && !panel.pointer_within_tilemap)
+        || (state.component_type().is_some() && pointer_within_tilemap.is_none())
     {
         for (e, _, _) in ch.iter() {
             debug!("Despawning crosshair");
@@ -80,11 +81,11 @@ pub fn cursor_icon_sy(
     mut ctx: EguiContexts,
     state: Res<State<EditorState>>,
     hovered_comp: Query<(), With<HoveredComponent>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     for (e, mut window) in &mut windows {
-        window.cursor_options.visible = state.component_type().is_none() || !panel.pointer_within_tilemap;
-        if !panel.pointer_within_tilemap {
+        window.cursor_options.visible = state.component_type().is_none() || pointer_within_tilemap.is_none();
+        if pointer_within_tilemap.is_none() {
             continue;
         }
 

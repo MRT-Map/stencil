@@ -9,6 +9,7 @@ pub mod notif;
 pub mod panel;
 pub mod popup;
 pub mod tilemap;
+pub mod file_dialogs;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct Focus(pub Option<egui::Id>);

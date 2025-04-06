@@ -13,10 +13,11 @@ use crate::{
     },
     ui::{
         cursor::mouse_pos::MousePos,
-        panel::dock::{PanelDockState},
+        panel::dock::{DockLayout},
         tilemap::settings::TileSettings,
     },
 };
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag_sy(
@@ -27,9 +28,9 @@ pub fn mouse_drag_sy(
     mut camera: Query<(&Camera, &mut Transform)>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     let (camera, mut transform) = camera.single_mut();
@@ -69,10 +70,10 @@ pub fn mouse_zoom_sy(
     mut zoom: ResMut<Zoom>,
     mouse_pos: Res<MousePos>,
     tile_settings: Res<TileSettings>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
 ) {
-    if !panel.pointer_within_tilemap {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     let (camera, global_transform, mut ort_proj, mut transform) = camera.single_mut();

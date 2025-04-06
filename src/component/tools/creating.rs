@@ -18,7 +18,8 @@ use crate::{
 };
 use crate::component::actions::rendering::RenderEv;
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 const ANGLE_VECTORS: [Vec2; 20] = [
     Vec2::new(4.0, 0.0),
@@ -52,9 +53,9 @@ pub fn on_point_left_click(
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::CreatingPoint || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+    if pointer_within_tilemap.is_none() || **state != EditorState::CreatingPoint || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
 
@@ -106,9 +107,9 @@ pub fn on_line_area_left_click(
     mut set: CreatedQuery,
     mut status: ResMut<Status>,
     skin: Res<Skin>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Primary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Primary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
 
@@ -171,9 +172,9 @@ pub fn on_line_area_right_click(
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
         return;
     }
 

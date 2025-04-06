@@ -7,7 +7,8 @@ use crate::{
     ui::panel::status::Status,
 };
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn delete_component_sy(
@@ -16,9 +17,9 @@ pub fn delete_component_sy(
     query: Query<&PlaComponent<EditorCoords>>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::DeletingComponent {
+    if pointer_within_tilemap.is_none() || **state != EditorState::DeletingComponent {
         return;
     }
     let e = trigger.entity();

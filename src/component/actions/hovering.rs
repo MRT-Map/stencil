@@ -1,16 +1,17 @@
 use bevy::prelude::*;
 use crate::component::actions::rendering::RenderEv;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn on_hover_over(
     trigger: Trigger<Pointer<Over>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     let e = trigger.entity();
-    if !panel.pointer_within_tilemap || !pickables.contains(e) {
+    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
         return;
     }
     debug!(?e, "Hovering over component");
@@ -22,10 +23,10 @@ pub fn on_hover_out(
     trigger: Trigger<Pointer<Out>>,
     pickables: Query<(), With<RayCastPickable>>,
     mut commands: Commands,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     let e = trigger.entity();
-    if !panel.pointer_within_tilemap || !pickables.contains(e) {
+    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
         return;
     }
     debug!(?e, "Hovering out of component");

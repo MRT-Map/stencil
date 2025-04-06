@@ -1,15 +1,15 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use itertools::Itertools;
-
+use serde::{Deserialize, Serialize};
 use crate::{
     component::{pla2::ComponentType},
     history::{HistoryEntry, HistoryEv},
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
 };
 use crate::component::actions::rendering::RenderEv;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct ComponentEditor;
 
 #[derive(Clone, Copy, Event)]
@@ -19,14 +19,14 @@ impl DockWindow for ComponentEditor {
     fn title(self) -> String {
         "Component".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
         let PanelParams {
             queries,
             commands,
             skin,
             namespaces,
             ..
-        } = tab_viewer.params;
+        } = params;
         let mut selected = queries.p0();
         if selected.is_empty() {
             ui.heading("Select a component...");
@@ -127,7 +127,7 @@ impl DockWindow for ComponentEditor {
 
 pub fn on_component_editor(
     _trigger: Trigger<OpenComponentEditorEv>,
-    mut state: ResMut<PanelDockState>,
+    mut state: ResMut<DockLayout>,
 ) {
-    window_action_handler(&mut state, ComponentEditor);
+    open_dock_window(&mut state, ComponentEditor);
 }

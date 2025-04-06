@@ -1,26 +1,27 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use serde::{Deserialize, Serialize};
 use surf::Url;
 
 use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{window_action_handler, DockWindow, PanelDockState, PanelParams, TabViewer},
+    ui::panel::dock::{open_dock_window, DockWindow, DockLayout, PanelParams},
 };
 
 #[derive(Clone, Copy, Event)]
 pub struct OpenMiscSettingsEv;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct MiscSettingsEditor;
 
 impl DockWindow for MiscSettingsEditor {
     fn title(self) -> String {
         "Misc Settings".into()
     }
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui) {
-        let PanelParams { misc_settings, .. } = tab_viewer.params;
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui) {
+        let PanelParams { misc_settings, .. } = params;
         let mut invalid = false;
         let old_settings = misc_settings.to_owned();
         if ui
@@ -135,6 +136,6 @@ impl DockWindow for MiscSettingsEditor {
     }
 }
 
-pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<PanelDockState>) {
-    window_action_handler(&mut state, MiscSettingsEditor);
+pub fn on_misc_settings(_trigger: Trigger<OpenMiscSettingsEv>, mut state: ResMut<DockLayout>) {
+    open_dock_window(&mut state, MiscSettingsEditor);
 }

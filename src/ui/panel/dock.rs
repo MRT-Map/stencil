@@ -1,10 +1,10 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
-use egui_file_dialog::FileDialog;
+use egui_file_dialog::{FileDialog, FileDialogStorage};
 use egui_notify::ToastLevel;
 use enum_dispatch::enum_dispatch;
-
+use serde::{Deserialize, Serialize};
 use crate::{
     component::{
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
@@ -32,11 +32,14 @@ use crate::{
     window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
 use crate::component::actions::selecting::SelectedComponent;
+use crate::dirs_paths::{cache_path, data_path};
+use crate::file::{load_toml, save_toml, save_toml_with_header};
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[enum_dispatch(DockWindows)]
 pub trait DockWindow: Copy {
     fn title(self) -> String;
-    fn ui(self, tab_viewer: &mut TabViewer, ui: &mut egui::Ui);
+    fn ui(self, params: &mut PanelParams, ui: &mut egui::Ui);
     fn allowed_in_windows(self) -> bool {
         true
     }
@@ -46,7 +49,8 @@ pub trait DockWindow: Copy {
 }
 
 #[enum_dispatch]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
+#[serde(tag = "ty")]
 pub enum DockWindows {
     Tilemap,
     ComponentEditor,
@@ -60,13 +64,10 @@ pub enum DockWindows {
     HistoryViewer,
 }
 
-#[derive(Resource)]
-pub struct PanelDockState {
-    pub state: DockState<DockWindows>,
-    pub pointer_within_tilemap: bool,
-}
+#[derive(Clone, Resource)]
+pub struct DockLayout(pub DockState<DockWindows>);
 
-impl Default for PanelDockState {
+impl Default for DockLayout {
     fn default() -> Self {
         let mut state = DockState::new(vec![Tilemap.into()]);
         let tree = state.main_surface_mut();
@@ -80,82 +81,41 @@ impl Default for PanelDockState {
                 HistoryViewer.into(),
             ],
         );
-
-        Self {
-            state,
-            pointer_within_tilemap: false,
+        Self(state)
+    }
+}
+impl DockLayout {
+    pub fn load() -> Self {
+        if !data_path("dock_layout.toml").exists() {
+            let s = Self::default();
+            let _ = s.save();
+            return s;
         }
+        match load_toml(&data_path("dock_layout.toml"), Some("dock layout")) {
+            Ok(str) => {
+                info!("Found dock layout file");
+                Self(str)
+            }
+            Err(e) => {
+                info!("Couldn't open or parse dock layout file: {e:?}");
+
+                Self::default()
+            }
+        }
+    }
+    pub fn save(&self) -> eyre::Result<()> {
+        save_toml(&self.0, &data_path("dock_layout.toml"), Some("dock layout"))
     }
 }
 
-impl PanelDockState {
+impl DockLayout {
     fn ui(&mut self, params: &mut PanelParams, ctx: &egui::Context) {
-        let mut tab_viewer = TabViewer {
-            params,
-            pointer_within_tilemap: &mut self.pointer_within_tilemap
-        };
-
-        DockArea::new(&mut self.state)
+        DockArea::new(&mut self.0)
             .style(Style::from_egui(ctx.style().as_ref()))
-            .show(ctx, &mut tab_viewer);
+            .show(ctx, params);
     }
 }
 
-pub struct TabViewer<'a, 'w, 's> {
-    pub params: &'a mut PanelParams<'w, 's>,
-    pub pointer_within_tilemap: &'a mut bool,
-}
-
-#[derive(Debug, Resource)]
-pub struct FileDialogs {
-    pub tile_settings_import: FileDialog,
-    pub tile_settings_export: Option<(Basemap, FileDialog)>,
-    pub project_select: FileDialog,
-}
-
-impl Default for FileDialogs {
-    fn default() -> Self {
-        Self {
-            tile_settings_import: TileSettingsEditor::import_dialog(),
-            tile_settings_export: None,
-            project_select: ProjectEditor::select_dialog(),
-        }
-    }
-}
-
-impl egui_dock::TabViewer for TabViewer<'_, '_, '_> {
-    type Tab = DockWindows;
-
-    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
-        tab.title().into()
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
-        tab.ui(self, ui);
-    }
-
-    fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
-        tab.closeable()
-    }
-
-    fn tab_style_override(&self, tab: &Self::Tab, global_style: &TabStyle) -> Option<TabStyle> {
-        matches!(tab, DockWindows::Tilemap(_)).then(|| TabStyle {
-            tab_body: TabBodyStyle {
-                inner_margin: egui::Margin::ZERO,
-                ..global_style.tab_body
-            },
-            ..global_style.to_owned()
-        })
-    }
-
-    fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
-        tab.allowed_in_windows()
-    }
-
-    fn clear_background(&self, window: &Self::Tab) -> bool {
-        !matches!(window, DockWindows::Tilemap(_))
-    }
-}
 
 #[derive(SystemParam)]
 #[non_exhaustive]
@@ -191,35 +151,70 @@ pub struct PanelParams<'w, 's> {
     pub zoom: Res<'w, Zoom>,
 }
 
-pub fn window_action_handler<W: DockWindow + Into<DockWindows>>(
-    state: &mut PanelDockState,
+impl egui_dock::TabViewer for PanelParams<'_, '_> {
+    type Tab = DockWindows;
+
+    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        tab.title().into()
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
+        tab.ui(self, ui);
+    }
+
+    fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
+        tab.closeable()
+    }
+
+    fn tab_style_override(&self, tab: &Self::Tab, global_style: &TabStyle) -> Option<TabStyle> {
+        matches!(tab, DockWindows::Tilemap(_)).then(|| TabStyle {
+            tab_body: TabBodyStyle {
+                inner_margin: egui::Margin::ZERO,
+                ..global_style.tab_body
+            },
+            ..global_style.to_owned()
+        })
+    }
+
+    fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
+        tab.allowed_in_windows()
+    }
+
+    fn clear_background(&self, window: &Self::Tab) -> bool {
+        !matches!(window, DockWindows::Tilemap(_))
+    }
+}
+
+
+pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(
+    state: &mut DockLayout,
     window: W,
 ) {
-    let a = state
-        .state
+    let a = state.0
         .iter_all_tabs()
         .find(|(_, a)| a.title() == window.title());
     if let Some((a, _)) = a {
         info!("Focusing on {}", window.title());
         let a = a.to_owned();
-        state.state.set_focused_node_and_surface(a);
+        state.0.set_focused_node_and_surface(a);
     } else {
         info!("Creating new window {}", window.title());
-        state.state.add_window(vec![window.into()]);
+        state.0.add_window(vec![window.into()]);
     }
 }
 
-pub fn panel_sy(mut state: ResMut<PanelDockState>, mut ctx: EguiContexts, mut params: PanelParams) {
+pub fn panel_sy(mut state: ResMut<DockLayout>, mut ctx: EguiContexts, mut params: PanelParams) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };
     state.ui(&mut params, ctx);
+    let _ = state.save();
 }
 
 #[derive(Clone, Copy, Event)]
 pub struct ResetPanelDockStateEv;
 
-pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<PanelDockState>) {
+pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<DockLayout>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
-    *state = PanelDockState::default();
+    *state = DockLayout::default();
 }

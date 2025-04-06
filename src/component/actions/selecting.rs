@@ -7,7 +7,8 @@ use crate::{
 };
 use crate::component::actions::rendering::RenderEv;
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]
 pub fn on_select_left_click(
@@ -16,15 +17,15 @@ pub fn on_select_left_click(
     state: Res<State<EditorState>>,
     components: Query<(), With<PlaComponent<EditorCoords>>>,
     mut status: ResMut<Status>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || state.component_type().is_some()
+    if pointer_within_tilemap.is_none() || state.component_type().is_some()
         || *state == EditorState::DeletingComponent
         || trigger.button != PointerButton::Primary
     {
         return;
     }
-    
+
     let e = trigger.entity();
     if e == Entity::PLACEHOLDER {
         info!("Selected nothing, deselecting");

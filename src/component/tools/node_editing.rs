@@ -16,7 +16,8 @@ use crate::{
 use crate::component::actions::rendering::RenderEv;
 use crate::component::actions::selecting::SelectedComponent;
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]
 pub struct NodeEditData {
@@ -38,9 +39,9 @@ pub fn on_node_edit_right_down(
     zoom: Res<Zoom>,
     misc_settings: Res<MiscSettings>,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, mut pla)) = selected.get_single_mut() else {
@@ -118,9 +119,9 @@ pub fn on_node_edit_right_up(
     mut commands: Commands,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, pla)) = selected.get_single_mut() else {
@@ -144,9 +145,9 @@ pub fn on_node_edit_right_click(
     skin: Res<Skin>,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes {
         return;
     }
     let Ok((e, mut pla, orig)) = selected.get_single_mut() else {

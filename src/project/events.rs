@@ -16,10 +16,10 @@ use crate::{
     project::Namespaces,
     ui::{
         notif::{NotifLogRwLockExt, NOTIF_LOG},
-        panel::dock::FileDialogs,
         popup::Popup,
     },
 };
+use crate::ui::file_dialogs::FileDialogs;
 
 #[derive(Clone, PartialEq, Eq, Event)]
 pub enum ProjectEv {
@@ -237,6 +237,7 @@ pub fn project_dialog(
     let Some(ctx) = ctx.try_ctx_mut() else { return };
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_picked() {
+        let _ = FileDialogs::save_storage(file_dialog.storage_mut());
         if namespaces.dir == Namespaces::default().dir {
             commands.trigger(ProjectEv::Load(file, true));
         } else {

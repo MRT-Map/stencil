@@ -11,7 +11,8 @@ use crate::component::pla2::ComponentType;
 use crate::component::skin::Skin;
 use crate::state::EditorState;
 use crate::ui::cursor::mouse_pos::MousePosWorld;
-use crate::ui::panel::dock::PanelDockState;
+use crate::ui::panel::dock::DockLayout;
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]
 pub struct MoveData {
@@ -23,11 +24,11 @@ pub struct MoveData {
 pub fn on_right_click_drag(
     trigger: Trigger<Pointer<Drag>>,
     mut query: Query<(&mut Transform, &MoveData), With<SelectedComponent>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let Ok((mut transform, move_data)) = query.get_mut(trigger.entity()) else {
@@ -44,11 +45,11 @@ pub fn on_right_click_drag_start(
     mut commands: Commands,
     query: Query<(&PlaComponent<EditorCoords>, &Transform), With<SelectedComponent>>,
     mut status: ResMut<Status>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let e = trigger.entity();
@@ -69,12 +70,12 @@ pub fn on_right_click_drag_end(
     mut commands: Commands,
     mut query: Query<(&mut Transform, &mut PlaComponent<EditorCoords>, &MoveData), With<SelectedComponent>>,
     mut status: ResMut<Status>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     skin: Res<Skin>,
     mouse_pos_world: Res<MousePosWorld>,
     state: Res<State<EditorState>>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
+    if pointer_within_tilemap.is_none() || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
     let e = trigger.entity();

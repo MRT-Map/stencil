@@ -11,8 +11,9 @@ use bevy::picking::pointer::Location;
 use itertools::Itertools;
 use crate::ui::{
     cursor::mouse_pos::MousePosWorld,
-    panel::dock::{PanelDockState},
+    panel::dock::{DockLayout},
 };
+use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Reflect)]
 pub struct Click2 {
@@ -84,11 +85,11 @@ pub fn emit_deselect_click_sy(
     mut commands: Commands,
     mut input_event: EventReader<PointerInput>,
     pickables: Query<(), With<RayCastPickable>>,
-    panel: Res<PanelDockState>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     mouse_pos_world: Res<MousePosWorld>,
     mut old_locations: Local<HashMap<PointerButton, Location>>,
 ) {
-    if !panel.pointer_within_tilemap {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     let events = click_event
