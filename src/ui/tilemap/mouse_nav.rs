@@ -13,7 +13,6 @@ use crate::{
     },
     ui::{
         cursor::mouse_pos::MousePos,
-        panel::dock::{DockLayout},
         tilemap::settings::TileSettings,
     },
 };

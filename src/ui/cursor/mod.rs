@@ -9,7 +9,6 @@ use crate::{
     tile::zoom::Zoom,
     ui::{
         cursor::mouse_pos::{MousePos, MousePosWorld},
-        panel::dock::{DockLayout},
         tilemap::settings::TileSettings,
         UiSchedule, UiSet,
     },

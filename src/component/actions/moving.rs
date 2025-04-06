@@ -11,7 +11,6 @@ use crate::component::pla2::ComponentType;
 use crate::component::skin::Skin;
 use crate::state::EditorState;
 use crate::ui::cursor::mouse_pos::MousePosWorld;
-use crate::ui::panel::dock::DockLayout;
 use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]

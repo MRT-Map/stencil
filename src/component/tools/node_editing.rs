@@ -16,7 +16,6 @@ use crate::{
 use crate::component::actions::rendering::RenderEv;
 use crate::component::actions::selecting::SelectedComponent;
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::DockLayout;
 use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Component)]

@@ -7,7 +7,6 @@ use crate::{
     ui::panel::status::Status,
 };
 use crate::ui::cursor::mouse_events::Click2;
-use crate::ui::panel::dock::DockLayout;
 use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]

@@ -9,10 +9,7 @@ use bevy::{
 };
 use bevy::picking::pointer::Location;
 use itertools::Itertools;
-use crate::ui::{
-    cursor::mouse_pos::MousePosWorld,
-    panel::dock::{DockLayout},
-};
+use crate::ui::cursor::mouse_pos::MousePosWorld;
 use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[derive(Debug, Clone, Reflect)]

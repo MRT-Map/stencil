@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use crate::component::actions::rendering::RenderEv;
-use crate::ui::panel::dock::DockLayout;
 use crate::ui::tilemap::window::PointerWithinTilemap;
 
 #[tracing::instrument(skip_all)]

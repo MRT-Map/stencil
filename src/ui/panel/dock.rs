@@ -1,7 +1,6 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::{egui, EguiContexts};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
-use egui_file_dialog::{FileDialog, FileDialogStorage};
 use egui_notify::ToastLevel;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
@@ -23,7 +22,7 @@ use crate::{
         panel::status::Status,
         popup::Popup,
         tilemap::{
-            settings::{Basemap, TileSettings},
+            settings::TileSettings,
             settings_editor::TileSettingsEditor,
             tile::PendingTiles,
             window::Tilemap,
@@ -32,9 +31,8 @@ use crate::{
     window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };
 use crate::component::actions::selecting::SelectedComponent;
-use crate::dirs_paths::{cache_path, data_path};
-use crate::file::{load_toml, save_toml, save_toml_with_header};
-use crate::ui::tilemap::window::PointerWithinTilemap;
+use crate::dirs_paths::data_path;
+use crate::file::{load_toml, save_toml};
 
 #[enum_dispatch(DockWindows)]
 pub trait DockWindow: Copy {
