@@ -164,4 +164,4 @@ verbose_file_reads = "warn"
 
 type_complexity = { level="allow", priority = 1 }
 too_many_lines = { level="allow", priority = 1 }
-too_many_arguments = {level="allow", priority = 1}
+too_many_arguments = {level="allow", priority = 1 }

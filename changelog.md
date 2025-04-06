@@ -9,6 +9,7 @@
 * Upgrade `bevy` to v0.15
   * This involves major internal refactors
   * Slight movements between mouse down and up will no longer count as a click
+* Upgrade `egui_dock` to v0.16, close buttons are now available on the top-right corner of windows
 * if the cursor in creation modes is not hidden, a cell cursor is shown instead of a default pointer
 * Moving components now snap them to the grid
 * Make node-editing circle black instead of grey
