@@ -32,7 +32,7 @@ use crate::{
 };
 use crate::component::actions::selecting::SelectedComponent;
 use crate::dirs_paths::data_path;
-use crate::file::{load_toml, save_toml};
+use crate::file::{load_msgpack, save_msgpack};
 
 #[enum_dispatch(DockWindows)]
 pub trait DockWindow: Copy {
@@ -84,12 +84,12 @@ impl Default for DockLayout {
 }
 impl DockLayout {
     pub fn load() -> Self {
-        if !data_path("dock_layout.toml").exists() {
+        if !data_path("dock_layout.msgpack").exists() {
             let s = Self::default();
             let _ = s.save();
             return s;
         }
-        match load_toml(&data_path("dock_layout.toml"), Some("dock layout")) {
+        match load_msgpack(&data_path("dock_layout.msgpack"), Some("dock layout")) {
             Ok(str) => {
                 info!("Found dock layout file");
                 Self(str)
@@ -102,7 +102,7 @@ impl DockLayout {
         }
     }
     pub fn save(&self) -> eyre::Result<()> {
-        save_toml(&self.0, &data_path("dock_layout.toml"), Some("dock layout"))
+        save_msgpack(&self.0, &data_path("dock_layout.msgpack"), Some("dock layout"))
     }
 }
 
@@ -201,12 +201,15 @@ pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(
     }
 }
 
-pub fn panel_sy(mut state: ResMut<DockLayout>, mut ctx: EguiContexts, mut params: PanelParams) {
+pub fn panel_sy(mut state: ResMut<DockLayout>, mut ctx: EguiContexts, mut params: PanelParams, mut tick: Local<u8>) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };
     state.ui(&mut params, ctx);
-    let _ = state.save();
+    *tick = tick.overflowing_add(1).0;
+    if *tick % 64 == 0 {
+        let _ = state.save();
+    }
 }
 
 #[derive(Clone, Copy, Event)]
@@ -215,4 +218,5 @@ pub struct ResetPanelDockStateEv;
 pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<DockLayout>) {
     NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
     *state = DockLayout::default();
+    let _ = state.save();
 }
