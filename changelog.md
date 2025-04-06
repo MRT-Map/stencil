@@ -19,6 +19,7 @@
 * `toml` file filter when importing basemap
 * File dialogue states and dock layout are now preserved across sessions
   * they are stored in the cache and data directories respectively
+* Components turn olive when hovered over
 * `bevy_inspector_egui` in debug builds
 
 # v2.2.4
