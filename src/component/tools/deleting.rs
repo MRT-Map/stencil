@@ -21,17 +21,17 @@ pub fn delete_component_sy(
     if !panel.pointer_within_tilemap || **state != EditorState::DeletingComponent {
         return;
     }
-    let entity = trigger.entity();
-    let Ok(pla) = query.get(entity) else {
+    let e = trigger.entity();
+    let Ok(pla) = query.get(e) else {
         return;
     };
-    info!(?entity, "Deleting entity");
+    info!(?e, "Deleting entity");
     commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-        entity,
+        e,
         before: Some(pla.to_owned().into()),
         after: None,
     }));
-    commands.entity(entity).despawn_recursive();
+    commands.entity(e).despawn_recursive();
     status.0 = format!("Deleted {pla}").into();
 }
 

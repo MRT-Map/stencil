@@ -32,7 +32,7 @@ impl DockWindow for ComponentEditor {
             ui.heading("Select a component...");
             return;
         }
-        let (entity, mut component_data) = selected.single_mut();
+        let (e, mut component_data) = selected.single_mut();
         let old_data = component_data.to_owned();
         ui.heading("Edit component data");
         ui.end_row();
@@ -70,19 +70,19 @@ impl DockWindow for ComponentEditor {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
                     .iter()
-                    .filter(|data| data.get_type() == component_type)
-                    .sorted_by_key(|data| data.name())
-                    .for_each(|data| {
+                    .filter(|skin_comp| skin_comp.get_type() == component_type)
+                    .sorted_by_key(|skin_comp| skin_comp.name())
+                    .for_each(|skin_comp| {
                         ui.selectable_value(
                             &mut component_data.ty,
-                            data.name().to_owned(),
-                            data.name(),
+                            skin_comp.name().to_owned(),
+                            skin_comp.name(),
                         );
                     });
             });
         if old_skin_type != component_data.ty {
             commands
-                .entity(entity).trigger(RenderEv::default());
+                .entity(e).trigger(RenderEv::default());
         }
         ui.end_row();
         let mut tags = component_data.tags.join(",");
@@ -117,7 +117,7 @@ impl DockWindow for ComponentEditor {
         }
         if *component_data != old_data {
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-                entity,
+                e,
                 before: Some(old_data.into()),
                 after: Some(component_data.to_owned().into()),
             }));

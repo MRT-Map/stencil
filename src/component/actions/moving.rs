@@ -51,10 +51,11 @@ pub fn on_right_click_drag_start(
     if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
-    let Ok((pla, transform)) = query.get(trigger.entity()) else {
+    let e = trigger.entity();
+    let Ok((pla, transform)) = query.get(e) else {
         return;
     };
-    commands.entity(trigger.entity()).insert(MoveData {
+    commands.entity(e).insert(MoveData {
         old_mouse_pos_world: *mouse_pos_world,
         old_translation: transform.translation,
     });
@@ -66,7 +67,7 @@ pub fn on_right_click_drag_start(
 pub fn on_right_click_drag_end(
     trigger: Trigger<Pointer<DragEnd>>,
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Transform, &mut PlaComponent<EditorCoords>, &MoveData), With<SelectedComponent>>,
+    mut query: Query<(&mut Transform, &mut PlaComponent<EditorCoords>, &MoveData), With<SelectedComponent>>,
     mut status: ResMut<Status>,
     panel: Res<PanelDockState>,
     skin: Res<Skin>,
@@ -76,7 +77,8 @@ pub fn on_right_click_drag_end(
     if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || *state != EditorState::Idle {
         return;
     }
-    let Ok((entity, mut transform, mut pla, move_data)) = query.get_mut(trigger.entity()) else {
+    let e = trigger.entity();
+    let Ok((mut transform, mut pla, move_data)) = query.get_mut(e) else {
         return;
     };
     if pla.get_type(&skin) != ComponentType::Point {
@@ -89,11 +91,11 @@ pub fn on_right_click_drag_end(
         node.0 += (**mouse_pos_world - *move_data.old_mouse_pos_world).round().as_ivec2();
     }
     commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-        entity: trigger.entity(),
+        e,
         before: Some(old_pla.into()),
         after: Some(pla.to_owned().into()),
     }));
-    commands.entity(entity).remove::<(Aabb, MoveData)>().trigger(RenderEv::default());
+    commands.entity(e).remove::<(Aabb, MoveData)>().trigger(RenderEv::default());
     status.0 = format!("Moved component {}", &*pla).into();
     info!("Ended move");
 }

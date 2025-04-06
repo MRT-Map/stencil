@@ -14,7 +14,7 @@ use crate::component::pla2::{EditorCoords, PlaComponent};
 #[derive(Clone, Debug)]
 pub enum HistoryEntry<T = Entity> {
     Component {
-        entity: T,
+        e: T,
         before: Option<Box<PlaComponent<EditorCoords>>>,
         after: Option<Box<PlaComponent<EditorCoords>>>,
     },

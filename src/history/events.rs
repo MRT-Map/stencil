@@ -44,11 +44,11 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => HistoryEntry::Component {
                         before: before.to_owned(),
                         after: after.to_owned(),
-                        entity: {
+                        e: {
                             let component_id = Arc::clone(
                                 ids.entry(*component_id)
                                     .or_insert_with(|| Arc::new(RwLock::new(*component_id))),
@@ -67,13 +67,13 @@ pub fn on_history(
             if let (
                 Some(
                     [HistoryEntry::Component {
-                        entity: e1,
+                        e: e1,
                         after: a1,
                         ..
                     }],
                 ),
                 [HistoryEntry::Component {
-                    entity: e2,
+                    e: e2,
                     after: a2,
                     ..
                 }],
@@ -100,10 +100,10 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => match (before, after) {
                         (Some(before), None) => {
-                            let entity = match before.get_type(&skin) {
+                            let e = match before.get_type(&skin) {
                                 ComponentType::Point => commands
                                     .spawn(PointComponentBundle::new((**before).clone(), &skin)),
                                 ComponentType::Line => commands
@@ -112,8 +112,8 @@ pub fn on_history(
                                     .spawn(AreaComponentBundle::new((**before).clone(), &skin)),
                             }
                             .id();
-                            *component_id.write().unwrap() = entity;
-                            ids.insert(entity, Arc::clone(component_id));
+                            *component_id.write().unwrap() = e;
+                            ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(before), Some(_)) => {
                             let component_id = component_id.read().unwrap();
@@ -182,10 +182,10 @@ pub fn on_history(
                     HistoryEntry::Component {
                         before,
                         after,
-                        entity: component_id,
+                        e: component_id,
                     } => match (before, after) {
                         (None, Some(after)) => {
-                            let entity = match after.get_type(&skin) {
+                            let e = match after.get_type(&skin) {
                                 ComponentType::Point => commands
                                     .spawn(PointComponentBundle::new((**after).clone(), &skin)),
                                 ComponentType::Line => commands
@@ -194,8 +194,8 @@ pub fn on_history(
                                     .spawn(AreaComponentBundle::new((**after).clone(), &skin)),
                             }
                             .id();
-                            *component_id.write().unwrap() = entity;
-                            ids.insert(entity, Arc::clone(component_id));
+                            *component_id.write().unwrap() = e;
+                            ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(_), Some(after)) => {
                             let component_id = component_id.read().unwrap();

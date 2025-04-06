@@ -24,17 +24,14 @@ pub fn on_select_left_click(
     {
         return;
     }
-    let entity = trigger.entity();
-    if entity != Entity::PLACEHOLDER && !components.contains(trigger.entity()) {
-        return;
-    }
-
-    if entity == Entity::PLACEHOLDER {
+    
+    let e = trigger.entity();
+    if e == Entity::PLACEHOLDER {
         info!("Selected nothing, deselecting");
         commands.trigger(SelectEv::DeselectAll);
         status.0 = "Deselected component".into();
-    } else {
-        commands.trigger_targets(SelectEv::SelectOne, trigger.entity());
+    } else if components.contains(e) {
+        commands.trigger_targets(SelectEv::SelectOne, e);
         status.0 = "Selected component".into();
     }
 }
@@ -48,25 +45,25 @@ pub fn on_select(
         Query<Entity, With<SelectedComponent>>,
     )>,
 ) {
-    let entity = trigger.entity();
-    if entity == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {
+    let e = trigger.entity();
+    if e == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {
         return;
     }
     match trigger.event() {
         SelectEv::Select => {
-            info!(?entity, "Selecting entity");
-            commands.entity(entity).insert(SelectedComponent).trigger(RenderEv::default());
+            info!(?e, "Selecting entity");
+            commands.entity(e).insert(SelectedComponent).trigger(RenderEv::default());
         }
         SelectEv::Deselect => {
-            debug!(?entity, "Deselecting component");
+            debug!(?e, "Deselecting component");
             commands
-                .entity(entity)
+                .entity(e)
                 .remove::<SelectedComponent>()
                 .trigger(RenderEv::default());
         }
         SelectEv::SelectOne => {
             commands.trigger(SelectEv::DeselectAll);
-            commands.trigger_targets(SelectEv::Select, entity);
+            commands.trigger_targets(SelectEv::Select, e);
         }
         SelectEv::DeselectAll => {
             commands.trigger_targets(

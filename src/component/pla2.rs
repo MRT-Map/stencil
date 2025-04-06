@@ -322,7 +322,7 @@ fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
     Some(
         style
             .iter()
-            .map(|(zl, data)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), data))
+            .map(|(zl, v)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), v))
             .find(|(min, _)| *min == 0)?
             .1,
     )

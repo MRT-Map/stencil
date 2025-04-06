@@ -9,12 +9,12 @@ pub fn on_hover_over(
     mut commands: Commands,
     panel: Res<PanelDockState>,
 ) {
-    let entity = trigger.entity();
-    if !panel.pointer_within_tilemap || !pickables.contains(entity) {
+    let e = trigger.entity();
+    if !panel.pointer_within_tilemap || !pickables.contains(e) {
         return;
     }
-    debug!(?entity, "Hovering over component");
-    commands.entity(entity).insert(HoveredComponent).trigger(RenderEv::default());
+    debug!(?e, "Hovering over component");
+    commands.entity(e).insert(HoveredComponent).trigger(RenderEv::default());
 }
 
 #[tracing::instrument(skip_all)]
@@ -24,12 +24,12 @@ pub fn on_hover_out(
     mut commands: Commands,
     panel: Res<PanelDockState>,
 ) {
-    let entity = trigger.entity();
-    if !panel.pointer_within_tilemap || !pickables.contains(entity) {
+    let e = trigger.entity();
+    if !panel.pointer_within_tilemap || !pickables.contains(e) {
         return;
     }
-    debug!(?entity, "Hovering out of component");
-    commands.entity(entity).remove::<HoveredComponent>().trigger(RenderEv::default());
+    debug!(?e, "Hovering out of component");
+    commands.entity(e).remove::<HoveredComponent>().trigger(RenderEv::default());
 }
 
 pub struct HoverComponentPlugin;

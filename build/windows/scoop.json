@@ -1,7 +1,7 @@
 {
   "version": "2.2.4",
   "description": "Map editor for MRT Map data",
-  "homepage": "http://github.com/mrt-map/stencil2",
+  "homepage": "https://github.com/mrt-map/stencil2",
   "license": "GPL-3.0-Only",
   "bin": [
     [

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::primitives::Aabb;
 use itertools::Itertools;
 
 use crate::{
@@ -39,16 +40,10 @@ pub fn on_node_edit_right_down(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
         return;
     }
-    if trigger.button != PointerButton::Secondary {
-        return;
-    }
-    if trigger.entity() == Entity::PLACEHOLDER {
-        return;
-    }
-    let Ok((entity, mut pla)) = selected.get_single_mut() else {
+    let Ok((e, mut pla)) = selected.get_single_mut() else {
         return;
     };
 
@@ -86,16 +81,16 @@ pub fn on_node_edit_right_down(
     let Some((list_pos, world_pos)) =
         handles.min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
     else {
-        warn!(?entity, "Component has no points");
+        warn!(?e, "Component has no points");
         return;
     };
     if mouse_pos_world.distance_squared(world_pos.as_vec2())
         > (2048.0 / zoom.0.exp2() * misc_settings.big_handle_size).powi(2)
     {
-        info!(?entity, "Handle is too far");
+        info!(?e, "Handle is too far");
         return;
     }
-    info!(?entity, ?list_pos, "Starting movement of node");
+    info!(?e, ?list_pos, "Starting movement of node");
     status.0 = format!("Started movement of node of {}", &*pla).into();
     let (list_pos, was_new) = match list_pos {
         Pos::Existing(i) => (i, false),
@@ -104,7 +99,7 @@ pub fn on_node_edit_right_down(
             (i, true)
         }
     };
-    commands.entity(entity).insert(NodeEditData {
+    commands.entity(e).insert(NodeEditData {
         old_pla: pla.to_owned(),
         mouse_pos_world: *mouse_pos_world,
         node_pos_world: world_pos,
@@ -125,23 +120,17 @@ pub fn on_node_edit_right_up(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
         return;
     }
-    if trigger.button != PointerButton::Secondary {
-        return;
-    }
-    if trigger.entity() == Entity::PLACEHOLDER {
-        return;
-    }
-    let Ok((entity, pla)) = selected.get_single_mut() else {
+    let Ok((e, pla)) = selected.get_single_mut() else {
         return;
     };
 
-    info!(?entity, "Ending movement of node");
+    info!(?e, "Ending movement of node");
     status.0 = format!("Ended movement of node of {}", &*pla).into();
 
-    commands.trigger_targets(EditNodesEv::ClearEventData, entity);
+    commands.trigger_targets(EditNodesEv::ClearEventData, e);
 }
 
 #[tracing::instrument(skip_all)]
@@ -157,31 +146,25 @@ pub fn on_node_edit_right_click(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::EditingNodes {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || **state != EditorState::EditingNodes || trigger.entity() == Entity::PLACEHOLDER {
         return;
     }
-    if trigger.button != PointerButton::Secondary {
-        return;
-    }
-    if trigger.entity() == Entity::PLACEHOLDER {
-        return;
-    }
-    let Ok((entity, mut pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
         return;
     };
 
     if orig.was_new || pla.get_type(&skin) == ComponentType::Point {
         return;
     }
-    info!(?entity, "Deleting node");
+    info!(?e, "Deleting node");
     status.0 = format!("Deleted node of {}", &*pla).into();
     pla.nodes.remove(orig.node_list_pos);
     if pla.nodes.len() < 2 {
-        info!(?entity, "Deleting entity");
+        info!(?e, "Deleting entity");
         status.0 = format!("Deleting {}", &*pla).into();
-        commands.entity(entity).despawn_recursive();
+        commands.entity(e).despawn_recursive();
     } else {
-        commands.entity(entity).trigger(RenderEv::default());
+        commands.entity(e).trigger(RenderEv::default());
     }
 }
 #[tracing::instrument(skip_all)]
@@ -193,14 +176,14 @@ pub fn on_edit_nodes(
     >,
     mut commands: Commands,
 ) {
-    let Ok((entity, pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, pla, orig)) = selected.get_single_mut() else {
         return;
     };
     match trigger.event() {
         EditNodesEv::ClearEventData => {
-            commands.entity(entity).remove::<NodeEditData>();
+            commands.entity(e).remove::<(Aabb, NodeEditData)>().trigger(RenderEv::default());
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-                entity,
+                e,
                 before: Some(orig.to_owned().old_pla.into()),
                 after: Some(pla.to_owned().into()),
             }));
@@ -217,16 +200,16 @@ pub fn move_selected_node_sy(
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    let Ok((entity, mut pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
         return;
     };
 
-    debug!(?entity, "Moving node");
+    debug!(?e, "Moving node");
     pla.nodes[orig.node_list_pos].0 = (**mouse_pos_world - *orig.mouse_pos_world
         + orig.node_pos_world.as_vec2())
     .round()
     .as_ivec2();
-    commands.entity(entity).trigger(RenderEv::default());
+    commands.entity(e).trigger(RenderEv::default());
 }
 
 pub struct EditNodePlugin;

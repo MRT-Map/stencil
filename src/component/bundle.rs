@@ -8,18 +8,18 @@ use crate::component::{
 
 #[derive(Bundle)]
 pub struct PointComponentBundle {
-    pub data: PlaComponent<EditorCoords>,
+    pub pla: PlaComponent<EditorCoords>,
     pub shape: ShapeBundle,
     pub fill: Fill,
     pub pickable: (RayCastPickable, RayCastBackfaces),
 }
 impl PointComponentBundle {
     #[must_use]
-    pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
+    pub fn new(pla: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            shape: data.get_shape(skin),
-            fill: data.get_fill(skin),
-            data,
+            shape: pla.get_shape(skin),
+            fill: pla.get_fill(skin),
+            pla,
             pickable: (RayCastPickable, RayCastBackfaces),
         }
     }
@@ -27,18 +27,18 @@ impl PointComponentBundle {
 
 #[derive(Bundle)]
 pub struct LineComponentBundle {
-    pub data: PlaComponent<EditorCoords>,
+    pub pla: PlaComponent<EditorCoords>,
     pub shape: ShapeBundle,
     pub stroke: Stroke,
     pub pickable: (RayCastPickable, RayCastBackfaces),
 }
 impl LineComponentBundle {
     #[must_use]
-    pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
+    pub fn new(pla: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            shape: data.get_shape(skin),
-            stroke: data.get_stroke(skin),
-            data,
+            shape: pla.get_shape(skin),
+            stroke: pla.get_stroke(skin),
+            pla,
             pickable: (RayCastPickable, RayCastBackfaces),
         }
     }
@@ -46,7 +46,7 @@ impl LineComponentBundle {
 
 #[derive(Bundle)]
 pub struct AreaComponentBundle {
-    pub data: PlaComponent<EditorCoords>,
+    pub pla: PlaComponent<EditorCoords>,
     pub shape: ShapeBundle,
     pub fill: Fill,
     pub stroke: Stroke,
@@ -54,12 +54,12 @@ pub struct AreaComponentBundle {
 }
 impl AreaComponentBundle {
     #[must_use]
-    pub fn new(data: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
+    pub fn new(pla: PlaComponent<EditorCoords>, skin: &Skin) -> Self {
         Self {
-            shape: data.get_shape(skin),
-            fill: data.get_fill(skin),
-            stroke: data.get_stroke(skin),
-            data,
+            shape: pla.get_shape(skin),
+            fill: pla.get_fill(skin),
+            stroke: pla.get_stroke(skin),
+            pla,
             pickable: (RayCastPickable, RayCastBackfaces),
         }
     }

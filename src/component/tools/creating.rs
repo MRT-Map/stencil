@@ -54,12 +54,10 @@ pub fn on_point_left_click(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || **state != EditorState::CreatingPoint {
+    if !panel.pointer_within_tilemap || **state != EditorState::CreatingPoint || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
-    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
-        return;
-    }
+
     let node = trigger
         .hit
         .position
@@ -86,14 +84,14 @@ pub fn on_point_left_click(
         &skin,
     );
     debug!("Placing new point at {node:?}");
-    status.0 = format!("Created new point {} at {:?}", new_point.data, node).into();
+    status.0 = format!("Created new point {} at {:?}", new_point.pla, node).into();
 
     commands.trigger(SelectEv::DeselectAll);
 
-    let pla = new_point.data.clone();
-    let entity = commands.spawn(new_point).id();
+    let pla = new_point.pla.clone();
+    let e = commands.spawn(new_point).id();
     commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-        entity,
+        e,
         before: None,
         after: Some(pla.into()),
     }));
@@ -110,10 +108,7 @@ pub fn on_line_area_left_click(
     skin: Res<Skin>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Primary {
-        return;
-    }
-    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Primary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
         return;
     }
 
@@ -132,39 +127,39 @@ pub fn on_line_area_left_click(
         .xy()
         .round()
         .as_ivec2();
-    if let Ok((entity, mut data)) = set.get_single_mut() {
-        if data.nodes.last().map(|a| a.0) == Some(new) {
-            data.nodes.pop();
-            if data.nodes.is_empty() {
-                commands.entity(entity).despawn_recursive();
+    if let Ok((e, mut pla)) = set.get_single_mut() {
+        if pla.nodes.last().map(|a| a.0) == Some(new) {
+            pla.nodes.pop();
+            if pla.nodes.is_empty() {
+                commands.entity(e).despawn_recursive();
                 return;
             }
         } else {
-            data.nodes.push(new.into());
+            pla.nodes.push(new.into());
         }
-        debug!(?entity, "Continuing {ty_text} at {new:?}");
+        debug!(?e, "Continuing {ty_text} at {new:?}");
         status.0 = format!("Continuing {ty_text} at {new:?}").into();
-        commands.entity(entity).trigger(RenderEv::default());
+        commands.entity(e).trigger(RenderEv::default());
 
-        if ty_text == "area" && data.nodes.first() == data.nodes.last() && !data.nodes.is_empty() {
+        if ty_text == "area" && pla.nodes.first() == pla.nodes.last() && !pla.nodes.is_empty() {
             debug!("Ended on same point, completing area");
-            data.nodes.pop();
+            pla.nodes.pop();
             commands.trigger(ClearCreatedComponentEv);
         }
     } else {
         commands.trigger(SelectEv::DeselectAll);
 
-        let data = {
-            let mut line_area = PlaComponent::new(ty);
-            line_area.nodes.push(new.into());
-            line_area
+        let pla = {
+            let mut pla = PlaComponent::new(ty);
+            pla.nodes.push(new.into());
+            pla
         };
         debug!("Starting new {ty_text} at {new:?}");
         status.0 = format!("Starting new {ty_text} at {new:?}",).into();
         if ty_text == "area" {
-            commands.spawn(AreaComponentBundle::new(data, &skin))
+            commands.spawn(AreaComponentBundle::new(pla, &skin))
         } else {
-            commands.spawn(LineComponentBundle::new(data, &skin))
+            commands.spawn(LineComponentBundle::new(pla, &skin))
         }
         .insert(CreatedComponent);
     }
@@ -178,13 +173,7 @@ pub fn on_line_area_right_click(
     state: Res<State<EditorState>>,
     panel: Res<PanelDockState>,
 ) {
-    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary {
-        return;
-    }
-    if trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) {
-        return;
-    }
-    if ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
+    if !panel.pointer_within_tilemap || trigger.button != PointerButton::Secondary || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity()) || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state) {
         return;
     }
 
@@ -199,11 +188,11 @@ pub fn create_component_sy(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    let Ok((entity, data)) = set.get_single() else {
+    let Ok((e, pla)) = set.get_single() else {
         return;
     };
-    let mut data = (*data).clone();
-    let prev_node_pos = data.nodes.last().unwrap().0.as_vec2();
+    let mut pla = (*pla).clone();
+    let prev_node_pos = pla.nodes.last().unwrap().0.as_vec2();
     let next_point = if **mouse_pos_world != Vec2::ZERO
         && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
     {
@@ -217,8 +206,8 @@ pub fn create_component_sy(
     } else {
         **mouse_pos_world
     };
-    data.nodes.push(next_point.round().as_ivec2().into());
-    commands.entity(entity).trigger(RenderEv(Some(data)));
+    pla.nodes.push(next_point.round().as_ivec2().into());
+    commands.entity(e).trigger(RenderEv(Some(pla)));
 }
 
 #[tracing::instrument(skip_all)]
@@ -230,12 +219,12 @@ pub fn on_clear_created_component(
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
 ) {
-    let Ok((entity, mut data)) = created_query.get_single_mut() else {
+    let Ok((e, mut pla)) = created_query.get_single_mut() else {
         return;
     };
-    debug!(?entity, "Clearing CreatedComponent marker");
-    if data.nodes.len() == 1 {
-        commands.entity(entity).despawn_recursive();
+    debug!(?e, "Clearing CreatedComponent marker");
+    if pla.nodes.len() == 1 {
+        commands.entity(e).despawn_recursive();
         status.0 = "Cancelled component creation".into();
     } else {
         if !namespaces
@@ -246,25 +235,25 @@ pub fn on_clear_created_component(
         {
             namespaces.prev_used = "_misc".into();
         }
-        namespaces.prev_used.clone_into(&mut data.namespace);
-        data.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
+        namespaces.prev_used.clone_into(&mut pla.namespace);
+        pla.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         commands
-            .entity(entity)
+            .entity(e)
             .trigger(RenderEv::default())
             .remove::<CreatedComponent>();
         commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
-            entity,
+            e,
             before: None,
-            after: Some(data.to_owned().into()),
+            after: Some(pla.to_owned().into()),
         }));
         status.0 = format!(
             "Created new {} {}",
-            if data.get_type(&skin) == ComponentType::Area {
+            if pla.get_type(&skin) == ComponentType::Area {
                 "area"
             } else {
                 "line"
             },
-            &*data
+            &*pla
         )
         .into();
     }

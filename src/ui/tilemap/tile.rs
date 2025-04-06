@@ -94,7 +94,7 @@ pub fn show_tiles_sy(
     executor.try_tick();
     if !transform.is_changed() {
         let (ml, mt, mr, mb) = get_map_coords_of_edges(camera, &transform);
-        for (entity, tile_coord) in &mut query {
+        for (e, tile_coord) in &mut query {
             if (zoom.0 <= f32::from(basemap.max_tile_zoom) && tile_coord.z > zoom.0.round() as i8)
                 || (zoom.0 > f32::from(basemap.max_tile_zoom)
                     && tile_coord.z != basemap.max_tile_zoom)
@@ -107,7 +107,7 @@ pub fn show_tiles_sy(
                     && !shown_tiles.contains(tile_coord))
             {
                 trace!("Hiding {tile_coord}");
-                commands.entity(entity).despawn_recursive();
+                commands.entity(e).despawn_recursive();
             } else {
                 shown_tiles.retain(|t| t != tile_coord);
                 trace!("Showing {tile_coord}");
