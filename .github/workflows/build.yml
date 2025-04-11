@@ -141,6 +141,7 @@ jobs:
           export LINUX_SHA=$(curl "https://github.com/MRT-Map/stencil2/releases/download/v$VERSION/stencil2_${VERSION}_amd64.deb" -L | shasum -a 256 | cut -d ' ' -f1)
           cat build/linux/PKGBUILD | sed "s/sha256sums=.*/sha256sums=('$LINUX_SHA')/" > build/linux/PKGBUILD2
           cat build/linux/PKGBUILD2 | sed "s/pkgver=.*/pkgver=$VERSION/" > build/linux/PKGBUILD
+          rm build/linux/PKGBUILD2
           
           cat build/windows/scoop.json | sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop2.json
           mv build/windows/scoop2.json build/windows/scoop.json
