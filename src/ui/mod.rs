@@ -1,6 +1,4 @@
-use bevy::{
-    app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, window::PrimaryWindow,
-};
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{egui, EguiContextPass, EguiContextSettings, EguiContexts};
 
 use crate::state::IntoSystemConfigExt;

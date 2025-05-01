@@ -8,9 +8,7 @@ use eyre::eyre;
 use tracing::debug;
 
 use crate::{
-    component::{
-        actions::rendering::RenderEv, bundle::ComponentBundle, pla2::ComponentType, skin::Skin,
-    },
+    component::{actions::rendering::RenderEv, bundle::ComponentBundle, skin::Skin},
     file::{restore, safe_delete},
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
     project::{events::ProjectEv, Namespaces},

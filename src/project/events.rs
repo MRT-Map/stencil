@@ -8,7 +8,7 @@ use itertools::Itertools;
 use crate::{
     component::{
         bundle::ComponentBundle,
-        pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
+        pla2::{EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
     file::{load_msgpack, safe_delete, save_msgpack},

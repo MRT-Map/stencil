@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::EguiContextPass;
-use bevy_prototype_lyon::prelude::*;
 use itertools::Itertools;
 
 use crate::{
@@ -134,7 +133,6 @@ pub fn on_render(
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn rerender_selected_sy(
     selected: Query<Entity, With<SelectedComponent>>,
     mut commands: Commands,

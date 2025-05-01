@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    window::{VideoMode, WindowMode},
-};
+use bevy::{prelude::*, window::WindowMode};
 use bevy_egui::egui;
 use serde::{Deserialize, Serialize};
 

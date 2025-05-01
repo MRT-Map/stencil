@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bevy::{
     picking::{
         backend::HitData,
-        pointer::{Location, PointerAction, PointerInput, PressDirection},
+        pointer::{Location, PointerAction, PointerInput},
     },
     prelude::*,
 };

@@ -1,8 +1,5 @@
 use bevy::{
-    ecs::{
-        schedule::{graph::GraphInfo, Chain, Schedulable, ScheduleConfigs},
-        system::ScheduleSystem,
-    },
+    ecs::schedule::{graph::GraphInfo, Chain, Schedulable, ScheduleConfigs},
     prelude::*,
 };
 use serde::{Deserialize, Serialize};

@@ -24,7 +24,6 @@ impl Deref for MousePosWorld {
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
 pub fn update_mouse_pos_sy(
     mut mouse_pos: ResMut<MousePos>,
     mut mouse_pos_world: ResMut<MousePosWorld>,

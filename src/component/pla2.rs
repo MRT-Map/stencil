@@ -209,7 +209,7 @@ impl PlaComponent<EditorCoords> {
                 Transform::from_xyz(self.nodes[0].0.x as f32, self.nodes[0].0.y as f32, 10.0),
             );
         }
-        let mut shape = ShapeBuilder::with(&{
+        let shape = ShapeBuilder::with(&{
             let mut path = ShapePath::new();
 
             for coord in &self.nodes {

@@ -12,7 +12,7 @@ use crate::{
 
 #[cfg(not(debug_assertions))]
 static LICENSES: LazyLock<LicenseRetriever> =
-    LazyLock::new(|| license_retriever::license_retriever_data!("licenses")?);
+    LazyLock::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
 
 #[cfg(debug_assertions)]
 static LICENSES: LazyLock<LicenseRetriever> = LazyLock::new(LicenseRetriever::default);

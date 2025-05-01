@@ -19,7 +19,6 @@ use crate::{
 static SEMAPHORE: LazyLock<Semaphore> =
     LazyLock::new(|| Semaphore::new(INIT_TILE_SETTINGS.max_get_requests));
 
-#[must_use]
 pub fn get_shown_tiles<R: QueryFilter>(
     q_camera: &Query<(&Camera, Ref<Transform>), R>,
     zoom: i8,

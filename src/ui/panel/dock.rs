@@ -24,7 +24,7 @@ use crate::{
         cursor::mouse_pos::MousePosWorld,
         notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
-        popup::{Popup, Popups},
+        popup::Popups,
         tilemap::{
             settings::TileSettings, settings_editor::TileSettingsEditor, tile::PendingTiles,
             window::Tilemap,

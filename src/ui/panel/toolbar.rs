@@ -49,7 +49,6 @@ pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerRespon
         });
     });
     if new_state != ***editor_state {
-        //commands.trigger(ChangeStateEv(new_state)));
         commands.trigger(ChangeStateEv(new_state));
         params.status.0 = match new_state {
             EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
