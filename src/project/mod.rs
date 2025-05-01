@@ -1,11 +1,10 @@
 use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use bevy::prelude::*;
+use bevy_egui::EguiContextPass;
 use events::ProjectEv;
 
-use crate::{
-    dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState, ui::UiSchedule,
-};
+use crate::{dirs_paths::cache_dir, misc_config::settings::MiscSettings, state::EditorState};
 
 pub mod events;
 pub mod project_editor;
@@ -61,7 +60,7 @@ impl Plugin for ProjectPlugin {
             .add_systems(Update, autosave_sy)
             .add_observer(events::on_project)
             .add_observer(project_editor::on_project_editor)
-            .add_systems(UiSchedule, events::project_dialog)
+            .add_systems(EguiContextPass, events::project_dialog)
             .add_systems(OnExit(EditorState::Loading), |mut commands: Commands| {
                 commands.trigger(ProjectEv::Reload);
                 commands.trigger(ProjectEv::Show {

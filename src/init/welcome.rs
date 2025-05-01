@@ -1,10 +1,14 @@
 use bevy::prelude::*;
 
-use crate::{dirs_paths::data_path, state::LoadingState, ui::popup::Popup};
+use crate::{
+    dirs_paths::data_path,
+    state::LoadingState,
+    ui::popup::{Popup, Popups},
+};
 
-pub fn welcome_sy(mut commands: Commands, mut popup: EventWriter<Popup>) {
+pub fn welcome_sy(mut commands: Commands, mut popups: ResMut<Popups>) {
     if !data_path(".welcome_shown").exists() {
-        popup.write(Popup::base_alert(
+        popups.add(Popup::base_alert(
             "welcome",
             "Welcome to Stencil!",
             "Remember to read our manual at https://github.com/MRT-Map/stencil2/wiki. \n\n\

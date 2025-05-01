@@ -5,7 +5,10 @@ use bevy_egui::egui;
 use itertools::Itertools;
 use license_retriever::LicenseRetriever;
 
-use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
+use crate::{
+    info_windows::InfoWindowsEv,
+    ui::popup::{Popup, Popups},
+};
 
 #[cfg(not(debug_assertions))]
 static LICENSES: LazyLock<LicenseRetriever> =
@@ -15,11 +18,11 @@ static LICENSES: LazyLock<LicenseRetriever> =
 static LICENSES: LazyLock<LicenseRetriever> = LazyLock::new(LicenseRetriever::default);
 
 #[expect(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
-pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
+pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popups: ResMut<Popups>) {
     if *trigger.event() != InfoWindowsEv::Licenses {
         return;
     }
-    popup.write(Popup::new(
+    popups.add(Popup::new(
         "licenses",
         || {
             egui::Window::new("Open Source Licenses")

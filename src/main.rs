@@ -128,7 +128,7 @@ fn main() {
             ..default()
         })
         .add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: false,
+            enable_multipass_for_primary_context: true,
         })
         .add_plugins(ShapePlugin);
 

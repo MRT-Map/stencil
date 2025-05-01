@@ -8,27 +8,24 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{egui, EguiContextPass, EguiContexts};
 
 use crate::ui::UiSet;
 
-#[derive(Event, Hash, PartialEq, Eq, Clone)]
-pub struct Popup(Arc<PopupInner<dyn Any + Send + Sync>>);
+#[derive(Resource, Default)]
+pub struct Popups(pub Vec<Popup>);
 
-impl Deref for Popup {
-    type Target = Arc<PopupInner>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl Popups {
+    pub fn add(&mut self, popup: Popup) {
+        if self.0.iter().any(|a| a.id == popup.id) {
+            return;
+        }
+        info!(?popup.id, "Opening popup");
+        self.0.push(popup);
     }
 }
 
-impl DerefMut for Popup {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-pub struct PopupInner<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
+pub struct Popup<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     pub id: String,
     pub window: Box<dyn Fn() -> egui::Window<'static> + Sync + Send>,
     pub ui: Box<
@@ -36,20 +33,6 @@ pub struct PopupInner<T: Send + Sync + ?Sized = dyn Any + Send + Sync> {
     >,
     pub state: Mutex<Box<T>>,
 }
-
-impl<T: Send + Sync + ?Sized> Hash for PopupInner<T> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
-    }
-}
-
-impl<T: Send + Sync + ?Sized> PartialEq<Self> for PopupInner<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
-
-impl<T: Send + Sync + ?Sized> Eq for PopupInner<T> {}
 
 impl Popup {
     pub fn new<
@@ -65,12 +48,12 @@ impl Popup {
         ui: U,
         state: Mutex<Box<dyn Any + Send + Sync>>,
     ) -> Self {
-        Self(Arc::new(PopupInner {
+        Self {
             id: id.to_string(),
             window: Box::new(window),
             ui: Box::new(ui),
             state,
-        }))
+        }
     }
     pub fn base_alert<
         I: Display + Send + Sync + 'static,
@@ -180,37 +163,30 @@ impl Popup {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn popup_handler_sy(
-    mut ctx: EguiContexts,
-    mut event_reader: EventReader<Popup>,
-    mut commands: Commands,
-    mut show: Local<HashMap<String, (Popup, bool)>>,
-) {
-    for popup in event_reader.read() {
-        info!(popup.id, "Showing popup");
-        show.insert(popup.id.clone(), (Popup::clone(popup), true));
-    }
+pub fn popup_handler_sy(mut ctx: EguiContexts, mut commands: Commands, mut popups: ResMut<Popups>) {
     let Some(ctx) = ctx.try_ctx_mut() else {
         return;
     };
-    for (id, (popup, shown)) in &mut show {
+
+    popups.0.retain(|popup| {
+        let mut shown = true;
         (popup.window)()
             .show(ctx, |ui| {
-                (popup.ui)(&popup.state, ui, &mut commands, shown);
+                (popup.ui)(&popup.state, ui, &mut commands, &mut shown);
             })
             .unwrap();
-        if !*shown {
-            info!(?id, "Closing popup");
+        if !shown {
+            info!(?popup.id, "Closing popup");
         }
-    }
-    show.retain(|_, (_, a)| *a);
+        shown
+    });
 }
 
 pub struct PopupPlugin;
 
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<Popup>()
-            .add_systems(Update, popup_handler_sy.in_set(UiSet::Popups));
+        app.init_resource::<Popups>()
+            .add_systems(EguiContextPass, popup_handler_sy.in_set(UiSet::Popups));
     }
 }

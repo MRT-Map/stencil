@@ -17,7 +17,7 @@ use crate::{
     ui::{
         file_dialogs::FileDialogs,
         notif::{NotifLogRwLockExt, NOTIF_LOG},
-        popup::Popup,
+        popup::{Popup, Popups},
     },
 };
 
@@ -48,7 +48,7 @@ pub fn on_project(
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
     mut file_dialogs: ResMut<FileDialogs>,
     skin: Res<Skin>,
-    mut popup: EventWriter<Popup>,
+    mut popups: ResMut<Popups>,
     mut history: ResMut<History>,
 ) {
     match trigger.event() {
@@ -169,7 +169,7 @@ pub fn on_project(
             }
         }
         ProjectEv::Delete(ns, false) => {
-            popup.write(Popup::base_confirm(
+            popups.add(Popup::base_confirm(
                 "confirm_delete_ns",
                 format!("Are you sure you want to delete namespace {ns}?"),
                 "",
@@ -218,7 +218,7 @@ pub fn project_dialog(
     namespaces: Res<Namespaces>,
     mut ctx: EguiContexts,
     mut file_dialogs: ResMut<FileDialogs>,
-    mut popup: EventWriter<Popup>,
+    mut popups: ResMut<Popups>,
 ) {
     let file_dialog = &mut file_dialogs.project_select;
     let Some(ctx) = ctx.try_ctx_mut() else { return };
@@ -228,7 +228,7 @@ pub fn project_dialog(
         if namespaces.dir == Namespaces::default().dir {
             commands.trigger(ProjectEv::Load(file, true));
         } else {
-            popup.write(Popup::base_choose(
+            popups.add(Popup::base_choose(
                 "save-before-switching",
                 "Save before switching projects?",
                 "",

@@ -1,7 +1,7 @@
 use bevy::{
     app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, window::PrimaryWindow,
 };
-use bevy_egui::{egui, EguiContextSettings, EguiContexts};
+use bevy_egui::{egui, EguiContextPass, EguiContextSettings, EguiContexts};
 
 use crate::state::IntoSystemConfigExt;
 
@@ -17,9 +17,6 @@ pub struct Focus(pub Option<egui::Id>);
 
 pub struct UiPlugin;
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, ScheduleLabel)]
-pub struct UiSchedule;
-
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum UiSet {
     Init,
@@ -33,30 +30,30 @@ pub enum UiSet {
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Focus>()
-            .init_schedule(UiSchedule)
-            .configure_sets(UiSchedule, UiSet::Init.run_if_not_loading())
+            .init_schedule(EguiContextPass)
+            .configure_sets(EguiContextPass, UiSet::Init.run_if_not_loading())
             .configure_sets(
-                UiSchedule,
+                EguiContextPass,
                 UiSet::Popups.run_if_not_loading().after(UiSet::Init),
             )
             .configure_sets(
-                UiSchedule,
+                EguiContextPass,
                 UiSet::Panels.run_if_not_loading().after(UiSet::Popups),
             )
             .configure_sets(
-                UiSchedule,
+                EguiContextPass,
                 UiSet::Tiles.run_if_not_loading().after(UiSet::Panels),
             )
             .configure_sets(
-                UiSchedule,
+                EguiContextPass,
                 UiSet::Mouse.run_if_not_loading().after(UiSet::Tiles),
             )
-            .configure_sets(UiSchedule, UiSet::Reset.after(UiSet::Mouse))
+            .configure_sets(EguiContextPass, UiSet::Reset.after(UiSet::Mouse))
             .add_plugins(popup::PopupPlugin)
             .add_plugins(panel::PanelPlugin)
             .add_plugins(cursor::CursorPlugin)
-            // .add_systems(UiSchedule, init_focus.in_set(UiSet::Init))
-            // .add_systems(UiSchedule, save_focus.in_set(UiSet::Reset))
+            // .add_systems(EguiContextPass, init_focus.in_set(UiSet::Init))
+            // .add_systems(EguiContextPass, save_focus.in_set(UiSet::Reset))
             .add_systems(
                 Startup,
                 |mut ctx: EguiContexts,
@@ -71,8 +68,6 @@ impl Plugin for UiPlugin {
                     Ok(())
                 },
             );
-        let mut order = app.world_mut().resource_mut::<MainScheduleOrder>();
-        order.insert_after(PreUpdate, UiSchedule);
     }
 }
 

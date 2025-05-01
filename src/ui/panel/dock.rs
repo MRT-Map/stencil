@@ -24,7 +24,7 @@ use crate::{
         cursor::mouse_pos::MousePosWorld,
         notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
-        popup::Popup,
+        popup::{Popup, Popups},
         tilemap::{
             settings::TileSettings, settings_editor::TileSettingsEditor, tile::PendingTiles,
             window::Tilemap,
@@ -142,7 +142,7 @@ pub struct PanelParams<'w, 's> {
     pub keymap_settings: ResMut<'w, KeymapSettings>,
     pub misc_settings: ResMut<'w, MiscSettings>,
     pub status: ResMut<'w, Status>,
-    pub popup: EventWriter<'w, Popup>,
+    pub popups: ResMut<'w, Popups>,
     pub namespaces: ResMut<'w, Namespaces>,
     pub new_namespace: Local<'s, String>,
     pub history: ResMut<'w, History>,

@@ -6,7 +6,11 @@ use color_backtrace::BacktracePrinter;
 use itertools::Itertools;
 use tracing_error::SpanTrace;
 
-use crate::{dirs_paths::data_dir, file::safe_delete, ui::popup::Popup};
+use crate::{
+    dirs_paths::data_dir,
+    file::safe_delete,
+    ui::popup::{Popup, Popups},
+};
 
 pub fn panic(panic: &PanicHookInfo) {
     error!("Caught panic: {panic:#}");
@@ -54,25 +58,24 @@ pub fn panic(panic: &PanicHookInfo) {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn ack_panic_sy(mut popup: EventWriter<Popup>) {
+pub fn ack_panic_sy(mut popups: ResMut<Popups>) {
     let panics_dir = data_dir("panics");
     let to_show_file = panics_dir.join(".to_show");
-    #[expect(clippy::used_underscore_binding, reason = "ide")]
     let panic_file = match std::fs::read_to_string(&to_show_file) {
         Ok(content) => content,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return,
-            _e => panic!("{_e:?}"),
+            e => panic!("{e:?}"),
         },
     };
     let _ = safe_delete(&to_show_file, Some("to_show file"));
-    popup.write(Popup::base_alert(
+    popups.add(Popup::base_alert(
         "ack_panic",
         "Panic",
         format!(
             "Stencil2 encountered an error and panicked the last time it was open. \
             A crash log has been produced at:\n\n{panic_file}\n\nIf you think it's a bug, \
-            go through the file to redact any personal details, and then create a issue \
+            go through the file to redact any personal details, and then create an issue \
             on our GitHub at https://github.com/MRT-Map/stencil2 and attach the file, \
             or if you know __7d's Discord account, send the file over via Discord.\n\n\
             We apologise if you had lost any data."

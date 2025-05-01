@@ -2,6 +2,7 @@ use bevy::{
     color::palettes::basic::{BLACK, LIME, RED},
     prelude::*,
 };
+use bevy_egui::EguiContextPass;
 use bevy_prototype_lyon::prelude::*;
 use itertools::Itertools;
 
@@ -15,7 +16,7 @@ use crate::{
     misc_config::settings::MiscSettings,
     state::EditorState,
     tile::zoom::Zoom,
-    ui::{cursor::mouse_pos::MousePosWorld, UiSchedule},
+    ui::cursor::mouse_pos::MousePosWorld,
 };
 
 #[tracing::instrument(skip_all)]
@@ -147,7 +148,7 @@ pub struct RenderComponentPlugin;
 impl Plugin for RenderComponentPlugin {
     fn build(&self, app: &mut App) {
         app.add_observer(on_render).add_systems(
-            UiSchedule,
+            EguiContextPass,
             rerender_selected_sy.run_if(
                 resource_changed::<Zoom>
                     .or(in_state(EditorState::EditingNodes).and(resource_changed::<MousePosWorld>))
