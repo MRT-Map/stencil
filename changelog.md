@@ -5,6 +5,10 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.6
+* Upgrade `bevy` to v0.16
+* Fix some English
+
 # v2.2.5
 * Upgrade `bevy` to v0.15
   * This involves major internal refactors
