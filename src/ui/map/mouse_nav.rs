@@ -7,13 +7,14 @@ use bevy_egui::EguiContexts;
 
 use crate::{
     misc_config::settings::MiscSettings,
-    tile::{
-        utils::{get_map_width_height, get_window_width_height},
-        zoom::Zoom,
-    },
     ui::{
         cursor::mouse_pos::MousePos,
-        tilemap::{settings::TileSettings, window::PointerWithinTilemap},
+        map::{
+            settings::TileSettings,
+            utils::{get_map_width_height, get_window_width_height},
+            window::PointerWithinTilemap,
+            zoom::Zoom,
+        },
     },
 };
 

@@ -6,7 +6,7 @@ use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     state::LoadingState,
-    ui::tilemap::settings::TileSettings,
+    ui::map::settings::TileSettings,
 };
 
 fn v2_0_1() {

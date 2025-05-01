@@ -22,8 +22,8 @@ use crate::{
     project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
     state::{ChangeStateEv, EditorState},
     ui::{
-        notif::viewer::OpenNotifLogViewerEv, panel::menu::OpenAllSettingsEv,
-        tilemap::settings_editor::TileSettingsEv,
+        map::settings_editor::TileSettingsEv, notif::viewer::OpenNotifLogViewerEv,
+        panel::menu::OpenAllSettingsEv,
     },
     window::settings_editor::OpenWindowSettingsEv,
 };

@@ -8,7 +8,7 @@ use eyre::eyre;
 use tracing::debug;
 
 use crate::{
-    component::{actions::rendering::RenderEv, bundle::ComponentBundle, skin::Skin},
+    component::{actions::rendering::RenderEv, make_component, skin::Skin},
     file::{restore, safe_delete},
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
     project::{events::ProjectEv, Namespaces},
@@ -95,7 +95,7 @@ pub fn on_history(
                     } => match (before, after) {
                         (Some(before), None) => {
                             let e = commands
-                                .spawn(ComponentBundle::new((**before).clone(), &skin))
+                                .spawn(make_component((**before).clone(), &skin))
                                 .id();
                             *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
                             ids.insert(e, Arc::clone(component_id));
@@ -174,7 +174,7 @@ pub fn on_history(
                     } => match (before, after) {
                         (None, Some(after)) => {
                             let e = commands
-                                .spawn(ComponentBundle::new((**after).clone(), &skin))
+                                .spawn(make_component((**after).clone(), &skin))
                                 .id();
                             *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
                             ids.insert(e, Arc::clone(component_id));

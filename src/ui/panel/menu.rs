@@ -19,12 +19,12 @@ use crate::{
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsEv},
     project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
     ui::{
+        map::settings_editor::{TileSettingsEditor, TileSettingsEv},
         notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
         panel::{
             dock::{DockLayout, DockWindow, DockWindows, ResetPanelDockStateEv},
             status::Status,
         },
-        tilemap::settings_editor::{TileSettingsEditor, TileSettingsEv},
     },
     window::settings_editor::{OpenWindowSettingsEv, WindowSettingsEditor},
 };

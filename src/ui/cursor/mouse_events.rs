@@ -9,7 +9,7 @@ use bevy::{
 };
 use itertools::Itertools;
 
-use crate::ui::{cursor::mouse_pos::MousePosWorld, tilemap::window::PointerWithinTilemap};
+use crate::ui::{cursor::mouse_pos::MousePosWorld, map::window::PointerWithinTilemap};
 
 #[derive(Debug, Clone, Reflect)]
 pub struct Click2 {

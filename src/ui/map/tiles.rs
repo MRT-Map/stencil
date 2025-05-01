@@ -7,13 +7,12 @@ use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
 
 use crate::{
-    tile::{
-        bundle::{Tile, TileBundle},
-        tile_coord::TileCoord,
+    tile::{make_tile, tile_coord::TileCoord, Tile},
+    ui::map::{
+        settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
         utils::get_map_coords_of_edges,
         zoom::Zoom,
     },
-    ui::tilemap::settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
 };
 
 static SEMAPHORE: LazyLock<Semaphore> =
@@ -116,7 +115,7 @@ pub fn show_tiles_sy(
             if tile_coord.z <= basemap.max_tile_zoom {
                 trace!("Loading tile {tile_coord}");
                 if tile_coord.path(basemap).try_exists().unwrap_or(false) {
-                    commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
+                    commands.spawn(make_tile(*tile_coord, &server, basemap));
                 } else if !pending_tiles.0.contains_key(tile_coord) {
                     let url = tile_coord.url(basemap);
                     let tile_coord = *tile_coord;
@@ -161,7 +160,7 @@ pub fn show_tiles_sy(
         }
         if task.is_finished() {
             if matches!(future::block_on(task), Ok(())) {
-                commands.spawn(TileBundle::from_tile_coord(*tile_coord, &server, basemap));
+                commands.spawn(make_tile(*tile_coord, &server, basemap));
             }
             to_remove.push((*tile_coord, false));
         }

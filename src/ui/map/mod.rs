@@ -1,10 +1,10 @@
 use bevy::prelude::*;
+use zoom::Zoom;
 
 use crate::{
     state::IntoSystemConfigExt,
-    tile::zoom::Zoom,
     ui::{
-        tilemap::{settings::INIT_TILE_SETTINGS, tile::PendingTiles},
+        map::{settings::INIT_TILE_SETTINGS, tiles::PendingTiles},
         EguiContextPass, UiSet,
     },
 };
@@ -12,8 +12,10 @@ use crate::{
 pub mod mouse_nav;
 pub mod settings;
 pub mod settings_editor;
-pub mod tile;
+pub mod tiles;
+pub mod utils;
 pub mod window;
+pub mod zoom;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 enum RenderingSet {
@@ -41,7 +43,7 @@ impl Plugin for RenderingPlugin {
             )
             .add_systems(
                 EguiContextPass,
-                (tile::show_tiles_sy, settings_editor::tile_settings_dialog)
+                (tiles::show_tiles_sy, settings_editor::tile_settings_dialog)
                     .in_set(RenderingSet::Tiles),
             )
             .add_observer(settings_editor::on_tile_settings);

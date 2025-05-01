@@ -6,13 +6,12 @@ use crate::{
     init::load_assets::ImageAssets,
     misc_config::settings::MiscSettings,
     state::{EditorState, IntoSystemConfigExt},
-    tile::zoom::Zoom,
     ui::{
         cursor::{
             mouse_events::{on_emit_click2_down, on_emit_click2_up, Click2},
             mouse_pos::{MousePos, MousePosWorld},
         },
-        tilemap::{settings::TileSettings, window::PointerWithinTilemap},
+        map::{settings::TileSettings, window::PointerWithinTilemap, zoom::Zoom},
     },
 };
 

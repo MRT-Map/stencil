@@ -5,10 +5,10 @@ use crate::state::IntoSystemConfigExt;
 
 pub mod cursor;
 pub mod file_dialogs;
+pub mod map;
 pub mod notif;
 pub mod panel;
 pub mod popup;
-pub mod tilemap;
 
 #[derive(Default, Resource, PartialEq, Eq, Copy, Clone)]
 pub struct Focus(pub Option<egui::Id>);

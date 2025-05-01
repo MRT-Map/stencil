@@ -19,16 +19,15 @@ use crate::{
     misc_config::{settings::MiscSettings, settings_editor::MiscSettingsEditor},
     project::{project_editor::ProjectEditor, Namespaces},
     state::EditorState,
-    tile::zoom::Zoom,
     ui::{
         cursor::mouse_pos::MousePosWorld,
+        map::{
+            settings::TileSettings, settings_editor::TileSettingsEditor, tiles::PendingTiles,
+            window::Tilemap, zoom::Zoom,
+        },
         notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
         panel::status::Status,
         popup::Popups,
-        tilemap::{
-            settings::TileSettings, settings_editor::TileSettingsEditor, tile::PendingTiles,
-            window::Tilemap,
-        },
     },
     window::{settings::WindowSettings, settings_editor::WindowSettingsEditor},
 };

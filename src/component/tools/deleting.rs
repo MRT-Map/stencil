@@ -4,9 +4,7 @@ use crate::{
     component::pla2::{EditorCoords, PlaComponent},
     history::{HistoryEntry, HistoryEv},
     state::EditorState,
-    ui::{
-        cursor::mouse_events::Click2, panel::status::Status, tilemap::window::PointerWithinTilemap,
-    },
+    ui::{cursor::mouse_events::Click2, map::window::PointerWithinTilemap, panel::status::Status},
 };
 
 #[tracing::instrument(skip_all)]

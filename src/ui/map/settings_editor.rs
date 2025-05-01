@@ -13,9 +13,9 @@ use crate::{
     tile::tile_coord::URL_REPLACER,
     ui::{
         file_dialogs::FileDialogs,
+        map::settings::{Basemap, TileSettings},
         notif::{NotifLogRwLockExt, NOTIF_LOG},
         panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
-        tilemap::settings::{Basemap, TileSettings},
     },
 };
 

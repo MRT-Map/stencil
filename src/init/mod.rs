@@ -17,7 +17,7 @@ use crate::{
     init::load_fonts::get_fonts_sy,
     panic::ack_panic_sy,
     state::{on_state_change, EditorState, LoadingState},
-    ui::{panel::status::Status, tilemap::settings::INIT_TILE_SETTINGS},
+    ui::{map::settings::INIT_TILE_SETTINGS, panel::status::Status},
 };
 
 pub struct InitPlugin;

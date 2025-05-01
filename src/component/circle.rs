@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
-use crate::tile::zoom::Zoom;
+use crate::ui::map::zoom::Zoom;
 
 #[must_use]
-pub fn circle(zoom: &Zoom, center: Vec2, multiplier: f32, color: Color) -> (Shape, Transform) {
+pub fn make_circle(zoom: &Zoom, center: Vec2, multiplier: f32, color: Color) -> impl Bundle {
     (
         ShapeBuilder::with(&shapes::Circle {
             radius: 768.0 / zoom.0.exp2() * multiplier,

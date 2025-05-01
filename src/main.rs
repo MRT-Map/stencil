@@ -18,7 +18,7 @@ use tracing_error::ErrorLayer;
 use tracing_subscriber::{
     fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
-use ui::tilemap::RenderingPlugin;
+use ui::map::RenderingPlugin;
 
 #[cfg(debug_assertions)]
 use crate::inspector::InspectorPlugin;

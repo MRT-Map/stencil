@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::prelude::*;
 
 use crate::{
     component::{
@@ -9,8 +9,7 @@ use crate::{
     history::{HistoryEntry, HistoryEv},
     state::EditorState,
     ui::{
-        cursor::mouse_pos::MousePosWorld, panel::status::Status,
-        tilemap::window::PointerWithinTilemap,
+        cursor::mouse_pos::MousePosWorld, map::window::PointerWithinTilemap, panel::status::Status,
     },
 };
 

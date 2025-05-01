@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{component::actions::rendering::RenderEv, ui::tilemap::window::PointerWithinTilemap};
+use crate::{component::actions::rendering::RenderEv, ui::map::window::PointerWithinTilemap};
 
 #[tracing::instrument(skip_all)]
 pub fn on_hover_over(

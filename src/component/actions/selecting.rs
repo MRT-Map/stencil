@@ -6,9 +6,7 @@ use crate::{
         pla2::{EditorCoords, PlaComponent},
     },
     state::EditorState,
-    ui::{
-        cursor::mouse_events::Click2, panel::status::Status, tilemap::window::PointerWithinTilemap,
-    },
+    ui::{cursor::mouse_events::Click2, map::window::PointerWithinTilemap, panel::status::Status},
 };
 
 #[tracing::instrument(skip_all)]

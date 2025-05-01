@@ -3,21 +3,19 @@ use bevy::{
     prelude::*,
     render::primitives::Aabb,
 };
-use bevy_egui::EguiContextPass;
 use itertools::Itertools;
 
 use crate::{
     component::{
         actions::{hovering::HoveredComponent, selecting::SelectedComponent},
-        circle::circle,
+        circle::make_circle,
         pla2::{ComponentType, EditorCoords, HighlightExt, PlaComponent},
         skin::Skin,
         tools::creating::CreatedComponent,
     },
     misc_config::settings::MiscSettings,
     state::EditorState,
-    tile::zoom::Zoom,
-    ui::cursor::mouse_pos::MousePosWorld,
+    ui::{cursor::mouse_pos::MousePosWorld, map::zoom::Zoom},
 };
 
 #[tracing::instrument(skip_all)]
@@ -44,13 +42,13 @@ pub fn on_render(
     let ty = pla.get_type(&skin);
 
     let (mut shape, _) = pla.get_shape(&skin);
+    let (mut fill, mut stroke) = (pla.get_fill(&skin), pla.get_stroke(&skin));
     if selected.is_some() {
-        shape.fill = Some(pla.get_fill(&skin).select(ty).to_owned());
-        shape.stroke = Some(pla.get_stroke(&skin).select(ty).to_owned());
-    }
-    if hovered.is_some() && created.is_none() {
-        shape.fill = Some(pla.get_fill(&skin).hover(ty).to_owned());
-        shape.stroke = Some(pla.get_stroke(&skin).hover(ty).to_owned());
+        shape.fill = (fill.color != Color::NONE).then(|| fill.select(ty).to_owned());
+        shape.stroke = (stroke.color != Color::NONE).then(|| stroke.select(ty).to_owned());
+    } else if hovered.is_some() && created.is_none() {
+        shape.fill = (fill.color != Color::NONE).then(|| fill.hover(ty).to_owned());
+        shape.stroke = (stroke.color != Color::NONE).then(|| stroke.hover(ty).to_owned());
     }
     commands.entity(e).remove::<Aabb>().insert(shape);
 
@@ -72,7 +70,7 @@ pub fn on_render(
             .map(|coord| coord.0)
             .filter(filter_by_distance)
             .map(|coord| {
-                circle(
+                make_circle(
                     &zoom,
                     if ty == ComponentType::Point {
                         Vec2::ZERO
@@ -104,7 +102,7 @@ pub fn on_render(
         .map(|(c1, c2)| (c1.0 + c2.0) / 2)
         .filter(filter_by_distance)
         .map(|coord| {
-            circle(
+            make_circle(
                 &zoom,
                 coord.as_vec2(),
                 misc_settings.small_handle_size,
@@ -117,7 +115,7 @@ pub fn on_render(
         commands.entity(e).add_children(&more_children);
     } else if ty == ComponentType::Line && !pla.nodes.is_empty() && selected.is_some() {
         let start = commands
-            .spawn(circle(
+            .spawn(make_circle(
                 &zoom,
                 pla.nodes.first().unwrap().0.as_vec2(),
                 misc_settings.big_handle_size,
@@ -125,7 +123,7 @@ pub fn on_render(
             ))
             .id();
         let end = commands
-            .spawn(circle(
+            .spawn(make_circle(
                 &zoom,
                 pla.nodes.last().unwrap().0.as_vec2(),
                 misc_settings.big_handle_size,

@@ -6,7 +6,7 @@ use crate::{
     dirs_paths::cache_path,
     file::{load_toml, save_toml},
     project::project_editor::ProjectEditor,
-    ui::tilemap::{settings::Basemap, settings_editor::TileSettingsEditor},
+    ui::map::{settings::Basemap, settings_editor::TileSettingsEditor},
 };
 
 #[derive(Debug, Resource)]

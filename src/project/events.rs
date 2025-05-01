@@ -7,7 +7,7 @@ use itertools::Itertools;
 
 use crate::{
     component::{
-        bundle::ComponentBundle,
+        make_component,
         pla2::{EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
@@ -65,8 +65,8 @@ pub fn on_project(
                 &namespaces.dir.join(format!("{ns}.pla2.msgpack")),
                 Some("pla2"),
             ) {
-                for component in components {
-                    commands.spawn(ComponentBundle::new(component.to_editor_coords(), &skin));
+                for c in components {
+                    commands.spawn(make_component(c.to_editor_coords(), &skin));
                 }
                 if !history_invoked {
                     commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {

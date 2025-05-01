@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::prelude::*;
 use itertools::Itertools;
 
 use crate::{
@@ -10,11 +10,10 @@ use crate::{
     history::{HistoryEntry, HistoryEv},
     misc_config::settings::MiscSettings,
     state::EditorState,
-    tile::zoom::Zoom,
     ui::{
         cursor::{mouse_events::Click2, mouse_pos::MousePosWorld},
+        map::{window::PointerWithinTilemap, zoom::Zoom},
         panel::status::Status,
-        tilemap::window::PointerWithinTilemap,
     },
 };
 

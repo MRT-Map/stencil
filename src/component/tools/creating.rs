@@ -4,7 +4,7 @@ use rand::distr::{Alphanumeric, SampleString};
 use crate::{
     component::{
         actions::{rendering::RenderEv, selecting::SelectEv},
-        bundle::ComponentBundle,
+        make_component,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -13,8 +13,8 @@ use crate::{
     state::EditorState,
     ui::{
         cursor::{mouse_events::Click2, mouse_pos::MousePosWorld},
+        map::window::PointerWithinTilemap,
         panel::status::Status,
-        tilemap::window::PointerWithinTilemap,
     },
 };
 
@@ -66,30 +66,27 @@ pub fn on_point_left_click(
         .xy()
         .round()
         .as_ivec2();
-    let new_point = ComponentBundle::new(
+    let pla = {
+        let mut point = PlaComponent::new(ComponentType::Point);
+        point.nodes.push(node.into());
+        if !namespaces
+            .visibilities
+            .get(&namespaces.prev_used)
+            .copied()
+            .unwrap_or_default()
         {
-            let mut point = PlaComponent::new(ComponentType::Point);
-            point.nodes.push(node.into());
-            if !namespaces
-                .visibilities
-                .get(&namespaces.prev_used)
-                .copied()
-                .unwrap_or_default()
-            {
-                namespaces.prev_used = "_misc".into();
-            }
-            namespaces.prev_used.clone_into(&mut point.namespace);
-            point.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
-            point
-        },
-        &skin,
-    );
+            namespaces.prev_used = "_misc".into();
+        }
+        namespaces.prev_used.clone_into(&mut point.namespace);
+        point.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
+        point
+    };
+    let new_point = make_component(pla.clone(), &skin);
     debug!("Placing new point at {node:?}");
-    status.0 = format!("Created new point {} at {:?}", new_point.pla, node).into();
+    status.0 = format!("Created new point {pla} at {node:?}").into();
 
     commands.trigger(SelectEv::DeselectAll);
 
-    let pla = new_point.pla.clone();
     let e = commands.spawn(new_point).id();
     commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
         e,
@@ -161,7 +158,7 @@ pub fn on_line_area_left_click(
         debug!("Starting new {ty_text} at {new:?}");
         status.0 = format!("Starting new {ty_text} at {new:?}",).into();
         commands
-            .spawn(ComponentBundle::new(pla, &skin))
+            .spawn(make_component(pla, &skin))
             .insert(CreatedComponent);
     }
 }
