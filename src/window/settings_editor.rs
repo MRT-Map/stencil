@@ -43,7 +43,7 @@ impl DockWindow for WindowSettingsEditor {
                 data_path("window_settings.toml").to_string_lossy()
             ),
         );
-        ui.label("Changes will come into affect on the next launch of Stencil2");
+        ui.label("Changes will come into effect on the next launch of Stencil2");
         ui.label("If Stencil2 crashes the next time after changing anything here, you will have to edit the TOML file manually, good luck :)");
         ui.separator();
         ui.label("Enabled backends: Stencil2 will use one of these to render the window");

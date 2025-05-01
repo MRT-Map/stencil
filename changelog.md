@@ -9,7 +9,7 @@
 * Upgrade `bevy` to v0.15
   * This involves major internal refactors
   * Slight movements between mouse down and up will no longer count as a click
-* Upgrade `egui_dock` to v0.16, close buttons are now available on the top-right corner of windows
+* Upgrade `egui_dock` to v0.16, close buttons are now available in the top-right corner of windows
 * if the cursor in creation modes is not hidden, a cell cursor is shown instead of a default pointer
 * Moving components now snap them to the grid
 * Make node-editing circle black instead of grey
@@ -71,10 +71,10 @@
 * Added green and red circles on start and end of line components respectively to show line direction
   * First and last coordinates in the component editor are also green and red respectively for line components
 * If the skin type of a loaded component is invalid, now tries to guess whether it is a point, line or area depending on the nature of the nodes, instead of crashing
-* Size of handles in node editing are now independent of the width of the component
+* Size of handles in node editing is now independent of the width of the component
 * Added safe deleting, moving and writing of all files: now backs old versions up to a cache directory
 * Added caching of skin JSON file
-* Added Apple silicon support in `dmg` file
+* Added Apple Silicon support in `dmg` file
 
 # v2.1.3
 * Upgrade `bevy` to v0.13
@@ -84,7 +84,7 @@
 # v2.1.2
 * Upgrade `bevy` to v0.12 (painfully)
 * No longer able to move the component in node-editing mode, go to select mode to do that
-* No longer able to select a line from its center like an area
+* No longer able to select a line from its centre like an area
 * Update default tile URL for Minecart Rapid Transit
 
 # v2.1.1
@@ -98,7 +98,7 @@
 * Settings files are saved as toml instead of msgpack
 * Moved manual online
 * Now recognises `RUST_LOG` environment variable
-* Now shows more licenses from dependencies
+* Now shows more licences from dependencies
 * Tile cache is moved from data folder to cache folder
 
 # v2.0.5
