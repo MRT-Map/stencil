@@ -192,7 +192,7 @@ pub fn on_edit_nodes(
         EditNodesEv::ClearEventData => {
             commands
                 .entity(e)
-                .remove::<(Aabb, NodeEditData)>()
+                .remove::<NodeEditData>()
                 .trigger(RenderEv::default());
             commands.trigger(HistoryEv::one_history(HistoryEntry::Component {
                 e,

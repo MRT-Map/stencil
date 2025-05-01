@@ -13,7 +13,6 @@ use crate::{
             mouse_pos::{MousePos, MousePosWorld},
         },
         tilemap::{settings::TileSettings, window::PointerWithinTilemap},
-        EguiContextPass, UiSet,
     },
 };
 
@@ -115,10 +114,7 @@ impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MousePos>()
             .init_resource::<MousePosWorld>()
-            .add_systems(
-                EguiContextPass,
-                (mouse_events::emit_deselect_click_sy,).in_set(UiSet::Mouse),
-            )
+            .add_systems(First, (mouse_events::emit_deselect_click_sy,))
             .add_event::<Pointer<Click2>>()
             .add_observer(on_emit_click2_down)
             .add_observer(on_emit_click2_up)

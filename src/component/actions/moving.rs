@@ -114,7 +114,7 @@ pub fn on_right_click_drag_end(
     }));
     commands
         .entity(e)
-        .remove::<(Aabb, MoveData)>()
+        .remove::<MoveData>()
         .trigger(RenderEv::default());
     status.0 = format!("Moved component {}", &*pla).into();
     info!("Ended move");

@@ -5,12 +5,11 @@ use crate::{component::actions::rendering::RenderEv, ui::tilemap::window::Pointe
 #[tracing::instrument(skip_all)]
 pub fn on_hover_over(
     trigger: Trigger<Pointer<Over>>,
-    pickables: Query<(), With<Pickable>>,
     mut commands: Commands,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     let e = trigger.target();
-    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     debug!(?e, "Hovering over component");
@@ -23,12 +22,11 @@ pub fn on_hover_over(
 #[tracing::instrument(skip_all)]
 pub fn on_hover_out(
     trigger: Trigger<Pointer<Out>>,
-    pickables: Query<(), With<Pickable>>,
     mut commands: Commands,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     let e = trigger.target();
-    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
+    if pointer_within_tilemap.is_none() {
         return;
     }
     debug!(?e, "Hovering out of component");

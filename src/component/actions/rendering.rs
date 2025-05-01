@@ -1,6 +1,7 @@
 use bevy::{
     color::palettes::basic::{BLACK, LIME, RED},
     prelude::*,
+    render::primitives::Aabb,
 };
 use bevy_egui::EguiContextPass;
 use itertools::Itertools;
@@ -11,6 +12,7 @@ use crate::{
         circle::circle,
         pla2::{ComponentType, EditorCoords, HighlightExt, PlaComponent},
         skin::Skin,
+        tools::creating::CreatedComponent,
     },
     misc_config::settings::MiscSettings,
     state::EditorState,
@@ -27,6 +29,7 @@ pub fn on_render(
         &mut PlaComponent<EditorCoords>,
         Option<&HoveredComponent>,
         Option<&SelectedComponent>,
+        Option<&CreatedComponent>,
     )>,
     zoom: Res<Zoom>,
     misc_settings: Res<MiscSettings>,
@@ -34,7 +37,7 @@ pub fn on_render(
     mouse_pos_world: Res<MousePosWorld>,
 ) {
     let e = trigger.target();
-    let Ok((pla, hovered, selected)) = query.get(e) else {
+    let Ok((pla, hovered, selected, created)) = query.get(e) else {
         return;
     };
     let pla = trigger.0.as_ref().unwrap_or(pla);
@@ -45,11 +48,11 @@ pub fn on_render(
         shape.fill = Some(pla.get_fill(&skin).select(ty).to_owned());
         shape.stroke = Some(pla.get_stroke(&skin).select(ty).to_owned());
     }
-    if hovered.is_some() {
+    if hovered.is_some() && created.is_none() {
         shape.fill = Some(pla.get_fill(&skin).hover(ty).to_owned());
         shape.stroke = Some(pla.get_stroke(&skin).hover(ty).to_owned());
     }
-    commands.entity(e).insert(shape);
+    commands.entity(e).remove::<Aabb>().insert(shape);
 
     commands.entity(e).despawn_related::<Children>();
     if *state == EditorState::EditingNodes && selected.is_some() {
@@ -146,7 +149,7 @@ pub struct RenderComponentPlugin;
 impl Plugin for RenderComponentPlugin {
     fn build(&self, app: &mut App) {
         app.add_observer(on_render).add_systems(
-            EguiContextPass,
+            Update,
             rerender_selected_sy.run_if(
                 resource_changed::<Zoom>
                     .or(in_state(EditorState::EditingNodes).and(resource_changed::<MousePosWorld>))
