@@ -1,4 +1,7 @@
-use bevy::{prelude::*, window::WindowMode};
+use bevy::{
+    prelude::*,
+    window::{VideoMode, WindowMode},
+};
 use bevy_egui::egui;
 use serde::{Deserialize, Serialize};
 
@@ -72,12 +75,7 @@ impl DockWindow for WindowSettingsEditor {
         );
         ui.radio_value(
             &mut window_settings.window_mode,
-            WindowMode::SizedFullscreen(MonitorSelection::Current),
-            "Sized Fullscreen",
-        );
-        ui.radio_value(
-            &mut window_settings.window_mode,
-            WindowMode::Fullscreen(MonitorSelection::Current),
+            WindowMode::Fullscreen(MonitorSelection::Current, VideoModeSelection::Current),
             "Fullscreen",
         );
 

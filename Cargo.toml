@@ -3,17 +3,19 @@ name = "stencil2"
 version = "2.2.5"
 edition = "2021"
 description = "Map editor for MRT Map data"
-authors = ["7d <i.third.7d@protonmail.com>"]
+authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"
+homepage = "https://mrt-map.github.io/stencil2"
 repository = "https://github.com/mrt-map/stencil2"
+documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
-keywords = ["stencil", "stencil2", "mrt-map", "mrt-mapping-services"]
+keywords = ["stencil", "stencil2", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.15.3"
+version = "0.16.0"
 default-features = false
 features = [
     "bevy_sprite",
@@ -33,11 +35,11 @@ features = [
 ]
 
 [dependencies]
-bevy_prototype_lyon = "0.13.0"
-bevy_asset_loader = "0.22.0"
-bevy-inspector-egui = "0.30.0"
+bevy_prototype_lyon = { git = "https://github.com/Nilirad/bevy_prototype_lyon", branch = "v0.14-update" }
+bevy_asset_loader = "0.23.0-rc.3"
+bevy-inspector-egui = "0.31.0"
 
-bevy_egui = "0.33.0"
+bevy_egui = "0.34.1"
 egui_commonmark = "0.20.0"
 egui_extras = "0.31.1"
 egui_dock = { version = "0.16.0", features = ["serde"] }
@@ -54,26 +56,26 @@ surf = "2.3.2"
 async-fs = "2.1.2"
 futures-lite = "2.6.0"
 async-lock = "3.4.0"
-async-executor = "1.13.1"
+async-executor = "1.13.2"
 
 backtrace = "0.3.74"
 color-backtrace = "0.7.0"
 
 serde = { version = "1.0.219", features = ["derive"] }
 rmp-serde = "1.3.0"
-toml = "0.8.20"
+toml = "0.8.22"
 
 dirs = "6.0.0"
 zip = "2.6.1"
 image = "0.25.6"
-winit = "0.30.9"
-chrono = "0.4.40"
+winit = "0.30.10"
+chrono = "0.4.41"
 
 hex_color = { version = "3.0.0", features = ["serde"] }
 base64-serde = "0.8.0"
 base64 = "0.22.1"
 itertools = "0.14.0"
-rand = "0.9.0"
+rand = "0.9.1"
 lazy-regex = { git = "https://github.com/Rastler3D/lazy-regex", branch = "use-std-lazylock" }
 enum_dispatch = "0.3.13"
 eyre = "0.6.12"
@@ -164,4 +166,4 @@ verbose_file_reads = "warn"
 
 type_complexity = { level="allow", priority = 1 }
 too_many_lines = { level="allow", priority = 1 }
-too_many_arguments = {level="allow", priority = 1 }
+too_many_arguments = { level="allow", priority = 1 }

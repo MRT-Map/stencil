@@ -35,15 +35,15 @@ pub fn crosshair_sy(
     tile_settings: Res<TileSettings>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
-) {
+) -> Result {
     if state.component_type().is_none()
         || (state.component_type().is_some() && pointer_within_tilemap.is_none())
     {
         for (e, _, _) in ch.iter() {
             debug!("Despawning crosshair");
-            commands.entity(e).despawn_recursive();
+            commands.entity(e).despawn();
         }
-        return;
+        return Ok(());
     }
 
     let translation = mouse_pos_world.round();
@@ -68,10 +68,11 @@ pub fn crosshair_sy(
             .insert(Crosshair);
     } else {
         trace!("Updating crosshair location");
-        let (_, mut transform, mut sprite) = ch.single_mut();
+        let (_, mut transform, mut sprite) = ch.single_mut()?;
         *transform = new_transform;
         sprite.custom_size = new_custom_size;
     }
+    Ok(())
 }
 
 #[tracing::instrument(skip_all)]

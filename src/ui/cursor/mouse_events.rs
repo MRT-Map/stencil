@@ -28,13 +28,13 @@ pub struct MiddleClick(pub Click2);
 pub struct RightClick(pub Click2);
 
 #[tracing::instrument(skip_all)]
-pub fn on_emit_click2_down(trigger: Trigger<Pointer<Down>>, mut commands: Commands) {
+pub fn on_emit_click2_down(trigger: Trigger<Pointer<Pressed>>, mut commands: Commands) {
     let event = Click2 {
         button: trigger.event.button,
         hit: trigger.event.hit.clone(),
         location: trigger.pointer_location.clone(),
     };
-    let mut command = commands.entity(trigger.entity());
+    let mut command = commands.entity(trigger.target());
     match trigger.event.button {
         PointerButton::Primary => command.insert(LeftClick(event)),
         PointerButton::Middle => command.insert(MiddleClick(event)),
@@ -44,7 +44,7 @@ pub fn on_emit_click2_down(trigger: Trigger<Pointer<Down>>, mut commands: Comman
 
 #[tracing::instrument(skip_all)]
 pub fn on_emit_click2_up(
-    trigger: Trigger<Pointer<Up>>,
+    trigger: Trigger<Pointer<Released>>,
     left_click: Query<&LeftClick>,
     middle_click: Query<&MiddleClick>,
     right_click: Query<&RightClick>,
@@ -52,16 +52,16 @@ pub fn on_emit_click2_up(
     mut event_writer: EventWriter<Pointer<Click2>>,
 ) {
     let Ok(click_data) = (match trigger.button {
-        PointerButton::Primary => left_click.get(trigger.entity()).map(|a| {
-            commands.entity(trigger.entity()).remove::<LeftClick>();
+        PointerButton::Primary => left_click.get(trigger.target()).map(|a| {
+            commands.entity(trigger.target()).remove::<LeftClick>();
             &a.0
         }),
-        PointerButton::Middle => middle_click.get(trigger.entity()).map(|a| {
-            commands.entity(trigger.entity()).remove::<MiddleClick>();
+        PointerButton::Middle => middle_click.get(trigger.target()).map(|a| {
+            commands.entity(trigger.target()).remove::<MiddleClick>();
             &a.0
         }),
-        PointerButton::Secondary => right_click.get(trigger.entity()).map(|a| {
-            commands.entity(trigger.entity()).remove::<RightClick>();
+        PointerButton::Secondary => right_click.get(trigger.target()).map(|a| {
+            commands.entity(trigger.target()).remove::<RightClick>();
             &a.0
         }),
     }) else {
@@ -72,13 +72,13 @@ pub fn on_emit_click2_up(
     }
 
     let event = Pointer::new(
-        trigger.entity(),
         trigger.pointer_id,
         trigger.pointer_location.clone(),
+        trigger.target(),
         click_data.to_owned(),
     );
-    event_writer.send(event.clone());
-    commands.trigger_targets(event, trigger.entity());
+    event_writer.write(event.clone());
+    commands.trigger_targets(event, trigger.target());
 }
 
 #[tracing::instrument(skip_all)]
@@ -86,7 +86,7 @@ pub fn emit_deselect_click_sy(
     mut click_event: ParamSet<(EventReader<Pointer<Click2>>, EventWriter<Pointer<Click2>>)>,
     mut commands: Commands,
     mut input_event: EventReader<PointerInput>,
-    pickables: Query<(), With<RayCastPickable>>,
+    pickables: Query<(), With<Pickable>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     mouse_pos_world: Res<MousePosWorld>,
     mut old_locations: Local<HashMap<PointerButton, Location>>,
@@ -102,11 +102,7 @@ pub fn emit_deselect_click_sy(
     let inputs = input_event.read().collect::<Vec<_>>();
     for button in PointerButton::iter() {
         if let Some(input) = inputs.iter().find(|a| {
-            if let PointerAction::Pressed {
-                direction: PressDirection::Down,
-                button: b,
-            } = a.action
-            {
+            if let PointerAction::Press(b) = a.action {
                 b == button
             } else {
                 false
@@ -117,11 +113,7 @@ pub fn emit_deselect_click_sy(
         if let Some((input, old_location)) = inputs
             .iter()
             .find(|a| {
-                if let PointerAction::Pressed {
-                    direction: PressDirection::Up,
-                    button: b,
-                } = a.action
-                {
+                if let PointerAction::Release(b) = a.action {
                     b == button
                 } else {
                     false
@@ -134,9 +126,9 @@ pub fn emit_deselect_click_sy(
             {
                 debug!(?button, "Click on no component detected");
                 let event = Pointer::new(
-                    Entity::PLACEHOLDER,
                     input.pointer_id,
                     input.location.clone(),
+                    Entity::PLACEHOLDER,
                     Click2 {
                         button,
                         location: input.location.clone(),
@@ -148,7 +140,7 @@ pub fn emit_deselect_click_sy(
                         ),
                     },
                 );
-                click_event.p1().send(event.clone());
+                click_event.p1().write(event.clone());
                 commands.trigger(event);
             }
         }

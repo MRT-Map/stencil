@@ -4,7 +4,7 @@ use rand::distr::{Alphanumeric, SampleString};
 use crate::{
     component::{
         actions::{rendering::RenderEv, selecting::SelectEv},
-        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
+        bundle::ComponentBundle,
         pla2::{ComponentType, EditorCoords, PlaComponent},
         skin::Skin,
     },
@@ -44,7 +44,7 @@ const ANGLE_VECTORS: [Vec2; 20] = [
 #[tracing::instrument(skip_all)]
 pub fn on_point_left_click(
     trigger: Trigger<Pointer<Click2>>,
-    pickables: Query<(), With<RayCastPickable>>,
+    pickables: Query<(), With<Pickable>>,
     mut commands: Commands,
     skin: Res<Skin>,
     mut namespaces: ResMut<Namespaces>,
@@ -54,7 +54,7 @@ pub fn on_point_left_click(
 ) {
     if pointer_within_tilemap.is_none()
         || **state != EditorState::CreatingPoint
-        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+        || trigger.target() != Entity::PLACEHOLDER && !pickables.contains(trigger.target())
     {
         return;
     }
@@ -66,7 +66,7 @@ pub fn on_point_left_click(
         .xy()
         .round()
         .as_ivec2();
-    let new_point = PointComponentBundle::new(
+    let new_point = ComponentBundle::new(
         {
             let mut point = PlaComponent::new(ComponentType::Point);
             point.nodes.push(node.into());
@@ -101,7 +101,7 @@ pub fn on_point_left_click(
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_left_click(
     trigger: Trigger<Pointer<Click2>>,
-    pickables: Query<(), With<RayCastPickable>>,
+    pickables: Query<(), With<Pickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
     mut set: CreatedQuery,
@@ -111,7 +111,7 @@ pub fn on_line_area_left_click(
 ) {
     if pointer_within_tilemap.is_none()
         || trigger.button != PointerButton::Primary
-        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+        || trigger.target() != Entity::PLACEHOLDER && !pickables.contains(trigger.target())
     {
         return;
     }
@@ -131,11 +131,11 @@ pub fn on_line_area_left_click(
         .xy()
         .round()
         .as_ivec2();
-    if let Ok((e, mut pla)) = set.get_single_mut() {
+    if let Ok((e, mut pla)) = set.single_mut() {
         if pla.nodes.last().map(|a| a.0) == Some(new) {
             pla.nodes.pop();
             if pla.nodes.is_empty() {
-                commands.entity(e).despawn_recursive();
+                commands.entity(e).despawn();
                 return;
             }
         } else {
@@ -160,26 +160,23 @@ pub fn on_line_area_left_click(
         };
         debug!("Starting new {ty_text} at {new:?}");
         status.0 = format!("Starting new {ty_text} at {new:?}",).into();
-        if ty_text == "area" {
-            commands.spawn(AreaComponentBundle::new(pla, &skin))
-        } else {
-            commands.spawn(LineComponentBundle::new(pla, &skin))
-        }
-        .insert(CreatedComponent);
+        commands
+            .spawn(ComponentBundle::new(pla, &skin))
+            .insert(CreatedComponent);
     }
 }
 
 #[tracing::instrument(skip_all)]
 pub fn on_line_area_right_click(
     trigger: Trigger<Pointer<Click2>>,
-    pickables: Query<(), With<RayCastPickable>>,
+    pickables: Query<(), With<Pickable>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
     if pointer_within_tilemap.is_none()
         || trigger.button != PointerButton::Secondary
-        || trigger.entity() != Entity::PLACEHOLDER && !pickables.contains(trigger.entity())
+        || trigger.target() != Entity::PLACEHOLDER && !pickables.contains(trigger.target())
         || ![EditorState::CreatingArea, EditorState::CreatingLine].contains(&state)
     {
         return;
@@ -196,7 +193,7 @@ pub fn create_component_sy(
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    let Ok((e, pla)) = set.get_single() else {
+    let Ok((e, pla)) = set.single() else {
         return;
     };
     let mut pla = (*pla).clone();
@@ -227,12 +224,12 @@ pub fn on_clear_created_component(
     mut namespaces: ResMut<Namespaces>,
     mut status: ResMut<Status>,
 ) {
-    let Ok((e, mut pla)) = created_query.get_single_mut() else {
+    let Ok((e, mut pla)) = created_query.single_mut() else {
         return;
     };
     debug!(?e, "Clearing CreatedComponent marker");
     if pla.nodes.len() == 1 {
-        commands.entity(e).despawn_recursive();
+        commands.entity(e).despawn();
         status.0 = "Cancelled component creation".into();
     } else {
         if !namespaces

@@ -29,7 +29,7 @@ pub struct NodeEditData {
 
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_down(
-    trigger: Trigger<Pointer<Down>>,
+    trigger: Trigger<Pointer<Pressed>>,
     mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
@@ -46,7 +46,7 @@ pub fn on_node_edit_right_down(
     {
         return;
     }
-    let Ok((e, mut pla)) = selected.get_single_mut() else {
+    let Ok((e, mut pla)) = selected.single_mut() else {
         return;
     };
 
@@ -113,7 +113,7 @@ pub fn on_node_edit_right_down(
 
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_up(
-    trigger: Trigger<Pointer<Up>>,
+    trigger: Trigger<Pointer<Released>>,
     mut selected: Query<
         (Entity, &mut PlaComponent<EditorCoords>),
         (With<SelectedComponent>, With<NodeEditData>),
@@ -129,7 +129,7 @@ pub fn on_node_edit_right_up(
     {
         return;
     }
-    let Ok((e, pla)) = selected.get_single_mut() else {
+    let Ok((e, pla)) = selected.single_mut() else {
         return;
     };
 
@@ -158,7 +158,7 @@ pub fn on_node_edit_right_click(
     {
         return;
     }
-    let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, mut pla, orig)) = selected.single_mut() else {
         return;
     };
 
@@ -171,7 +171,7 @@ pub fn on_node_edit_right_click(
     if pla.nodes.len() < 2 {
         info!(?e, "Deleting entity");
         status.0 = format!("Deleting {}", &*pla).into();
-        commands.entity(e).despawn_recursive();
+        commands.entity(e).despawn();
     } else {
         commands.entity(e).trigger(RenderEv::default());
     }
@@ -185,7 +185,7 @@ pub fn on_edit_nodes(
     >,
     mut commands: Commands,
 ) {
-    let Ok((e, pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, pla, orig)) = selected.single_mut() else {
         return;
     };
     match trigger.event() {
@@ -212,7 +212,7 @@ pub fn move_selected_node_sy(
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    let Ok((e, mut pla, orig)) = selected.get_single_mut() else {
+    let Ok((e, mut pla, orig)) = selected.single_mut() else {
         return;
     };
 

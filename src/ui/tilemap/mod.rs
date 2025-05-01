@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    state::IntoSystemSetConfigExt,
+    state::IntoSystemConfigExt,
     tile::zoom::Zoom,
     ui::{
         tilemap::{settings::INIT_TILE_SETTINGS, tile::PendingTiles},

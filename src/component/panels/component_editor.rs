@@ -32,7 +32,7 @@ impl DockWindow for ComponentEditor {
             ui.heading("Select a component...");
             return;
         }
-        let (e, mut component_data) = selected.single_mut();
+        let (e, mut component_data) = selected.single_mut().unwrap();
         let old_data = component_data.to_owned();
         ui.heading("Edit component data");
         ui.end_row();

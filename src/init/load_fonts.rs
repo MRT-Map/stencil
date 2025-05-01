@@ -10,10 +10,10 @@ use crate::{
     ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
 };
 
-pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) {
+pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) -> Result {
     info!("Loading fonts");
     let mut fonts = HashMap::new();
-    for result in data_dir("fonts").read_dir().unwrap() {
+    for result in data_dir("fonts").read_dir()? {
         let Ok(result) = result else { continue };
         if result.path().extension() != Some("ttf".as_ref())
             && result.path().extension() != Some("otf".as_ref())
@@ -62,4 +62,5 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) {
     ctx.ctx_mut().set_fonts(font_definitions);
 
     commands.insert_resource(NextState::Pending(LoadingState::LoadFonts.next()));
+    Ok(())
 }

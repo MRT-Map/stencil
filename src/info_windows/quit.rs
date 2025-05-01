@@ -19,7 +19,7 @@ pub fn on_quit(
             if components.is_empty() || cfg!(debug_assertions) {
                 commands.trigger(InfoWindowsEv::Quit(true));
             } else {
-                popup.send(Popup::base_confirm(
+                popup.write(Popup::base_confirm(
                     "confirm_quit",
                     "Are you sure you want to exit?",
                     "You may have unsaved changes",
@@ -28,7 +28,7 @@ pub fn on_quit(
             }
         }
         InfoWindowsEv::Quit(true) => {
-            exit.send(AppExit::Success);
+            exit.write(AppExit::Success);
         }
         _ => {}
     }

@@ -20,7 +20,7 @@ impl DockWindow for ComponentList {
         let PanelParams {
             queries, camera, ..
         } = params;
-        let mut transform = camera.single_mut();
+        let mut transform = camera.single_mut().unwrap();
         let query = queries.p1();
         let components = query.iter().into_group_map_by(|a| a.namespace.clone());
         for (ns, components) in components.iter().sorted_by_key(|(a, _)| *a) {

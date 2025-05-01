@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
-use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
+use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use egui_notify::ToastLevel;
 use itertools::Itertools;
 
 use crate::{
     component::{
-        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
+        bundle::ComponentBundle,
         pla2::{ComponentType, EditorCoords, MCCoords, PlaComponent},
         skin::Skin,
     },
@@ -66,20 +66,7 @@ pub fn on_project(
                 Some("pla2"),
             ) {
                 for component in components {
-                    match component.get_type(&skin) {
-                        ComponentType::Point => commands.spawn(PointComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
-                        ComponentType::Line => commands.spawn(LineComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
-                        ComponentType::Area => commands.spawn(AreaComponentBundle::new(
-                            component.to_editor_coords(),
-                            &skin,
-                        )),
-                    };
+                    commands.spawn(ComponentBundle::new(component.to_editor_coords(), &skin));
                 }
                 if !history_invoked {
                     commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
@@ -119,7 +106,7 @@ pub fn on_project(
                 return;
             }
             for (e, _) in components {
-                commands.entity(e).despawn_recursive();
+                commands.entity(e).despawn();
             }
             if !history_invoked {
                 commands.trigger(HistoryEv::one_history(HistoryEntry::Namespace {
@@ -182,7 +169,7 @@ pub fn on_project(
             }
         }
         ProjectEv::Delete(ns, false) => {
-            popup.send(Popup::base_confirm(
+            popup.write(Popup::base_confirm(
                 "confirm_delete_ns",
                 format!("Are you sure you want to delete namespace {ns}?"),
                 "",
@@ -218,7 +205,7 @@ pub fn on_project(
             dir.clone_into(&mut namespaces.dir);
             namespaces.visibilities.clear();
             for (e, _) in query.iter() {
-                commands.entity(e).despawn_recursive();
+                commands.entity(e).despawn();
             }
             commands.trigger(ProjectEv::Reload);
         }
@@ -241,7 +228,7 @@ pub fn project_dialog(
         if namespaces.dir == Namespaces::default().dir {
             commands.trigger(ProjectEv::Load(file, true));
         } else {
-            popup.send(Popup::base_choose(
+            popup.write(Popup::base_choose(
                 "save-before-switching",
                 "Save before switching projects?",
                 "",

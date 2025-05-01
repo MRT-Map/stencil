@@ -34,7 +34,7 @@ pub fn on_right_click_drag(
     {
         return;
     }
-    let Ok((mut transform, move_data)) = query.get_mut(trigger.entity()) else {
+    let Ok((mut transform, move_data)) = query.get_mut(trigger.target()) else {
         return;
     };
 
@@ -60,7 +60,7 @@ pub fn on_right_click_drag_start(
     {
         return;
     }
-    let e = trigger.entity();
+    let e = trigger.target();
     let Ok((pla, transform)) = query.get(e) else {
         return;
     };
@@ -92,7 +92,7 @@ pub fn on_right_click_drag_end(
     {
         return;
     }
-    let e = trigger.entity();
+    let e = trigger.target();
     let Ok((mut transform, mut pla, move_data)) = query.get_mut(e) else {
         return;
     };

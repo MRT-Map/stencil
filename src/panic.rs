@@ -36,7 +36,7 @@ pub fn panic(panic: &PanicHookInfo) {
         "panic-{}.txt",
         SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or_default()
             .as_secs()
     ));
     let _ = std::fs::write(
@@ -66,7 +66,7 @@ pub fn ack_panic_sy(mut popup: EventWriter<Popup>) {
         },
     };
     let _ = safe_delete(&to_show_file, Some("to_show file"));
-    popup.send(Popup::base_alert(
+    popup.write(Popup::base_alert(
         "ack_panic",
         "Panic",
         format!(

@@ -24,8 +24,8 @@ pub fn get_shown_tiles<R: QueryFilter>(
     q_camera: &Query<(&Camera, Ref<Transform>), R>,
     zoom: i8,
     basemap: &Basemap,
-) -> Vec<TileCoord> {
-    let (camera, transform) = q_camera.single();
+) -> Result<Vec<TileCoord>> {
+    let (camera, transform) = q_camera.single()?;
     let (c_left, c_top, c_right, c_bottom) = get_map_coords_of_edges(camera, &transform);
     let TileCoord {
         x: t_left,
@@ -48,7 +48,7 @@ pub fn get_shown_tiles<R: QueryFilter>(
         basemap,
     );
 
-    (t_left - 1..=t_right + 1)
+    Ok((t_left - 1..=t_right + 1)
         .flat_map(|x| {
             (t_top - 1..=t_bottom + 1)
                 .map(|y| TileCoord {
@@ -58,7 +58,7 @@ pub fn get_shown_tiles<R: QueryFilter>(
                 })
                 .collect::<Vec<_>>()
         })
-        .collect()
+        .collect())
 }
 
 #[derive(Resource, Default)]
@@ -75,21 +75,21 @@ pub fn show_tiles_sy(
     mut pending_tiles: ResMut<PendingTiles>,
     mut old_basemap: Local<Basemap>,
     mut executor: Local<Option<Executor>>,
-) {
+) -> Result {
     if q_camera.is_empty() {
-        return;
+        return Ok(());
     }
     let basemap = &tile_settings.basemaps[0];
     if *basemap != *old_basemap {
         for (e, _) in &query {
-            commands.entity(e).despawn_recursive();
+            commands.entity(e).despawn();
         }
         pending_tiles.0.clear();
     }
     basemap.clone_into(&mut old_basemap);
 
-    let (camera, transform) = q_camera.single();
-    let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, basemap);
+    let (camera, transform) = q_camera.single()?;
+    let mut shown_tiles = get_shown_tiles(&q_camera, zoom.0.round() as i8, basemap)?;
     let executor = executor.get_or_insert_with(Executor::new);
     executor.try_tick();
     if !transform.is_changed() {
@@ -107,7 +107,7 @@ pub fn show_tiles_sy(
                     && !shown_tiles.contains(tile_coord))
             {
                 trace!("Hiding {tile_coord}");
-                commands.entity(e).despawn_recursive();
+                commands.entity(e).despawn();
             } else {
                 shown_tiles.retain(|t| t != tile_coord);
                 trace!("Showing {tile_coord}");
@@ -175,4 +175,5 @@ pub fn show_tiles_sy(
         }
     }
     //server.free_unused_assets();
+    Ok(())
 }

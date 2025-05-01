@@ -28,7 +28,7 @@ pub fn on_select_left_click(
         return;
     }
 
-    let e = trigger.entity();
+    let e = trigger.target();
     if e == Entity::PLACEHOLDER {
         info!("Selected nothing, deselecting");
         commands.trigger(SelectEv::DeselectAll);
@@ -48,7 +48,7 @@ pub fn on_select(
         Query<Entity, With<SelectedComponent>>,
     )>,
 ) {
-    let e = trigger.entity();
+    let e = trigger.target();
     if e == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {
         return;
     }

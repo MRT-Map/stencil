@@ -6,11 +6,11 @@ pub fn spawn_camera_sy(mut commands: Commands) {
     info!("Spawning camera");
     commands.spawn((
         Camera2d,
-        OrthographicProjection {
+        Projection::Orthographic(OrthographicProjection {
             far: 1e5,
             ..OrthographicProjection::default_2d()
-        },
-        RayCastPickable,
+        }),
+        MeshPickingCamera,
     ));
     //.insert(UiCameraConfig { show_ui: true })
     //.insert(RaycastPickCamera::default())

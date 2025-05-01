@@ -2,7 +2,7 @@ use bevy::{
     color::palettes::basic::{BLACK, LIME, RED},
     prelude::*,
 };
-use bevy_prototype_lyon::draw::{Fill, Stroke};
+use bevy_prototype_lyon::prelude::*;
 use itertools::Itertools;
 
 use crate::{
@@ -25,7 +25,6 @@ pub fn on_render(
     skin: Res<Skin>,
     query: Query<(
         &mut PlaComponent<EditorCoords>,
-        &Transform,
         Option<&HoveredComponent>,
         Option<&SelectedComponent>,
     )>,
@@ -34,42 +33,25 @@ pub fn on_render(
     state: Res<State<EditorState>>,
     mouse_pos_world: Res<MousePosWorld>,
 ) {
-    let e = trigger.entity();
-    let Ok((pla, transform, hovered, selected)) = query.get(e) else {
+    let e = trigger.target();
+    let Ok((pla, hovered, selected)) = query.get(e) else {
         return;
     };
     let pla = trigger.0.as_ref().unwrap_or(pla);
     let ty = pla.get_type(&skin);
-    commands
-        .entity(e)
-        .insert(pla.get_shape(&skin))
-        .insert(transform.to_owned());
 
-    let (fill, stroke) = if selected.is_some() {
-        (
-            pla.get_fill(&skin).select(ty).to_owned(),
-            pla.get_stroke(&skin).select(ty).to_owned(),
-        )
-    } else if hovered.is_some() {
-        (
-            pla.get_fill(&skin).hover(ty).to_owned(),
-            pla.get_stroke(&skin).hover(ty).to_owned(),
-        )
-    } else {
-        (pla.get_fill(&skin), pla.get_stroke(&skin))
-    };
-    if fill.color == Color::NONE {
-        commands.entity(e).remove::<Fill>();
-    } else {
-        commands.entity(e).insert(fill);
+    let (mut shape, _) = pla.get_shape(&skin);
+    if selected.is_some() {
+        shape.fill = Some(pla.get_fill(&skin).select(ty).to_owned());
+        shape.stroke = Some(pla.get_stroke(&skin).select(ty).to_owned());
     }
-    if stroke.color == Color::NONE {
-        commands.entity(e).remove::<Stroke>();
-    } else {
-        commands.entity(e).insert(stroke);
+    if hovered.is_some() {
+        shape.fill = Some(pla.get_fill(&skin).hover(ty).to_owned());
+        shape.stroke = Some(pla.get_stroke(&skin).hover(ty).to_owned());
     }
+    commands.entity(e).insert(shape);
 
-    commands.entity(e).despawn_descendants();
+    commands.entity(e).despawn_related::<Children>();
     if *state == EditorState::EditingNodes && selected.is_some() {
         let filter_by_distance = |coord: &IVec2| -> bool {
             if pla.nodes.len() > misc_settings.hide_far_handles_threshold {

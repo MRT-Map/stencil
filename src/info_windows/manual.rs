@@ -10,7 +10,7 @@ pub fn on_manual(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>)
     if *trigger.event() != InfoWindowsEv::Manual {
         return;
     }
-    popup.send(Popup::new(
+    popup.write(Popup::new(
         "manual",
         || {
             egui::Window::new("Manual")

@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::{
+    asset::UnapprovedPathMode,
     diagnostic::FrameTimeDiagnosticsPlugin,
     log::LogPlugin,
     prelude::*,
@@ -107,6 +108,7 @@ fn main() {
             .set(ImagePlugin::default_nearest())
             .set(AssetPlugin {
                 file_path: data_dir("assets").to_string_lossy().to_string(),
+                unapproved_path_mode: UnapprovedPathMode::Allow,
                 ..default()
             })
             .set(RenderPlugin {
@@ -118,14 +120,16 @@ fn main() {
             })
             .disable::<LogPlugin>()
     })
-    .add_plugins(FrameTimeDiagnosticsPlugin);
+    .add_plugins(FrameTimeDiagnosticsPlugin::default());
 
     app.add_plugins(MeshPickingPlugin)
         .insert_resource(MeshPickingSettings {
             require_markers: true,
             ..default()
         })
-        .add_plugins(EguiPlugin)
+        .add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: false,
+        })
         .add_plugins(ShapePlugin);
 
     app.add_plugins(InitPlugin)

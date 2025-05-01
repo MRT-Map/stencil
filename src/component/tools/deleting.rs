@@ -21,7 +21,7 @@ pub fn delete_component_sy(
     if pointer_within_tilemap.is_none() || **state != EditorState::DeletingComponent {
         return;
     }
-    let e = trigger.entity();
+    let e = trigger.target();
     let Ok(pla) = query.get(e) else {
         return;
     };
@@ -31,7 +31,7 @@ pub fn delete_component_sy(
         before: Some(pla.to_owned().into()),
         after: None,
     }));
-    commands.entity(e).despawn_recursive();
+    commands.entity(e).despawn();
     status.0 = format!("Deleted {pla}").into();
 }
 

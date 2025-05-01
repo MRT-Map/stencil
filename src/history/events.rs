@@ -3,15 +3,13 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use bevy::{hierarchy::DespawnRecursiveExt, prelude::*};
+use bevy::prelude::*;
+use eyre::eyre;
 use tracing::debug;
 
 use crate::{
     component::{
-        actions::rendering::RenderEv,
-        bundle::{AreaComponentBundle, LineComponentBundle, PointComponentBundle},
-        pla2::ComponentType,
-        skin::Skin,
+        actions::rendering::RenderEv, bundle::ComponentBundle, pla2::ComponentType, skin::Skin,
     },
     file::{restore, safe_delete},
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
@@ -32,7 +30,7 @@ pub fn on_history(
     skin: Res<Skin>,
     mut status: ResMut<Status>,
     mut namespaces: ResMut<Namespaces>,
-) {
+) -> Result {
     match trigger.event() {
         HistoryEv::NewHistory(histories) => {
             let histories = histories
@@ -74,9 +72,11 @@ pub fn on_history(
                 history.undo_stack.last_mut().map(Vec::as_mut_slice),
                 histories.as_slice(),
             ) {
-                if *e1.read().unwrap() == *e2.read().unwrap() {
+                if *e1.read().map_err(|a| eyre!("{a:?}"))?
+                    == *e2.read().map_err(|a| eyre!("{a:?}"))?
+                {
                     a2.clone_into(a1);
-                    return;
+                    return Ok(());
                 }
             }
             history.undo_stack.push(histories);
@@ -84,7 +84,7 @@ pub fn on_history(
         HistoryEv::Undo => {
             let Some(mut histories) = history.undo_stack.pop() else {
                 status.0 = "Nothing to undo".into();
-                return;
+                return Ok(());
             };
             for history in &mut histories {
                 debug!("Undid {history}");
@@ -96,28 +96,22 @@ pub fn on_history(
                         e: component_id,
                     } => match (before, after) {
                         (Some(before), None) => {
-                            let e = match before.get_type(&skin) {
-                                ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new((**before).clone(), &skin)),
-                                ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new((**before).clone(), &skin)),
-                                ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new((**before).clone(), &skin)),
-                            }
-                            .id();
-                            *component_id.write().unwrap() = e;
+                            let e = commands
+                                .spawn(ComponentBundle::new((**before).clone(), &skin))
+                                .id();
+                            *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
                             ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(before), Some(_)) => {
-                            let component_id = component_id.read().unwrap();
+                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
                             commands
                                 .entity(*component_id)
                                 .insert((**before).clone())
                                 .trigger(RenderEv::default());
                         }
                         (None, _) => {
-                            let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).despawn_recursive();
+                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
+                            commands.entity(*component_id).despawn();
                             ids.remove(&component_id);
                         }
                     },
@@ -169,7 +163,7 @@ pub fn on_history(
         HistoryEv::Redo => {
             let Some(mut histories) = history.redo_stack.pop() else {
                 status.0 = "Nothing to redo".into();
-                return;
+                return Ok(());
             };
             for history in &mut histories {
                 debug!("Redid {history}");
@@ -181,28 +175,22 @@ pub fn on_history(
                         e: component_id,
                     } => match (before, after) {
                         (None, Some(after)) => {
-                            let e = match after.get_type(&skin) {
-                                ComponentType::Point => commands
-                                    .spawn(PointComponentBundle::new((**after).clone(), &skin)),
-                                ComponentType::Line => commands
-                                    .spawn(LineComponentBundle::new((**after).clone(), &skin)),
-                                ComponentType::Area => commands
-                                    .spawn(AreaComponentBundle::new((**after).clone(), &skin)),
-                            }
-                            .id();
-                            *component_id.write().unwrap() = e;
+                            let e = commands
+                                .spawn(ComponentBundle::new((**after).clone(), &skin))
+                                .id();
+                            *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
                             ids.insert(e, Arc::clone(component_id));
                         }
                         (Some(_), Some(after)) => {
-                            let component_id = component_id.read().unwrap();
+                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
                             commands
                                 .entity(*component_id)
                                 .insert((**after).clone())
                                 .trigger(RenderEv::default());
                         }
                         (_, None) => {
-                            let component_id = component_id.read().unwrap();
-                            commands.entity(*component_id).despawn_recursive();
+                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
+                            commands.entity(*component_id).despawn();
                             ids.remove(&component_id);
                         }
                     },
@@ -252,4 +240,5 @@ pub fn on_history(
             history.undo_stack.push(histories);
         }
     }
+    Ok(())
 }

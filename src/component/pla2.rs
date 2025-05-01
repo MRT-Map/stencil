@@ -196,43 +196,46 @@ impl PlaComponent<EditorCoords> {
     }
 
     #[must_use]
-    pub fn get_shape(&self, skin: &Skin) -> ShapeBundle {
+    pub fn get_shape(&self, skin: &Skin) -> (Shape, Transform) {
         if self.get_type(skin) == ComponentType::Point {
-            return ShapeBundle {
-                path: GeometryBuilder::build_as(&shapes::Rectangle {
+            return (
+                ShapeBuilder::with(&shapes::Rectangle {
                     extents: Vec2::splat(2.0),
                     origin: RectangleOrigin::Center,
                     ..default()
-                }),
-                transform: Transform::from_xyz(
-                    self.nodes[0].0.x as f32,
-                    self.nodes[0].0.y as f32,
-                    10.0,
-                ),
-                ..default()
-            };
+                })
+                .fill(self.get_fill(skin))
+                .build(),
+                Transform::from_xyz(self.nodes[0].0.x as f32, self.nodes[0].0.y as f32, 10.0),
+            );
         }
-        let path = GeometryBuilder::build_as(&{
-            let mut pb = PathBuilder::new();
+        let mut shape = ShapeBuilder::with(&{
+            let mut path = ShapePath::new();
+
             for coord in &self.nodes {
-                pb.line_to(coord.0.as_vec2());
+                path = path.line_to(coord.0.as_vec2());
             }
             if self.get_type(skin) == ComponentType::Area {
                 if let Some(coord) = self.nodes.first() {
-                    pb.line_to(coord.0.as_vec2());
+                    path = path.line_to(coord.0.as_vec2());
                 }
             }
-            pb.build()
+            path
         });
+        let (fill, stroke) = (self.get_fill(skin), self.get_stroke(skin));
+        let shape = match (&fill.color, &stroke.color) {
+            (&Color::NONE, &Color::NONE) => shape.fill(Fill::color(Color::NONE)),
+            (&Color::NONE, _) => shape.stroke(stroke),
+            (_, &Color::NONE) => shape.fill(fill),
+            (_, _) => shape.fill(fill).stroke(stroke),
+        }
+        .build();
+
         let transform = Transform::from_xyz(0.0, 0.0, {
             let order = skin.get_order(&self.ty).unwrap_or(0);
             (order as f32).mul_add(0.001, self.layer as f32 + 20.0)
         });
-        ShapeBundle {
-            path,
-            transform,
-            ..default()
-        }
+        (shape, transform)
     }
 
     #[must_use]

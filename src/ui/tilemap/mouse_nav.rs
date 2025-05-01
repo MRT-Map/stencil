@@ -27,18 +27,18 @@ pub fn mouse_drag_sy(
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
-) {
+) -> Result {
     if pointer_within_tilemap.is_none() {
-        return;
+        return Ok(());
     }
-    let (camera, mut transform) = camera.single_mut();
+    let (camera, mut transform) = camera.single_mut()?;
     if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
         if let Some(origin_pos) = *mouse_origin_pos {
             if !mouse_pos.is_changed() {
-                return;
+                return Ok(());
             }
             let Some(win_wh) = get_window_width_height(&windows, camera) else {
-                return;
+                return Ok(());
             };
             let map_wh = get_map_width_height(camera, &transform);
 
@@ -54,27 +54,27 @@ pub fn mouse_drag_sy(
         *mouse_origin_pos = None;
         *camera_origin_pos = None;
     }
+    Ok(())
 }
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom_sy(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut camera: Query<(
-        &Camera,
-        &GlobalTransform,
-        &mut OrthographicProjection,
-        &mut Transform,
-    )>,
+    mut camera: Query<(&Camera, &GlobalTransform, &mut Projection, &mut Transform)>,
     mut zoom: ResMut<Zoom>,
     mouse_pos: Res<MousePos>,
     tile_settings: Res<TileSettings>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
-) {
+) -> Result {
     if pointer_within_tilemap.is_none() {
-        return;
+        return Ok(());
     }
-    let (camera, global_transform, mut ort_proj, mut transform) = camera.single_mut();
+    let (camera, global_transform, mut projection, mut transform) = camera.single_mut()?;
+    let Projection::Orthographic(ref mut ort_proj) = *projection else {
+        unreachable!();
+    };
+
     for ev in scroll_evr.read() {
         let u = match ev.unit {
             MouseScrollUnit::Line => ev.y * 0.125 * misc_settings.scroll_multiplier_line,
@@ -108,4 +108,5 @@ pub fn mouse_zoom_sy(
             transform.translation.y = new_mouse_pos.y - d.y;
         }
     }
+    Ok(())
 }

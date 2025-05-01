@@ -9,7 +9,7 @@ use crate::{info_windows::InfoWindowsEv, ui::popup::Popup};
 
 #[cfg(not(debug_assertions))]
 static LICENSES: LazyLock<LicenseRetriever> =
-    LazyLock::new(|| license_retriever::license_retriever_data!("licenses").unwrap());
+    LazyLock::new(|| license_retriever::license_retriever_data!("licenses")?);
 
 #[cfg(debug_assertions)]
 static LICENSES: LazyLock<LicenseRetriever> = LazyLock::new(LicenseRetriever::default);
@@ -19,7 +19,7 @@ pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>
     if *trigger.event() != InfoWindowsEv::Licenses {
         return;
     }
-    popup.send(Popup::new(
+    popup.write(Popup::new(
         "licenses",
         || {
             egui::Window::new("Open Source Licenses")

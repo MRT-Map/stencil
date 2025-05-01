@@ -10,7 +10,7 @@ pub fn on_info(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popup>) {
     if *trigger.event() != InfoWindowsEv::Info {
         return;
     }
-    popup.send(Popup::new(
+    popup.write(Popup::new(
         "info",
         || {
             egui::Window::new(format!("Stencil v{}", env!("CARGO_PKG_VERSION")))

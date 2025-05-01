@@ -11,7 +11,7 @@ pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popup: EventWriter<Popu
     if *trigger.event() != InfoWindowsEv::Changelog {
         return;
     }
-    popup.send(Popup::new(
+    popup.write(Popup::new(
         "changelog",
         || {
             egui::Window::new("Changelog")

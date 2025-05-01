@@ -4,7 +4,7 @@ use crate::{dirs_paths::data_path, state::LoadingState, ui::popup::Popup};
 
 pub fn welcome_sy(mut commands: Commands, mut popup: EventWriter<Popup>) {
     if !data_path(".welcome_shown").exists() {
-        popup.send(Popup::base_alert(
+        popup.write(Popup::base_alert(
             "welcome",
             "Welcome to Stencil!",
             "Remember to read our manual at https://github.com/MRT-Map/stencil2/wiki. \n\n\

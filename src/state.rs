@@ -1,5 +1,8 @@
 use bevy::{
-    ecs::schedule::{SystemConfigs, SystemSetConfigs},
+    ecs::{
+        schedule::{graph::GraphInfo, Chain, Schedulable, ScheduleConfigs},
+        system::ScheduleSystem,
+    },
     prelude::*,
 };
 use serde::{Deserialize, Serialize};
@@ -79,20 +82,18 @@ pub fn on_state_change(
     commands.insert_resource(NextState::Pending(trigger.event().0));
 }
 
-pub trait IntoSystemConfigExt<Marker>: IntoSystemConfigs<Marker> {
-    fn run_if_not_loading(self) -> SystemConfigs {
+pub trait IntoSystemConfigExt<T: Schedulable<Metadata = GraphInfo, GroupMetadata = Chain>, Marker>:
+    IntoScheduleConfigs<T, Marker>
+{
+    fn run_if_not_loading(self) -> ScheduleConfigs<T> {
         self.into_configs()
             .run_if(not(in_state(EditorState::Loading)))
     }
 }
 
-impl<T, Marker> IntoSystemConfigExt<Marker> for T where T: IntoSystemConfigs<Marker> {}
-
-pub trait IntoSystemSetConfigExt: IntoSystemSetConfigs {
-    fn run_if_not_loading(self) -> SystemSetConfigs {
-        self.into_configs()
-            .run_if(not(in_state(EditorState::Loading)))
-    }
+impl<X, T: Schedulable<Metadata = GraphInfo, GroupMetadata = Chain>, Marker>
+    IntoSystemConfigExt<T, Marker> for X
+where
+    X: IntoScheduleConfigs<T, Marker>,
+{
 }
-
-impl<T> IntoSystemSetConfigExt for T where T: IntoSystemSetConfigs {}
