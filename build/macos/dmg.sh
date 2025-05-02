@@ -4,7 +4,7 @@ set -euxo pipefail
 cd "$dir/../.." || exit
 
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-brew install lld openssl@3
+brew install openssl@3
 rustup +nightly target add x86_64-apple-darwin
 rustup +nightly target add aarch64-apple-darwin
 
