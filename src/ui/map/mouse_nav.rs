@@ -1,5 +1,8 @@
 use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
+    input::{
+        gestures::{PanGesture, PinchGesture},
+        mouse::{MouseScrollUnit, MouseWheel},
+    },
     prelude::*,
     window::PrimaryWindow,
 };
@@ -24,6 +27,7 @@ pub fn mouse_drag_sy(
     mut mouse_origin_pos: Local<Option<MousePos>>,
     mut camera_origin_pos: Local<Option<Vec2>>,
     mouse_pos: Res<MousePos>,
+    mut gesture_pan: EventReader<PanGesture>,
     mut camera: Query<(&Camera, &mut Transform)>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
@@ -33,6 +37,14 @@ pub fn mouse_drag_sy(
         return Ok(());
     }
     let (camera, mut transform) = camera.single_mut()?;
+
+    let pan = gesture_pan.read().map(|a| a.0).sum::<Vec2>();
+    transform.translation.x -= pan.x;
+    transform.translation.y += pan.y;
+    if pan != Vec2::ZERO {
+        return Ok(());
+    }
+
     if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
         if let Some(origin_pos) = *mouse_origin_pos {
             if !mouse_pos.is_changed() {
@@ -55,12 +67,15 @@ pub fn mouse_drag_sy(
         *mouse_origin_pos = None;
         *camera_origin_pos = None;
     }
+
     Ok(())
 }
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom_sy(
-    mut scroll_evr: EventReader<MouseWheel>,
+    mut mouse_wheel: EventReader<MouseWheel>,
+    mut gesture_pinch: EventReader<PinchGesture>,
+    mut gesture_pan: EventReader<PanGesture>,
     mut camera: Query<(&Camera, &GlobalTransform, &mut Projection, &mut Transform)>,
     mut zoom: ResMut<Zoom>,
     mouse_pos: Res<MousePos>,
@@ -76,38 +91,40 @@ pub fn mouse_zoom_sy(
         unreachable!();
     };
 
-    for ev in scroll_evr.read() {
-        let u = match ev.unit {
-            MouseScrollUnit::Line => ev.y * 0.125 * misc_settings.scroll_multiplier_line,
-            MouseScrollUnit::Pixel => ev.y * 0.0125 * misc_settings.scroll_multiplier_pixel,
-        };
-        if 1.0 <= (zoom.0 + u)
-            && (zoom.0 + u)
-                <= f32::from(
-                    tile_settings.basemaps[0].max_tile_zoom + misc_settings.additional_zoom,
-                )
-        {
-            let orig = transform.translation.xy();
-            let orig_scale = ort_proj.scale;
-            let Ok(orig_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
-            else {
-                continue;
-            };
-            zoom.0 += u;
-            trace!("Zoom changed from {orig_scale} to {}", zoom.0);
-
-            ort_proj.scale =
-                ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
-
-            let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
-            let Ok(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos)
-            else {
-                continue;
-            };
-            trace!("View moved by {d:?}");
-            transform.translation.x = new_mouse_pos.x - d.x;
-            transform.translation.y = new_mouse_pos.y - d.y;
-        }
+    let mut u = gesture_pinch.read().map(|a| a.0).sum::<f32>();
+    if gesture_pan.is_empty() {
+        u += mouse_wheel
+            .read()
+            .map(|a| match a.unit {
+                MouseScrollUnit::Line => a.y * 0.125 * misc_settings.scroll_multiplier_line,
+                MouseScrollUnit::Pixel => a.y * 0.0125 * misc_settings.scroll_multiplier_pixel,
+            })
+            .sum::<f32>();
     }
+
+    if !(1.0 <= (zoom.0 + u)
+        && (zoom.0 + u)
+            <= f32::from(tile_settings.basemaps[0].max_tile_zoom + misc_settings.additional_zoom))
+    {
+        return Ok(());
+    };
+
+    let orig = transform.translation.xy();
+    let orig_scale = ort_proj.scale;
+    let Ok(orig_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos) else {
+        return Ok(());
+    };
+    zoom.0 += u;
+    trace!("Zoom changed from {orig_scale} to {}", zoom.0);
+
+    ort_proj.scale = ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
+
+    let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
+    let Ok(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos) else {
+        return Ok(());
+    };
+    trace!("View moved by {d:?}");
+    transform.translation.x = new_mouse_pos.x - d.x;
+    transform.translation.y = new_mouse_pos.y - d.y;
     Ok(())
 }
