@@ -165,3 +165,8 @@ jobs:
           token: ${{ secrets.PAT }}
           repository: mrt-map/homebrew-mrt-map
           event-type: update_stencil2
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: mrt-map/arch-mrt-map
+          event-type: update_stencil2
