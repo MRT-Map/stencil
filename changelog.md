@@ -5,6 +5,11 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.7
+* Support panning with mouse & zooming with pinch gesture on trackpad
+* Add select button for components in components list
+* UI fixes in component editor
+
 # v2.2.6
 * Upgrade `bevy` to v0.16
 * Fix some English
@@ -14,7 +19,7 @@
   * This involves major internal refactors
   * Slight movements between mouse down and up will no longer count as a click
 * Upgrade `egui_dock` to v0.16, close buttons are now available in the top-right corner of windows
-* if the cursor in creation modes is not hidden, a cell cursor is shown instead of a default pointer
+* If the cursor in creation modes is not hidden, a cell cursor is shown instead of a default pointer
 * Moving components now snap them to the grid
 * Make node-editing circle black instead of grey
 * Decrease size and border of all node circles
