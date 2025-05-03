@@ -52,14 +52,24 @@ impl DockWindow for ComponentEditor {
             component_data
                 .namespace
                 .clone_into(&mut namespaces.prev_used);
-            ui.add(egui::TextEdit::singleline(&mut component_data.id).hint_text("id"));
+            ui.add(
+                egui::TextEdit::singleline(&mut component_data.id)
+                    .hint_text("id")
+                    .desired_width(f32::INFINITY),
+            );
         });
         ui.end_row();
         ui.add(
-            egui::TextEdit::singleline(&mut component_data.display_name).hint_text("Displayed as"),
+            egui::TextEdit::singleline(&mut component_data.display_name)
+                .hint_text("Displayed as")
+                .desired_width(f32::INFINITY),
         );
         ui.end_row();
-        ui.add(egui::TextEdit::multiline(&mut component_data.description).hint_text("Description"));
+        ui.add(
+            egui::TextEdit::multiline(&mut component_data.description)
+                .hint_text("Description")
+                .desired_width(f32::INFINITY),
+        );
         ui.end_row();
         ui.separator();
         let component_type = component_data.get_type(skin);

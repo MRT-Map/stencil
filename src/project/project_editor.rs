@@ -32,7 +32,7 @@ impl DockWindow for ProjectEditor {
             queries,
             ..
         } = params;
-        let components = queries.p1().iter().counts_by(|a| a.namespace.clone());
+        let components = queries.p1().iter().counts_by(|(_, a)| a.namespace.clone());
         ui.horizontal(|ui| {
             if ui.button("Open").clicked() {
                 commands.trigger(ProjectEv::Open);

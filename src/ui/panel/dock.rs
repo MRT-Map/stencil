@@ -129,7 +129,7 @@ pub struct PanelParams<'w, 's> {
                 (Entity, &'static mut PlaComponent<EditorCoords>),
                 With<SelectedComponent>,
             >,
-            Query<'w, 's, &'static PlaComponent<EditorCoords>>,
+            Query<'w, 's, (Entity, &'static PlaComponent<EditorCoords>)>,
         ),
     >,
     pub camera: Query<'w, 's, &'static mut Transform, With<Camera>>,

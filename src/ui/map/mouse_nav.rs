@@ -71,7 +71,7 @@ pub fn mouse_pan_sy(
             .map(|a| match a.unit {
                 MouseScrollUnit::Line => Vec2::new(a.x, a.y) * misc_settings.scroll_multiplier_line,
                 MouseScrollUnit::Pixel => {
-                    Vec2::new(a.x, a.y) * 0.1 * misc_settings.scroll_multiplier_pixel
+                    Vec2::new(a.x, a.y) * 0.01 * misc_settings.scroll_multiplier_pixel
                 }
             })
             .sum::<Vec2>()
