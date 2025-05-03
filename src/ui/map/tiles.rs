@@ -67,7 +67,7 @@ pub fn show_tiles_sy(
     if q_camera.is_empty() {
         return Ok(());
     }
-    let basemap = &tile_settings.basemaps[0];
+    let basemap = tile_settings.basemap();
     if *basemap != *old_basemap {
         for (e, _) in &query {
             commands.entity(e).despawn();

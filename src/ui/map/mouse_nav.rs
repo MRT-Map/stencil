@@ -75,8 +75,9 @@ pub fn mouse_pan_sy(
                 }
             })
             .sum::<Vec2>()
-            * (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0)
-            * tile_settings.basemaps[0].max_zoom_range;
+            * (f32::from(tile_settings.basemap().max_tile_zoom + misc_settings.additional_zoom)
+                - zoom.0)
+            * tile_settings.basemap().max_zoom_range;
         if keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
             d.yx()
         } else {
@@ -144,7 +145,7 @@ pub fn mouse_zoom_sy(
 
     if !(1.0 <= (zoom.0 + u)
         && (zoom.0 + u)
-            <= f32::from(tile_settings.basemaps[0].max_tile_zoom + misc_settings.additional_zoom))
+            <= f32::from(tile_settings.basemap().max_tile_zoom + misc_settings.additional_zoom))
     {
         return Ok(());
     }
@@ -157,7 +158,7 @@ pub fn mouse_zoom_sy(
     zoom.0 += u;
     trace!("Zoom changed from {orig_scale} to {}", zoom.0);
 
-    ort_proj.scale = ((f32::from(tile_settings.basemaps[0].max_tile_zoom) - 1.0) - zoom.0).exp2();
+    ort_proj.scale = ((f32::from(tile_settings.basemap().max_tile_zoom) - 1.0) - zoom.0).exp2();
 
     let d = (orig_mouse_pos - orig) * (ort_proj.scale / orig_scale);
     let Ok(new_mouse_pos) = camera.viewport_to_world_2d(global_transform, **mouse_pos) else {

@@ -47,7 +47,7 @@ pub fn crosshair_sy(
     let translation = mouse_pos_world.round();
     let new_transform = Transform::from_translation(translation.extend(100.0));
     let new_custom_size = Some(Vec2::splat(
-        (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0).exp2()
+        (f32::from(tile_settings.basemap().max_tile_zoom) - zoom.0).exp2()
             * 16f32
             * misc_settings.crosshair_size,
     ));
