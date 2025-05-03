@@ -55,16 +55,13 @@ impl DockWindow for ProjectEditor {
             .column(Column::auto().at_least(0.05))
             .header(20.0, |mut header| {
                 header.col(|ui| {
-                    ui.label("Vis.");
+                    ui.label("👁");
                 });
                 header.col(|ui| {
                     ui.label("Ns.");
                 });
                 header.col(|ui| {
                     ui.label("#");
-                });
-                header.col(|ui| {
-                    ui.label("Del.");
                 });
             })
             .body(|mut body| {
@@ -103,7 +100,7 @@ impl DockWindow for ProjectEditor {
                             if ui
                                 .add_enabled(
                                     num_components == 0 && ns != "_misc" && !*vis,
-                                    egui::Button::new("X"),
+                                    egui::Button::new("❌").fill(egui::Color32::DARK_RED),
                                 )
                                 .clicked()
                             {
@@ -127,7 +124,7 @@ impl DockWindow for ProjectEditor {
                             .add_enabled(
                                 !new_namespace.is_empty()
                                     && !namespaces.visibilities.keys().contains(&**new_namespace),
-                                egui::Button::new("+"),
+                                egui::Button::new("➕"),
                             )
                             .clicked()
                         {
