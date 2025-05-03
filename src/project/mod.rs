@@ -60,7 +60,7 @@ impl Plugin for ProjectPlugin {
             .add_systems(Update, autosave_sy)
             .add_observer(events::on_project)
             .add_observer(project_editor::on_project_editor)
-            .add_systems(EguiContextPass, events::project_dialog)
+            .add_systems(EguiContextPass, events::project_dialog_sy)
             .add_systems(OnExit(EditorState::Loading), |mut commands: Commands| {
                 commands.trigger(ProjectEv::Reload);
                 commands.trigger(ProjectEv::Show {

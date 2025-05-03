@@ -78,8 +78,7 @@ pub fn on_node_edit_right_down(
             }
             .map(|((_, this), (i, next))| (Pos::NewBefore(i), (this.0 + next.0) / 2)),
         );
-    #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-    // TODO figure out how to fix this
+    #[expect(clippy::cast_sign_loss)]
     let Some((list_pos, world_pos)) =
         handles.min_by_key(|(_, pos)| mouse_pos_world.distance_squared(pos.as_vec2()) as usize)
     else {

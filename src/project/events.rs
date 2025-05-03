@@ -204,7 +204,7 @@ pub fn on_project(
 }
 
 #[expect(clippy::needless_pass_by_value)]
-pub fn project_dialog(
+pub fn project_dialog_sy(
     mut commands: Commands,
     namespaces: Res<Namespaces>,
     mut ctx: EguiContexts,

@@ -199,7 +199,6 @@ pub fn create_component_sy(
     let next_point = if **mouse_pos_world != Vec2::ZERO
         && keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight])
     {
-        #[expect(clippy::cast_possible_truncation)] // TODO find some way to fix this
         let closest_angle_vec = ANGLE_VECTORS
             .into_iter()
             .chain(ANGLE_VECTORS.iter().map(|a| -*a))

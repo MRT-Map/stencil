@@ -1,9 +1,17 @@
 ***Coming soon***
 * Directly download namespace files from GitHub repositories
-* Show colours of component types in component type editor
 * Selecting multiple components
 * Copying and pasting
 * Font configuration
+
+# v2.2.8
+* Remove confirmation message for deleting a namespace, since it can be undone
+* Make `❌` buttons red
+* Remove `click_max_offset` option since it is no longer necessary anywhere
+* Added square next to component types, showing their colour on the map
+* Fix panning moving backwards when zoomed in past the basemap's max zoom
+* Position data is now shown as a table
+* Fix cursor staying as a pointing finger when hovered out
 
 # v2.2.7
 * Support panning with mouse & zooming with pinch gesture on trackpad
