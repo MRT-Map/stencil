@@ -70,7 +70,7 @@ field!(
     max_zoom_range_is_default,
     default_max_zoom_range,
     max_zoom_range,
-    f64
+    f32
 );
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
@@ -91,7 +91,7 @@ pub struct Basemap {
         default = "default_max_zoom_range",
         skip_serializing_if = "max_zoom_range_is_default"
     )]
-    pub max_zoom_range: f64,
+    pub max_zoom_range: f32,
 }
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Resource)]

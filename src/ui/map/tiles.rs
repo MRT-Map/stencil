@@ -29,22 +29,12 @@ pub fn get_shown_tiles<R: QueryFilter>(
         x: t_left,
         y: t_top,
         ..
-    } = TileCoord::from_world_coords(
-        f64::from(c_left),
-        f64::from(c_top),
-        zoom.min(basemap.max_tile_zoom),
-        basemap,
-    );
+    } = TileCoord::from_world_coords(c_left, c_top, zoom.min(basemap.max_tile_zoom), basemap);
     let TileCoord {
         x: t_right,
         y: t_bottom,
         ..
-    } = TileCoord::from_world_coords(
-        f64::from(c_right),
-        f64::from(c_bottom),
-        zoom.min(basemap.max_tile_zoom),
-        basemap,
-    );
+    } = TileCoord::from_world_coords(c_right, c_bottom, zoom.min(basemap.max_tile_zoom), basemap);
 
     Ok((t_left - 1..=t_right + 1)
         .flat_map(|x| {

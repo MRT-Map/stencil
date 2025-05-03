@@ -44,7 +44,7 @@ fn v2_2_0() {
             }
             if let Some(v) = t.get("max_zoom_range").and_then(toml::Value::as_float) {
                 rewrite = true;
-                new.basemaps[0].max_zoom_range = v;
+                new.basemaps[0].max_zoom_range = v as f32;
             }
             if !rewrite {
                 return;

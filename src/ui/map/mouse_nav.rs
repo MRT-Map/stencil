@@ -44,7 +44,7 @@ impl Display for ScrollMode {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn mouse_drag_sy(
+pub fn mouse_pan_sy(
     keys: Res<ButtonInput<KeyCode>>,
     buttons: Res<ButtonInput<MouseButton>>,
     mut mouse_wheel: EventReader<MouseWheel>,
@@ -69,15 +69,14 @@ pub fn mouse_drag_sy(
         let d = mouse_wheel
             .read()
             .map(|a| match a.unit {
-                MouseScrollUnit::Line => {
-                    Vec2::new(a.x, a.y) * 0.5 * misc_settings.scroll_multiplier_line
-                }
+                MouseScrollUnit::Line => Vec2::new(a.x, a.y) * misc_settings.scroll_multiplier_line,
                 MouseScrollUnit::Pixel => {
-                    Vec2::new(a.x, a.y) * 0.05 * misc_settings.scroll_multiplier_pixel
+                    Vec2::new(a.x, a.y) * 0.1 * misc_settings.scroll_multiplier_pixel
                 }
             })
             .sum::<Vec2>()
-            * zoom.map_size(&tile_settings.basemaps[0]) as f32;
+            * (f32::from(tile_settings.basemaps[0].max_tile_zoom) - zoom.0)
+            * tile_settings.basemaps[0].max_zoom_range;
         if keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
             d.yx()
         } else {

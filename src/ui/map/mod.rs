@@ -39,7 +39,7 @@ impl Plugin for RenderingPlugin {
             .configure_sets(EguiContextPass, RenderingSet::Tiles.run_if_not_loading())
             .add_systems(
                 Update,
-                (mouse_nav::mouse_drag_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),
+                (mouse_nav::mouse_pan_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),
             )
             .add_systems(
                 EguiContextPass,
