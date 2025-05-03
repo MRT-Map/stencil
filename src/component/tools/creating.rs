@@ -152,6 +152,7 @@ pub fn on_line_area_left_click(
 
         let pla = {
             let mut pla = PlaComponent::new(ty);
+            pla.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
             pla.nodes.push(new.into());
             pla
         };
@@ -238,7 +239,6 @@ pub fn on_clear_created_component(
             namespaces.prev_used = "_misc".into();
         }
         namespaces.prev_used.clone_into(&mut pla.namespace);
-        pla.id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         commands
             .entity(e)
             .trigger(RenderEv::default())

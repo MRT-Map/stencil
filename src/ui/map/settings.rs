@@ -161,6 +161,7 @@ impl TileSettings {
     pub fn save(&self) -> eyre::Result<()> {
         save_toml_with_header(self, &data_path("tile_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#tile_settingstoml", Some("tile settings"))
     }
+    #[must_use]
     pub fn basemap(&self) -> &Basemap {
         &self.basemaps[0]
     }

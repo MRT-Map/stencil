@@ -5,7 +5,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    component::actions::selecting::SelectEv,
+    component::{actions::selecting::SelectEv, tools::deleting::DeleteEv},
     ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
 };
 
@@ -36,8 +36,7 @@ impl DockWindow for ComponentList {
                     .striped(true)
                     .column(Column::auto().at_least(100.0))
                     .column(Column::auto().at_least(50.0))
-                    .column(Column::auto().at_least(10.0))
-                    .column(Column::auto().at_least(10.0))
+                    .columns(Column::auto().at_least(10.0), 3)
                     .header(20.0, |mut header| {
                         header.col(|ui| {
                             ui.label("id");
@@ -74,6 +73,18 @@ impl DockWindow for ComponentList {
                                     if ui.small_button("Select").clicked() {
                                         commands.entity(*e).trigger(SelectEv::SelectOne);
                                         see = true;
+                                    }
+                                });
+                                row.col(|ui| {
+                                    if ui
+                                        .add(
+                                            egui::Button::new("❌")
+                                                .small()
+                                                .fill(egui::Color32::DARK_RED),
+                                        )
+                                        .clicked()
+                                    {
+                                        commands.entity(*e).trigger(DeleteEv);
                                     }
                                 });
                                 if see {
