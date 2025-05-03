@@ -118,6 +118,10 @@ fn main() {
                 }),
                 ..default()
             })
+            .set(PickingPlugin {
+                is_window_picking_enabled: false,
+                ..default()
+            })
             .disable::<LogPlugin>()
     })
     .add_plugins(FrameTimeDiagnosticsPlugin::default());
