@@ -72,7 +72,7 @@ impl DockWindow for ComponentEditor {
         );
         ui.end_row();
         ui.separator();
-        let component_type = component_data.get_type(skin);
+        let component_type = component_data.get_skin_type(skin);
         let old_skin_type = component_data.ty.clone();
         egui::ComboBox::from_label("Component type")
             .selected_text(component_data.ty.clone())
@@ -83,10 +83,46 @@ impl DockWindow for ComponentEditor {
                     .filter(|skin_comp| skin_comp.get_type() == component_type)
                     .sorted_by_key(|skin_comp| skin_comp.name())
                     .for_each(|skin_comp| {
+                        let mut label = egui::text::LayoutJob::default();
+                        let space = if let Some(c) = skin_comp.front_colour() {
+                            label.append(
+                                "◼",
+                                0.0,
+                                egui::TextFormat {
+                                    color: egui::Color32::from_rgba_premultiplied(
+                                        c.r, c.g, c.b, c.a,
+                                    ),
+                                    ..default()
+                                },
+                            );
+                            7.5
+                        } else if let Some(c) = skin_comp.back_colour() {
+                            label.append(
+                                "□",
+                                0.0,
+                                egui::TextFormat {
+                                    color: egui::Color32::from_rgba_premultiplied(
+                                        c.r, c.g, c.b, c.a,
+                                    ),
+                                    ..default()
+                                },
+                            );
+                            7.5
+                        } else {
+                            0.0
+                        };
+                        label.append(
+                            skin_comp.name(),
+                            space,
+                            egui::TextFormat {
+                                font_id: egui::FontId::proportional(12.5),
+                                ..default()
+                            },
+                        );
                         ui.selectable_value(
                             &mut component_data.ty,
                             skin_comp.name().to_owned(),
-                            skin_comp.name(),
+                            label,
                         );
                     });
             });
@@ -105,7 +141,7 @@ impl DockWindow for ComponentEditor {
         ui.add(egui::Slider::new(&mut component_data.layer, -10.0..=10.0).text("Layer"));
         ui.end_row();
         ui.separator();
-        if component_data.get_type(skin) == ComponentType::Line {
+        if component_data.get_skin_type(skin) == ComponentType::Line {
             if ui.button("Reverse direction").clicked() {
                 component_data.nodes.reverse();
             }
@@ -113,7 +149,7 @@ impl DockWindow for ComponentEditor {
             ui.separator();
         }
         ui.heading("Position data");
-        let is_line = component_data.get_type(skin) == ComponentType::Line;
+        let is_line = component_data.get_skin_type(skin) == ComponentType::Line;
         for (i, a) in component_data.nodes.iter().enumerate() {
             let color = if i == 0 && is_line {
                 egui::Color32::GREEN

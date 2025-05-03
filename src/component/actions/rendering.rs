@@ -39,7 +39,7 @@ pub fn on_render(
         return;
     };
     let pla = trigger.0.as_ref().unwrap_or(pla);
-    let ty = pla.get_type(&skin);
+    let ty = pla.get_skin_type(&skin);
 
     let (mut shape, _) = pla.get_shape(&skin);
     let (mut fill, mut stroke) = (pla.get_fill(&skin), pla.get_stroke(&skin));
@@ -86,7 +86,7 @@ pub fn on_render(
         trace!("Pushing first set of children");
         commands.entity(e).add_children(&children);
 
-        let more_children = if pla.get_type(&skin) == ComponentType::Area {
+        let more_children = if pla.get_skin_type(&skin) == ComponentType::Area {
             pla.nodes
                 .iter()
                 .circular_tuple_windows::<(_, _)>()

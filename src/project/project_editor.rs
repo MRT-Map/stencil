@@ -139,7 +139,6 @@ impl DockWindow for ProjectEditor {
                             new_namespace.clear();
                         }
                     });
-                    row.col(|_| ());
                 });
             });
     }

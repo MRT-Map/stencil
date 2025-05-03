@@ -250,7 +250,7 @@ pub fn on_clear_created_component(
         }));
         status.0 = format!(
             "Created new {} {}",
-            if pla.get_type(&skin) == ComponentType::Area {
+            if pla.get_skin_type(&skin) == ComponentType::Area {
                 "area"
             } else {
                 "line"

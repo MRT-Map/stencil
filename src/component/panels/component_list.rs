@@ -44,10 +44,9 @@ impl DockWindow for ComponentList {
                         header.col(|ui| {
                             ui.label("type");
                         });
-                        header.col(|_| ());
                     })
                     .body(|mut body| {
-                        for (e, component) in components {
+                        for (e, component) in components.iter().sorted_by_key(|(_, a)| &a.id) {
                             body.row(20.0, |mut row| {
                                 row.col(|ui| {
                                     ui.label(component.to_string());

@@ -145,6 +145,108 @@ impl SkinComponent {
             Self::Point { tags, .. } | Self::Line { tags, .. } | Self::Area { tags, .. } => tags,
         }
     }
+    fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
+        Some(
+            style
+                .iter()
+                .map(|(zl, v)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), v))
+                .find(|(min, _)| *min == 0)?
+                .1,
+        )
+    }
+
+    #[must_use]
+    pub fn front_colour(&self) -> Option<&HexColor> {
+        match self {
+            Self::Point { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    PointStyle::Square { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Line { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Fore { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Area { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+        }
+    }
+    #[must_use]
+    pub fn back_colour(&self) -> Option<&HexColor> {
+        match self {
+            Self::Point { .. } => None,
+            Self::Line { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Back { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Area { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { outline, .. } => outline.into(),
+                    _ => None,
+                })
+                .next_back(),
+        }
+    }
+    #[must_use]
+    pub fn text_colour(&self) -> Option<&HexColor> {
+        match self {
+            Self::Point { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    PointStyle::Text { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Line { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Text { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Area { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::CenterText { colour, .. } => colour.into(),
+                    _ => None,
+                })
+                .next_back(),
+        }
+    }
+    #[must_use]
+    pub fn weight(&self) -> Option<f32> {
+        match self {
+            Self::Point { .. } => None,
+            Self::Line { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    LineStyle::Fore { width, .. } => Some(*width),
+                    _ => None,
+                })
+                .next_back(),
+            Self::Area { styles, .. } => Self::style_in_max_zoom(styles)?
+                .iter()
+                .filter_map(|style| match style {
+                    AreaStyle::Fill { outline_width, .. } => Some(outline_width * 5.0),
+                    _ => None,
+                })
+                .next_back(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Resource)]

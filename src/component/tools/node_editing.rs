@@ -61,7 +61,7 @@ pub fn on_node_edit_right_down(
         .enumerate()
         .map(|(i, ec)| (Pos::Existing(i), ec.0))
         .chain(
-            if pla.get_type(&skin) == ComponentType::Area {
+            if pla.get_skin_type(&skin) == ComponentType::Area {
                 pla.nodes
                     .iter()
                     .enumerate()
@@ -161,7 +161,7 @@ pub fn on_node_edit_right_click(
         return;
     };
 
-    if orig.was_new || pla.get_type(&skin) == ComponentType::Point {
+    if orig.was_new || pla.get_skin_type(&skin) == ComponentType::Point {
         return;
     }
     info!(?e, "Deleting node");

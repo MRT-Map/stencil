@@ -95,7 +95,7 @@ pub fn on_right_click_drag_end(
     let Ok((mut transform, mut pla, move_data)) = query.get_mut(e) else {
         return;
     };
-    if pla.get_type(&skin) != ComponentType::Point {
+    if pla.get_skin_type(&skin) != ComponentType::Point {
         transform.translation.x = 0.0; // transform.translation.x.round();
         transform.translation.y = 0.0; // transform.translation.y.round();
     }
