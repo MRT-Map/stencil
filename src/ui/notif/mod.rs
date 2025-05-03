@@ -5,7 +5,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::EguiContexts;
+use bevy_egui::{egui, EguiContexts};
 use egui_notify::{Toast, ToastLevel, Toasts};
 
 use crate::misc_config::settings::MiscSettings;
@@ -24,16 +24,16 @@ pub struct NotifLog {
     pub pending_notifs: Vec<Notif>,
 }
 impl NotifLog {
-    pub fn push<S: ToString>(&mut self, message: &S, level: ToastLevel) {
+    pub fn push<S: Into<egui::RichText>>(&mut self, message: S, level: ToastLevel) {
         self.pending_notifs.push(Notif::new(message, level));
     }
 }
 
 pub trait NotifLogRwLockExt {
-    fn push<S: ToString>(&self, message: &S, level: ToastLevel);
+    fn push<S: Into<egui::RichText>>(&self, message: S, level: ToastLevel);
 }
 impl NotifLogRwLockExt for RwLock<NotifLog> {
-    fn push<S: ToString>(&self, message: &S, level: ToastLevel) {
+    fn push<S: Into<egui::RichText>>(&self, message: S, level: ToastLevel) {
         let mut notif_log = self.write().unwrap();
         notif_log.push(message, level);
     }
@@ -43,14 +43,14 @@ impl NotifLogRwLockExt for RwLock<NotifLog> {
 pub struct Notif {
     pub timestamp: SystemTime,
     pub level: ToastLevel,
-    pub message: String,
+    pub message: egui::RichText,
 }
 impl Notif {
-    pub fn new<S: ToString>(message: &S, level: ToastLevel) -> Self {
+    pub fn new<S: Into<egui::RichText>>(message: S, level: ToastLevel) -> Self {
         Self {
             timestamp: SystemTime::now(),
             level,
-            message: message.to_string(),
+            message: message.into(),
         }
     }
 }
@@ -76,7 +76,7 @@ pub fn update_notifs_sy(
     for notif in pending_notifs {
         toasts
             .0
-            .add(Toast::custom(&notif.message, notif.level.clone()))
+            .add(Toast::custom(notif.message.to_owned(), notif.level.clone()))
             .duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
                     && misc_settings.notif_duration != 0)
@@ -97,7 +97,7 @@ pub trait AddToErrorLog<T: Default> {
 impl<T: Default, E: ToString + Debug> AddToErrorLog<T> for Result<T, E> {
     fn notif_error(self, level: ToastLevel) -> Self {
         self.inspect_err(|e| {
-            NOTIF_LOG.push(&e.to_string(), level);
+            NOTIF_LOG.push(e.to_string(), level);
         })
     }
     fn unwrap_or_default_and_notif(self, level: ToastLevel) -> T {

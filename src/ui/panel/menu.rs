@@ -100,7 +100,7 @@ pub fn ui_sy(
                 egui::menu::menu_button(ui, "Debug", |ui| {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
-                        NOTIF_LOG.push(&"Warning Triggered", ToastLevel::Warning);
+                        NOTIF_LOG.push("Warning Triggered", ToastLevel::Warning);
                     }
                     if ui.button("Trigger Panic").clicked() {
                         info!(label = "Trigger Panic", "Clicked menu item");
@@ -160,7 +160,7 @@ pub fn on_all_settings(_trigger: Trigger<OpenAllSettingsEv>, mut state: ResMut<D
     .filter(|a: &DockWindows| !all_tabs.contains(&a.title()))
     .collect::<Vec<_>>();
     if settings_tabs.is_empty() {
-        NOTIF_LOG.push(&"All settings tabs are already open", ToastLevel::Info);
+        NOTIF_LOG.push("All settings tabs are already open", ToastLevel::Info);
     } else {
         state.0.add_window(settings_tabs);
     }

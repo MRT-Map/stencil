@@ -214,7 +214,7 @@ pub fn panel_sy(
 pub struct ResetPanelDockStateEv;
 
 pub fn on_reset_panel(_trigger: Trigger<ResetPanelDockStateEv>, mut state: ResMut<DockLayout>) {
-    NOTIF_LOG.push(&"Layout reset", ToastLevel::Success);
+    NOTIF_LOG.push("Layout reset", ToastLevel::Success);
     *state = DockLayout::default();
     let _ = state.save();
 }

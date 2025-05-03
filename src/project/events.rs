@@ -74,7 +74,7 @@ pub fn on_project(
                     }));
                 }
                 if *notif {
-                    NOTIF_LOG.push(&format!("Loaded namespace {ns}"), ToastLevel::Success);
+                    NOTIF_LOG.push(format!("Loaded namespace {ns}"), ToastLevel::Success);
                 }
             }
         }
@@ -114,7 +114,7 @@ pub fn on_project(
                 }));
             }
             if *notif {
-                NOTIF_LOG.push(&format!("Saved namespace {ns}"), ToastLevel::Success);
+                NOTIF_LOG.push(format!("Saved namespace {ns}"), ToastLevel::Success);
             }
         }
         ProjectEv::Save(auto) => {

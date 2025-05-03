@@ -60,7 +60,7 @@ pub fn get_skin_sy(
             }
             Some(Err(err)) => {
                 error!(?err, "Unable to retrieve skin");
-                NOTIF_LOG.push(&format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
+                NOTIF_LOG.push(format!("Couldn't download skin.\nMake sure you are connected to the internet.\nError: {err}"), ToastLevel::Error);
                 *task_s = Step::Complete;
             }
         },

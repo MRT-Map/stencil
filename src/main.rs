@@ -35,6 +35,7 @@ use crate::{
     misc_config::MiscSettingsPlugin,
     project::ProjectPlugin,
     ui::{notif::NotifPlugin, UiPlugin},
+    update_checker::UpdateCheckerPlugin,
     window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
 };
 
@@ -53,6 +54,7 @@ pub mod project;
 pub mod state;
 pub mod tile;
 pub mod ui;
+pub mod update_checker;
 pub mod window;
 
 fn init_logger() {
@@ -148,6 +150,7 @@ fn main() {
         .add_plugins(HistoryPlugin)
         .add_plugins(NotifPlugin)
         .add_plugins(MiscSettingsPlugin)
+        .add_plugins(UpdateCheckerPlugin)
         .add_plugins(ComponentPanelsPlugin);
 
     #[cfg(debug_assertions)]
