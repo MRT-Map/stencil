@@ -7,6 +7,7 @@ use tracing::info;
 use crate::{
     dirs_paths::data_path,
     file::{load_toml, save_toml_with_header},
+    ui::map::mouse_nav::ScrollMode,
 };
 
 macro_rules! field {

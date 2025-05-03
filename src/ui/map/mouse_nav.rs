@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 use bevy::{
     input::{
         gestures::{PanGesture, PinchGesture},
@@ -7,6 +9,7 @@ use bevy::{
     window::PrimaryWindow,
 };
 use bevy_egui::EguiContexts;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     misc_config::settings::MiscSettings,
@@ -21,16 +24,38 @@ use crate::{
     },
 };
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ScrollMode {
+    Pan,
+    #[default]
+    Zoom,
+}
+impl Display for ScrollMode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Zoom => "Zoom",
+                Self::Pan => "Pan",
+            }
+        )
+    }
+}
+
 #[tracing::instrument(skip_all)]
 pub fn mouse_drag_sy(
+    keys: Res<ButtonInput<KeyCode>>,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut mouse_origin_pos: Local<Option<MousePos>>,
-    mut camera_origin_pos: Local<Option<Vec2>>,
+    mut mouse_wheel: EventReader<MouseWheel>,
+    mut prev_mouse_pos: Local<Option<MousePos>>,
     mouse_pos: Res<MousePos>,
-    mut gesture_pan: EventReader<PanGesture>,
     mut camera: Query<(&Camera, &mut Transform)>,
     windows: Query<(Entity, &Window, Option<&PrimaryWindow>)>,
     mut ctx: EguiContexts,
+    tile_settings: Res<TileSettings>,
+    misc_settings: Res<MiscSettings>,
+    zoom: Res<Zoom>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) -> Result {
     if pointer_within_tilemap.is_none() {
@@ -38,50 +63,64 @@ pub fn mouse_drag_sy(
     }
     let (camera, mut transform) = camera.single_mut()?;
 
-    let pan = gesture_pan.read().map(|a| a.0).sum::<Vec2>();
-    transform.translation.x -= pan.x;
-    transform.translation.y += pan.y;
-    if pan != Vec2::ZERO {
-        return Ok(());
-    }
-
-    if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
-        if let Some(origin_pos) = *mouse_origin_pos {
-            if !mouse_pos.is_changed() {
-                return Ok(());
-            }
-            let Some(win_wh) = get_window_width_height(&windows, camera) else {
-                return Ok(());
-            };
-            let map_wh = get_map_width_height(camera, &transform);
-
-            let d = map_wh / win_wh * (**mouse_pos - *origin_pos);
-            trace!("Mouse moved {d:?} from origin");
-            transform.translation.x = camera_origin_pos.unwrap().x - d.x;
-            transform.translation.y = camera_origin_pos.unwrap().y + d.y;
+    let mut d = if misc_settings.scroll_mode == ScrollMode::Pan
+        && !keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])
+    {
+        let d = mouse_wheel
+            .read()
+            .map(|a| match a.unit {
+                MouseScrollUnit::Line => {
+                    Vec2::new(a.x, a.y) * 0.5 * misc_settings.scroll_multiplier_line
+                }
+                MouseScrollUnit::Pixel => {
+                    Vec2::new(a.x, a.y) * 0.05 * misc_settings.scroll_multiplier_pixel
+                }
+            })
+            .sum::<Vec2>()
+            * zoom.map_size(&tile_settings.basemaps[0]) as f32;
+        if keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
+            d.yx()
         } else {
-            *mouse_origin_pos = Some(*mouse_pos.into_inner());
-            *camera_origin_pos = Some(transform.translation.truncate());
+            d
         }
     } else {
-        *mouse_origin_pos = None;
-        *camera_origin_pos = None;
-    }
+        Vec2::ZERO
+    };
+
+    d += if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
+        let prev_mouse_pos = prev_mouse_pos.get_or_insert(*mouse_pos);
+        let delta = **mouse_pos - **prev_mouse_pos;
+        *prev_mouse_pos = *mouse_pos;
+        delta
+    } else {
+        *prev_mouse_pos = None;
+        Vec2::ZERO
+    };
+
+    let Some(win_wh) = get_window_width_height(&windows, camera) else {
+        return Ok(());
+    };
+    let map_wh = get_map_width_height(camera, &transform);
+
+    let d = map_wh / win_wh * d;
+    trace!("Mouse moved {d:?} from origin");
+    transform.translation.x -= d.x;
+    transform.translation.y += d.y;
 
     Ok(())
 }
 
 #[tracing::instrument(skip_all)]
 pub fn mouse_zoom_sy(
+    keys: Res<ButtonInput<KeyCode>>,
     mut mouse_wheel: EventReader<MouseWheel>,
     mut gesture_pinch: EventReader<PinchGesture>,
-    mut gesture_pan: EventReader<PanGesture>,
     mut camera: Query<(&Camera, &GlobalTransform, &mut Projection, &mut Transform)>,
     mut zoom: ResMut<Zoom>,
     mouse_pos: Res<MousePos>,
     tile_settings: Res<TileSettings>,
-    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     misc_settings: Res<MiscSettings>,
+    pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) -> Result {
     if pointer_within_tilemap.is_none() {
         return Ok(());
@@ -91,8 +130,10 @@ pub fn mouse_zoom_sy(
         unreachable!();
     };
 
-    let mut u = gesture_pinch.read().map(|a| a.0).sum::<f32>();
-    if gesture_pan.is_empty() {
+    let mut u = 1.5 * gesture_pinch.read().map(|a| a.0).sum::<f32>();
+    if misc_settings.scroll_mode == ScrollMode::Zoom
+        || keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])
+    {
         u += mouse_wheel
             .read()
             .map(|a| match a.unit {
@@ -107,7 +148,7 @@ pub fn mouse_zoom_sy(
             <= f32::from(tile_settings.basemaps[0].max_tile_zoom + misc_settings.additional_zoom))
     {
         return Ok(());
-    };
+    }
 
     let orig = transform.translation.xy();
     let orig_scale = ort_proj.scale;

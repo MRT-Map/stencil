@@ -7,6 +7,7 @@ use tracing::info;
 use crate::{
     dirs_paths::data_path,
     file::{load_toml, save_toml_with_header},
+    ui::map::mouse_nav::ScrollMode,
 };
 
 macro_rules! field {
@@ -84,6 +85,14 @@ field!(
     scroll_multiplier_pixel,
     f32
 );
+
+field!(
+    MiscSettings,
+    scroll_mode_is_default,
+    default_scroll_mode,
+    scroll_mode,
+    ScrollMode
+);
 field!(
     MiscSettings,
     additional_zoom_is_default,
@@ -154,6 +163,11 @@ pub struct MiscSettings {
     )]
     pub scroll_multiplier_pixel: f32,
     #[serde(
+        default = "default_scroll_mode",
+        skip_serializing_if = "scroll_mode_is_default"
+    )]
+    pub scroll_mode: ScrollMode,
+    #[serde(
         default = "default_additional_zoom",
         skip_serializing_if = "additional_zoom_is_default"
     )]
@@ -182,6 +196,7 @@ impl Default for MiscSettings {
             crosshair_size: 1.0,
             scroll_multiplier_line: 1.0,
             scroll_multiplier_pixel: 1.0,
+            scroll_mode: ScrollMode::default(),
             additional_zoom: 3,
             autosave_interval: 60,
             notif_duration: 2,

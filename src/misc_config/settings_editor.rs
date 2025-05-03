@@ -7,7 +7,10 @@ use crate::{
     dirs_paths::{cache_path, data_path},
     file::safe_delete,
     misc_config::settings::MiscSettings,
-    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    ui::{
+        map::mouse_nav::ScrollMode,
+        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    },
 };
 
 #[derive(Clone, Copy, Event)]
@@ -103,6 +106,16 @@ impl DockWindow for MiscSettingsEditor {
             egui::Slider::new(&mut misc_settings.scroll_multiplier_pixel, 0.1..=4.0)
                 .text("Scroll multiplier (pixel unit)"),
         );
+        ui.separator();
+
+        egui::ComboBox::from_label("Scroll Mode")
+            .selected_text(misc_settings.scroll_mode.to_string())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut misc_settings.scroll_mode, ScrollMode::Zoom, "Zoom");
+                ui.selectable_value(&mut misc_settings.scroll_mode, ScrollMode::Pan, "Pan");
+            });
+        ui.label("Zoom: scroll to zoom; left-click+drag to pan");
+        ui.label("Pan: scroll/left-click+drag to pan; ctrl+scroll to zoom");
         ui.separator();
 
         ui.add(
