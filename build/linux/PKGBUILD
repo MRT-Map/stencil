@@ -1,6 +1,6 @@
 # Maintainer: 7d <i.third.7d@protonmail.com>
 pkgname=stencil2
-pkgver=2.2.6
+pkgver=2.2.7
 pkgrel=1
 depends=('curl')
 makedepends=('dpkg')
@@ -9,7 +9,7 @@ pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
 url="https://github.com/mrt-map/stencil2"
 source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/stencil2_${pkgver}_amd64.deb")
-sha256sums=('2ba59e33a737c177ecf942c40395aa76f13117be94cf27f30e2cb6986c1c934c')
+sha256sums=('beeee095fe5c97d7943b5b5f152bbb4151c0d7541d0f62bb69be49cbe96fde91')
 
 if [[ -f PKGBUILD ]]; then
     cp PKGBUILD stencil2.install
