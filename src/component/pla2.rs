@@ -34,7 +34,7 @@ pub struct PlaComponent<T: Coords> {
     pub display_name: String,
     pub description: String,
     pub tags: Vec<String>,
-    pub layer: f64,
+    pub layer: f32,
     #[serde(rename = "type")]
     pub ty: String,
     pub nodes: Vec<T>,
@@ -233,7 +233,7 @@ impl PlaComponent<EditorCoords> {
 
         let transform = Transform::from_xyz(0.0, 0.0, {
             let order = skin.get_order(&self.ty).unwrap_or(0);
-            (order as f32).mul_add(0.001, self.layer as f32 + 20.0)
+            (order as f32).mul_add(0.001, self.layer + 20.0)
         });
         (shape, transform)
     }

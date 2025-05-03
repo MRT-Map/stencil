@@ -155,7 +155,7 @@ pub struct Skin {
     pub font_files: Vec<(String, String)>,
     pub font_string: String,
     pub background: HexColor,
-    pub prune_small_text: Option<f64>,
+    pub prune_small_text: Option<f32>,
     pub licence: String,
 }
 
