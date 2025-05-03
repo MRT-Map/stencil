@@ -76,7 +76,7 @@ pub fn update_notifs_sy(
     for notif in pending_notifs {
         toasts
             .0
-            .add(Toast::custom(notif.message.to_owned(), notif.level.clone()))
+            .add(Toast::custom(notif.message.clone(), notif.level.clone()))
             .duration(
                 ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
                     && misc_settings.notif_duration != 0)

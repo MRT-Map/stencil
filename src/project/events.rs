@@ -160,7 +160,7 @@ pub fn on_project(
                 })
                 .unwrap_or_default();
             NOTIF_LOG.push(
-                &format!("Reloaded {} namespaces", ns.len()),
+                format!("Reloaded {} namespaces", ns.len()),
                 ToastLevel::Success,
             );
             for ns in ns {

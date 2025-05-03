@@ -80,7 +80,7 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
                     (ComponentType::Line, "line")
                 };
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Unknown type {} for component {}\nAssuming it is a(n) {}",
                         self.ty, self, s
                     ),

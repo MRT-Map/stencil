@@ -206,7 +206,7 @@ pub fn tile_settings_dialog(
         if let Ok(new) = load_toml(&file, Some("basemap")) {
             tile_settings.basemaps.insert(0, new);
             NOTIF_LOG.push(
-                &format!("Loaded new basemap from {}", file.to_string_lossy()),
+                format!("Loaded new basemap from {}", file.to_string_lossy()),
                 ToastLevel::Success,
             );
         }
@@ -218,7 +218,7 @@ pub fn tile_settings_dialog(
             let _ = FileDialogs::save_storage(file_dialog.storage_mut());
             if save_toml(basemap, &file, Some("basemap")).is_ok() {
                 NOTIF_LOG.push(
-                    &format!("Exported basemap to {}", file.to_string_lossy()),
+                    format!("Exported basemap to {}", file.to_string_lossy()),
                     ToastLevel::Success,
                 );
             }

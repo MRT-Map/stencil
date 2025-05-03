@@ -1,11 +1,11 @@
 pub mod compat;
 pub mod load_assets;
-mod load_fonts;
-mod load_skin;
+pub mod load_fonts;
+pub mod load_skin;
 pub mod set_icon;
 pub mod spawn_camera;
 pub mod unzip_assets;
-mod welcome;
+pub mod welcome;
 
 use bevy::prelude::*;
 use load_skin::get_skin_sy;
