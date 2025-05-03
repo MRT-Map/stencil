@@ -83,7 +83,7 @@ pub fn on_point_left_click(
     };
     let new_point = make_component(pla.clone(), &skin);
     debug!("Placing new point at {node:?}");
-    status.0 = format!("Created new point {pla} at {node:?}").into();
+    status.set(format!("Created new point {pla} at {node:?}"));
 
     commands.trigger(SelectEv::DeselectAll);
 
@@ -139,7 +139,7 @@ pub fn on_line_area_left_click(
             pla.nodes.push(new.into());
         }
         debug!(?e, "Continuing {ty_text} at {new:?}");
-        status.0 = format!("Continuing {ty_text} at {new:?}").into();
+        status.set(format!("Continuing {ty_text} at {new:?}"));
         commands.entity(e).trigger(RenderEv::default());
 
         if ty_text == "area" && pla.nodes.first() == pla.nodes.last() && !pla.nodes.is_empty() {
@@ -157,7 +157,7 @@ pub fn on_line_area_left_click(
             pla
         };
         debug!("Starting new {ty_text} at {new:?}");
-        status.0 = format!("Starting new {ty_text} at {new:?}",).into();
+        status.set(format!("Starting new {ty_text} at {new:?}",));
         commands
             .spawn(make_component(pla, &skin))
             .insert(CreatedComponent);
@@ -227,7 +227,7 @@ pub fn on_clear_created_component(
     debug!(?e, "Clearing CreatedComponent marker");
     if pla.nodes.len() == 1 {
         commands.entity(e).despawn();
-        status.0 = "Cancelled component creation".into();
+        status.set("Cancelled component creation");
     } else {
         if !namespaces
             .visibilities
@@ -247,7 +247,7 @@ pub fn on_clear_created_component(
             before: None,
             after: Some(pla.to_owned().into()),
         }));
-        status.0 = format!(
+        status.set(format!(
             "Created new {} {}",
             if pla.get_skin_type(&skin) == ComponentType::Area {
                 "area"
@@ -255,8 +255,7 @@ pub fn on_clear_created_component(
                 "line"
             },
             &*pla
-        )
-        .into();
+        ));
     }
 }
 

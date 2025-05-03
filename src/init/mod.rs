@@ -56,7 +56,7 @@ fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
         let _ = safe_delete(&cache_path("tile-cache"), None);
     }
 
-    status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
+    status.set(format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")));
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState::Pending(EditorState::Idle));

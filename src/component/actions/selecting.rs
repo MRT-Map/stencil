@@ -27,10 +27,10 @@ pub fn on_select_left_click(
     if e == Entity::PLACEHOLDER {
         info!("Selected nothing, deselecting");
         commands.trigger(SelectEv::DeselectAll);
-        status.0 = "Deselected component".into();
+        status.set("Deselected component");
     } else if components.contains(e) {
         commands.trigger_targets(SelectEv::SelectOne, e);
-        status.0 = "Selected component".into();
+        status.set("Selected component");
     }
 }
 
