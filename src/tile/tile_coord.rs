@@ -40,10 +40,10 @@ impl TileCoord {
     #[must_use]
     pub fn get_edges(&self, basemap: &Basemap) -> (f32, f32, f32, f32) {
         (
-            self.x as f32 * Zoom(f32::from(self.z)).tile_size(basemap) as f32,
-            self.y as f32 * Zoom(f32::from(self.z)).tile_size(basemap) as f32,
-            (self.x + 1) as f32 * Zoom(f32::from(self.z)).tile_size(basemap) as f32,
-            (self.y + 1) as f32 * Zoom(f32::from(self.z)).tile_size(basemap) as f32,
+            self.x as f32 * Zoom(f32::from(self.z)).tile_size(basemap),
+            self.y as f32 * Zoom(f32::from(self.z)).tile_size(basemap),
+            (self.x + 1) as f32 * Zoom(f32::from(self.z)).tile_size(basemap),
+            (self.y + 1) as f32 * Zoom(f32::from(self.z)).tile_size(basemap),
         )
     }
 

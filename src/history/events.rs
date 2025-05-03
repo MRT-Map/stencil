@@ -5,6 +5,7 @@ use std::{
 
 use bevy::prelude::*;
 use eyre::eyre;
+use itertools::Itertools;
 use tracing::debug;
 
 use crate::{
@@ -15,11 +16,7 @@ use crate::{
     ui::panel::status::Status,
 };
 
-#[expect(
-    clippy::needless_pass_by_value,
-    clippy::cognitive_complexity,
-    clippy::significant_drop_tightening
-)]
+#[expect(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 pub fn on_history(
     trigger: Trigger<HistoryEv>,
     mut commands: Commands,
@@ -79,53 +76,76 @@ pub fn on_history(
             }
             history.undo_stack.push(histories);
         }
-        HistoryEv::Undo => {
-            let Some(mut histories) = history.undo_stack.pop() else {
-                status.0 = "Nothing to undo".into();
+        HistoryEv::Undo | HistoryEv::Redo => {
+            let history = &mut *history;
+            let (ev, past, stack, other_stack) = if matches!(trigger.event(), HistoryEv::Undo) {
+                (
+                    "undo",
+                    "Undid",
+                    &mut history.undo_stack,
+                    &mut history.redo_stack,
+                )
+            } else {
+                (
+                    "redo",
+                    "Redid",
+                    &mut history.redo_stack,
+                    &mut history.undo_stack,
+                )
+            };
+            let Some(mut histories) = stack.pop() else {
+                status.0 = format!("Nothing to {ev}").into();
                 return Ok(());
             };
+            status.0 = format!(
+                "{past} {}",
+                histories.iter().map(ToString::to_string).join("; ")
+            )
+            .into();
             for history in &mut histories {
-                debug!("Undid {history}");
-                status.0 = format!("Undid {history}").into();
+                debug!("{past} {history}");
                 match history {
                     HistoryEntry::Component {
                         before,
                         after,
                         e: component_id,
-                    } => match (before, after) {
-                        (Some(before), None) => {
-                            let e = commands
-                                .spawn(make_component((**before).clone(), &skin))
-                                .id();
+                    } => match (trigger.event(), before, after) {
+                        (HistoryEv::Undo, Some(pla), None) | (HistoryEv::Redo, None, Some(pla)) => {
+                            let e = commands.spawn(make_component((**pla).clone(), &skin)).id();
                             *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
                             ids.insert(e, Arc::clone(component_id));
                         }
-                        (Some(before), Some(_)) => {
+                        (HistoryEv::Undo, Some(pla), Some(_))
+                        | (HistoryEv::Redo, Some(_), Some(pla)) => {
                             let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
                             commands
                                 .entity(*component_id)
-                                .insert((**before).clone())
+                                .insert((**pla).clone())
                                 .trigger(RenderEv::default());
                         }
-                        (None, _) => {
+                        (HistoryEv::Undo, None, _) | (HistoryEv::Redo, _, None) => {
                             let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
                             commands.entity(*component_id).despawn();
                             ids.remove(&component_id);
                         }
+                        _ => unreachable!(),
                     },
                     HistoryEntry::Namespace { namespace, action } => {
-                        commands.trigger(match action {
-                            NamespaceAction::Show => ProjectEv::Hide {
+                        commands.trigger(match (trigger.event(), action) {
+                            (HistoryEv::Undo, NamespaceAction::Show)
+                            | (HistoryEv::Redo, NamespaceAction::Hide) => ProjectEv::Hide {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
                             },
-                            NamespaceAction::Hide => ProjectEv::Show {
+                            (HistoryEv::Undo, NamespaceAction::Hide)
+                            | (HistoryEv::Redo, NamespaceAction::Show) => ProjectEv::Show {
                                 ns: namespace.to_owned(),
                                 history_invoked: true,
                                 notif: true,
                             },
-                            NamespaceAction::Create(deleted_file) => {
+                            (HistoryEv::Undo, NamespaceAction::Create(deleted_file))
+                            | (HistoryEv::Redo, NamespaceAction::Delete(deleted_file)) => {
                                 namespaces.visibilities.remove(namespace);
                                 if namespaces
                                     .dir
@@ -140,7 +160,8 @@ pub fn on_history(
                                 }
                                 continue;
                             }
-                            NamespaceAction::Delete(deleted_file) => {
+                            (HistoryEv::Undo, NamespaceAction::Delete(deleted_file))
+                            | (HistoryEv::Redo, NamespaceAction::Create(deleted_file)) => {
                                 namespaces.visibilities.insert(namespace.to_owned(), false);
                                 if let Some(deleted_file) = deleted_file {
                                     let _ = restore(
@@ -152,90 +173,12 @@ pub fn on_history(
                                 }
                                 continue;
                             }
+                            _ => unreachable!(),
                         });
                     }
                 }
             }
-            history.redo_stack.push(histories);
-        }
-        HistoryEv::Redo => {
-            let Some(mut histories) = history.redo_stack.pop() else {
-                status.0 = "Nothing to redo".into();
-                return Ok(());
-            };
-            for history in &mut histories {
-                debug!("Redid {history}");
-                status.0 = format!("Redid {history}").into();
-                match history {
-                    HistoryEntry::Component {
-                        before,
-                        after,
-                        e: component_id,
-                    } => match (before, after) {
-                        (None, Some(after)) => {
-                            let e = commands
-                                .spawn(make_component((**after).clone(), &skin))
-                                .id();
-                            *component_id.write().map_err(|a| eyre!("{a:?}"))? = e;
-                            ids.insert(e, Arc::clone(component_id));
-                        }
-                        (Some(_), Some(after)) => {
-                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
-                            commands
-                                .entity(*component_id)
-                                .insert((**after).clone())
-                                .trigger(RenderEv::default());
-                        }
-                        (_, None) => {
-                            let component_id = component_id.read().map_err(|a| eyre!("{a:?}"))?;
-                            commands.entity(*component_id).despawn();
-                            ids.remove(&component_id);
-                        }
-                    },
-                    HistoryEntry::Namespace { namespace, action } => {
-                        commands.trigger(match action {
-                            NamespaceAction::Show => ProjectEv::Show {
-                                ns: namespace.to_owned(),
-                                history_invoked: true,
-                                notif: true,
-                            },
-                            NamespaceAction::Hide => ProjectEv::Hide {
-                                ns: namespace.to_owned(),
-                                history_invoked: true,
-                                notif: true,
-                            },
-                            NamespaceAction::Create(deleted_file) => {
-                                namespaces.visibilities.insert(namespace.to_owned(), true);
-                                if let Some(deleted_file) = deleted_file {
-                                    let _ = restore(
-                                        deleted_file,
-                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
-                                        Some("namespace file"),
-                                    )
-                                    .ok();
-                                }
-                                continue;
-                            }
-                            NamespaceAction::Delete(deleted_file) => {
-                                namespaces.visibilities.remove(namespace);
-                                if namespaces
-                                    .dir
-                                    .join(format!("{namespace}.pla2.msgpack"))
-                                    .exists()
-                                {
-                                    *deleted_file = safe_delete(
-                                        &namespaces.dir.join(format!("{namespace}.pla2.msgpack")),
-                                        Some("namespace file"),
-                                    )
-                                    .ok();
-                                }
-                                continue;
-                            }
-                        });
-                    }
-                }
-            }
-            history.undo_stack.push(histories);
+            other_stack.push(histories);
         }
     }
     Ok(())

@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use bevy::{
     input::{
-        gestures::{PanGesture, PinchGesture},
+        gestures::PinchGesture,
         mouse::{MouseScrollUnit, MouseWheel},
     },
     prelude::*,
