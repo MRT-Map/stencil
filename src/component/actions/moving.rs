@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     component::{
         actions::{rendering::RenderEv, selecting::SelectedComponent},
-        pla2::{ComponentType, EditorCoords, PlaComponent},
+        pla2::{ComponentType, PlaComponent},
         skin::Skin,
     },
     history::{HistoryEntry, HistoryEv},
@@ -47,7 +47,7 @@ pub fn on_right_click_drag(
 pub fn on_right_click_drag_start(
     trigger: Trigger<Pointer<DragStart>>,
     mut commands: Commands,
-    query: Query<(&PlaComponent<EditorCoords>, &Transform), With<SelectedComponent>>,
+    query: Query<(&PlaComponent, &Transform), With<SelectedComponent>>,
     mut status: ResMut<Status>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     mouse_pos_world: Res<MousePosWorld>,
@@ -75,10 +75,7 @@ pub fn on_right_click_drag_start(
 pub fn on_right_click_drag_end(
     trigger: Trigger<Pointer<DragEnd>>,
     mut commands: Commands,
-    mut query: Query<
-        (&mut Transform, &mut PlaComponent<EditorCoords>, &MoveData),
-        With<SelectedComponent>,
-    >,
+    mut query: Query<(&mut Transform, &mut PlaComponent, &MoveData), With<SelectedComponent>>,
     mut status: ResMut<Status>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
     skin: Res<Skin>,

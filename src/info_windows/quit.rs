@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    component::pla2::{EditorCoords, PlaComponent},
+    component::pla2::PlaComponent,
     info_windows::InfoWindowsEv,
     ui::popup::{Popup, Popups},
 };
@@ -11,7 +11,7 @@ pub fn on_quit(
     trigger: Trigger<InfoWindowsEv>,
     mut popups: ResMut<Popups>,
     mut exit: EventWriter<AppExit>,
-    components: Query<(), With<PlaComponent<EditorCoords>>>,
+    components: Query<(), With<PlaComponent>>,
     mut commands: Commands,
 ) {
     match trigger.event() {

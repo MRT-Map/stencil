@@ -5,7 +5,7 @@ use crate::{
     component::{
         actions::{rendering::RenderEv, selecting::SelectEv},
         make_component,
-        pla2::{ComponentType, EditorCoords, PlaComponent},
+        pla2::{ComponentType, PlaComponent},
         skin::Skin,
     },
     history::{HistoryEntry, HistoryEv},
@@ -186,7 +186,7 @@ pub fn on_line_area_right_click(
 
 #[tracing::instrument(skip_all)]
 pub fn create_component_sy(
-    set: Query<(Entity, &PlaComponent<EditorCoords>), With<CreatedComponent>>,
+    set: Query<(Entity, &PlaComponent), With<CreatedComponent>>,
     mouse_pos_world: Res<MousePosWorld>,
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
@@ -278,7 +278,7 @@ impl Plugin for CreateComponentPlugin {
 }
 
 pub type CreatedQuery<'world, 'state, 'a> =
-    Query<'world, 'state, (Entity, &'a mut PlaComponent<EditorCoords>), With<CreatedComponent>>;
+    Query<'world, 'state, (Entity, &'a mut PlaComponent), With<CreatedComponent>>;
 
 #[derive(Copy, Clone, Event)]
 pub struct ClearCreatedComponentEv;

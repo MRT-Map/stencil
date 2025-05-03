@@ -28,7 +28,7 @@ fn hex_to_color(hex: HexColor) -> Color {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Component)]
-pub struct PlaComponent<T: Coords> {
+pub struct PlaComponent<T: Coords = EditorCoords> {
     pub namespace: String,
     pub id: String,
     pub display_name: String,
@@ -111,7 +111,7 @@ impl<T: Coords + PartialEq> PlaComponent<T> {
 
 impl PlaComponent<MCCoords> {
     #[must_use]
-    pub fn to_editor_coords(&self) -> PlaComponent<EditorCoords> {
+    pub fn to_editor_coords(&self) -> PlaComponent {
         PlaComponent {
             namespace: self.namespace.clone(),
             id: self.id.clone(),
@@ -126,7 +126,7 @@ impl PlaComponent<MCCoords> {
     }
 }
 
-impl PlaComponent<EditorCoords> {
+impl PlaComponent {
     #[must_use]
     pub fn to_mc_coords(&self) -> PlaComponent<MCCoords> {
         PlaComponent {

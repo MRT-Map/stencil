@@ -8,7 +8,7 @@ use itertools::Itertools;
 use crate::{
     component::{
         make_component,
-        pla2::{EditorCoords, MCCoords, PlaComponent},
+        pla2::{MCCoords, PlaComponent},
         skin::Skin,
     },
     file::{load_msgpack, safe_delete, save_msgpack},
@@ -45,7 +45,7 @@ pub fn on_project(
     trigger: Trigger<ProjectEv>,
     mut commands: Commands,
     mut namespaces: ResMut<Namespaces>,
-    query: Query<(Entity, &PlaComponent<EditorCoords>)>,
+    query: Query<(Entity, &PlaComponent)>,
     mut file_dialogs: ResMut<FileDialogs>,
     skin: Res<Skin>,
     mut history: ResMut<History>,

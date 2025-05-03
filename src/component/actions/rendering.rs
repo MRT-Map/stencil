@@ -9,7 +9,7 @@ use crate::{
     component::{
         actions::{hovering::HoveredComponent, selecting::SelectedComponent},
         circle::make_circle,
-        pla2::{ComponentType, EditorCoords, HighlightExt, PlaComponent},
+        pla2::{ComponentType, HighlightExt, PlaComponent},
         skin::Skin,
         tools::creating::CreatedComponent,
     },
@@ -24,7 +24,7 @@ pub fn on_render(
     mut commands: Commands,
     skin: Res<Skin>,
     query: Query<(
-        &mut PlaComponent<EditorCoords>,
+        &mut PlaComponent,
         Option<&HoveredComponent>,
         Option<&SelectedComponent>,
         Option<&CreatedComponent>,
@@ -158,4 +158,4 @@ impl Plugin for RenderComponentPlugin {
 }
 
 #[derive(Clone, PartialEq, Default, Event)]
-pub struct RenderEv(pub Option<PlaComponent<EditorCoords>>);
+pub struct RenderEv(pub Option<PlaComponent>);

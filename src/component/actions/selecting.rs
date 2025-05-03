@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::{
-        actions::rendering::RenderEv,
-        pla2::{EditorCoords, PlaComponent},
-    },
+    component::{actions::rendering::RenderEv, pla2::PlaComponent},
     state::EditorState,
     ui::{cursor::mouse_events::Click2, map::window::PointerWithinTilemap, panel::status::Status},
 };
@@ -14,7 +11,7 @@ pub fn on_select_left_click(
     trigger: Trigger<Pointer<Click2>>,
     mut commands: Commands,
     state: Res<State<EditorState>>,
-    components: Query<(), With<PlaComponent<EditorCoords>>>,
+    components: Query<(), With<PlaComponent>>,
     mut status: ResMut<Status>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
@@ -41,10 +38,7 @@ pub fn on_select_left_click(
 pub fn on_select(
     trigger: Trigger<SelectEv>,
     mut commands: Commands,
-    mut query: ParamSet<(
-        Query<&PlaComponent<EditorCoords>>,
-        Query<Entity, With<SelectedComponent>>,
-    )>,
+    mut query: ParamSet<(Query<&PlaComponent>, Query<Entity, With<SelectedComponent>>)>,
 ) {
     let e = trigger.target();
     if e == Entity::PLACEHOLDER && *trigger.event() != SelectEv::DeselectAll {

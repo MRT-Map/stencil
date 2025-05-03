@@ -9,14 +9,14 @@ use std::{
 
 use bevy::prelude::*;
 
-use crate::component::pla2::{EditorCoords, PlaComponent};
+use crate::component::pla2::PlaComponent;
 
 #[derive(Clone, Debug)]
 pub enum HistoryEntry<T = Entity> {
     Component {
         e: T,
-        before: Option<Box<PlaComponent<EditorCoords>>>,
-        after: Option<Box<PlaComponent<EditorCoords>>>,
+        before: Option<Box<PlaComponent>>,
+        after: Option<Box<PlaComponent>>,
     },
     Namespace {
         namespace: String,

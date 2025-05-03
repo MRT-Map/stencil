@@ -9,7 +9,7 @@ use crate::{
     component::{
         actions::selecting::SelectedComponent,
         panels::{component_editor::ComponentEditor, component_list::ComponentList},
-        pla2::{EditorCoords, PlaComponent},
+        pla2::PlaComponent,
         skin::Skin,
     },
     dirs_paths::data_path,
@@ -123,13 +123,8 @@ pub struct PanelParams<'w, 's> {
         'w,
         's,
         (
-            Query<
-                'w,
-                's,
-                (Entity, &'static mut PlaComponent<EditorCoords>),
-                With<SelectedComponent>,
-            >,
-            Query<'w, 's, (Entity, &'static PlaComponent<EditorCoords>)>,
+            Query<'w, 's, (Entity, &'static mut PlaComponent), With<SelectedComponent>>,
+            Query<'w, 's, (Entity, &'static PlaComponent)>,
         ),
     >,
     pub camera: Query<'w, 's, &'static mut Transform, With<Camera>>,

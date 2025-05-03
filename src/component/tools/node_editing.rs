@@ -19,7 +19,7 @@ use crate::{
 
 #[derive(Debug, Clone, Component)]
 pub struct NodeEditData {
-    pub old_pla: PlaComponent<EditorCoords>,
+    pub old_pla: PlaComponent,
     pub mouse_pos_world: MousePosWorld,
     pub node_pos_world: IVec2,
     pub node_list_pos: usize,
@@ -29,7 +29,7 @@ pub struct NodeEditData {
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_down(
     trigger: Trigger<Pointer<Pressed>>,
-    mut selected: Query<(Entity, &mut PlaComponent<EditorCoords>), With<SelectedComponent>>,
+    mut selected: Query<(Entity, &mut PlaComponent), With<SelectedComponent>>,
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
     skin: Res<Skin>,
@@ -113,10 +113,7 @@ pub fn on_node_edit_right_down(
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_up(
     trigger: Trigger<Pointer<Released>>,
-    mut selected: Query<
-        (Entity, &mut PlaComponent<EditorCoords>),
-        (With<SelectedComponent>, With<NodeEditData>),
-    >,
+    mut selected: Query<(Entity, &mut PlaComponent), (With<SelectedComponent>, With<NodeEditData>)>,
     mut commands: Commands,
     mut status: ResMut<Status>,
     state: Res<State<EditorState>>,
@@ -141,10 +138,7 @@ pub fn on_node_edit_right_up(
 #[tracing::instrument(skip_all)]
 pub fn on_node_edit_right_click(
     trigger: Trigger<Pointer<Click2>>,
-    mut selected: Query<
-        (Entity, &mut PlaComponent<EditorCoords>, &NodeEditData),
-        With<SelectedComponent>,
-    >,
+    mut selected: Query<(Entity, &mut PlaComponent, &NodeEditData), With<SelectedComponent>>,
     mut commands: Commands,
     skin: Res<Skin>,
     mut status: ResMut<Status>,
@@ -178,10 +172,7 @@ pub fn on_node_edit_right_click(
 #[tracing::instrument(skip_all)]
 pub fn on_edit_nodes(
     trigger: Trigger<EditNodesEv>,
-    mut selected: Query<
-        (Entity, &PlaComponent<EditorCoords>, &NodeEditData),
-        With<SelectedComponent>,
-    >,
+    mut selected: Query<(Entity, &PlaComponent, &NodeEditData), With<SelectedComponent>>,
     mut commands: Commands,
 ) {
     let Ok((e, pla, orig)) = selected.single_mut() else {
@@ -204,10 +195,7 @@ pub fn on_edit_nodes(
 
 #[tracing::instrument(skip_all)]
 pub fn move_selected_node_sy(
-    mut selected: Query<
-        (Entity, &mut PlaComponent<EditorCoords>, &NodeEditData),
-        With<SelectedComponent>,
-    >,
+    mut selected: Query<(Entity, &mut PlaComponent, &NodeEditData), With<SelectedComponent>>,
     mut commands: Commands,
     mouse_pos_world: Res<MousePosWorld>,
 ) {

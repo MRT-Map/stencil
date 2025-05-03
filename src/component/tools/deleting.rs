@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::pla2::{EditorCoords, PlaComponent},
+    component::pla2::PlaComponent,
     history::{HistoryEntry, HistoryEv},
     state::EditorState,
     ui::{cursor::mouse_events::Click2, map::window::PointerWithinTilemap, panel::status::Status},
@@ -24,7 +24,7 @@ pub fn delete_component_sy(
 pub fn on_delete(
     trigger: Trigger<DeleteEv>,
     mut commands: Commands,
-    query: Query<&PlaComponent<EditorCoords>>,
+    query: Query<&PlaComponent>,
     mut status: ResMut<Status>,
 ) {
     let e = trigger.target();
