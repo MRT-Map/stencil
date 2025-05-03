@@ -113,7 +113,7 @@ impl DockWindow for ProjectEditor {
                     });
                 }
                 if let Some(delete) = delete {
-                    commands.trigger(ProjectEv::Delete(delete, false));
+                    commands.trigger(ProjectEv::Delete(delete));
                 }
                 body.row(20.0, |mut row| {
                     row.col(|_| ());

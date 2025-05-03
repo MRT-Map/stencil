@@ -36,7 +36,7 @@ pub enum ProjectEv {
         history_invoked: bool,
         notif: bool,
     },
-    Delete(String, bool),
+    Delete(String),
     Save(bool),
 }
 
@@ -48,7 +48,6 @@ pub fn on_project(
     query: Query<(Entity, &PlaComponent<EditorCoords>)>,
     mut file_dialogs: ResMut<FileDialogs>,
     skin: Res<Skin>,
-    mut popups: ResMut<Popups>,
     mut history: ResMut<History>,
 ) {
     match trigger.event() {
@@ -168,15 +167,7 @@ pub fn on_project(
                 let _ = namespaces.visibilities.entry(ns).or_insert(false);
             }
         }
-        ProjectEv::Delete(ns, false) => {
-            popups.add(Popup::base_confirm(
-                "confirm_delete_ns",
-                format!("Are you sure you want to delete namespace {ns}?"),
-                "",
-                ProjectEv::Delete(ns.to_owned(), true),
-            ));
-        }
-        ProjectEv::Delete(ns, true) => {
+        ProjectEv::Delete(ns) => {
             namespaces.visibilities.remove(ns);
             let delete_file = namespaces
                 .dir
