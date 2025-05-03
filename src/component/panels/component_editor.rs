@@ -75,7 +75,7 @@ impl DockWindow for ComponentEditor {
         let component_type = component_data.get_skin_type(skin);
         let old_skin_type = component_data.ty.clone();
         egui::ComboBox::from_label("Component type")
-            .selected_text(component_data.ty.clone())
+            .selected_text(skin.show_type(&component_data.ty, ui, &egui::TextStyle::Button))
             .show_ui(ui, |ui| {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 skin.types
@@ -83,42 +83,7 @@ impl DockWindow for ComponentEditor {
                     .filter(|skin_comp| skin_comp.get_type() == component_type)
                     .sorted_by_key(|skin_comp| skin_comp.name())
                     .for_each(|skin_comp| {
-                        let mut label = egui::text::LayoutJob::default();
-                        let space = if let Some(c) = skin_comp.front_colour() {
-                            label.append(
-                                "◼",
-                                0.0,
-                                egui::TextFormat {
-                                    color: egui::Color32::from_rgba_premultiplied(
-                                        c.r, c.g, c.b, c.a,
-                                    ),
-                                    ..default()
-                                },
-                            );
-                            7.5
-                        } else if let Some(c) = skin_comp.back_colour() {
-                            label.append(
-                                "□",
-                                0.0,
-                                egui::TextFormat {
-                                    color: egui::Color32::from_rgba_premultiplied(
-                                        c.r, c.g, c.b, c.a,
-                                    ),
-                                    ..default()
-                                },
-                            );
-                            7.5
-                        } else {
-                            0.0
-                        };
-                        label.append(
-                            skin_comp.name(),
-                            space,
-                            egui::TextFormat {
-                                font_id: egui::FontId::proportional(12.5),
-                                ..default()
-                            },
-                        );
+                        let label = skin_comp.widget_text(ui, &egui::TextStyle::Button);
                         ui.selectable_value(
                             &mut component_data.ty,
                             skin_comp.name().to_owned(),

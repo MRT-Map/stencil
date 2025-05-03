@@ -24,6 +24,7 @@ impl DockWindow for ComponentList {
             queries,
             camera,
             commands,
+            skin,
             ..
         } = params;
         let mut transform = camera.single_mut().unwrap();
@@ -33,7 +34,7 @@ impl DockWindow for ComponentList {
             ui.collapsing(ns, |ui| {
                 TableBuilder::new(ui)
                     .striped(true)
-                    .column(Column::auto().at_least(150.0))
+                    .column(Column::auto().at_least(100.0))
                     .column(Column::auto().at_least(50.0))
                     .column(Column::auto().at_least(10.0))
                     .column(Column::auto().at_least(10.0))
@@ -49,28 +50,33 @@ impl DockWindow for ComponentList {
                         for (e, component) in components.iter().sorted_by_key(|(_, a)| &a.id) {
                             body.row(20.0, |mut row| {
                                 row.col(|ui| {
-                                    ui.label(component.to_string());
+                                    ui.label(
+                                        egui::RichText::new(component.to_string())
+                                            .text_style(egui::TextStyle::Small),
+                                    );
                                 });
                                 row.col(|ui| {
-                                    ui.label(&component.ty);
+                                    let label =
+                                        skin.show_type(&component.ty, ui, &egui::TextStyle::Body);
+                                    ui.label(label);
                                 });
 
-                                let mut move_to = false;
+                                let mut see = false;
                                 row.col(|ui| {
                                     if component.nodes.is_empty() {
                                         return;
                                     }
-                                    if ui.small_button("Move to").clicked() {
-                                        move_to = true;
+                                    if ui.small_button("See").clicked() {
+                                        see = true;
                                     }
                                 });
                                 row.col(|ui| {
                                     if ui.small_button("Select").clicked() {
                                         commands.entity(*e).trigger(SelectEv::SelectOne);
-                                        move_to = true;
+                                        see = true;
                                     }
                                 });
-                                if move_to {
+                                if see {
                                     let centre =
                                         component.nodes.iter().map(|a| a.0.as_vec2()).sum::<Vec2>()
                                             / component.nodes.len() as f32;

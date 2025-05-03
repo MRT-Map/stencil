@@ -55,10 +55,10 @@ impl DockWindow for ProjectEditor {
             .column(Column::auto().at_least(0.05))
             .header(20.0, |mut header| {
                 header.col(|ui| {
-                    ui.label("👁");
+                    ui.label("👁").on_hover_text("Visibility");
                 });
                 header.col(|ui| {
-                    ui.label("Ns.");
+                    ui.label("Namespace");
                 });
                 header.col(|ui| {
                     ui.label("#");
@@ -116,7 +116,7 @@ impl DockWindow for ProjectEditor {
                     row.col(|_| ());
                     row.col(|ui| {
                         egui::TextEdit::singleline(&mut **new_namespace)
-                            .hint_text("New ns.")
+                            .hint_text("New namespace")
                             .show(ui);
                     });
                     row.col(|ui| {

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use base64::engine::general_purpose::STANDARD;
 use base64_serde::base64_serde_type;
 use bevy::prelude::*;
+use bevy_egui::egui;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
@@ -247,6 +248,50 @@ impl SkinComponent {
                 .next_back(),
         }
     }
+
+    #[must_use]
+    pub fn widget_text(
+        &self,
+        ui: &mut egui::Ui,
+        text_style: &egui::TextStyle,
+    ) -> impl Into<egui::WidgetText> {
+        let font_id = &ui.style().text_styles[text_style];
+        let mut label = egui::text::LayoutJob::default();
+        let space = if let Some(c) = self.front_colour() {
+            label.append(
+                "◼",
+                0.0,
+                egui::TextFormat {
+                    font_id: font_id.to_owned(),
+                    color: egui::Color32::from_rgba_premultiplied(c.r, c.g, c.b, c.a),
+                    ..default()
+                },
+            );
+            font_id.size / 4.0
+        } else if let Some(c) = self.back_colour() {
+            label.append(
+                "□",
+                0.0,
+                egui::TextFormat {
+                    font_id: font_id.to_owned(),
+                    color: egui::Color32::from_rgba_premultiplied(c.r, c.g, c.b, c.a),
+                    ..default()
+                },
+            );
+            font_id.size / 4.0
+        } else {
+            0.0
+        };
+        label.append(
+            self.name(),
+            space,
+            egui::TextFormat {
+                font_id: font_id.to_owned(),
+                ..default()
+            },
+        );
+        label
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Resource)]
@@ -265,6 +310,18 @@ impl Skin {
     #[must_use]
     pub fn get_type(&self, ty: &str) -> Option<&SkinComponent> {
         self.types.iter().find(|a| a.name() == ty)
+    }
+    #[must_use]
+    pub fn show_type(
+        &self,
+        ty: &str,
+        ui: &mut egui::Ui,
+        text_style: &egui::TextStyle,
+    ) -> impl Into<egui::WidgetText> {
+        self.get_type(ty).map_or_else(
+            || egui::WidgetText::from(ty),
+            |a| a.widget_text(ui, text_style).into(),
+        )
     }
     #[must_use]
     pub fn get_order(&self, ty: &str) -> Option<usize> {
