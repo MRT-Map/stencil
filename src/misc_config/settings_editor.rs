@@ -88,12 +88,6 @@ impl DockWindow for MiscSettingsEditor {
         ui.separator();
 
         ui.add(
-            egui::Slider::new(&mut misc_settings.click_max_offset, 0.0..=128.0)
-                .text("Maximum mouse offset for click"),
-        );
-        ui.separator();
-
-        ui.add(
             egui::Slider::new(&mut misc_settings.crosshair_size, 0.1..=4.0).text("Crosshair size"),
         );
         ui.separator();
@@ -127,14 +121,16 @@ impl DockWindow for MiscSettingsEditor {
 
         ui.add(
             egui::Slider::new(&mut misc_settings.autosave_interval, 0..=600)
-                .text("Autosave interval (s)"),
+                .suffix("s")
+                .text("Autosave interval"),
         );
         ui.label("Set to 0 to disable autosave");
         ui.separator();
 
         ui.add(
             egui::Slider::new(&mut misc_settings.notif_duration, 0..=10)
-                .text("Notification duration (s)"),
+                .suffix("s")
+                .text("Notification duration"),
         );
         ui.label("Time before success and info notifications expire. Set to 0 to disable expiry");
 

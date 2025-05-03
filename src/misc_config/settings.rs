@@ -59,13 +59,6 @@ field!(
 );
 field!(
     MiscSettings,
-    click_max_offset_is_default,
-    default_click_max_offset,
-    click_max_offset,
-    f32
-);
-field!(
-    MiscSettings,
     crosshair_size_is_default,
     default_crosshair_size,
     crosshair_size,
@@ -143,11 +136,6 @@ pub struct MiscSettings {
     )]
     pub hide_far_handles_distance: f32,
     #[serde(
-        default = "default_click_max_offset",
-        skip_serializing_if = "click_max_offset_is_default"
-    )]
-    pub click_max_offset: f32,
-    #[serde(
         default = "default_crosshair_size",
         skip_serializing_if = "crosshair_size_is_default"
     )]
@@ -192,7 +180,6 @@ impl Default for MiscSettings {
             small_handle_size: 0.5,
             hide_far_handles_threshold: 50,
             hide_far_handles_distance: 10000.0,
-            click_max_offset: 25.0,
             crosshair_size: 1.0,
             scroll_multiplier_line: 1.0,
             scroll_multiplier_pixel: 1.0,
