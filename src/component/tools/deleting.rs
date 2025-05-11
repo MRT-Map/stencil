@@ -14,7 +14,10 @@ pub fn delete_component_sy(
     state: Res<State<EditorState>>,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
 ) {
-    if pointer_within_tilemap.is_none() || **state != EditorState::DeletingComponent {
+    if pointer_within_tilemap.is_none()
+        || **state != EditorState::DeletingComponent
+        || trigger.target() == Entity::PLACEHOLDER
+    {
         return;
     }
     commands.entity(trigger.target()).trigger(DeleteEv);

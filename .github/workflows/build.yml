@@ -94,7 +94,7 @@ jobs:
         echo 'changelog<<__EOF__'
         python -c "
         import os
-        print('\n'.join(open('changelog.md').read().split('# v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n#')[0].replace('*', '\*'))
+        print('\n'.join(open('changelog.md').read().split('# v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n#')[0])
         "
         echo __EOF__
         } >> "$GITHUB_OUTPUT"
@@ -122,13 +122,10 @@ jobs:
       with:
         name: windows
         path: dist
-    - run: echo $CHANGELOG > changelog.md
-      env:
-        CHANGELOG: ${{ needs.version-changelog.outputs.changelog }}
     - uses: softprops/action-gh-release@v2
       with:
         tag_name: v${{ needs.version-changelog.outputs.version }}
-        body_path: changelog.md
+        body: ${{ needs.version-changelog.outputs.changelog }}
         files: dist/*
 
   update-hash:

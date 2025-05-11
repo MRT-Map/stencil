@@ -4,6 +4,9 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.10
+* Fix crash on component delete
+
 # v2.2.9
 * Fix inaccurate status messages on idle
 * Added version checker

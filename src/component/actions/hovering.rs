@@ -7,9 +7,10 @@ pub fn on_hover_over(
     trigger: Trigger<Pointer<Over>>,
     mut commands: Commands,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
+    pickables: Query<(), With<Pickable>>,
 ) {
     let e = trigger.target();
-    if pointer_within_tilemap.is_none() {
+    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
         return;
     }
     debug!(?e, "Hovering over component");
@@ -24,9 +25,10 @@ pub fn on_hover_out(
     trigger: Trigger<Pointer<Out>>,
     mut commands: Commands,
     pointer_within_tilemap: Option<Res<PointerWithinTilemap>>,
+    pickables: Query<(), With<Pickable>>,
 ) {
     let e = trigger.target();
-    if pointer_within_tilemap.is_none() {
+    if pointer_within_tilemap.is_none() || !pickables.contains(e) {
         return;
     }
     debug!(?e, "Hovering out of component");

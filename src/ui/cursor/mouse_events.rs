@@ -28,7 +28,14 @@ pub struct MiddleClick(pub Click2);
 pub struct RightClick(pub Click2);
 
 #[tracing::instrument(skip_all)]
-pub fn on_emit_click2_down(trigger: Trigger<Pointer<Pressed>>, mut commands: Commands) {
+pub fn on_emit_click2_down(
+    trigger: Trigger<Pointer<Pressed>>,
+    mut commands: Commands,
+    pickables: Query<(), With<Pickable>>,
+) {
+    if !pickables.contains(trigger.target()) {
+        return;
+    }
     let event = Click2 {
         button: trigger.event.button,
         hit: trigger.event.hit.clone(),
@@ -71,6 +78,7 @@ pub fn on_emit_click2_up(
         return;
     }
 
+    debug!(e=?trigger.target(), "No-movement click detected");
     let event = Pointer::new(
         trigger.pointer_id,
         trigger.pointer_location.clone(),

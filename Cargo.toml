@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.2.9"
+version = "2.2.10"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
@@ -36,7 +36,7 @@ features = [
 
 [dependencies]
 bevy_prototype_lyon = { git = "https://github.com/Nilirad/bevy_prototype_lyon", branch = "v0.14-update" }
-bevy_asset_loader = "0.23.0-rc.3"
+bevy_asset_loader = "0.23.0-rc.4"
 bevy-inspector-egui = "0.31.0"
 
 bevy_egui = "0.34.1"
@@ -58,7 +58,7 @@ futures-lite = "2.6.0"
 async-lock = "3.4.0"
 async-executor = "1.13.2"
 
-backtrace = "0.3.74"
+backtrace = "0.3.75"
 color-backtrace = "0.7.0"
 
 serde = { version = "1.0.219", features = ["derive"] }
