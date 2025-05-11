@@ -4,6 +4,9 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.11
+* Add support for jpg and webp tile image loading
+
 # v2.2.10
 * Fix crash on component delete
 
