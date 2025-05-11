@@ -39,7 +39,7 @@ pub fn on_delete(
         after: None,
     }));
     commands.entity(e).despawn();
-    status.0 = format!("Deleted {pla}").into();
+    status.set(format!("Deleted {pla}"));
 }
 
 pub struct DeleteComponentPlugin;

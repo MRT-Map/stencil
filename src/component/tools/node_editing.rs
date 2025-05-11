@@ -92,7 +92,7 @@ pub fn on_node_edit_right_down(
         return;
     }
     info!(?e, ?list_pos, "Starting movement of node");
-    status.0 = format!("Started movement of node of {}", &*pla).into();
+    status.set(format!("Started movement of node of {}", &*pla));
     let (list_pos, was_new) = match list_pos {
         Pos::Existing(i) => (i, false),
         Pos::NewBefore(i) => {
@@ -129,7 +129,7 @@ pub fn on_node_edit_right_up(
     };
 
     info!(?e, "Ending movement of node");
-    status.0 = format!("Ended movement of node of {}", &*pla).into();
+    status.set(format!("Ended movement of node of {}", &*pla));
 
     commands.trigger_targets(EditNodesEv::ClearEventData, e);
 }
@@ -158,11 +158,11 @@ pub fn on_node_edit_right_click(
         return;
     }
     info!(?e, "Deleting node");
-    status.0 = format!("Deleted node of {}", &*pla).into();
+    status.set(format!("Deleted node of {}", &*pla));
     pla.nodes.remove(orig.node_list_pos);
     if pla.nodes.len() < 2 {
         info!(?e, "Deleting entity");
-        status.0 = format!("Deleting {}", &*pla).into();
+        status.set(format!("Deleting {}", &*pla));
         commands.entity(e).despawn();
     } else {
         commands.entity(e).trigger(RenderEv::default());

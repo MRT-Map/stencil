@@ -4,6 +4,10 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.9
+* Fix inaccurate status messages on idle
+* Added version checker
+
 # v2.2.8
 * Remove confirmation message for deleting a namespace, since it can be undone
 * Make `❌` buttons red

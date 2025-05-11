@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 use crate::{
     state::{ChangeStateEv, EditorState},
-    ui::panel::dock::PanelParams,
+    ui::{map::mouse_nav::ScrollMode, panel::dock::PanelParams},
 };
 
 pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerResponse<()> {
@@ -12,6 +12,7 @@ pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerRespon
         mouse_pos_world,
         pending_tiles,
         zoom,
+        misc_settings,
         ..
     } = params;
     let mut new_state = ***editor_state;
@@ -50,15 +51,18 @@ pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerRespon
     });
     if new_state != ***editor_state {
         commands.trigger(ChangeStateEv(new_state));
-        params.status.0 = match new_state {
-            EditorState::Idle => "Idle: L-Click to select component, or drag to pan. Zoom to scroll.",
+        params.status.set(match new_state {
+            EditorState::Idle => match misc_settings.scroll_mode {
+                ScrollMode::Zoom => "Idle: L-Click to select component. L-Click-drag to pan. Scroll to zoom.",
+                ScrollMode::Pan => "Idle: L-Click to select component. Scroll or L-Click-drag to pan. Shift and scroll to pan horizontally. Ctrl and scroll to zoom.",
+            },
             EditorState::EditingNodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
             EditorState::CreatingPoint => "Creating points: L-click to create point.",
             EditorState::CreatingLine => "Creating lines: L-click to start and continue line, L-click previous node to undo it. R-click to end. Alt to snap to angle.",
             EditorState::CreatingArea => "Creating areas: L-click to start and continue line, L-click previous node to undo it. L-click first node or R-click to end. Alt to snap to angle.",
             EditorState::DeletingComponent => "Deleting components: L-click to delete node.",
             _ => ""
-        }.into();
+        });
     }
     resp
 }

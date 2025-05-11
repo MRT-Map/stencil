@@ -94,14 +94,13 @@ pub fn on_history(
                 )
             };
             let Some(mut histories) = stack.pop() else {
-                status.0 = format!("Nothing to {ev}").into();
+                status.set(format!("Nothing to {ev}"));
                 return Ok(());
             };
-            status.0 = format!(
+            status.set(format!(
                 "{past} {}",
                 histories.iter().map(ToString::to_string).join("; ")
-            )
-            .into();
+            ));
             for history in &mut histories {
                 debug!("{past} {history}");
                 match history {

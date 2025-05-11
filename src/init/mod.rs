@@ -1,11 +1,11 @@
 pub mod compat;
 pub mod load_assets;
-mod load_fonts;
-mod load_skin;
+pub mod load_fonts;
+pub mod load_skin;
 pub mod set_icon;
 pub mod spawn_camera;
 pub mod unzip_assets;
-mod welcome;
+pub mod welcome;
 
 use bevy::prelude::*;
 use load_skin::get_skin_sy;
@@ -56,7 +56,7 @@ fn done_sy(mut commands: Commands, mut status: ResMut<Status>) {
         let _ = safe_delete(&cache_path("tile-cache"), None);
     }
 
-    status.0 = format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")).into();
+    status.set(format!("Welcome to Stencil v{}", env!("CARGO_PKG_VERSION")));
 
     info!("Transitioning out of idle");
     commands.insert_resource(NextState::Pending(EditorState::Idle));

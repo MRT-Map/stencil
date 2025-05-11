@@ -32,7 +32,7 @@ impl DockWindow for NotifLogViewer {
                     DateTime::<Utc>::from(entry.timestamp).format("%d/%m/%Y %T")
                 ),
             );
-            ui.colored_label(egui::Color32::YELLOW, &entry.message);
+            ui.colored_label(egui::Color32::YELLOW, entry.message.clone());
             ui.separator();
         }
         if notif_log.notifs.is_empty() {

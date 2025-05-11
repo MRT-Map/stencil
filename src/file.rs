@@ -25,7 +25,7 @@ pub fn load_file<
         Ok(Err(e)) => {
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not parse {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -37,7 +37,7 @@ pub fn load_file<
         Err(e) => {
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not load {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -89,7 +89,7 @@ pub fn save_file<
             }
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not write {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -101,7 +101,7 @@ pub fn save_file<
         Err(e) => {
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not serialise {thing} file {}:\n{e}",
                         file.to_string_lossy()
                     ),
@@ -154,7 +154,7 @@ pub fn safe_delete(path: &Path, error: Option<&'static str>) -> eyre::Result<Pat
         Err(e) => {
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not safe delete {thing} file/directory {}:\n{e}",
                         path.to_string_lossy()
                     ),
@@ -172,7 +172,7 @@ pub fn restore(path: &Path, old_path: &Path, error: Option<&'static str>) -> eyr
         Err(e) => {
             if let Some(thing) = error {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not restore {thing} from file/directory {}:\n{e}",
                         path.to_string_lossy()
                     ),

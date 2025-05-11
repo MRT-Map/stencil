@@ -68,7 +68,7 @@ pub fn on_right_click_drag_start(
         old_translation: transform.translation,
     });
     info!("Started move");
-    status.0 = format!("Started moving {pla}").into();
+    status.set(format!("Started moving {pla}"));
 }
 
 #[tracing::instrument(skip_all)]
@@ -112,7 +112,7 @@ pub fn on_right_click_drag_end(
         .entity(e)
         .remove::<MoveData>()
         .trigger(RenderEv::default());
-    status.0 = format!("Moved component {}", &*pla).into();
+    status.set(format!("Moved component {}", &*pla));
     info!("Ended move");
 }
 

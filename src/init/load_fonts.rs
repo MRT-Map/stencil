@@ -19,7 +19,7 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) -> Result {
             && result.path().extension() != Some("otf".as_ref())
         {
             NOTIF_LOG.push(
-                &format!("{} is not font file", result.path().to_string_lossy()),
+                format!("{} is not font file", result.path().to_string_lossy()),
                 ToastLevel::Warning,
             );
             continue;
@@ -38,7 +38,7 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) -> Result {
             }
             Err(e) => {
                 NOTIF_LOG.push(
-                    &format!(
+                    format!(
                         "Could not load font file {}:\n{e}",
                         result.path().to_string_lossy()
                     ),
