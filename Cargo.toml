@@ -15,7 +15,7 @@ categories = ["games"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.16.0"
+version = "0.16.1"
 default-features = false
 features = [
     "bevy_sprite",
@@ -52,7 +52,7 @@ egui-notify = "0.19.0"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-color-spantrace = "0.2.2"
+color-spantrace = "0.3.0"
 tracing-error = "0.2.1"
 
 surf = "2.3.2"
@@ -92,7 +92,7 @@ license-retriever = "1.1.0"
 #color-eyre = "0.6.3"
 eyre = "0.6.12"
 zip = "4.0.0"
-embed-resource = "3.0.2"
+embed-resource = "3.0.3"
 
 #[profile.dev.package."*"]
 #opt-level = 2
