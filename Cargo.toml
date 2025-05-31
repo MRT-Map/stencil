@@ -1,6 +1,6 @@
 [package]
 name = "stencil2"
-version = "2.2.10"
+version = "2.2.11"
 edition = "2021"
 description = "Map editor for MRT Map data"
 authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
@@ -26,6 +26,9 @@ features = [
     "bevy_window",
     "bevy_mesh_picking_backend",
     "png",
+    "jpeg",
+    "webp",
+    "gif",
     "trace",
     "x11",
     "wayland",
