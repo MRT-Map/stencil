@@ -4,6 +4,9 @@
 * Copying and pasting
 * Font configuration
 
+# v2.2.12
+* Upgrade `bevy` to v0.16.1, among other dependencies
+
 # v2.2.11
 * Add support for jpg and webp tile image loading
 
