@@ -38,7 +38,7 @@ features = [
 ]
 
 [dependencies]
-bevy_prototype_lyon = { git = "https://github.com/Nilirad/bevy_prototype_lyon", branch = "v0.14-update" }
+bevy_prototype_lyon = { git = "https://github.com/rparrett/bevy_prototype_lyon", branch = "fix-dynamic-examples" }
 bevy_asset_loader = "0.23.0"
 bevy-inspector-egui = "0.31.0"
 
