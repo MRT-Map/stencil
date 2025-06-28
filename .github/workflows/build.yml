@@ -13,7 +13,6 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
-        target: aarch64-apple-darwin
         default: true
     - run: |
         mkdir .cargo
@@ -23,6 +22,7 @@ jobs:
       with:
         crate: cargo-bundle
         locked: false
+    - uses: Swatinem/rust-cache@v2
 
     - run: cargo bundle --release
     - uses: actions/upload-artifact@v4
@@ -31,24 +31,24 @@ jobs:
         path: target/release/bundle/osx/stencil2.app
 
   build-macos-x86_64:
-    runs-on: macos-latest
+    runs-on: macos-13
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-          target: x86_64-apple-darwin
           default: true
       - run: |
           mkdir .cargo
           mv .github/actions_config.toml .cargo/config.toml
       - run: brew install openssl@3
+      - uses: Swatinem/rust-cache@v2
 
       - run: cargo build --release
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-x86-64
+          name: macos-x86_64
           path: target/release/stencil2
 
   build-macos:
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: macos-aarch64
-          path: app
+          path: app/stencil2.app
       - uses: actions/download-artifact@v4
         with:
           name: macos-x86_64
@@ -69,7 +69,7 @@ jobs:
           mv stencil2-new app/stencil2.app/Contents/MacOS/stencil2
       - run: |
           ln -s "/Applications" "app/"
-          hdiutil create stencil2.dmg -volname stencil2 -srcfolder "app/" -ov
+          hdiutil create stencil2.dmg -fs HFS+ -volname stencil2 -srcfolder "app/" -ov
 
       - uses: actions/upload-artifact@v4
         with:
@@ -97,6 +97,7 @@ jobs:
       with:
         packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
         version: 1.0
+    - uses: Swatinem/rust-cache@v2
 
     - run: cargo bundle --release --format deb
     - uses: actions/upload-artifact@v4
@@ -120,6 +121,7 @@ jobs:
       with:
         crate: cargo-wix
         locked: false
+    - uses: Swatinem/rust-cache@v2
 
     - run: cargo build --release
     - run: cargo wix -I "./build/windows/main.wxs" -v
@@ -159,6 +161,10 @@ jobs:
       - build-macos
       - build-windows
       - version-changelog
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
 
     steps:
     - uses: actions/download-artifact@v4
