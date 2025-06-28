@@ -205,7 +205,7 @@ pub fn panel_sy(
     };
     state.ui(&mut params, ctx);
     *tick = tick.overflowing_add(1).0;
-    if *tick % 64 == 0 {
+    if (*tick).is_multiple_of(64) {
         let _ = state.save();
     }
 }

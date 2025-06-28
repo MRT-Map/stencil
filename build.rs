@@ -4,12 +4,6 @@ use eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
-macro_rules! p {
-    ($($tt:tt)+) => {
-        println!("cargo:warning={}", format!($($tt)+))
-    }
-}
-
 fn gather_licenses() -> Result<()> {
     let config = Config {
         error_for_no_license: true,
