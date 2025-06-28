@@ -49,7 +49,7 @@ fn embed_resource() -> Result<()> {
     Ok(())
 }
 
-fn inner() -> Result<()> {
+fn main() -> Result<()> {
     if std::env::var("PROFILE")? != "debug" {
         gather_licenses()?;
     }
@@ -60,18 +60,4 @@ fn inner() -> Result<()> {
     println!("cargo:rerun-if-changed=assets");
 
     Ok(())
-}
-
-fn main() {
-    if let Err(e) = std::panic::catch_unwind(|| {
-        inner()
-            .map_err(|a| {
-                p!("Backtrace: {:?}", a);
-                a
-            })
-            .unwrap();
-    }) {
-        p!("Error: {e:#?}");
-        panic!()
-    }
 }
