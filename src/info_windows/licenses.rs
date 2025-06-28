@@ -44,15 +44,14 @@ pub fn on_license(trigger: Trigger<InfoWindowsEv>, mut popups: ResMut<Popups>) {
                         .for_each(|(package, _)| {
                             ui.selectable_value(
                                 selection,
-                                (package.name.clone(), package.version.to_string()),
+                                (package.name.to_string(), package.version.to_string()),
                                 format!("{} {}", package.name, package.version),
                             );
                         });
                 });
-            let Some((entry, licenses)) = LICENSES
-                .iter()
-                .find(|(p, _)| p.name == selection.0 && p.version.to_string() == selection.1)
-            else {
+            let Some((entry, licenses)) = LICENSES.iter().find(|(p, _)| {
+                p.name.as_str() == selection.0 && p.version.to_string() == selection.1
+            }) else {
                 ui.label("Invalid selection");
                 if ui.button("Close").clicked() {
                     *shown = false;
