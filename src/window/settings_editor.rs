@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::window::settings::LinuxWindow;
 use crate::{
     dirs_paths::data_path,
-    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    ui::panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
     window::settings::WindowSettings,
 };
 

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     history::HistoryEv,
-    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    ui::panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
 };
 
 #[derive(Clone, Copy, Serialize, Deserialize)]

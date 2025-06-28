@@ -10,7 +10,7 @@ use crate::{
     project::events::ProjectEv,
     ui::{
         file_dialogs::FileDialogs,
-        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+        panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
     },
 };
 

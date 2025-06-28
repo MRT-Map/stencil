@@ -2,7 +2,7 @@ use std::{fs::File, io::Write, path::PathBuf};
 
 use eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
-use zip::{write::SimpleFileOptions, ZipWriter};
+use zip::{ZipWriter, write::SimpleFileOptions};
 
 fn gather_licenses() -> Result<()> {
     let config = Config {

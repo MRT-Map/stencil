@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::ui::{
     notif::NOTIF_LOG,
-    panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
 };
 
 #[derive(Clone, Copy, Serialize, Deserialize)]

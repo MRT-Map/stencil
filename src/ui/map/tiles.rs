@@ -7,9 +7,9 @@ use futures_lite::future;
 use image::{ImageFormat, Rgba, RgbaImage};
 
 use crate::{
-    tile::{make_tile, tile_coord::TileCoord, Tile},
+    tile::{Tile, make_tile, tile_coord::TileCoord},
     ui::map::{
-        settings::{Basemap, TileSettings, INIT_TILE_SETTINGS},
+        settings::{Basemap, INIT_TILE_SETTINGS, TileSettings},
         utils::get_map_coords_of_edges,
         zoom::Zoom,
     },
@@ -156,10 +156,10 @@ pub fn show_tiles_sy(
         }
     }
     for (remove, cancel) in to_remove {
-        if let Some(a) = pending_tiles.0.remove(&remove) {
-            if cancel {
-                executor.spawn(a.cancel()).detach();
-            }
+        if let Some(a) = pending_tiles.0.remove(&remove)
+            && cancel
+        {
+            executor.spawn(a.cancel()).detach();
         }
     }
     //server.free_unused_assets();

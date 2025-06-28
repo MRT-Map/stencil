@@ -1,7 +1,7 @@
 [package]
 name = "stencil2"
 version = "2.2.12"
-edition = "2021"
+edition = "2024"
 description = "Map editor for MRT Map data"
 authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"

@@ -201,7 +201,9 @@ impl MiscSettings {
         match load_toml::<Self>(&data_path("misc_settings.toml"), Some("misc settings")) {
             Ok(mut str) => {
                 info!("Found misc settings file");
-                if str.skin_url == "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json" {
+                if str.skin_url
+                    == "https://raw.githubusercontent.com/MRT-Map/tile-renderer/main/renderer/skins/default.json"
+                {
                     str.skin_url = Self::default().skin_url;
                 }
                 str
@@ -214,7 +216,12 @@ impl MiscSettings {
         }
     }
     pub fn save(&self) -> eyre::Result<()> {
-        save_toml_with_header(self, &data_path("misc_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#misc_settingstoml", Some("misc settings"))
+        save_toml_with_header(
+            self,
+            &data_path("misc_settings.toml"),
+            "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#misc_settingstoml",
+            Some("misc settings"),
+        )
     }
 }
 

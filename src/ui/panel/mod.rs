@@ -6,9 +6,9 @@ pub mod toolbar;
 use bevy::prelude::*;
 
 use crate::ui::{
+    EguiContextPass, UiSet,
     file_dialogs::FileDialogs,
     panel::{dock::DockLayout, status::Status},
-    EguiContextPass, UiSet,
 };
 
 pub struct PanelPlugin;

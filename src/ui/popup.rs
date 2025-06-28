@@ -1,7 +1,7 @@
 use std::{any::Any, fmt::Display, sync::Mutex};
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContextPass, EguiContexts};
+use bevy_egui::{EguiContextPass, EguiContexts, egui};
 
 use crate::ui::UiSet;
 

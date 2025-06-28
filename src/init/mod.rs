@@ -16,7 +16,7 @@ use crate::{
     file::safe_delete,
     init::load_fonts::get_fonts_sy,
     panic::ack_panic_sy,
-    state::{on_state_change, EditorState, LoadingState},
+    state::{EditorState, LoadingState, on_state_change},
     ui::{map::settings::INIT_TILE_SETTINGS, panel::status::Status},
 };
 

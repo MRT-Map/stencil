@@ -128,29 +128,27 @@ pub fn emit_deselect_click_sy(
                 }
             })
             .and_then(|input| Some((input, old_locations.remove(&button)?)))
+            && events.get(&button).copied().unwrap_or_default() == 0
+            && old_location == input.location
         {
-            if events.get(&button).copied().unwrap_or_default() == 0
-                && old_location == input.location
-            {
-                debug!(?button, "Click on no component detected");
-                let event = Pointer::new(
-                    input.pointer_id,
-                    input.location.clone(),
-                    Entity::PLACEHOLDER,
-                    Click2 {
-                        button,
-                        location: input.location.clone(),
-                        hit: HitData::new(
-                            Entity::PLACEHOLDER,
-                            0.0,
-                            Some(mouse_pos_world.extend(0.0)),
-                            None,
-                        ),
-                    },
-                );
-                click_event.p1().write(event.clone());
-                commands.trigger(event);
-            }
+            debug!(?button, "Click on no component detected");
+            let event = Pointer::new(
+                input.pointer_id,
+                input.location.clone(),
+                Entity::PLACEHOLDER,
+                Click2 {
+                    button,
+                    location: input.location.clone(),
+                    hit: HitData::new(
+                        Entity::PLACEHOLDER,
+                        0.0,
+                        Some(mouse_pos_world.extend(0.0)),
+                        None,
+                    ),
+                },
+            );
+            click_event.p1().write(event.clone());
+            commands.trigger(event);
         }
     }
 }

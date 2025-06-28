@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use egui_file_dialog::FileDialog;
 use egui_notify::ToastLevel;
 use serde::{Deserialize, Serialize};
@@ -14,8 +14,8 @@ use crate::{
     ui::{
         file_dialogs::FileDialogs,
         map::settings::{Basemap, TileSettings},
-        notif::{NotifLogRwLockExt, NOTIF_LOG},
-        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+        notif::{NOTIF_LOG, NotifLogRwLockExt},
+        panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
     },
 };
 

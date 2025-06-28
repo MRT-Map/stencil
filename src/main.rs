@@ -6,8 +6,8 @@ use bevy::{
     log::LogPlugin,
     prelude::*,
     render::{
-        settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
+        settings::{RenderCreation, WgpuSettings},
     },
 };
 use bevy_egui::EguiPlugin;
@@ -16,7 +16,7 @@ use dirs_paths::data_dir;
 use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
-    fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter,
+    EnvFilter, fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt,
 };
 use ui::map::RenderingPlugin;
 
@@ -34,9 +34,9 @@ use crate::{
     keymaps::KeymapPlugin,
     misc_config::MiscSettingsPlugin,
     project::ProjectPlugin,
-    ui::{notif::NotifPlugin, UiPlugin},
+    ui::{UiPlugin, notif::NotifPlugin},
     update_checker::UpdateCheckerPlugin,
-    window::{settings::INIT_WINDOW_SETTINGS, WindowSettingsPlugin},
+    window::{WindowSettingsPlugin, settings::INIT_WINDOW_SETTINGS},
 };
 
 pub mod component;

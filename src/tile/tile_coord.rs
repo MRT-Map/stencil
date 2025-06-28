@@ -5,7 +5,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use lazy_regex::{lazy_regex, Regex};
+use lazy_regex::{Regex, lazy_regex};
 
 use crate::{
     dirs_paths::cache_dir,

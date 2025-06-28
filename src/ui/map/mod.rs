@@ -4,8 +4,8 @@ use zoom::Zoom;
 use crate::{
     state::IntoSystemConfigExt,
     ui::{
-        map::{settings::INIT_TILE_SETTINGS, tiles::PendingTiles},
         EguiContextPass, UiSet,
+        map::{settings::INIT_TILE_SETTINGS, tiles::PendingTiles},
     },
 };
 

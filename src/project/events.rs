@@ -16,7 +16,7 @@ use crate::{
     project::Namespaces,
     ui::{
         file_dialogs::FileDialogs,
-        notif::{NotifLogRwLockExt, NOTIF_LOG},
+        notif::{NOTIF_LOG, NotifLogRwLockExt},
         popup::{Popup, Popups},
     },
 };

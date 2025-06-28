@@ -5,7 +5,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use egui_notify::{Toast, ToastLevel, Toasts};
 
 use crate::misc_config::settings::MiscSettings;

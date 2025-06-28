@@ -12,11 +12,11 @@ use crate::{
     },
     dirs_paths::data_path,
     file::{load_toml, save_toml_with_header},
-    history::{history_viewer::OpenHistoryViewerEv, HistoryEv},
+    history::{HistoryEv, history_viewer::OpenHistoryViewerEv},
     info_windows::InfoWindowsEv,
     keymaps::{
         key_list::KEY_LIST,
-        settings_editor::{OpenKeymapSettingsEv, KEYMAP_MENU},
+        settings_editor::{KEYMAP_MENU, OpenKeymapSettingsEv},
     },
     misc_config::settings_editor::OpenMiscSettingsEv,
     project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
@@ -149,7 +149,12 @@ impl KeymapSettings {
         }
     }
     pub fn save(&self) -> eyre::Result<()> {
-        save_toml_with_header(&self.as_serializable()?, &data_path("keymap_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml", Some("keymap settings"))
+        save_toml_with_header(
+            &self.as_serializable()?,
+            &data_path("keymap_settings.toml"),
+            "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#keymap_settingstoml",
+            Some("keymap settings"),
+        )
     }
 
     pub fn as_serializable(&self) -> eyre::Result<HashMap<&str, HashMap<String, String>>> {

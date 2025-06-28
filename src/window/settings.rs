@@ -107,7 +107,12 @@ impl WindowSettings {
         }
     }
     pub fn save(&self) -> eyre::Result<()> {
-        save_toml_with_header(self, &data_path("window_settings.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#window_settingstoml", Some("window settings"))
+        save_toml_with_header(
+            self,
+            &data_path("window_settings.toml"),
+            "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#window_settingstoml",
+            Some("window settings"),
+        )
     }
 }
 

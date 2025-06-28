@@ -254,7 +254,7 @@ impl SkinComponent {
         &self,
         ui: &mut egui::Ui,
         text_style: &egui::TextStyle,
-    ) -> impl Into<egui::WidgetText> {
+    ) -> impl Into<egui::WidgetText> + use<> {
         let font_id = &ui.style().text_styles[text_style];
         let mut label = egui::text::LayoutJob::default();
         let space = if let Some(c) = self.front_colour() {
@@ -317,7 +317,7 @@ impl Skin {
         ty: &str,
         ui: &mut egui::Ui,
         text_style: &egui::TextStyle,
-    ) -> impl Into<egui::WidgetText> {
+    ) -> impl Into<egui::WidgetText> + use<> {
         self.get_type(ty).map_or_else(
             || egui::WidgetText::from(ty),
             |a| a.widget_text(ui, text_style).into(),

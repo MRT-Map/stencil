@@ -1,11 +1,11 @@
 use async_executor::{Executor, Task};
 use bevy::prelude::*;
 use egui_notify::ToastLevel;
-use eyre::{eyre, OptionExt};
+use eyre::{OptionExt, eyre};
 use futures_lite::future;
 use semver::Version;
 
-use crate::ui::notif::{NotifLogRwLockExt, NOTIF_LOG};
+use crate::ui::notif::{NOTIF_LOG, NotifLogRwLockExt};
 
 #[derive(Default)]
 pub enum Step<T> {

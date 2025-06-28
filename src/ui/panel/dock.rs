@@ -1,5 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 use egui_dock::{DockArea, DockState, NodeIndex, Style, TabBodyStyle, TabStyle};
 use egui_notify::ToastLevel;
 use enum_dispatch::enum_dispatch;
@@ -14,10 +14,10 @@ use crate::{
     },
     dirs_paths::data_path,
     file::{load_msgpack, save_msgpack},
-    history::{history_viewer::HistoryViewer, History},
+    history::{History, history_viewer::HistoryViewer},
     keymaps::{settings::KeymapSettings, settings_editor::KeymapSettingsEditor},
     misc_config::{settings::MiscSettings, settings_editor::MiscSettingsEditor},
-    project::{project_editor::ProjectEditor, Namespaces},
+    project::{Namespaces, project_editor::ProjectEditor},
     state::EditorState,
     ui::{
         cursor::mouse_pos::MousePosWorld,
@@ -25,7 +25,7 @@ use crate::{
             settings::TileSettings, settings_editor::TileSettingsEditor, tiles::PendingTiles,
             window::Tilemap, zoom::Zoom,
         },
-        notif::{viewer::NotifLogViewer, NotifLogRwLockExt, NOTIF_LOG},
+        notif::{NOTIF_LOG, NotifLogRwLockExt, viewer::NotifLogViewer},
         panel::status::Status,
         popup::Popups,
     },

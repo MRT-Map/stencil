@@ -11,7 +11,7 @@ use crate::{
         settings::{KeymapAction, KeymapSettings},
     },
     state::EditorState,
-    ui::panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+    ui::panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
 };
 
 #[derive(Clone, Copy, Event)]

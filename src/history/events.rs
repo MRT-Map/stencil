@@ -12,7 +12,7 @@ use crate::{
     component::{actions::rendering::RenderEv, make_component, skin::Skin},
     file::{restore, safe_delete},
     history::{History, HistoryEntry, HistoryEv, NamespaceAction},
-    project::{events::ProjectEv, Namespaces},
+    project::{Namespaces, events::ProjectEv},
     ui::panel::status::Status,
 };
 
@@ -56,23 +56,25 @@ pub fn on_history(
             history.redo_stack.clear();
             if let (
                 Some(
-                    [HistoryEntry::Component {
-                        e: e1, after: a1, ..
-                    }],
+                    [
+                        HistoryEntry::Component {
+                            e: e1, after: a1, ..
+                        },
+                    ],
                 ),
-                [HistoryEntry::Component {
-                    e: e2, after: a2, ..
-                }],
+                [
+                    HistoryEntry::Component {
+                        e: e2, after: a2, ..
+                    },
+                ],
             ) = (
                 history.undo_stack.last_mut().map(Vec::as_mut_slice),
                 histories.as_slice(),
-            ) {
-                if *e1.read().map_err(|a| eyre!("{a:?}"))?
-                    == *e2.read().map_err(|a| eyre!("{a:?}"))?
-                {
-                    a2.clone_into(a1);
-                    return Ok(());
-                }
+            ) && *e1.read().map_err(|a| eyre!("{a:?}"))?
+                == *e2.read().map_err(|a| eyre!("{a:?}"))?
+            {
+                a2.clone_into(a1);
+                return Ok(());
             }
             history.undo_stack.push(histories);
         }

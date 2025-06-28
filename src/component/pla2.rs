@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     component::skin::{Skin, SkinComponent},
-    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
+    ui::notif::{NOTIF_LOG, NotifLogRwLockExt},
 };
 
 fn hex_to_color(hex: HexColor) -> Color {
@@ -162,10 +162,10 @@ impl PlaComponent {
             for coord in &self.nodes {
                 path = path.line_to(coord.0.as_vec2());
             }
-            if self.get_skin_type(skin) == ComponentType::Area {
-                if let Some(coord) = self.nodes.first() {
-                    path = path.line_to(coord.0.as_vec2());
-                }
+            if self.get_skin_type(skin) == ComponentType::Area
+                && let Some(coord) = self.nodes.first()
+            {
+                path = path.line_to(coord.0.as_vec2());
             }
             path
         });

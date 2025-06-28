@@ -1,5 +1,5 @@
 use bevy::{prelude::*, sprite::Anchor};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{EguiContexts, egui};
 
 use crate::{
     component::actions::hovering::HoveredComponent,
@@ -8,7 +8,7 @@ use crate::{
     state::{EditorState, IntoSystemConfigExt},
     ui::{
         cursor::{
-            mouse_events::{on_emit_click2_down, on_emit_click2_up, Click2},
+            mouse_events::{Click2, on_emit_click2_down, on_emit_click2_up},
             mouse_pos::{MousePos, MousePosWorld},
         },
         map::{settings::TileSettings, window::PointerWithinTilemap, zoom::Zoom},

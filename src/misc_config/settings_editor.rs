@@ -9,7 +9,7 @@ use crate::{
     misc_config::settings::MiscSettings,
     ui::{
         map::mouse_nav::ScrollMode,
-        panel::dock::{open_dock_window, DockLayout, DockWindow, PanelParams},
+        panel::dock::{DockLayout, DockWindow, PanelParams, open_dock_window},
     },
 };
 

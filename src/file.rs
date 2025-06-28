@@ -4,11 +4,11 @@ use std::{
 };
 
 use egui_notify::ToastLevel;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 use crate::{
     dirs_paths::cache_dir,
-    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
+    ui::notif::{NOTIF_LOG, NotifLogRwLockExt},
 };
 
 pub fn load_file<

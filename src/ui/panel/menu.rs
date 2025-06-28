@@ -4,7 +4,7 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::{egui, egui::scroll_area::ScrollBarVisibility, EguiContexts};
+use bevy_egui::{EguiContexts, egui, egui::scroll_area::ScrollBarVisibility};
 use egui_notify::ToastLevel;
 
 #[cfg(debug_assertions)]
@@ -13,14 +13,14 @@ use crate::{
     component::panels::{
         component_editor::OpenComponentEditorEv, component_list::OpenComponentListEv,
     },
-    history::{history_viewer::OpenHistoryViewerEv, HistoryEv},
+    history::{HistoryEv, history_viewer::OpenHistoryViewerEv},
     info_windows::InfoWindowsEv,
     keymaps::settings_editor::{KeymapSettingsEditor, OpenKeymapSettingsEv},
     misc_config::settings_editor::{MiscSettingsEditor, OpenMiscSettingsEv},
     project::{events::ProjectEv, project_editor::OpenProjectEditorEv},
     ui::{
         map::settings_editor::{TileSettingsEditor, TileSettingsEv},
-        notif::{viewer::OpenNotifLogViewerEv, NotifLogRwLockExt, NOTIF_LOG},
+        notif::{NOTIF_LOG, NotifLogRwLockExt, viewer::OpenNotifLogViewerEv},
         panel::{
             dock::{DockLayout, DockWindow, DockWindows, ResetPanelDockStateEv},
             status::Status,

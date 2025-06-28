@@ -1,5 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_egui::{egui, EguiContextPass, EguiContextSettings, EguiContexts};
+use bevy_egui::{EguiContextPass, EguiContextSettings, EguiContexts, egui};
 
 use crate::state::IntoSystemConfigExt;
 

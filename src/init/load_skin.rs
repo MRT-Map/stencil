@@ -10,7 +10,7 @@ use crate::{
     file::{load_msgpack, save_msgpack},
     misc_config::settings::INIT_MISC_SETTINGS,
     state::LoadingState,
-    ui::notif::{NotifLogRwLockExt, NOTIF_LOG},
+    ui::notif::{NOTIF_LOG, NotifLogRwLockExt},
 };
 
 #[derive(Default)]
@@ -27,13 +27,13 @@ pub fn get_skin_sy(
     mut task_s: Local<Step<surf::Result<Skin>>>,
     mut executor: Local<Option<Executor>>,
 ) {
-    if cache_path("skin.msgpack").exists() {
-        if let Ok(skin) = load_msgpack::<Skin>(&cache_path("skin.msgpack"), Some("skin")) {
-            info!("Retrieved from cache");
-            commands.insert_resource(skin);
-            commands.insert_resource(NextState::Pending(LoadingState::LoadSkin.next()));
-            *task_s = Step::Complete;
-        }
+    if cache_path("skin.msgpack").exists()
+        && let Ok(skin) = load_msgpack::<Skin>(&cache_path("skin.msgpack"), Some("skin"))
+    {
+        info!("Retrieved from cache");
+        commands.insert_resource(skin);
+        commands.insert_resource(NextState::Pending(LoadingState::LoadSkin.next()));
+        *task_s = Step::Complete;
     }
     let executor = executor.get_or_insert_with(Executor::new);
     match &mut *task_s {
