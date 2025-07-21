@@ -11,7 +11,7 @@ documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
 keywords = ["stencil", "stencil2", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
-
+rust-version = "1.88"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
