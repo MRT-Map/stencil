@@ -56,11 +56,11 @@ jobs:
     needs: [build-macos-aarch64, build-macos-x86_64]
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: macos-aarch64
           path: app/stencil2.app
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: macos-x86_64
 
@@ -167,15 +167,15 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: macos
         path: dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: linux
         path: dist
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: windows
         path: dist
