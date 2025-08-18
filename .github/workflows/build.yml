@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
@@ -34,7 +34,7 @@ jobs:
     runs-on: macos-13
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: rui314/setup-mold@v1
     - uses: actions-rs/toolchain@v1
       with:
@@ -109,7 +109,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
@@ -137,7 +137,7 @@ jobs:
       changelog: ${{ steps.changelog.outputs.changelog }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: cargo update
     - id: version
       run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
@@ -197,7 +197,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
         run: |
