@@ -11,7 +11,7 @@ documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
 keywords = ["stencil", "stencil2", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
-rust-version = "1.88"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -52,7 +52,7 @@ egui-notify = "0.20.0"
 
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
-tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 color-spantrace = "0.3.0"
 tracing-error = "0.2.1"
 
@@ -60,10 +60,10 @@ surf = "2.3.2"
 async-fs = "2.1.3"
 futures-lite = "2.6.1"
 async-lock = "3.4.1"
-async-executor = "1.13.2"
+async-executor = "1.13.3"
 
 backtrace = "0.3.75"
-color-backtrace = "0.7.0"
+color-backtrace = "0.7.1"
 
 serde = { version = "1.0.219", features = ["derive"] }
 rmp-serde = "1.3.0"
@@ -71,8 +71,8 @@ serde_json = "1.0.143"
 toml = "0.9.5"
 
 dirs = "6.0.0"
-zip = "4.5.0"
-image = "0.25.6"
+zip = "4.6.0"
+image = "0.25.7"
 winit = "0.30.12"
 chrono = "0.4.41"
 
@@ -92,7 +92,7 @@ license-retriever = "1.1.1"
 license-retriever = "1.1.1"
 #color-eyre = "0.6.3"
 eyre = "0.6.12"
-zip = "4.5.0"
+zip = "4.6.0"
 embed-resource = "3.0.5"
 
 #[profile.dev.package."*"]
