@@ -196,7 +196,7 @@ pub fn tile_settings_dialog(
     mut ctx: EguiContexts,
     mut file_dialogs: ResMut<FileDialogs>,
 ) {
-    let Some(ctx) = ctx.try_ctx_mut() else {
+    let Ok(ctx) = ctx.ctx_mut() else {
         return;
     };
     let file_dialog = &mut file_dialogs.tile_settings_import;

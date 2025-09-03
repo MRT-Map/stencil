@@ -18,7 +18,8 @@ pub fn keymap_sy(
     for (action, key) in &hotkey_settings.0 {
         if keys.just_released(*key)
             && ctx
-                .try_ctx_mut()
+                .ctx_mut()
+                .ok()
                 .is_none_or(|a| a.memory(|a| a.focused().is_none()))
         {
             info!(?action, ?key, "Processing hotkey");

@@ -17,7 +17,7 @@ pub fn toolbar(ui: &mut egui::Ui, params: &mut PanelParams) -> egui::InnerRespon
     } = params;
     let mut new_state = ***editor_state;
     let resp = egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
-        egui::menu::bar(ui, |ui| {
+        egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
                 ($text:literal, $next_state:expr) => {
                     ui.selectable_value(&mut new_state, $next_state, $text)

@@ -8,6 +8,7 @@ pub mod unzip_assets;
 pub mod welcome;
 
 use bevy::prelude::*;
+use bevy_egui::EguiPrimaryContextPass;
 use load_skin::get_skin_sy;
 
 use crate::{
@@ -38,7 +39,7 @@ impl Plugin for InitPlugin {
             .add_systems(OnEnter(LoadingState::Compat), compat::compat_sy)
             .add_systems(Update, get_skin_sy.run_if(in_state(LoadingState::LoadSkin)))
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 get_fonts_sy.run_if(in_state(LoadingState::LoadFonts)),
             )
             .add_systems(

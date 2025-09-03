@@ -59,7 +59,8 @@ pub fn get_fonts_sy(mut commands: Commands, mut ctx: EguiContexts) -> Result {
             .unwrap()
             .push(name);
     }
-    ctx.ctx_mut().set_fonts(font_definitions);
+
+    ctx.ctx_mut()?.set_fonts(font_definitions);
 
     commands.insert_resource(NextState::Pending(LoadingState::LoadFonts.next()));
     Ok(())

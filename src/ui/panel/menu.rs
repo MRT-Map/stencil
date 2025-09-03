@@ -40,11 +40,11 @@ pub fn ui_sy(
     status: Res<Status>,
     #[cfg(debug_assertions)] inspector: Option<Res<ShowInspector>>,
 ) {
-    let Some(ctx) = ctx.try_ctx_mut() else {
+    let Ok(ctx) = ctx.ctx_mut() else {
         return;
     };
     egui::TopBottomPanel::top("menu").show(ctx, |ui| {
-        egui::menu::bar(ui, |ui| {
+        egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
                 ($ui:ident, $commands:ident, $label:literal, $action:expr) => {
                     if $ui.button($label).clicked() {
@@ -55,29 +55,25 @@ pub fn ui_sy(
             }
 
             #[expect(clippy::cognitive_complexity)]
-            egui::menu::menu_button(
-                ui,
-                format!("Stencil v{}", env!("CARGO_PKG_VERSION")),
-                |ui| {
-                    button!(ui, commands, "Info", InfoWindowsEv::Info);
-                    button!(ui, commands, "Changelog", InfoWindowsEv::Changelog);
-                    button!(ui, commands, "Manual", InfoWindowsEv::Manual);
-                    button!(ui, commands, "Licenses", InfoWindowsEv::Licenses);
-                    ui.separator();
-                    button!(ui, commands, "Quit", InfoWindowsEv::Quit(false));
-                },
-            );
-            egui::menu::menu_button(ui, "File", |ui| {
+            ui.menu_button(format!("Stencil v{}", env!("CARGO_PKG_VERSION")), |ui| {
+                button!(ui, commands, "Info", InfoWindowsEv::Info);
+                button!(ui, commands, "Changelog", InfoWindowsEv::Changelog);
+                button!(ui, commands, "Manual", InfoWindowsEv::Manual);
+                button!(ui, commands, "Licenses", InfoWindowsEv::Licenses);
+                ui.separator();
+                button!(ui, commands, "Quit", InfoWindowsEv::Quit(false));
+            });
+            ui.menu_button("File", |ui| {
                 button!(ui, commands, "Open...", ProjectEv::Open);
                 button!(ui, commands, "Reload", ProjectEv::Reload);
                 button!(ui, commands, "Save", ProjectEv::Save(false));
             });
-            egui::menu::menu_button(ui, "Edit", |ui| {
+            ui.menu_button("Edit", |ui| {
                 button!(ui, commands, "Undo", HistoryEv::Undo);
                 button!(ui, commands, "Redo", HistoryEv::Redo);
             });
             #[expect(clippy::cognitive_complexity)]
-            egui::menu::menu_button(ui, "View", |ui| {
+            ui.menu_button("View", |ui| {
                 button!(ui, commands, "Component List", OpenComponentListEv);
                 button!(ui, commands, "Component Editor", OpenComponentEditorEv);
                 button!(ui, commands, "Project", OpenProjectEditorEv);
@@ -87,7 +83,7 @@ pub fn ui_sy(
                 button!(ui, commands, "Reset Layout", ResetPanelDockStateEv);
             });
             #[expect(clippy::cognitive_complexity)]
-            egui::menu::menu_button(ui, "Settings", |ui| {
+            ui.menu_button("Settings", |ui| {
                 button!(ui, commands, "Open All", OpenAllSettingsEv);
                 ui.separator();
                 button!(ui, commands, "Tilemap", TileSettingsEv::Open);
@@ -97,7 +93,7 @@ pub fn ui_sy(
             });
             #[cfg(debug_assertions)]
             {
-                egui::menu::menu_button(ui, "Debug", |ui| {
+                ui.menu_button("Debug", |ui| {
                     if ui.button("Trigger Warning").clicked() {
                         info!(label = "Trigger Warning", "Clicked menu item");
                         NOTIF_LOG.push("Warning Triggered", ToastLevel::Warning);

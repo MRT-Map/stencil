@@ -53,9 +53,9 @@ impl LoadingState {
             Self::UnzipAssets => Self::LoadAssets,
             Self::LoadAssets => Self::Compat,
             Self::Compat => Self::LoadSkin,
-            Self::LoadSkin => Self::LoadFonts,
-            Self::LoadFonts => Self::SpawnCamera,
-            Self::SpawnCamera => Self::Welcome,
+            Self::LoadSkin => Self::SpawnCamera,
+            Self::SpawnCamera => Self::LoadFonts,
+            Self::LoadFonts => Self::Welcome,
             Self::Welcome => Self::Done,
             Self::Done => unreachable!(),
         }

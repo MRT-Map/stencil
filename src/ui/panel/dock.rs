@@ -200,7 +200,7 @@ pub fn panel_sy(
     mut params: PanelParams,
     mut tick: Local<u8>,
 ) {
-    let Some(ctx) = ctx.try_ctx_mut() else {
+    let Ok(ctx) = ctx.ctx_mut() else {
         return;
     };
     state.ui(&mut params, ctx);

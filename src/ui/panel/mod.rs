@@ -6,7 +6,7 @@ pub mod toolbar;
 use bevy::prelude::*;
 
 use crate::ui::{
-    EguiContextPass, UiSet,
+    EguiPrimaryContextPass, UiSet,
     file_dialogs::FileDialogs,
     panel::{dock::DockLayout, status::Status},
 };
@@ -19,11 +19,11 @@ impl Plugin for PanelPlugin {
         app.insert_resource(DockLayout::load())
             .init_resource::<Status>()
             .add_systems(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 menu::ui_sy.in_set(UiSet::Panels).before(dock::panel_sy),
             )
             .add_observer(menu::on_all_settings)
-            .add_systems(EguiContextPass, dock::panel_sy.in_set(UiSet::Panels))
+            .add_systems(EguiPrimaryContextPass, dock::panel_sy.in_set(UiSet::Panels))
             .add_observer(dock::on_reset_panel);
     }
 }

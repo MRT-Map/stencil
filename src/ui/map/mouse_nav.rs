@@ -87,7 +87,9 @@ pub fn mouse_pan_sy(
         Vec2::ZERO
     };
 
-    d += if buttons.pressed(MouseButton::Left) && !ctx.ctx_mut().is_using_pointer() {
+    d += if buttons.pressed(MouseButton::Left)
+        && !ctx.ctx_mut().is_ok_and(|ctx| ctx.is_using_pointer())
+    {
         let prev_mouse_pos = prev_mouse_pos.get_or_insert(*mouse_pos);
         let delta = **mouse_pos - **prev_mouse_pos;
         *prev_mouse_pos = *mouse_pos;

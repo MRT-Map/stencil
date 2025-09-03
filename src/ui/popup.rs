@@ -1,9 +1,9 @@
 use std::{any::Any, fmt::Display, sync::Mutex};
 
 use bevy::prelude::*;
-use bevy_egui::{EguiContextPass, EguiContexts, egui};
+use bevy_egui::{EguiContexts, egui};
 
-use crate::ui::UiSet;
+use crate::ui::{EguiPrimaryContextPass, UiSet};
 
 #[derive(Resource, Default)]
 pub struct Popups(pub Vec<Popup>);
@@ -157,7 +157,7 @@ impl Popup {
 
 #[tracing::instrument(skip_all)]
 pub fn popup_handler_sy(mut ctx: EguiContexts, mut commands: Commands, mut popups: ResMut<Popups>) {
-    let Some(ctx) = ctx.try_ctx_mut() else {
+    let Ok(ctx) = ctx.ctx_mut() else {
         return;
     };
 
@@ -179,7 +179,9 @@ pub struct PopupPlugin;
 
 impl Plugin for PopupPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Popups>()
-            .add_systems(EguiContextPass, popup_handler_sy.in_set(UiSet::Popups));
+        app.init_resource::<Popups>().add_systems(
+            EguiPrimaryContextPass,
+            popup_handler_sy.in_set(UiSet::Popups),
+        );
     }
 }

@@ -89,7 +89,11 @@ pub fn cursor_icon_sy(
             continue;
         }
 
-        ctx.ctx_for_entity_mut(e).set_cursor_icon(match **state {
+        let Ok(ctx) = ctx.ctx_for_entity_mut(e) else {
+            continue;
+        };
+
+        ctx.set_cursor_icon(match **state {
             EditorState::Loading => egui::CursorIcon::Wait,
             EditorState::Idle | EditorState::DeletingComponent | EditorState::EditingNodes => {
                 if buttons.pressed(MouseButton::Left) {

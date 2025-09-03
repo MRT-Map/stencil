@@ -1,5 +1,5 @@
-use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_egui::{EguiContextPass, EguiContextSettings, EguiContexts, egui};
+use bevy::{ecs::schedule::ScheduleLabel, prelude::*, window::PrimaryWindow};
+use bevy_egui::{EguiContextSettings, EguiContexts, EguiPrimaryContextPass, egui};
 
 use crate::state::IntoSystemConfigExt;
 
@@ -25,13 +25,13 @@ pub enum UiSet {
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Focus>()
-            .init_schedule(EguiContextPass)
+            .init_schedule(EguiPrimaryContextPass)
             .configure_sets(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 UiSet::Panels.run_if_not_loading().after(UiSet::Popups),
             )
             .configure_sets(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 UiSet::Tiles.run_if_not_loading().after(UiSet::Panels),
             )
             .add_plugins(popup::PopupPlugin)
@@ -42,7 +42,7 @@ impl Plugin for UiPlugin {
                 |mut ctx: EguiContexts,
                  mut settings: Query<&mut EguiContextSettings, With<PrimaryWindow>>|
                  -> Result {
-                    let Some(ctx) = ctx.try_ctx_mut() else {
+                    let Ok(ctx) = ctx.ctx_mut() else {
                         return Ok(());
                     };
                     egui_extras::install_image_loaders(ctx);

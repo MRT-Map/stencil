@@ -4,7 +4,7 @@ use zoom::Zoom;
 use crate::{
     state::IntoSystemConfigExt,
     ui::{
-        EguiContextPass, UiSet,
+        EguiPrimaryContextPass, UiSet,
         map::{settings::INIT_TILE_SETTINGS, tiles::PendingTiles},
     },
 };
@@ -31,18 +31,21 @@ impl Plugin for RenderingPlugin {
             .insert_resource(INIT_TILE_SETTINGS.to_owned())
             .init_resource::<PendingTiles>()
             .configure_sets(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 RenderingSet::Mouse
                     .run_if_not_loading()
                     .in_set(UiSet::Tiles),
             )
-            .configure_sets(EguiContextPass, RenderingSet::Tiles.run_if_not_loading())
+            .configure_sets(
+                EguiPrimaryContextPass,
+                RenderingSet::Tiles.run_if_not_loading(),
+            )
             .add_systems(
                 Update,
                 (mouse_nav::mouse_pan_sy, mouse_nav::mouse_zoom_sy).in_set(RenderingSet::Mouse),
             )
             .add_systems(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 (tiles::show_tiles_sy, settings_editor::tile_settings_dialog)
                     .in_set(RenderingSet::Tiles),
             )

@@ -5,7 +5,7 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_egui::{EguiContexts, egui};
+use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use egui_notify::{Toast, ToastLevel, Toasts};
 
 use crate::misc_config::settings::MiscSettings;
@@ -65,7 +65,7 @@ pub fn update_notifs_sy(
         return;
     };
 
-    if let Some(ctx) = ctx.try_ctx_mut() {
+    if let Ok(ctx) = ctx.ctx_mut() {
         toasts.0.show(ctx);
     }
 
@@ -110,7 +110,7 @@ pub struct NotifPlugin;
 impl Plugin for NotifPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NotifToasts>()
-            .add_systems(Update, update_notifs_sy)
+            .add_systems(EguiPrimaryContextPass, update_notifs_sy)
             .add_observer(viewer::on_log_viewer);
     }
 }

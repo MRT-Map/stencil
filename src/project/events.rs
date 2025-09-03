@@ -212,7 +212,7 @@ pub fn project_dialog_sy(
     mut popups: ResMut<Popups>,
 ) {
     let file_dialog = &mut file_dialogs.project_select;
-    let Some(ctx) = ctx.try_ctx_mut() else { return };
+    let Ok(ctx) = ctx.ctx_mut() else { return };
     file_dialog.update(ctx);
     if let Some(file) = file_dialog.take_picked() {
         let _ = FileDialogs::save_storage(file_dialog.storage_mut());
