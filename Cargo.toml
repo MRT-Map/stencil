@@ -43,7 +43,7 @@ bevy_prototype_lyon = { git = "https://github.com/rparrett/bevy_prototype_lyon",
 bevy_asset_loader = "0.23.0"
 bevy-inspector-egui = "0.33.1"
 
-bevy_egui = "0.36.0"
+bevy_egui = "0.37.0"
 egui_commonmark = "0.21.1"
 egui_extras = "0.32.3"
 egui_dock = { version = "0.17.0", features = ["serde"] }
