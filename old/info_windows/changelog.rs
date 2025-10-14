@@ -1,0 +1,42 @@
+use std::sync::Mutex;
+
+use bevy::prelude::*;
+use bevy_egui::egui;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+
+use crate::{
+    info_windows::InfoWindowsEv,
+    ui::popup::{Popup, Popups},
+};
+
+#[expect(clippy::needless_pass_by_value)]
+pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popups: ResMut<Popups>) {
+    if *trigger.event() != InfoWindowsEv::Changelog {
+        return;
+    }
+    popups.add(Popup::new(
+        "changelog",
+        || {
+            egui::Window::new("Changelog")
+                .collapsible(false)
+                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        },
+        |_, ui, _, shown| {
+            egui::ScrollArea::vertical()
+                .max_height(ui.available_height() * 0.75)
+                .show(ui, |ui| {
+                    let mut cache = CommonMarkCache::default();
+                    CommonMarkViewer::new().show(
+                        ui,
+                        &mut cache,
+                        include_str!("../../changelog.md"),
+                    );
+                });
+            ui.separator();
+            if ui.button("Close").clicked() {
+                *shown = false;
+            }
+        },
+        Mutex::new(Box::new(())),
+    ));
+}

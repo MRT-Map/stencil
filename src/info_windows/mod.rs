@@ -1,32 +1,31 @@
-use bevy::prelude::*;
-
 pub mod changelog;
-pub mod info;
-pub mod licenses;
-pub mod manual;
-pub mod quit;
+// pub mod info;
+// pub mod licenses;
+// pub mod manual;
+// pub mod quit;
 
-#[derive(Clone, Copy, PartialEq, Eq, Event)]
-pub enum InfoWindowsEv {
+use std::collections::VecDeque;
+
+use crate::{
+    App,
+    event::{Event, Events},
+    info_windows::changelog::ChangelogPopup,
+};
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum InfoWindowEv {
     Changelog,
     Info,
     Licenses,
     Manual,
-    Quit(bool),
+    Quit { confirm: bool },
 }
 
-pub struct InfoWindowsPlugin;
-
-impl Plugin for InfoWindowsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_observer(quit::on_quit)
-            // .add_systems(
-            //     Update,
-            //     info::on_info.run_if(resource_exists::<ImageAssets>),
-            // )
-            .add_observer(info::on_info)
-            .add_observer(changelog::on_changelog)
-            .add_observer(manual::on_manual)
-            .add_observer(licenses::on_license);
+impl Event for InfoWindowEv {
+    fn react(self, app: &mut App) {
+        match self {
+            Self::Changelog => app.add_popup(ChangelogPopup),
+            _ => {}
+        }
     }
 }

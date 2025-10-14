@@ -1,158 +1,74 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod component_editor;
+mod dirs_paths;
+mod event;
+mod info_windows;
+mod logging;
+mod map;
+mod ui;
 
-use bevy::{
-    asset::UnapprovedPathMode,
-    diagnostic::FrameTimeDiagnosticsPlugin,
-    log::LogPlugin,
-    prelude::*,
-    render::{
-        RenderPlugin,
-        settings::{RenderCreation, WgpuSettings},
-    },
-};
-use bevy_egui::EguiPlugin;
-use bevy_prototype_lyon::prelude::ShapePlugin;
-use dirs_paths::data_dir;
-use tracing::Level;
-use tracing_error::ErrorLayer;
-use tracing_subscriber::{
-    EnvFilter, fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt,
-};
-use ui::map::RenderingPlugin;
+use std::collections::VecDeque;
 
-#[cfg(debug_assertions)]
-use crate::inspector::InspectorPlugin;
-#[cfg(target_os = "linux")]
-use crate::window::settings::LinuxWindow;
+use eframe::egui;
+use eyre::Result;
+use tracing::{error, info};
+
 use crate::{
-    component::{
-        actions::ComponentActionPlugins, panels::ComponentPanelsPlugin, tools::ComponentToolPlugins,
-    },
-    history::HistoryPlugin,
-    info_windows::InfoWindowsPlugin,
-    init::InitPlugin,
-    keymaps::KeymapPlugin,
-    misc_config::MiscSettingsPlugin,
-    project::ProjectPlugin,
-    ui::{UiPlugin, notif::NotifPlugin},
-    update_checker::UpdateCheckerPlugin,
-    window::{WindowSettingsPlugin, settings::INIT_WINDOW_SETTINGS},
+    event::{Event, Events},
+    logging::init_logger,
+    ui::{UiState, dock::DockLayout},
 };
-
-pub mod component;
-pub mod dirs_paths;
-pub mod file;
-pub mod history;
-pub mod info_windows;
-pub mod init;
-#[cfg(debug_assertions)]
-pub mod inspector;
-pub mod keymaps;
-pub mod misc_config;
-pub mod panic;
-pub mod project;
-pub mod state;
-pub mod tile;
-pub mod ui;
-pub mod update_checker;
-pub mod window;
-
-fn init_logger() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::fmt::layer().compact().with_writer(
-                std::io::stdout
-                    .with_max_level(Level::DEBUG)
-                    .and(tracing_appender::rolling::hourly(data_dir("logs"), "log")),
-            ),
-        )
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::try_new(
-                "info,\
-            wgpu_core::device=warn,\
-            bevy_asset::asset_server=error,\
-            surf::middleware::logger::native=off,\
-            isahc::handler=error,\
-            stencil2=debug",
-            )
-            .unwrap()
-        }))
-        .with(ErrorLayer::default())
-        .init();
-}
 
 fn main() {
-    std::panic::set_hook(Box::new(panic::panic));
+    // std::panic::set_hook(Box::new(panic::panic));
 
     init_logger();
     info!("Logger initialised");
+    eframe::run_native(
+        "Stencil2",
+        eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default().with_icon(
+                eframe::icon_data::from_png_bytes(include_bytes!("../icons/icon.png")).unwrap(),
+            ),
+            ..Default::default()
+        },
+        Box::new(|cc| Ok(Box::new(App::new(cc)))),
+    )
+    .unwrap();
+}
 
-    #[cfg(target_os = "linux")]
-    unsafe {
-        match INIT_WINDOW_SETTINGS.display_server_protocol {
-            LinuxWindow::Xorg => std::env::set_var("WINIT_UNIX_BACKEND", "x11"),
-            LinuxWindow::Wayland => std::env::set_var("WINIT_UNIX_BACKEND", "wayland"),
-            LinuxWindow::Auto => (),
+#[derive(serde::Deserialize, serde::Serialize, Default)]
+struct App {
+    ui: UiState,
+
+    #[serde(skip)]
+    events: VecDeque<Events>,
+}
+
+impl App {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        egui_extras::install_image_loaders(&cc.egui_ctx);
+
+        // if let Some(storage) = cc.storage {
+        //     eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
+        // } else {
+        //     Default::default()
+        // }
+        Self::default()
+    }
+}
+
+impl eframe::App for App {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        self.menu_bar(ctx);
+        self.dock(ctx);
+        self.popups(ctx);
+
+        while let Some(event) = self.events.pop_front() {
+            event.log_react(self);
         }
     }
 
-    let mut app = App::new();
-    app.add_plugins({
-        DefaultPlugins
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Stencil".into(),
-                    mode: INIT_WINDOW_SETTINGS.window_mode,
-                    ..default()
-                }),
-                ..default()
-            })
-            .set(ImagePlugin::default_nearest())
-            .set(AssetPlugin {
-                file_path: data_dir("assets").to_string_lossy().to_string(),
-                unapproved_path_mode: UnapprovedPathMode::Allow,
-                ..default()
-            })
-            .set(RenderPlugin {
-                render_creation: RenderCreation::Automatic(WgpuSettings {
-                    backends: Some(INIT_WINDOW_SETTINGS.backends.into()),
-                    ..default()
-                }),
-                ..default()
-            })
-            .set(PickingPlugin {
-                is_window_picking_enabled: false,
-                ..default()
-            })
-            .disable::<LogPlugin>()
-    })
-    .add_plugins(FrameTimeDiagnosticsPlugin::default());
-
-    app.add_plugins(MeshPickingPlugin)
-        .insert_resource(MeshPickingSettings {
-            require_markers: true,
-            ..default()
-        })
-        .add_plugins(EguiPlugin::default())
-        .add_plugins(ShapePlugin);
-
-    app.add_plugins(InitPlugin)
-        .add_plugins(UiPlugin)
-        .add_plugins(RenderingPlugin)
-        .add_plugins(ComponentToolPlugins)
-        .add_plugins(ComponentActionPlugins)
-        .add_plugins(InfoWindowsPlugin)
-        .add_plugins(KeymapPlugin)
-        .add_plugins(WindowSettingsPlugin)
-        .add_plugins(ProjectPlugin)
-        .add_plugins(HistoryPlugin)
-        .add_plugins(NotifPlugin)
-        .add_plugins(MiscSettingsPlugin)
-        .add_plugins(UpdateCheckerPlugin)
-        .add_plugins(ComponentPanelsPlugin);
-
-    #[cfg(debug_assertions)]
-    app.add_plugins(InspectorPlugin);
-
-    app.run();
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
+    }
 }

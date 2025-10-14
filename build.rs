@@ -44,6 +44,7 @@ fn embed_resource() -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    return Ok(());
     if std::env::var("PROFILE")? != "debug" {
         gather_licenses()?;
     }

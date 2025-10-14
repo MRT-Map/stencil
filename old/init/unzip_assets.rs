@@ -12,7 +12,7 @@ pub fn unzip_assets_sy(mut commands: Commands) -> Result {
         env!("OUT_DIR"),
         "/assets.zip"
     ))))?;
-    let dir = data_dir("assets");
+    let dir = data_dir("../../../assets");
     zip_file.extract(&dir)?;
 
     commands.insert_resource(NextState::Pending(LoadingState::UnzipAssets.next()));

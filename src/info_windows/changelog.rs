@@ -1,42 +1,35 @@
 use std::sync::Mutex;
 
-use bevy::prelude::*;
-use bevy_egui::egui;
+use egui::{Ui, Window};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use serde::{Deserialize, Serialize};
 
-use crate::{
-    info_windows::InfoWindowsEv,
-    ui::popup::{Popup, Popups},
-};
+use crate::{App, ui::popup::Popup};
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_changelog(trigger: Trigger<InfoWindowsEv>, mut popups: ResMut<Popups>) {
-    if *trigger.event() != InfoWindowsEv::Changelog {
-        return;
+#[derive(Copy, Clone, Deserialize, Serialize)]
+pub struct ChangelogPopup;
+
+impl Popup for ChangelogPopup {
+    fn id(&self) -> String {
+        "changelog".into()
     }
-    popups.add(Popup::new(
-        "changelog",
-        || {
-            egui::Window::new("Changelog")
-                .collapsible(false)
-                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-        },
-        |_, ui, _, shown| {
-            egui::ScrollArea::vertical()
-                .max_height(ui.available_height() * 0.75)
-                .show(ui, |ui| {
-                    let mut cache = CommonMarkCache::default();
-                    CommonMarkViewer::new().show(
-                        ui,
-                        &mut cache,
-                        include_str!("../../changelog.md"),
-                    );
-                });
-            ui.separator();
-            if ui.button("Close").clicked() {
-                *shown = false;
-            }
-        },
-        Mutex::new(Box::new(())),
-    ));
+
+    fn title(&self) -> String {
+        "Changelog".into()
+    }
+
+    fn window(&self) -> Window<'static> {
+        <dyn Popup>::window(self).resizable(true)
+    }
+
+    fn ui(&mut self, _app: &mut App, ui: &mut Ui) -> bool {
+        egui::ScrollArea::vertical()
+            .max_height(ui.available_height() * 0.75)
+            .show(ui, |ui| {
+                let mut cache = CommonMarkCache::default();
+                CommonMarkViewer::new().show(ui, &mut cache, include_str!("../../changelog.md"));
+            });
+        ui.separator();
+        !ui.button("Close").clicked()
+    }
 }
