@@ -2,8 +2,10 @@ mod component_editor;
 mod dirs_paths;
 mod event;
 mod info_windows;
+mod load_save;
 mod logging;
 mod map;
+mod settings;
 mod ui;
 
 use std::collections::VecDeque;
@@ -13,9 +15,12 @@ use eyre::Result;
 use tracing::{error, info};
 
 use crate::{
+    dirs_paths::DATA_DIR,
     event::{Event, Events},
+    load_save::LoadSave,
     logging::init_logger,
-    ui::{UiState, dock::DockLayout},
+    settings::miscellaneous::MiscSettings,
+    ui::{UiState, dock::DockLayout, notif::NotifState},
 };
 
 fn main() {
@@ -23,12 +28,14 @@ fn main() {
 
     init_logger();
     info!("Logger initialised");
+
     eframe::run_native(
         "Stencil2",
         eframe::NativeOptions {
             viewport: egui::ViewportBuilder::default().with_icon(
                 eframe::icon_data::from_png_bytes(include_bytes!("../icons/icon.png")).unwrap(),
             ),
+            persistence_path: Some(DATA_DIR.join("eframe_data")),
             ..Default::default()
         },
         Box::new(|cc| Ok(Box::new(App::new(cc)))),
@@ -36,11 +43,11 @@ fn main() {
     .unwrap();
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Default)]
+#[derive(Default)]
 struct App {
     ui: UiState,
+    misc_settings: MiscSettings,
 
-    #[serde(skip)]
     events: VecDeque<Events>,
 }
 
@@ -48,12 +55,22 @@ impl App {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
-        // if let Some(storage) = cc.storage {
-        //     eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
-        // } else {
-        //     Default::default()
-        // }
-        Self::default()
+        Self::load_state()
+    }
+    fn load_state() -> Self {
+        let mut notifs = NotifState::default();
+        Self {
+            ui: UiState {
+                dock_layout: DockLayout::load(&mut notifs),
+                ..UiState::default()
+            },
+            misc_settings: MiscSettings::load(&mut notifs),
+            ..Self::default()
+        }
+    }
+    fn save_state(&mut self) {
+        self.ui.dock_layout.save(&mut self.ui.notifs);
+        self.misc_settings.save(&mut self.ui.notifs);
     }
 }
 
@@ -70,6 +87,7 @@ impl eframe::App for App {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
+        // eframe::set_value(storage, eframe::APP_KEY, self);
+        self.save_state();
     }
 }

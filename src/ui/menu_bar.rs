@@ -9,6 +9,7 @@ use crate::{
     component_editor::ComponentEditorWindow,
     event::{Event, Events},
     info_windows::InfoWindowEv,
+    settings::SettingsWindow,
     ui::{
         dock::{DockWindows, ResetLayoutEv},
         notif::NotifLogWindow,
@@ -40,6 +41,8 @@ impl App {
                     button!(ui, event "Manual", InfoWindowEv::Manual);
                     button!(ui, event "Licenses", InfoWindowEv::Licenses);
                     ui.separator();
+                    button!(ui, window "Settings", SettingsWindow::default());
+                    ui.separator();
                     button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false });
                 });
                 ui.menu_button("File", |ui| {
@@ -59,14 +62,6 @@ impl App {
                     button!(ui, window "Notification Log", NotifLogWindow);
                     ui.separator();
                     button!(ui, event "Reset Layout", ResetLayoutEv);
-                });
-                ui.menu_button("Settings", |ui| {
-                    // button!(ui, commands, "Open All", OpenAllSettingsEv);
-                    // ui.separator();
-                    // button!(ui, commands, "Tilemap", TileSettingsEv::Open);
-                    // button!(ui, commands, "Window", OpenWindowSettingsEv);
-                    // button!(ui, commands, "Keymap", OpenKeymapSettingsEv);
-                    // button!(ui, commands, "Misc", OpenMiscSettingsEv);
                 });
                 #[cfg(debug_assertions)]
                 {

@@ -9,34 +9,34 @@ use tracing::info;
 use crate::{
     App,
     component_editor::ComponentEditorWindow,
+    dirs_paths::data_path,
     event::{Event, Events},
+    impl_load_save,
     map::MapWindow,
+    settings::SettingsWindow,
     ui::notif::NotifLogWindow,
 };
 
 #[enum_dispatch]
-pub trait DockWindow: Copy {
-    fn title(self) -> String;
-    fn allowed_in_windows(self) -> bool {
+pub trait DockWindow {
+    fn title(&self) -> String;
+    fn allowed_in_windows(&self) -> bool {
         true
     }
-    fn is_closeable(self) -> bool {
+    fn is_closeable(&self) -> bool {
         true
     }
-    fn ui(self, app: &mut App, ui: &mut egui::Ui);
+    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
 }
 
 #[enum_dispatch(DockWindow)]
-#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]
 pub enum DockWindows {
     MapWindow,
     ComponentEditorWindow,
     // ProjectEditor,
-    // WindowSettingsEditor,
-    // TileSettingsEditor,
-    // KeymapSettingsEditor,
-    // MiscSettingsEditor,
+    SettingsWindow,
     NotifLogWindow,
     // ComponentList,
     // HistoryViewer,
@@ -44,6 +44,8 @@ pub enum DockWindows {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DockLayout(pub egui_dock::DockState<DockWindows>);
+
+impl_load_save!(mpk DockLayout, data_path("dock.mpk"));
 
 impl Default for DockLayout {
     fn default() -> Self {
@@ -123,7 +125,7 @@ impl Event for ResetLayoutEv {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct OpenWindowEv(DockWindows);
 
 impl Event for OpenWindowEv {

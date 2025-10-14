@@ -14,14 +14,10 @@ pub mod menu_bar;
 pub mod notif;
 pub mod popup;
 
-#[derive(Deserialize, Serialize, Default)]
-#[serde(default)]
+#[derive(Default)]
 pub struct UiState {
-    #[serde(skip)]
-    status: egui::RichText,
-    dock_layout: DockLayout,
-    #[serde(skip)]
-    popups: HashMap<String, Popups>,
-    #[serde(skip)]
-    notifs: NotifState,
+    pub status: egui::RichText,
+    pub dock_layout: DockLayout,
+    pub popups: HashMap<String, Popups>,
+    pub notifs: NotifState,
 }

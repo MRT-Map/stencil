@@ -7,10 +7,10 @@ use crate::{App, ui::dock::DockWindow};
 pub struct ComponentEditorWindow;
 
 impl DockWindow for ComponentEditorWindow {
-    fn title(self) -> String {
+    fn title(&self) -> String {
         "Component Editor".into()
     }
-    fn ui(self, app: &mut App, ui: &mut Ui) {
+    fn ui(&mut self, app: &mut App, ui: &mut Ui) {
         ui.label("comp edit");
     }
 }

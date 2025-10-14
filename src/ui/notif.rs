@@ -71,10 +71,10 @@ impl App {
 pub struct NotifLogWindow;
 
 impl DockWindow for NotifLogWindow {
-    fn title(self) -> String {
+    fn title(&self) -> String {
         "Notification Log".into()
     }
-    fn ui(self, app: &mut App, ui: &mut egui::Ui) {
+    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         for entry in app.ui.notifs.notifs.iter().rev() {
             ui.colored_label(
                 egui::Color32::WHITE,

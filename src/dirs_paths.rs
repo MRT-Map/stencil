@@ -5,7 +5,9 @@ use std::{
 
 pub static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
-    let dir = PathBuf::from(env!("OUT_DIR")).join("data");
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("data");
     #[cfg(not(debug_assertions))]
     let dir = dirs::data_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
@@ -26,7 +28,9 @@ pub fn data_path<T: AsRef<Path>>(next: T) -> PathBuf {
 
 pub static CACHE_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
-    let dir = PathBuf::from(env!("OUT_DIR")).join("cache");
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("cache");
     #[cfg(not(debug_assertions))]
     let dir = dirs::cache_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
