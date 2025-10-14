@@ -1,13 +1,20 @@
 use std::collections::VecDeque;
 
+use egui::Context;
 use egui_dock::tab_viewer::OnCloseResponse;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{App, component_editor::ComponentEditor, event::Events, map::Map};
+use crate::{
+    App,
+    component_editor::ComponentEditorWindow,
+    event::{Event, Events},
+    map::MapWindow,
+    ui::notif::NotifLogWindow,
+};
 
-#[enum_dispatch(DockWindows)]
+#[enum_dispatch]
 pub trait DockWindow: Copy {
     fn title(self) -> String;
     fn allowed_in_windows(self) -> bool {
@@ -19,18 +26,18 @@ pub trait DockWindow: Copy {
     fn ui(self, app: &mut App, ui: &mut egui::Ui);
 }
 
-#[enum_dispatch]
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[enum_dispatch(DockWindow)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]
 pub enum DockWindows {
-    Map,
-    ComponentEditor,
+    MapWindow,
+    ComponentEditorWindow,
     // ProjectEditor,
     // WindowSettingsEditor,
     // TileSettingsEditor,
     // KeymapSettingsEditor,
     // MiscSettingsEditor,
-    // NotifLogViewer,
+    NotifLogWindow,
     // ComponentList,
     // HistoryViewer,
 }
@@ -40,12 +47,12 @@ pub struct DockLayout(pub egui_dock::DockState<DockWindows>);
 
 impl Default for DockLayout {
     fn default() -> Self {
-        let mut state = egui_dock::DockState::new(vec![Map.into()]);
+        let mut state = egui_dock::DockState::new(vec![MapWindow.into()]);
         let tree = state.main_surface_mut();
         let [_, _] = tree.split_left(
             egui_dock::NodeIndex::root(),
             0.2,
-            vec![ComponentEditor.into()],
+            vec![ComponentEditorWindow.into()],
         );
         // let [_, _] = tree.split_right(
         //     NodeIndex::root(),
@@ -88,7 +95,8 @@ impl App {
             .show(ctx, self);
         self.ui.dock_layout.0 = dock_state;
     }
-    pub fn open_dock_window<W: DockWindow + Into<DockWindows>>(&mut self, window: W) {
+    pub fn open_dock_window<W: Into<DockWindows>>(&mut self, window: W) {
+        let window = window.into();
         let a = self
             .ui
             .dock_layout
@@ -103,5 +111,23 @@ impl App {
             info!("Creating new window {}", window.title());
             self.ui.dock_layout.0.add_window(vec![window.into()]);
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct ResetLayoutEv;
+
+impl Event for ResetLayoutEv {
+    fn react(self, _ctx: &Context, app: &mut App) {
+        app.ui.dock_layout = DockLayout::default();
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct OpenWindowEv(DockWindows);
+
+impl Event for OpenWindowEv {
+    fn react(self, _ctx: &Context, app: &mut App) {
+        app.open_dock_window(self.0);
     }
 }

@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{App, ui::dock::DockWindow};
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
-pub struct ComponentEditor;
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+pub struct ComponentEditorWindow;
 
-impl DockWindow for ComponentEditor {
+impl DockWindow for ComponentEditorWindow {
     fn title(self) -> String {
         "Component Editor".into()
     }

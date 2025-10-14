@@ -1,6 +1,3 @@
-use std::sync::Mutex;
-
-use egui::{Ui, Window};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use serde::{Deserialize, Serialize};
 
@@ -18,11 +15,11 @@ impl Popup for ChangelogPopup {
         "Changelog".into()
     }
 
-    fn window(&self) -> Window<'static> {
-        <dyn Popup>::window(self).resizable(true)
+    fn window(&self) -> egui::Window<'static> {
+        self.default_window().resizable(true)
     }
 
-    fn ui(&mut self, _app: &mut App, ui: &mut Ui) -> bool {
+    fn ui(&mut self, _app: &mut App, ui: &mut egui::Ui) -> bool {
         egui::ScrollArea::vertical()
             .max_height(ui.available_height() * 0.75)
             .show(ui, |ui| {

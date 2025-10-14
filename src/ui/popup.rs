@@ -8,14 +8,20 @@ use tracing::info;
 use crate::{
     App,
     event::{Event, Events},
-    info_windows::changelog::ChangelogPopup,
+    info_windows::{
+        changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
+        quit::QuitPopup,
+    },
 };
 
-#[enum_dispatch(Popups)]
+#[enum_dispatch]
 pub trait Popup {
     fn id(&self) -> String;
     fn title(&self) -> String;
     fn window(&self) -> egui::Window<'static> {
+        self.default_window()
+    }
+    fn default_window(&self) -> egui::Window<'static> {
         egui::Window::new(self.title())
             .collapsible(false)
             .resizable(false)
@@ -23,19 +29,18 @@ pub trait Popup {
             .id(egui::Id::new(self.id()))
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool;
-}
-
-pub trait AlertPopup: Popup {
-    fn text(&self) -> impl Into<egui::WidgetText>;
-    fn close_event(&self) -> Option<impl Into<Events>> {
-        Option::<Events>::None
-    }
-    fn _ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool {
+    fn alert_ui(
+        &mut self,
+        app: &mut App,
+        ui: &mut egui::Ui,
+        text: impl Into<egui::WidgetText>,
+        close_event: Option<impl Into<Events>>,
+    ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.label(self.text());
+            ui.label(text);
         });
         if ui.button("Close").clicked() {
-            if let Some(close_event) = self.close_event() {
+            if let Some(close_event) = close_event {
                 app.events.push_back(close_event.into())
             }
             false
@@ -43,51 +48,30 @@ pub trait AlertPopup: Popup {
             true
         }
     }
-}
-
-pub trait ConfirmPopup: Popup {
-    fn text(&self) -> impl Into<egui::WidgetText>;
-    fn yes_event(&self) -> Option<impl Into<Events>> {
-        Option::<Events>::None
+    fn confirm_ui(
+        &mut self,
+        app: &mut App,
+        ui: &mut egui::Ui,
+        text: impl Into<egui::WidgetText>,
+        yes_event: Option<impl Into<Events>>,
+        no_event: Option<impl Into<Events>>,
+    ) -> bool {
+        self.choice_ui(app, ui, text, "Yes", yes_event, "No", no_event)
     }
-    fn no_event(&self) -> Option<impl Into<Events>> {
-        Option::<Events>::None
-    }
-    fn _ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool {
+    fn choice_ui<'a>(
+        &mut self,
+        app: &mut App,
+        ui: &mut egui::Ui,
+        text: impl Into<egui::WidgetText>,
+        text1: impl egui::IntoAtoms<'a>,
+        event1: Option<impl Into<Events>>,
+        text2: impl egui::IntoAtoms<'a>,
+        event2: Option<impl Into<Events>>,
+    ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.label(self.text());
+            ui.label(text);
         });
         ui.horizontal(|ui| {
-            if ui.button("Yes").clicked() {
-                if let Some(yes_event) = self.yes_event() {
-                    app.events.push_back(yes_event.into())
-                }
-                false
-            } else if ui.button("No").clicked() {
-                if let Some(no_event) = self.no_event() {
-                    app.events.push_back(no_event.into())
-                }
-                false
-            } else {
-                true
-            }
-        })
-        .inner
-    }
-}
-
-pub trait ChoicePopup: Popup {
-    fn text(&self) -> impl Into<egui::WidgetText>;
-    fn action1<'a>(&self) -> (impl egui::IntoAtoms<'a>, Option<impl Into<Events>>);
-    fn action2<'a>(&self) -> (impl egui::IntoAtoms<'a>, Option<impl Into<Events>>);
-    fn _ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool {
-        egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.label(self.text());
-        });
-        ui.horizontal(|ui| {
-            let (text1, event1) = self.action1();
-            let (text2, event2) = self.action2();
-
             if ui.button(text1).clicked() {
                 if let Some(event1) = event1 {
                     app.events.push_back(event1.into())
@@ -106,15 +90,15 @@ pub trait ChoicePopup: Popup {
     }
 }
 
-#[enum_dispatch]
+#[enum_dispatch(Popup)]
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "ty")]
 pub enum Popups {
     ChangelogPopup,
-    // Info,
-    // Licenses,
-    // Manual,
-    // Quit,
+    InfoPopup,
+    LicensesPopup,
+    ManualPopup,
+    QuitPopup,
 }
 
 impl App {

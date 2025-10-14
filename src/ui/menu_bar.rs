@@ -1,74 +1,88 @@
 use std::collections::VecDeque;
 
 use egui::scroll_area::ScrollBarVisibility;
+use egui_notify::ToastLevel;
 use tracing::info;
 
 use crate::{
     App,
+    component_editor::ComponentEditorWindow,
     event::{Event, Events},
     info_windows::InfoWindowEv,
+    ui::{
+        dock::{DockWindows, ResetLayoutEv},
+        notif::NotifLogWindow,
+    },
 };
 
 impl App {
     pub fn menu_bar(&mut self, ctx: &egui::Context) {
         egui::TopBottomPanel::top("menu").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
-                let mut button = |ui: &mut egui::Ui, label: &str, event: Events| {
-                    if ui.button(label).clicked() {
-                        info!(label, "Clicked menu item");
-                        self.events.push_back(event);
-                    }
-                };
+                macro_rules! button {
+                    ($ui:ident, event $label:literal, $event:expr) => {
+                        if $ui.button($label).clicked() {
+                            info!(label = $label, "Clicked menu item");
+                            self.events.push_back($event.into());
+                        }
+                    };
+                    ($ui:ident, window $label:literal, $window:expr) => {
+                        if $ui.button($label).clicked() {
+                            info!(label = $label, "Clicked menu item");
+                            self.open_dock_window($window)
+                        }
+                    };
+                }
 
                 ui.menu_button(format!("Stencil v{}", env!("CARGO_PKG_VERSION")), |ui| {
-                    button(ui, "Info", InfoWindowEv::Info.into());
-                    button(ui, "Changelog", InfoWindowEv::Changelog.into());
-                    button(ui, "Manual", InfoWindowEv::Manual.into());
-                    button(ui, "Licenses", InfoWindowEv::Licenses.into());
+                    button!(ui, event "Info", InfoWindowEv::Info);
+                    button!(ui, event "Changelog", InfoWindowEv::Changelog);
+                    button!(ui, event "Manual", InfoWindowEv::Manual);
+                    button!(ui, event "Licenses", InfoWindowEv::Licenses);
                     ui.separator();
-                    button(ui, "Quit", InfoWindowEv::Quit { confirm: false }.into());
+                    button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false });
                 });
-                // ui.menu_button("File", |ui| {
-                //     button!(ui, commands, "Open...", ProjectEv::Open);
-                //     button!(ui, commands, "Reload", ProjectEv::Reload);
-                //     button!(ui, commands, "Save", ProjectEv::Save(false));
-                // });
-                // ui.menu_button("Edit", |ui| {
-                //     button!(ui, commands, "Undo", HistoryEv::Undo);
-                //     button!(ui, commands, "Redo", HistoryEv::Redo);
-                // });
-                // #[expect(clippy::cognitive_complexity)]
-                // ui.menu_button("View", |ui| {
-                //     button!(ui, commands, "Component List", OpenComponentListEv);
-                //     button!(ui, commands, "Component Editor", OpenComponentEditorEv);
-                //     button!(ui, commands, "Project", OpenProjectEditorEv);
-                //     button!(ui, commands, "History", OpenHistoryViewerEv);
-                //     button!(ui, commands, "Notification Log", OpenNotifLogViewerEv);
-                //     ui.separator();
-                //     button!(ui, commands, "Reset Layout", ResetPanelDockStateEv);
-                // });
-                // #[expect(clippy::cognitive_complexity)]
-                // ui.menu_button("Settings", |ui| {
-                //     button!(ui, commands, "Open All", OpenAllSettingsEv);
-                //     ui.separator();
-                //     button!(ui, commands, "Tilemap", TileSettingsEv::Open);
-                //     button!(ui, commands, "Window", OpenWindowSettingsEv);
-                //     button!(ui, commands, "Keymap", OpenKeymapSettingsEv);
-                //     button!(ui, commands, "Misc", OpenMiscSettingsEv);
-                // });
-                // #[cfg(debug_assertions)]
-                // {
-                //     ui.menu_button("Debug", |ui| {
-                //         if ui.button("Trigger Warning").clicked() {
-                //             info!(label = "Trigger Warning", "Clicked menu item");
-                //             NOTIF_LOG.push("Warning Triggered", ToastLevel::Warning);
-                //         }
-                //         if ui.button("Trigger Panic").clicked() {
-                //             info!(label = "Trigger Panic", "Clicked menu item");
-                //             panic!("Panic Triggered");
-                //         }
-                //     });
-                // }
+                ui.menu_button("File", |ui| {
+                    // button!(ui, commands, "Open...", ProjectEv::Open);
+                    // button!(ui, commands, "Reload", ProjectEv::Reload);
+                    // button!(ui, commands, "Save", ProjectEv::Save(false));
+                });
+                ui.menu_button("Edit", |ui| {
+                    // button!(ui, commands, "Undo", HistoryEv::Undo);
+                    // button!(ui, commands, "Redo", HistoryEv::Redo);
+                });
+                ui.menu_button("View", |ui| {
+                    // button!(ui, commands, "Component List", OpenComponentListEv);
+                    button!(ui, window "Component Editor", ComponentEditorWindow);
+                    // button!(ui, commands, "Project", OpenProjectEditorEv);
+                    // button!(ui, commands, "History", OpenHistoryViewerEv);
+                    button!(ui, window "Notification Log", NotifLogWindow);
+                    ui.separator();
+                    button!(ui, event "Reset Layout", ResetLayoutEv);
+                });
+                ui.menu_button("Settings", |ui| {
+                    // button!(ui, commands, "Open All", OpenAllSettingsEv);
+                    // ui.separator();
+                    // button!(ui, commands, "Tilemap", TileSettingsEv::Open);
+                    // button!(ui, commands, "Window", OpenWindowSettingsEv);
+                    // button!(ui, commands, "Keymap", OpenKeymapSettingsEv);
+                    // button!(ui, commands, "Misc", OpenMiscSettingsEv);
+                });
+                #[cfg(debug_assertions)]
+                {
+                    ui.menu_button("Debug", |ui| {
+                        if ui.button("Trigger Warning").clicked() {
+                            info!(label = "Trigger Warning", "Clicked menu item");
+                            self.ui
+                                .notifs
+                                .push("Warning Triggered", ToastLevel::Warning);
+                        }
+                        if ui.button("Trigger Panic").clicked() {
+                            info!(label = "Trigger Panic", "Clicked menu item");
+                            panic!("Panic Triggered");
+                        }
+                    });
+                }
                 ui.separator();
 
                 egui::ScrollArea::horizontal()

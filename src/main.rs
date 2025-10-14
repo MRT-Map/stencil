@@ -62,9 +62,10 @@ impl eframe::App for App {
         self.menu_bar(ctx);
         self.dock(ctx);
         self.popups(ctx);
+        self.notifs(ctx);
 
         while let Some(event) = self.events.pop_front() {
-            event.log_react(self);
+            event.log_react(ctx, self);
         }
     }
 

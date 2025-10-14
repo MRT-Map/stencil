@@ -1,33 +1,22 @@
-use std::sync::Mutex;
+use serde::{Deserialize, Serialize};
 
-use bevy::prelude::*;
-use bevy_egui::egui;
+use crate::{App, ui::popup::Popup};
 
-use crate::{
-    info_windows::InfoWindowsEv,
-    ui::popup::{Popup, Popups},
-};
+#[derive(Copy, Clone, Deserialize, Serialize)]
+pub struct ManualPopup;
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn on_manual(trigger: Trigger<InfoWindowsEv>, mut popups: ResMut<Popups>) {
-    if *trigger.event() != InfoWindowsEv::Manual {
-        return;
+impl Popup for ManualPopup {
+    fn id(&self) -> String {
+        "manual".into()
     }
-    popups.add(Popup::new(
-        "manual",
-        || {
-            egui::Window::new("Manual")
-                .collapsible(false)
-                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-                .resizable(false)
-        },
-        |_, ui, _, shown| {
-            ui.label("Our online manual is available here:");
-            ui.hyperlink("https://github.com/MRT-Map/stencil2/wiki");
-            if ui.button("Close").clicked() {
-                *shown = false;
-            }
-        },
-        Mutex::new(Box::new(())),
-    ));
+
+    fn title(&self) -> String {
+        "Manual".into()
+    }
+
+    fn ui(&mut self, _app: &mut App, ui: &mut egui::Ui) -> bool {
+        ui.label("Our online manual is available here:");
+        ui.hyperlink("https://github.com/MRT-Map/stencil2/wiki");
+        !ui.button("Close").clicked()
+    }
 }

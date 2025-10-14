@@ -22,7 +22,7 @@ egui_commonmark = "0.22.0"
 egui_extras = "0.33.0"
 egui_dock = { git = "https://github.com/Avarel/egui_dock", branch = "egui_0.33", features = ["serde"] }
 egui-file-dialog = "0.12.0"
-egui-notify = "0.20.0"
+egui-notify = "0.21.0"
 walkers = "0.47.0"
 
 tracing = "0.1.41"
