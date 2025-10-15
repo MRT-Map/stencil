@@ -1,10 +1,13 @@
-pub mod miscellaneous;
+pub mod misc_settings;
 
-use std::path::PathBuf;
+use std::{any::Any, fmt::Display, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{App, load_save::LoadSave, ui::dock::DockWindow};
+use crate::{
+    App, load_save::LoadSave, settings::misc_settings::MiscSettings,
+    shortcut::settings::ShortcutsTabState, ui::dock::DockWindow,
+};
 
 #[macro_export]
 macro_rules! settings_field {
@@ -19,8 +22,8 @@ macro_rules! settings_field {
 
 pub trait Settings: LoadSave {
     fn description(&self, _ui: &mut egui::Ui) {}
-    fn ui_inner(&mut self, ui: &mut egui::Ui);
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui_inner(&mut self, ui: &mut egui::Ui, tab_state: &mut dyn Any);
+    fn ui(&mut self, ui: &mut egui::Ui, tab_state: &mut dyn Any) {
         ui.colored_label(
             egui::Color32::YELLOW,
             format!(
@@ -30,7 +33,32 @@ pub trait Settings: LoadSave {
         );
         self.description(ui);
         ui.separator();
-        self.ui_inner(ui);
+        self.ui_inner(ui, tab_state);
+    }
+    fn ui_field<T: PartialEq + Display>(
+        &mut self,
+        ui: &mut egui::Ui,
+        get: impl Fn(Self) -> T,
+        get_ref: impl Fn(&Self) -> &T,
+        get_mut: impl Fn(&mut Self) -> &mut T,
+        description: Option<impl Into<egui::WidgetText>>,
+        edit_ui: impl FnOnce(&mut egui::Ui, &mut T),
+    ) {
+        ui.horizontal(|ui| {
+            let default = get(Self::default());
+            if ui
+                .add_enabled(*get_ref(self) != default, egui::Button::new("⟲"))
+                .on_hover_text(format!("Default: {default}"))
+                .clicked()
+            {
+                *get_mut(self) = default
+            };
+
+            edit_ui(ui, get_mut(self))
+        });
+        if let Some(description) = description {
+            ui.label(description);
+        }
     }
 }
 
@@ -39,7 +67,7 @@ enum SettingsTab {
     #[default]
     Map,
     Window,
-    Shortcuts,
+    Shortcuts(ShortcutsTabState),
     Miscellaneous,
 }
 
@@ -54,25 +82,56 @@ impl DockWindow for SettingsWindow {
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.tab, SettingsTab::Map, "Map");
-            ui.selectable_value(&mut self.tab, SettingsTab::Window, "Window");
-            ui.selectable_value(&mut self.tab, SettingsTab::Shortcuts, "Shortcuts");
-            ui.selectable_value(&mut self.tab, SettingsTab::Miscellaneous, "Miscellaneous");
+            if ui
+                .add(egui::Button::selectable(
+                    matches!(self.tab, SettingsTab::Map),
+                    "Map",
+                ))
+                .clicked()
+            {
+                self.tab = SettingsTab::Map;
+            }
+            if ui
+                .add(egui::Button::selectable(
+                    matches!(self.tab, SettingsTab::Window),
+                    "Window",
+                ))
+                .clicked()
+            {
+                self.tab = SettingsTab::Window;
+            }
+            if ui
+                .add(egui::Button::selectable(
+                    matches!(self.tab, SettingsTab::Shortcuts(_)),
+                    "Shortcuts",
+                ))
+                .clicked()
+            {
+                self.tab = SettingsTab::Shortcuts(ShortcutsTabState::default());
+            }
+            if ui
+                .add(egui::Button::selectable(
+                    matches!(self.tab, SettingsTab::Miscellaneous),
+                    "Miscellaneous",
+                ))
+                .clicked()
+            {
+                self.tab = SettingsTab::Miscellaneous;
+            }
         });
         ui.separator();
-        match self.tab {
+        match &mut self.tab {
             SettingsTab::Map => {
                 ui.label("Map");
             }
             SettingsTab::Window => {
                 ui.label("Window");
             }
-            SettingsTab::Shortcuts => {
-                ui.label("Shortcuts");
+            SettingsTab::Shortcuts(state) => {
+                app.shortcut_settings.ui(ui, state);
             }
             SettingsTab::Miscellaneous => {
-                ui.label("Miscellaneous");
-                app.misc_settings.ui(ui);
+                app.misc_settings.ui(ui, &mut ());
             }
         }
     }

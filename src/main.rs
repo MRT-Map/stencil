@@ -6,6 +6,7 @@ mod load_save;
 mod logging;
 mod map;
 mod settings;
+mod shortcut;
 mod ui;
 
 use std::collections::VecDeque;
@@ -19,7 +20,8 @@ use crate::{
     event::{Event, Events},
     load_save::LoadSave,
     logging::init_logger,
-    settings::miscellaneous::MiscSettings,
+    settings::misc_settings::MiscSettings,
+    shortcut::settings::ShortcutSettings,
     ui::{UiState, dock::DockLayout, notif::NotifState},
 };
 
@@ -47,6 +49,7 @@ fn main() {
 struct App {
     ui: UiState,
     misc_settings: MiscSettings,
+    shortcut_settings: ShortcutSettings,
 
     events: VecDeque<Events>,
 }
@@ -65,12 +68,14 @@ impl App {
                 ..UiState::default()
             },
             misc_settings: MiscSettings::load(&mut notifs),
+            shortcut_settings: ShortcutSettings::load(&mut notifs),
             ..Self::default()
         }
     }
     fn save_state(&mut self) {
         self.ui.dock_layout.save(&mut self.ui.notifs);
         self.misc_settings.save(&mut self.ui.notifs);
+        self.shortcut_settings.save(&mut self.ui.notifs);
     }
 }
 
@@ -80,6 +85,8 @@ impl eframe::App for App {
         self.dock(ctx);
         self.popups(ctx);
         self.notifs(ctx);
+
+        self.shortcuts(ctx);
 
         while let Some(event) = self.events.pop_front() {
             event.log_react(ctx, self);

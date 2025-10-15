@@ -10,6 +10,7 @@ use crate::{
     event::{Event, Events},
     info_windows::InfoWindowEv,
     settings::SettingsWindow,
+    shortcut::ShortcutAction,
     ui::{
         dock::{DockWindows, ResetLayoutEv},
         notif::NotifLogWindow,
@@ -27,8 +28,20 @@ impl App {
                             self.events.push_back($event.into());
                         }
                     };
+                    ($ui:ident, event $label:literal, $event:expr, $action:expr) => {
+                        if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
+                            info!(label = $label, "Clicked menu item");
+                            self.events.push_back($event.into());
+                        }
+                    };
                     ($ui:ident, window $label:literal, $window:expr) => {
                         if $ui.button($label).clicked() {
+                            info!(label = $label, "Clicked menu item");
+                            self.open_dock_window($window)
+                        }
+                    };
+                    ($ui:ident, window $label:literal, $window:expr, $action:expr) => {
+                        if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
                             info!(label = $label, "Clicked menu item");
                             self.open_dock_window($window)
                         }
@@ -41,9 +54,9 @@ impl App {
                     button!(ui, event "Manual", InfoWindowEv::Manual);
                     button!(ui, event "Licenses", InfoWindowEv::Licenses);
                     ui.separator();
-                    button!(ui, window "Settings", SettingsWindow::default());
+                    button!(ui, window "Settings", SettingsWindow::default(), ShortcutAction::SettingsWindow);
                     ui.separator();
-                    button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false });
+                    button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false }, ShortcutAction::Quit);
                 });
                 ui.menu_button("File", |ui| {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
@@ -56,10 +69,10 @@ impl App {
                 });
                 ui.menu_button("View", |ui| {
                     // button!(ui, commands, "Component List", OpenComponentListEv);
-                    button!(ui, window "Component Editor", ComponentEditorWindow);
+                    button!(ui, window "Component Editor", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
                     // button!(ui, commands, "Project", OpenProjectEditorEv);
                     // button!(ui, commands, "History", OpenHistoryViewerEv);
-                    button!(ui, window "Notification Log", NotifLogWindow);
+                    button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();
                     button!(ui, event "Reset Layout", ResetLayoutEv);
                 });

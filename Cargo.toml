@@ -52,6 +52,8 @@ winit = "0.30.12"
 chrono = "0.4.42"
 
 hex_color = { version = "3.0.0", features = ["serde"] }
+bimap = { version = "0.6.3", features = ["serde"] }
+strum = { version = "0.27.2", features = ["derive"] }
 semver = "1.0.27"
 base64-serde = "0.8.0"
 base64 = "0.22.1"
