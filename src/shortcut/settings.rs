@@ -199,11 +199,13 @@ impl Settings for ShortcutSettings {
         if let Some(taken_by) = self.keyboard_to_action(new_shortcut)
             && taken_by != action
         {
+            info!(changing=?action, ?taken_by, new_shortcut=ui.ctx().format_shortcut(&new_shortcut), "Shortcut already taken");
             *tab_state = ShortcutsTabState::ChangeFail {
                 changing: action,
                 taken_by,
             }
         } else {
+            info!(changing=?action, new_shortcut=ui.ctx().format_shortcut(&new_shortcut), "Shortcut change succeeded");
             self.insert(action, new_shortcut);
             *tab_state = ShortcutsTabState::ChangeSuccess(action);
         }

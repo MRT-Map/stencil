@@ -4,7 +4,7 @@ use egui_notify::ToastLevel;
 use eyre::Result;
 use tracing::{debug, info, warn};
 
-use crate::ui::notif::NotifState;
+use crate::{settings::misc_settings::MiscSettings, ui::notif::NotifState};
 
 #[macro_export]
 macro_rules! impl_load_save {
@@ -58,14 +58,14 @@ pub trait LoadSave: Default {
     fn ser(&self) -> Result<Vec<u8>>;
     fn de(ser: &[u8]) -> Result<Self>;
 
-    fn load(notifs: &mut NotifState) -> Self {
+    fn load(notifs: &mut NotifState, misc_settings: &MiscSettings) -> Self {
         if !Self::path().exists() {
             info!(
                 "Loading default file for {}",
                 Self::path().to_string_lossy()
             );
             let s = Self::default();
-            let _ = s.save(notifs);
+            let _ = s.save(notifs, misc_settings);
             return s;
         }
 
@@ -85,6 +85,7 @@ pub trait LoadSave: Default {
                         Self::path().to_string_lossy()
                     ),
                     ToastLevel::Error,
+                    misc_settings,
                 );
                 return Self::default();
             }
@@ -106,12 +107,13 @@ pub trait LoadSave: Default {
                         Self::path().to_string_lossy()
                     ),
                     ToastLevel::Error,
+                    misc_settings,
                 );
                 Self::default()
             }
         }
     }
-    fn save(&self, notifs: &mut NotifState) {
+    fn save(&self, notifs: &mut NotifState, misc_settings: &MiscSettings) {
         let vec = match self.ser() {
             Ok(vec) => {
                 debug!("Serialised file for {}", Self::path().to_string_lossy());
@@ -128,6 +130,7 @@ pub trait LoadSave: Default {
                         Self::path().to_string_lossy()
                     ),
                     ToastLevel::Error,
+                    misc_settings,
                 );
                 return;
             }
@@ -149,6 +152,7 @@ pub trait LoadSave: Default {
                         Self::path().to_string_lossy()
                     ),
                     ToastLevel::Error,
+                    misc_settings,
                 );
             }
         }

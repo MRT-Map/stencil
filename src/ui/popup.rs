@@ -1,6 +1,5 @@
 use std::{any::Any, fmt::Display, sync::Mutex};
 
-use egui::Widget;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;

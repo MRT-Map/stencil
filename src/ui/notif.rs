@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use egui_notify::{Toast, ToastLevel, Toasts};
 use serde::{Deserialize, Serialize};
 
-use crate::{App, ui::dock::DockWindow};
+use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
 
 #[derive(Default)]
 pub struct NotifState {
@@ -15,14 +15,19 @@ pub struct NotifState {
     pub toasts: Toasts,
 }
 impl NotifState {
-    pub fn push<S: Into<egui::RichText>>(&mut self, message: S, level: ToastLevel) {
+    pub fn push<S: Into<egui::RichText>>(
+        &mut self,
+        message: S,
+        level: ToastLevel,
+        misc_settings: &MiscSettings,
+    ) {
         let message = message.into();
         self.toasts
             .add(Toast::custom(message.clone(), level.clone()))
             .duration(
-                Some(Duration::from_secs(5)), // ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
-                                              //     && misc_settings.notif_duration != 0)
-                                              //     .then(|| Duration::from_secs(misc_settings.notif_duration)), TODO
+                ((level == ToastLevel::Info || level == ToastLevel::Success)
+                    && misc_settings.notif_duration != 0)
+                    .then(|| Duration::from_secs(misc_settings.notif_duration)),
             );
         self.notifs.push(Notif::new(message, level));
     }
@@ -40,24 +45,6 @@ impl Notif {
             level,
             message: message.into(),
         }
-    }
-}
-
-pub trait AddToErrorLog<T: Default> {
-    #[must_use]
-    fn notif_error(self, notifs: &mut NotifState, level: ToastLevel) -> Self;
-    #[must_use]
-    fn unwrap_or_default_and_notif(self, notifs: &mut NotifState, level: ToastLevel) -> T;
-}
-
-impl<T: Default, E: ToString + Debug> AddToErrorLog<T> for Result<T, E> {
-    fn notif_error(self, notifs: &mut NotifState, level: ToastLevel) -> Self {
-        self.inspect_err(|e| {
-            notifs.push(e.to_string(), level);
-        })
-    }
-    fn unwrap_or_default_and_notif(self, notifs: &mut NotifState, level: ToastLevel) -> T {
-        self.notif_error(notifs, level).unwrap_or_default()
     }
 }
 

@@ -1,6 +1,5 @@
 use std::any::Any;
 
-use egui::Ui;
 use serde::{Deserialize, Serialize};
 
 use crate::{

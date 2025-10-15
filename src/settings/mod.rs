@@ -3,6 +3,7 @@ pub mod misc_settings;
 use std::{any::Any, fmt::Display, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::{
     App, load_save::LoadSave, settings::misc_settings::MiscSettings,
@@ -82,42 +83,32 @@ impl DockWindow for SettingsWindow {
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui
-                .add(egui::Button::selectable(
-                    matches!(self.tab, SettingsTab::Map),
-                    "Map",
-                ))
-                .clicked()
-            {
-                self.tab = SettingsTab::Map;
+            macro_rules! selectable_button {
+                ($label:literal, $new_val:expr, $match_:pat) => {
+                    if ui
+                        .add(egui::Button::selectable(
+                            matches!(self.tab, $match_),
+                            $label,
+                        ))
+                        .clicked()
+                    {
+                        info!(tab = $label, "Switching settings tab");
+                        self.tab = $new_val;
+                    }
+                };
             }
-            if ui
-                .add(egui::Button::selectable(
-                    matches!(self.tab, SettingsTab::Window),
-                    "Window",
-                ))
-                .clicked()
-            {
-                self.tab = SettingsTab::Window;
-            }
-            if ui
-                .add(egui::Button::selectable(
-                    matches!(self.tab, SettingsTab::Shortcuts(_)),
-                    "Shortcuts",
-                ))
-                .clicked()
-            {
-                self.tab = SettingsTab::Shortcuts(ShortcutsTabState::default());
-            }
-            if ui
-                .add(egui::Button::selectable(
-                    matches!(self.tab, SettingsTab::Miscellaneous),
-                    "Miscellaneous",
-                ))
-                .clicked()
-            {
-                self.tab = SettingsTab::Miscellaneous;
-            }
+            selectable_button!("Map", SettingsTab::Map, SettingsTab::Map);
+            selectable_button!("Window", SettingsTab::Window, SettingsTab::Window);
+            selectable_button!(
+                "Shortcuts",
+                SettingsTab::Shortcuts(ShortcutsTabState::default()),
+                SettingsTab::Shortcuts(_)
+            );
+            selectable_button!(
+                "Miscellaneous",
+                SettingsTab::Miscellaneous,
+                SettingsTab::Miscellaneous
+            );
         });
         ui.separator();
         match &mut self.tab {

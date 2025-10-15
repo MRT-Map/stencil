@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 
-use egui::Context;
 use egui_dock::tab_viewer::OnCloseResponse;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
@@ -120,7 +119,7 @@ impl App {
 pub struct ResetLayoutEv;
 
 impl Event for ResetLayoutEv {
-    fn react(self, _ctx: &Context, app: &mut App) {
+    fn react(self, _ctx: &egui::Context, app: &mut App) {
         app.ui.dock_layout = DockLayout::default();
     }
 }
@@ -129,7 +128,7 @@ impl Event for ResetLayoutEv {
 pub struct OpenWindowEv(DockWindows);
 
 impl Event for OpenWindowEv {
-    fn react(self, _ctx: &Context, app: &mut App) {
+    fn react(self, _ctx: &egui::Context, app: &mut App) {
         app.open_dock_window(self.0);
     }
 }

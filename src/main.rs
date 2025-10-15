@@ -62,20 +62,25 @@ impl App {
     }
     fn load_state() -> Self {
         let mut notifs = NotifState::default();
+        let misc_settings = MiscSettings::load(&mut notifs, &MiscSettings::default());
         Self {
             ui: UiState {
-                dock_layout: DockLayout::load(&mut notifs),
+                dock_layout: DockLayout::load(&mut notifs, &misc_settings),
                 ..UiState::default()
             },
-            misc_settings: MiscSettings::load(&mut notifs),
-            shortcut_settings: ShortcutSettings::load(&mut notifs),
+            shortcut_settings: ShortcutSettings::load(&mut notifs, &misc_settings),
+            misc_settings,
             ..Self::default()
         }
     }
     fn save_state(&mut self) {
-        self.ui.dock_layout.save(&mut self.ui.notifs);
-        self.misc_settings.save(&mut self.ui.notifs);
-        self.shortcut_settings.save(&mut self.ui.notifs);
+        self.ui
+            .dock_layout
+            .save(&mut self.ui.notifs, &self.misc_settings);
+        self.misc_settings
+            .save(&mut self.ui.notifs, &self.misc_settings);
+        self.shortcut_settings
+            .save(&mut self.ui.notifs, &self.misc_settings);
     }
 }
 

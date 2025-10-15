@@ -1,6 +1,6 @@
-use egui::KeyboardShortcut;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::{
     App, component_editor::ComponentEditorWindow, info_windows::InfoWindowEv,
@@ -35,10 +35,19 @@ impl App {
             if !ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
                 continue;
             }
-            match self.shortcut_settings.keyboard_to_action(shortcut).unwrap() {
-                ShortcutAction::Quit => self
-                    .events
-                    .push_back(InfoWindowEv::Quit { confirm: false }.into()),
+            let action = self.shortcut_settings.keyboard_to_action(shortcut).unwrap();
+            info!(
+                ?action,
+                shortcut = ctx.format_shortcut(&shortcut),
+                "Handling shortcut"
+            );
+            match action {
+                ShortcutAction::Quit => self.events.push_back(
+                    InfoWindowEv::Quit {
+                        confirm: cfg!(debug_assertions),
+                    }
+                    .into(),
+                ),
                 ShortcutAction::SettingsWindow => {
                     self.open_dock_window(SettingsWindow::default());
                 }

@@ -1,4 +1,3 @@
-use egui::Ui;
 use serde::{Deserialize, Serialize};
 
 use crate::{App, ui::dock::DockWindow};
@@ -16,7 +15,7 @@ impl DockWindow for MapWindow {
     fn is_closeable(&self) -> bool {
         false
     }
-    fn ui(&mut self, app: &mut App, ui: &mut Ui) {
+    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         ui.label("tilemap");
     }
 }
