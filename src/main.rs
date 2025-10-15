@@ -5,6 +5,7 @@ mod info_windows;
 mod load_save;
 mod logging;
 mod map;
+mod mode;
 mod settings;
 mod shortcut;
 mod ui;
@@ -20,6 +21,7 @@ use crate::{
     event::{Event, Events},
     load_save::LoadSave,
     logging::init_logger,
+    mode::EditorMode,
     settings::misc_settings::MiscSettings,
     shortcut::settings::ShortcutSettings,
     ui::{UiState, dock::DockLayout, notif::NotifState},
@@ -50,6 +52,8 @@ struct App {
     ui: UiState,
     misc_settings: MiscSettings,
     shortcut_settings: ShortcutSettings,
+
+    mode: EditorMode,
 
     events: VecDeque<Events>,
 }
