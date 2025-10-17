@@ -48,7 +48,7 @@ impl_load_save!(mpk DockLayout, data_path("dock.mpk"));
 
 impl Default for DockLayout {
     fn default() -> Self {
-        let mut state = egui_dock::DockState::new(vec![MapWindow.into()]);
+        let mut state = egui_dock::DockState::new(vec![MapWindow::default().into()]);
         let tree = state.main_surface_mut();
         let [_, _] = tree.split_left(
             egui_dock::NodeIndex::root(),

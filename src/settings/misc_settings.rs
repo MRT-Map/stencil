@@ -11,7 +11,7 @@ use crate::{
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
 
-#[derive(Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Debug)]
 #[serde(default)]
 pub struct MiscSettings {
     #[serde(skip_serializing_if = "notif_duration_is_default")]
@@ -41,6 +41,6 @@ impl Settings for MiscSettings {
                         .text("Notification duration"),
                 );
             },
-        )
+        );
     }
 }

@@ -21,6 +21,7 @@ use crate::{
     event::{Event, Events},
     load_save::LoadSave,
     logging::init_logger,
+    map::{basemap::Basemap, settings::MapSettings},
     mode::EditorMode,
     settings::misc_settings::MiscSettings,
     shortcut::settings::ShortcutSettings,
@@ -52,6 +53,7 @@ struct App {
     ui: UiState,
     misc_settings: MiscSettings,
     shortcut_settings: ShortcutSettings,
+    map_settings: MapSettings,
 
     mode: EditorMode,
 
@@ -62,7 +64,11 @@ impl App {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
-        Self::load_state()
+        let mut app = Self::load_state();
+        app.ui
+            .dock_layout
+            .reset_map_window(&app.map_settings, &Basemap::default()); // TODO
+        app
     }
     fn load_state() -> Self {
         let mut notifs = NotifState::default();
@@ -73,6 +79,7 @@ impl App {
                 ..UiState::default()
             },
             shortcut_settings: ShortcutSettings::load(&mut notifs, &misc_settings),
+            map_settings: MapSettings::load(&mut notifs, &misc_settings),
             misc_settings,
             ..Self::default()
         }
@@ -84,6 +91,8 @@ impl App {
         self.misc_settings
             .save(&mut self.ui.notifs, &self.misc_settings);
         self.shortcut_settings
+            .save(&mut self.ui.notifs, &self.misc_settings);
+        self.map_settings
             .save(&mut self.ui.notifs, &self.misc_settings);
     }
 }

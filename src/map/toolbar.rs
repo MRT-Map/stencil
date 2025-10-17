@@ -1,39 +1,11 @@
-use serde::{Deserialize, Serialize};
-
-use crate::{App, mode::EditorMode, ui::dock::DockWindow};
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct MapWindow {
-    tiles: walkers::HttpTiles,
-    map_memory: walkers::MapMemory,
-}
-
-impl Default for MapWindow {
-    fn new(ctx: &egui::Context) -> Self {
-        Self {
-            tiles: walkers::HttpTiles::new(egui::OpenStreetMap, ctx),
-            map_memory: walkers::MapMemory::default(),
-        }
-    }
-}
-
-impl DockWindow for MapWindow {
-    fn title(&self) -> String {
-        "Map".into()
-    }
-    fn allowed_in_windows(&self) -> bool {
-        false
-    }
-    fn is_closeable(&self) -> bool {
-        false
-    }
-    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
-        self.toolbar(app, ui)
-    }
-}
+use crate::{
+    App,
+    map::{MapWindow, basemap::Basemap},
+    mode::EditorMode,
+};
 
 impl MapWindow {
-    pub fn toolbar(app: &mut App, ui: &mut egui::Ui) {
+    pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
         let old_mode = app.mode;
         egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -54,18 +26,23 @@ impl MapWindow {
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
                     ui.label(format!(
-                        "x: {} z: {} \u{1f50d}: {:.2}",
-                        0,
-                        0,
-                        0 // mouse_pos_world.round().x as i32,
-                          // -mouse_pos_world.round().y as i32,
-                          // zoom.0
-                    ));
-                    ui.separator();
-                    ui.label(format!(
                         "# Pending Tiles: {}",
                         0 /*pending_tiles.0.len()*/
                     ));
+                    ui.separator();
+
+                    if ui.button("Reset View").clicked() {
+                        self.reset(&app.map_settings, &Basemap::default()); // TODO
+                    }
+                    if let Some(prev_cursor_world_pos) = self.prev_cursor_world_pos {
+                        ui.label(format!(
+                            "x: {:.0} z: {:.0} \u{1f50d}: {:.2}",
+                            prev_cursor_world_pos.x, prev_cursor_world_pos.y, self.zoom
+                        ));
+                    } else {
+                        ui.label(format!("\u{1f50d}: {:.2}", self.zoom));
+                    }
+
                     ui.separator();
                 });
             });

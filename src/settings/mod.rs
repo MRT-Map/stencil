@@ -113,7 +113,7 @@ impl DockWindow for SettingsWindow {
         ui.separator();
         match &mut self.tab {
             SettingsTab::Map => {
-                ui.label("Map");
+                app.map_settings.ui(ui, &mut ());
             }
             SettingsTab::Window => {
                 ui.label("Window");
