@@ -40,10 +40,10 @@ impl Default for ShortcutSettings {
         shortcut!(SettingsWindow => COMMAND + Comma);
         shortcut!(ComponentEditorWindow => COMMAND | ALT + C);
         shortcut!(NotifLogWindow => COMMAND | ALT + N);
-        shortcut!(MoveMapUp -> ArrowUp);
-        shortcut!(MoveMapDown -> ArrowDown);
-        shortcut!(MoveMapLeft -> ArrowLeft);
-        shortcut!(MoveMapRight -> ArrowRight);
+        shortcut!(PanMapUp -> ArrowUp);
+        shortcut!(PanMapDown -> ArrowDown);
+        shortcut!(PanMapLeft -> ArrowLeft);
+        shortcut!(PanMapRight -> ArrowRight);
         shortcut!(ZoomMapIn -> Equals);
         shortcut!(ZoomMapOut -> Minus);
         Self(map)

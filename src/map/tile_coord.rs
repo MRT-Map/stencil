@@ -1,10 +1,17 @@
 use std::{
     fmt::{Display, Formatter},
+    num::{NonZero, NonZeroUsize},
     path::PathBuf,
-    sync::LazyLock,
+    sync::{LazyLock, Mutex, MutexGuard},
 };
 
+use async_executor::{Executor, Task};
+use eyre::Result;
+use futures_lite::future;
+use itertools::Either;
 use lazy_regex::{Regex, lazy_regex};
+use lru::LruCache;
+use tracing::error;
 
 use crate::{dirs_paths::cache_dir, map::basemap::Basemap};
 
@@ -17,12 +24,28 @@ pub struct TileCoord {
 
 impl Display for TileCoord {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}, {}, {}", self.z, self.y, self.x)
+        write!(f, "{}, {}, {}", self.z, self.x, self.y)
     }
 }
 
 impl TileCoord {
-    pub fn cache_path(&self, basemap: &Basemap) -> PathBuf {
+    pub const fn new(z: i8, x: i32, y: i32) -> Self {
+        Self { x, y, z }
+    }
+    pub fn at_world_coord(coord: geo::Coord<f32>, z: i8, basemap: &Basemap) -> Self {
+        Self {
+            x: ((coord.x + basemap.offset.0) / basemap.tile_world_size(z)).floor() as i32,
+            y: ((coord.y + basemap.offset.1) / basemap.tile_world_size(z)).floor() as i32,
+            z,
+        }
+    }
+    pub fn world_top_left(self, basemap: &Basemap) -> geo::Coord<f32> {
+        geo::coord! {
+            x: (self.x as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.0),
+            y: (self.y as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.1),
+        }
+    }
+    pub fn cache_path(self, basemap: &Basemap) -> PathBuf {
         let path = basemap
             .cache_path()
             .join(self.z.to_string())
@@ -30,4 +53,86 @@ impl TileCoord {
         let _ = std::fs::create_dir_all(&path);
         path.join(format!("{}.{}", self.y, basemap.extension))
     }
+    pub fn get_cache<'a>() -> Option<(
+        MutexGuard<'a, LruCache<Self, TileCacheItem>>,
+        MutexGuard<'a, Executor<'static>>,
+    )> {
+        let (tile_cache, executor) = match (TILE_CACHE.lock(), EXECUTOR.lock()) {
+            (Ok(a), Ok(b)) => (a, b),
+            e => {
+                error!("{e:?}");
+                return None;
+            }
+        };
+        Some((tile_cache, executor))
+    }
+    pub fn texture_id<'a>(
+        self,
+        ctx: &egui::Context,
+        basemap: &Basemap,
+        tile_cache: &mut MutexGuard<'a, LruCache<Self, TileCacheItem>>,
+        executor: &MutexGuard<'a, Executor<'static>>,
+    ) -> Option<TextureIdResult> {
+        let url = basemap.url(self);
+        let item = tile_cache.get_or_insert_mut(self, || {
+            let cache_path = self.cache_path(basemap);
+            if cache_path.exists()
+                && let Ok(a) = std::fs::read(cache_path)
+            {
+                return TileCacheItem::Loaded(Ok(a));
+            }
+            TileCacheItem::Pending(executor.spawn(async move { surf::get(url).recv_bytes().await }))
+        });
+        let item_result = match item {
+            TileCacheItem::Pending(task) => match future::block_on(future::poll_once(task)) {
+                None => {
+                    executor.try_tick();
+                    ctx.request_repaint_after_secs(0.5);
+                    Either::Right(true)
+                }
+                Some(Ok(bytes)) => {
+                    let cache_path = self.cache_path(basemap);
+                    let _ = std::fs::write(cache_path, &bytes).map(|a| error!("{a:?}"));
+
+                    *item = TileCacheItem::Loaded(Ok(bytes.clone()));
+                    Either::Left(bytes)
+                }
+                Some(Err(e)) => {
+                    *item = TileCacheItem::Loaded(Err(e));
+                    Either::Right(false)
+                }
+            },
+            TileCacheItem::Loaded(Ok(bytes)) => Either::Left(bytes.clone()),
+            TileCacheItem::Loaded(Err(_)) => Either::Right(false),
+        };
+        match item_result {
+            Either::Left(bytes) => {
+                let cache_path = self.cache_path(basemap);
+                let poll = egui::ImageSource::Bytes {
+                    uri: format!("bytes://{}", cache_path.display()).into(),
+                    bytes: bytes.into(),
+                }
+                .load(
+                    ctx,
+                    egui::TextureOptions::LINEAR,
+                    egui::SizeHint::Scale(2.0.into()),
+                )
+                .ok()?;
+                poll.texture_id().map(TextureIdResult::Success)
+            }
+            Either::Right(still_loading) => still_loading.then_some(TextureIdResult::Loading),
+        }
+    }
 }
+
+pub enum TileCacheItem {
+    Pending(Task<surf::Result<Vec<u8>>>),
+    Loaded(surf::Result<Vec<u8>>),
+}
+pub enum TextureIdResult {
+    Success(egui::TextureId),
+    Loading,
+}
+static EXECUTOR: LazyLock<Mutex<Executor>> = LazyLock::new(Mutex::default);
+static TILE_CACHE: LazyLock<Mutex<LruCache<TileCoord, TileCacheItem>>> =
+    LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(0x1_0000).unwrap())));

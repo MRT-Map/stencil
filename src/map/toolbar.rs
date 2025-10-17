@@ -39,8 +39,10 @@ impl MapWindow {
                     }
                     if let Some(prev_cursor_world_pos) = self.prev_cursor_world_pos {
                         ui.label(format!(
-                            "x: {:.0} z: {:.0} \u{1f50d}: {:.2}",
-                            prev_cursor_world_pos.x, prev_cursor_world_pos.y, self.zoom
+                            "x: {:} z: {:} \u{1f50d}: {:.2}",
+                            prev_cursor_world_pos.x.round() as i32,
+                            prev_cursor_world_pos.y.round() as i32,
+                            self.zoom
                         ));
                     } else {
                         ui.label(format!("\u{1f50d}: {:.2}", self.zoom));

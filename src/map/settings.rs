@@ -4,6 +4,7 @@ use bimap::BiMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    App,
     dirs_paths::data_dir,
     impl_load_save,
     settings::{Settings, misc_settings::MiscSettings},
@@ -36,6 +37,18 @@ settings_field!(
     world_screen_ratio,
     f32
 );
+settings_field!(
+    MapSettings,
+    shortcut_pan_amount_is_default,
+    shortcut_pan_amount,
+    f32
+);
+settings_field!(
+    MapSettings,
+    shortcut_zoom_amount_is_default,
+    shortcut_zoom_amount,
+    f32
+);
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 #[serde(default)]
@@ -44,12 +57,19 @@ pub struct MapSettings {
     pub init_zoom_as_pc_of_max: f32,
     #[serde(skip_serializing_if = "additional_zoom_is_default")]
     pub additional_zoom: f32,
+
     #[serde(skip_serializing_if = "max_requests_is_default")]
     pub max_requests: usize,
     #[serde(skip_serializing_if = "clear_cache_on_startup_is_default")]
     pub clear_cache_on_startup: bool,
+
     #[serde(skip_serializing_if = "world_screen_ratio_is_default")]
     pub world_screen_ratio: f32,
+
+    #[serde(skip_serializing_if = "shortcut_pan_amount_is_default")]
+    pub shortcut_pan_amount: f32,
+    #[serde(skip_serializing_if = "shortcut_zoom_amount_is_default")]
+    pub shortcut_zoom_amount: f32,
 }
 
 impl Default for MapSettings {
@@ -59,7 +79,9 @@ impl Default for MapSettings {
             additional_zoom: 4.0,
             max_requests: 0x10000,
             clear_cache_on_startup: false,
-            world_screen_ratio: 1.0,
+            world_screen_ratio: 0.25,
+            shortcut_pan_amount: 25.0,
+            shortcut_zoom_amount: 0.2,
         }
     }
 }
@@ -135,11 +157,45 @@ impl Settings for MapSettings {
                 *value = world / screen;
             }
         );
+
+        ui.separator();
+
+        self.ui_field(
+            ui,
+            |a| a.shortcut_pan_amount,
+            |a| &a.shortcut_pan_amount,
+            |a| &mut a.shortcut_pan_amount,
+            Some("Pixels to move by when any PanMap shortcut is pressed"),
+            |ui, value| {
+                ui.add(
+                    egui::Slider::new(value, 1.0..=100.0)
+                        .suffix("px")
+                        .text("Shortcut Pan Amount"),
+                );
+            },
+        );
+
+        self.ui_field(
+            ui,
+            |a| a.shortcut_zoom_amount,
+            |a| &a.shortcut_zoom_amount,
+            |a| &mut a.shortcut_zoom_amount,
+            Some("Zoom levels to increase/decrease by when any ZoomMap shortcut is pressed"),
+            |ui, value| {
+                ui.add(egui::Slider::new(value, 0.01..=1.0).text("Shortcut Zoom Amount"));
+            },
+        );
     }
 }
 
 impl MapSettings {
     pub fn world_screen_ratio_at_zoom(&self, max_tile_zoom: i8, zoom: f32) -> f32 {
         self.world_screen_ratio * (f32::from(max_tile_zoom) - zoom).exp2()
+    }
+}
+impl App {
+    pub fn world_screen_ratio_with_current_basemap_at_zoom(&self, zoom: f32) -> f32 {
+        self.map_settings
+            .world_screen_ratio_at_zoom(self.project.basemap.max_tile_zoom, zoom)
     }
 }

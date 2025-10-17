@@ -68,9 +68,10 @@ impl App {
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
         let mut app = Self::load_state();
-        app.ui
-            .dock_layout
-            .reset_map_window2(&app.map_settings, &app.project.basemap);
+        app.reset_map_window();
+        if app.map_settings.clear_cache_on_startup {
+            app.project.basemap.clear_cache_path();
+        }
         app
     }
     fn load_state() -> Self {

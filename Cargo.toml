@@ -19,7 +19,7 @@ rust-version = "1.88"
 egui = { version = "0.33.0", features = ["serde"] }
 eframe = { version = "0.33.0", features = ["persistence"] }
 egui_commonmark = "0.22.0"
-egui_extras = "0.33.0"
+egui_extras = { version = "0.33.0", features = ["http"] }
 egui_dock = { git = "https://github.com/Avarel/egui_dock", branch = "egui_0.33", features = ["serde"] }
 egui-file-dialog = "0.12.0"
 egui-notify = "0.21.0"
@@ -54,6 +54,7 @@ hex_color = { version = "3.0.0", features = ["serde"] }
 bimap = { version = "0.6.3", features = ["serde"] }
 strum = { version = "0.27.2", features = ["derive"] }
 geo = { version = "0.31.0", features = ["use-serde"] }
+lru = "0.16.2"
 semver = "1.0.27"
 base64-serde = "0.8.0"
 base64 = "0.22.1"

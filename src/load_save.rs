@@ -60,10 +60,7 @@ pub trait LoadSave: Default {
 
     fn load(notifs: &mut NotifState, misc_settings: &MiscSettings) -> Self {
         if !Self::path().exists() {
-            info!(
-                "Loading default file for {}",
-                Self::path().to_string_lossy()
-            );
+            info!("Loading default file for {}", Self::path().display());
             let s = Self::default();
             let _ = s.save(notifs, misc_settings);
             return s;
@@ -71,19 +68,13 @@ pub trait LoadSave: Default {
 
         let vec = match std::fs::read(Self::path()) {
             Ok(vec) => {
-                info!("Read file at {}", Self::path().to_string_lossy());
+                info!("Read file at {}", Self::path().display());
                 vec
             }
             Err(e) => {
-                warn!(
-                    "Couldn't open file at {}: {e:?}",
-                    Self::path().to_string_lossy()
-                );
+                warn!("Couldn't open file at {}: {e:?}", Self::path().display());
                 notifs.push(
-                    format!(
-                        "Couldn't open file at {}:\n{e}",
-                        Self::path().to_string_lossy()
-                    ),
+                    format!("Couldn't open file at {}:\n{e}", Self::path().display()),
                     ToastLevel::Error,
                     misc_settings,
                 );
@@ -93,18 +84,18 @@ pub trait LoadSave: Default {
 
         match Self::de(&vec) {
             Ok(s) => {
-                info!("Deserialised file at {}", Self::path().to_string_lossy());
+                info!("Deserialised file at {}", Self::path().display());
                 s
             }
             Err(e) => {
                 warn!(
                     "Couldn't deserialise file at {}: {e:?}",
-                    Self::path().to_string_lossy()
+                    Self::path().display()
                 );
                 notifs.push(
                     format!(
                         "Couldn't deserialise file at {}:\n{e}",
-                        Self::path().to_string_lossy()
+                        Self::path().display()
                     ),
                     ToastLevel::Error,
                     misc_settings,
@@ -116,18 +107,18 @@ pub trait LoadSave: Default {
     fn save(&self, notifs: &mut NotifState, misc_settings: &MiscSettings) {
         let vec = match self.ser() {
             Ok(vec) => {
-                debug!("Serialised file for {}", Self::path().to_string_lossy());
+                debug!("Serialised file for {}", Self::path().display());
                 vec
             }
             Err(e) => {
                 warn!(
                     "Couldn't serialise file for {}: {e:?}",
-                    Self::path().to_string_lossy()
+                    Self::path().display()
                 );
                 notifs.push(
                     format!(
                         "Couldn't serialise file for {}:\n{e}",
-                        Self::path().to_string_lossy()
+                        Self::path().display()
                     ),
                     ToastLevel::Error,
                     misc_settings,
@@ -139,18 +130,12 @@ pub trait LoadSave: Default {
         // TODO safe delete
         match std::fs::write(Self::path(), vec) {
             Ok(()) => {
-                debug!("Wrote file at {}", Self::path().to_string_lossy());
+                debug!("Wrote file at {}", Self::path().display());
             }
             Err(e) => {
-                warn!(
-                    "Couldn't write file for {}: {e:?}",
-                    Self::path().to_string_lossy()
-                );
+                warn!("Couldn't write file for {}: {e:?}", Self::path().display());
                 notifs.push(
-                    format!(
-                        "Couldn't write file for {}:\n{e}",
-                        Self::path().to_string_lossy()
-                    ),
+                    format!("Couldn't write file for {}:\n{e}", Self::path().display()),
                     ToastLevel::Error,
                     misc_settings,
                 );

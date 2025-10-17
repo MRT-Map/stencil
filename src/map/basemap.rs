@@ -2,6 +2,7 @@ use std::{path::PathBuf, sync::LazyLock};
 
 use lazy_regex::{Regex, lazy_regex};
 use serde::{Deserialize, Serialize};
+use tracing::error;
 
 use crate::{
     dirs_paths::cache_dir,
@@ -24,6 +25,7 @@ pub struct Basemap {
     pub max_tile_zoom: i8,
     pub max_zoom_world_size: f32,
     pub url_type: BasemapURLType,
+    pub offset: (f32, f32),
 }
 
 impl Default for Basemap {
@@ -34,6 +36,7 @@ impl Default for Basemap {
             max_tile_zoom: 8,
             max_zoom_world_size: 32.0,
             url_type: BasemapURLType::DynMap,
+            offset: (0.5, 32.5),
         }
     }
 }
@@ -44,7 +47,7 @@ impl Basemap {
         match self.url_type {
             BasemapURLType::DynMap => {
                 let z = 2.0f32.powi(i32::from(self.max_tile_zoom - tile_coord.z));
-                let xy = egui::vec2(tile_coord.x as f32, tile_coord.y as f32);
+                let xy = egui::vec2(tile_coord.x as f32, -tile_coord.y as f32);
 
                 let group = (xy * z / self.max_zoom_world_size).floor();
 
@@ -83,6 +86,10 @@ impl Basemap {
     pub fn cache_path(&self) -> PathBuf {
         cache_dir("tile-cache").join(URL_REPLACER.replace_all(&self.url, "").as_ref())
     }
+    pub fn clear_cache_path(&self) {
+        // TODO safe delete
+        let _ = std::fs::remove_dir_all(self.cache_path()).map_err(|e| error!("{e:?}"));
+    }
 }
 
 impl Basemap {
@@ -92,9 +99,8 @@ impl Basemap {
     pub fn tile_world_size(&self, zoom: i8) -> f32 {
         self.max_zoom_world_size * 2.0f32.powi(i32::from(self.max_tile_zoom - zoom))
     }
-    pub fn tile_screen_size(&self, map_settings: &MapSettings, zoom: i8) -> u32 {
-        (self.tile_world_size(zoom)
-            / map_settings.world_screen_ratio_at_zoom(self.max_tile_zoom, zoom as f32))
-            as u32
+    pub fn tile_screen_size(&self, map_settings: &MapSettings, zoom: f32) -> f32 {
+        self.tile_world_size(self.tile_zoom(zoom))
+            / map_settings.world_screen_ratio_at_zoom(self.max_tile_zoom, zoom)
     }
 }

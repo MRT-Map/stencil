@@ -1,9 +1,15 @@
+use image::imageops::tile;
+use lru::LruCache;
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
     App,
-    map::{basemap::Basemap, settings::MapSettings},
+    map::{
+        basemap::Basemap,
+        settings::MapSettings,
+        tile_coord::{TextureIdResult, TileCoord},
+    },
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -47,11 +53,13 @@ impl DockLayout {
         };
         map_window
     }
-    pub fn reset_map_window(&mut self, app: &App) {
-        self.reset_map_window2(&app.map_settings, &app.project.basemap);
-    }
-    pub fn reset_map_window2(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
-        self.map_window_mut().reset2(map_settings, basemap);
+}
+impl App {
+    pub fn reset_map_window(&mut self) {
+        self.ui
+            .dock_layout
+            .map_window_mut()
+            .reset2(&self.map_settings, &self.project.basemap);
     }
 }
 
@@ -69,91 +77,147 @@ impl DockWindow for MapWindow {
         self.toolbar(app, ui);
 
         let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::all());
-        let pt1 = self.world_to_screen(app, response.rect.center(), geo::coord! {x: 0.0, y: 0.0});
-        let pt2 = self.world_to_screen(
+
+        self.tiles(app, ui, &response, &painter);
+        self.interaction(app, ui, &response);
+    }
+}
+impl MapWindow {
+    fn tiles(&self, app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+        let world_boundaries = self.map_world_boundaries(app, response.rect);
+        let tile_zoom = app.project.basemap.tile_zoom(self.zoom);
+        let tile_screen_size = app
+            .project
+            .basemap
+            .tile_screen_size(&app.map_settings, self.zoom);
+        let min_tile_coord =
+            TileCoord::at_world_coord(world_boundaries.min(), tile_zoom, &app.project.basemap);
+        let max_tile_coord =
+            TileCoord::at_world_coord(world_boundaries.max(), tile_zoom, &app.project.basemap);
+        let min_tile_screen_top_left = self.world_to_screen(
             app,
             response.rect.center(),
-            geo::coord! {x: 100.0, y: 100.0},
+            min_tile_coord.world_top_left(&app.project.basemap),
         );
-        painter.circle_filled(pt1, 5.0, egui::Color32::YELLOW);
-        painter.circle_filled(pt2, 5.0, egui::Color32::WHITE);
+        let mut tile_screen_top_left = min_tile_screen_top_left;
+        let Some((mut tile_cache, executor)) = TileCoord::get_cache() else {
+            return;
+        };
 
-        if let Some(hover_pos) = response.hover_pos() {
-            let mut cursor_world_pos = self.screen_to_world(app, response.rect.center(), hover_pos);
-
-            let old_zoom = self.zoom;
-            self.zoom += ui.ctx().input(egui::InputState::zoom_delta).log2();
-            self.zoom = self.zoom.clamp(
-                0.0,
-                f32::from(app.project.basemap.max_tile_zoom) + app.map_settings.additional_zoom,
-            );
-
-            if (old_zoom - self.zoom).abs() > f32::EPSILON {
-                let new_cursor_world_pos =
-                    self.screen_to_world(app, response.rect.center(), hover_pos);
-                self.centre_coord = self.centre_coord + cursor_world_pos - new_cursor_world_pos;
-                cursor_world_pos = new_cursor_world_pos;
+        for tx in min_tile_coord.x..=max_tile_coord.x {
+            for ty in min_tile_coord.y..=max_tile_coord.y {
+                match TileCoord::new(tile_zoom, tx, ty).texture_id(
+                    ui.ctx(),
+                    &app.project.basemap,
+                    &mut tile_cache,
+                    &executor,
+                ) {
+                    Some(TextureIdResult::Success(texture_id)) => {
+                        painter.image(
+                            texture_id,
+                            egui::Rect::from_min_size(
+                                tile_screen_top_left,
+                                egui::Vec2::splat(tile_screen_size),
+                            ),
+                            egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                            egui::Color32::WHITE,
+                        );
+                    }
+                    Some(TextureIdResult::Loading) => {
+                        let centre =
+                            tile_screen_top_left + egui::Vec2::splat(tile_screen_size / 2.0);
+                        let u = tile_screen_size / 32.0;
+                        painter.line(
+                            vec![
+                                centre + egui::vec2(-u, -2.0 * u),
+                                centre + egui::vec2(-u, -u),
+                                centre + egui::vec2(u, u),
+                                centre + egui::vec2(u, 2.0 * u),
+                                centre + egui::vec2(-u, 2.0 * u),
+                                centre + egui::vec2(-u, u),
+                                centre + egui::vec2(u, -u),
+                                centre + egui::vec2(u, -2.0 * u),
+                                centre + egui::vec2(-u, -2.0 * u),
+                            ],
+                            egui::epaint::PathStroke::new(
+                                tile_screen_size / 48.0,
+                                egui::Color32::DARK_GRAY,
+                            ),
+                        );
+                    }
+                    None => {}
+                }
+                tile_screen_top_left.y += tile_screen_size;
             }
-
-            let mut translation = ui.ctx().input(egui::InputState::translation_delta)
-                * app
-                    .map_settings
-                    .world_screen_ratio_at_zoom(app.project.basemap.max_tile_zoom, self.zoom);
-            translation.x -= if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(
-                    &app.shortcut_settings
-                        .action_to_keyboard(ShortcutAction::MoveMapLeft),
-                )
-            }) {
-                25.0
-            } else {
-                0.0
-            };
-            translation.x += if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(
-                    &app.shortcut_settings
-                        .action_to_keyboard(ShortcutAction::MoveMapRight),
-                )
-            }) {
-                25.0
-            } else {
-                0.0
-            };
-            translation.y += if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(
-                    &app.shortcut_settings
-                        .action_to_keyboard(ShortcutAction::MoveMapDown),
-                )
-            }) {
-                25.0
-            } else {
-                0.0
-            };
-            translation.y -= if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(
-                    &app.shortcut_settings
-                        .action_to_keyboard(ShortcutAction::MoveMapUp),
-                )
-            }) {
-                25.0
-            } else {
-                0.0
-            };
-            translation += if response.dragged_by(egui::PointerButton::Middle) {
-                -response.drag_delta()
-                    * app
-                        .map_settings
-                        .world_screen_ratio_at_zoom(app.project.basemap.max_tile_zoom, self.zoom)
-            } else {
-                egui::Vec2::ZERO
-            };
-            self.centre_coord.x += translation.x;
-            self.centre_coord.y += translation.y;
-
-            self.prev_cursor_world_pos = Some(cursor_world_pos);
-        } else {
-            self.prev_cursor_world_pos = None;
+            tile_screen_top_left.x += tile_screen_size;
+            tile_screen_top_left.y = min_tile_screen_top_left.y;
         }
+    }
+    fn interaction(&mut self, app: &mut App, ui: &egui::Ui, response: &egui::Response) {
+        let Some(hover_pos) = response.hover_pos() else {
+            self.prev_cursor_world_pos = None;
+            return;
+        };
+        let mut cursor_world_pos = self.screen_to_world(app, response.rect.center(), hover_pos);
+
+        let old_zoom = self.zoom;
+        self.zoom += ui.ctx().input(egui::InputState::zoom_delta).log2();
+
+        self.zoom = self.zoom.clamp(
+            0.0,
+            f32::from(app.project.basemap.max_tile_zoom) + app.map_settings.additional_zoom,
+        );
+
+        if (old_zoom - self.zoom).abs() > f32::EPSILON {
+            let new_cursor_world_pos = self.screen_to_world(app, response.rect.center(), hover_pos);
+            self.centre_coord = self.centre_coord + cursor_world_pos - new_cursor_world_pos;
+            cursor_world_pos = new_cursor_world_pos;
+        }
+
+        for (action, sign) in [
+            (ShortcutAction::ZoomMapOut, -1.0),
+            (ShortcutAction::ZoomMapIn, 1.0),
+        ] {
+            self.zoom += if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(&app.shortcut_settings.action_to_keyboard(action))
+            }) {
+                app.map_settings.shortcut_zoom_amount * sign
+            } else {
+                0.0
+            }
+        }
+
+        let world_screen_ratio = app.world_screen_ratio_with_current_basemap_at_zoom(self.zoom);
+
+        let mut translation =
+            ui.ctx().input(egui::InputState::translation_delta) * world_screen_ratio;
+        for (is_x, action, sign) in [
+            (true, ShortcutAction::PanMapLeft, -1.0),
+            (true, ShortcutAction::PanMapRight, 1.0),
+            (false, ShortcutAction::PanMapDown, 1.0),
+            (false, ShortcutAction::PanMapUp, -1.0),
+        ] {
+            *(if is_x {
+                &mut translation.x
+            } else {
+                &mut translation.y
+            }) += if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(&app.shortcut_settings.action_to_keyboard(action))
+            }) {
+                app.map_settings.shortcut_pan_amount * sign * world_screen_ratio
+            } else {
+                0.0
+            };
+        }
+        translation += if response.dragged_by(egui::PointerButton::Middle) {
+            -response.drag_delta() * world_screen_ratio
+        } else {
+            egui::Vec2::ZERO
+        };
+        self.centre_coord.x += translation.x;
+        self.centre_coord.y += translation.y;
+
+        self.prev_cursor_world_pos = Some(cursor_world_pos);
     }
 }
 
@@ -198,5 +262,12 @@ impl MapWindow {
         let world_delta = screen_delta
             * map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
         self.centre_coord + geo::Coord::from((world_delta.x, world_delta.y))
+    }
+
+    pub fn map_world_boundaries(&self, app: &App, map_rect: egui::Rect) -> geo::Rect<f32> {
+        geo::Rect::new(
+            self.screen_to_world(app, map_rect.center(), map_rect.min),
+            self.screen_to_world(app, map_rect.center(), map_rect.max),
+        )
     }
 }

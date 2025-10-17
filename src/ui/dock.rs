@@ -121,6 +121,7 @@ pub struct ResetLayoutEv;
 impl Event for ResetLayoutEv {
     fn react(self, _ctx: &egui::Context, app: &mut App) {
         app.ui.dock_layout = DockLayout::default();
+        app.reset_map_window();
     }
 }
 

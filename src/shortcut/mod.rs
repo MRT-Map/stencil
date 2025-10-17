@@ -27,10 +27,10 @@ pub enum ShortcutAction {
     SettingsWindow,
     ComponentEditorWindow,
     NotifLogWindow,
-    MoveMapUp,
-    MoveMapDown,
-    MoveMapLeft,
-    MoveMapRight,
+    PanMapUp,
+    PanMapDown,
+    PanMapLeft,
+    PanMapRight,
     ZoomMapIn,
     ZoomMapOut,
 }
@@ -38,7 +38,12 @@ impl ShortcutAction {
     pub const fn eventless(self) -> bool {
         matches!(
             self,
-            Self::MoveMapUp | Self::MoveMapDown | Self::MoveMapLeft | Self::MoveMapRight
+            Self::PanMapUp
+                | Self::PanMapDown
+                | Self::PanMapLeft
+                | Self::PanMapRight
+                | Self::ZoomMapIn
+                | Self::ZoomMapOut
         )
     }
 }
@@ -73,12 +78,6 @@ impl App {
                 }
                 ShortcutAction::NotifLogWindow => {
                     self.open_dock_window(NotifLogWindow);
-                }
-                ShortcutAction::ZoomMapIn => {
-                    self.ui.dock_layout.map_window_mut().zoom += 0.2;
-                }
-                ShortcutAction::ZoomMapOut => {
-                    self.ui.dock_layout.map_window_mut().zoom -= 0.2;
                 }
                 _ => {}
             }

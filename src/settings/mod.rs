@@ -27,10 +27,7 @@ pub trait Settings: LoadSave {
     fn ui(&mut self, ui: &mut egui::Ui, tab_state: &mut dyn Any) {
         ui.colored_label(
             egui::Color32::YELLOW,
-            format!(
-                "Settings can also be edited at: {}",
-                Self::path().to_string_lossy()
-            ),
+            format!("Settings can also be edited at: {}", Self::path().display()),
         );
         self.description(ui);
         ui.separator();
@@ -52,10 +49,10 @@ pub trait Settings: LoadSave {
                 .on_hover_text(format!("Default: {default}"))
                 .clicked()
             {
-                *get_mut(self) = default
+                *get_mut(self) = default;
             };
 
-            edit_ui(ui, get_mut(self))
+            edit_ui(ui, get_mut(self));
         });
         if let Some(description) = description {
             ui.label(description);
