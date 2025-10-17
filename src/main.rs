@@ -6,6 +6,7 @@ mod load_save;
 mod logging;
 mod map;
 mod mode;
+mod project;
 mod settings;
 mod shortcut;
 mod ui;
@@ -23,6 +24,7 @@ use crate::{
     logging::init_logger,
     map::{basemap::Basemap, settings::MapSettings},
     mode::EditorMode,
+    project::Project,
     settings::misc_settings::MiscSettings,
     shortcut::settings::ShortcutSettings,
     ui::{UiState, dock::DockLayout, notif::NotifState},
@@ -56,6 +58,7 @@ struct App {
     map_settings: MapSettings,
 
     mode: EditorMode,
+    project: Project,
 
     events: VecDeque<Events>,
 }
@@ -67,7 +70,7 @@ impl App {
         let mut app = Self::load_state();
         app.ui
             .dock_layout
-            .reset_map_window(&app.map_settings, &Basemap::default()); // TODO
+            .reset_map_window2(&app.map_settings, &app.project.basemap);
         app
     }
     fn load_state() -> Self {

@@ -1,3 +1,5 @@
+use tracing::info;
+
 use crate::{
     App,
     map::{MapWindow, basemap::Basemap},
@@ -32,7 +34,8 @@ impl MapWindow {
                     ui.separator();
 
                     if ui.button("Reset View").clicked() {
-                        self.reset(&app.map_settings, &Basemap::default()); // TODO
+                        info!("Resetting view");
+                        self.reset(app);
                     }
                     if let Some(prev_cursor_world_pos) = self.prev_cursor_world_pos {
                         ui.label(format!(

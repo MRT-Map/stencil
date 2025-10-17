@@ -4,6 +4,7 @@ use tracing::error;
 use crate::{
     App,
     map::{basemap::Basemap, settings::MapSettings},
+    shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
 
@@ -14,9 +15,9 @@ pub mod toolbar;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct MapWindow {
-    centre_coord: geo::Coord<f32>,
-    zoom: f32,
-    prev_cursor_world_pos: Option<geo::Coord<f32>>,
+    pub centre_coord: geo::Coord<f32>,
+    pub zoom: f32,
+    pub prev_cursor_world_pos: Option<geo::Coord<f32>>,
 }
 
 impl Default for MapWindow {
@@ -29,20 +30,28 @@ impl Default for MapWindow {
     }
 }
 impl MapWindow {
-    pub fn reset(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
+    pub fn reset(&mut self, app: &App) {
+        self.reset2(&app.map_settings, &app.project.basemap);
+    }
+    pub fn reset2(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
         self.centre_coord = geo::Coord::zero();
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
     }
 }
 impl DockLayout {
-    pub fn reset_map_window(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
+    pub fn map_window_mut(&mut self) -> &mut MapWindow {
         let Some((_, DockWindows::MapWindow(map_window))) =
             self.0.iter_all_tabs_mut().find(|(_, a)| a.title() == "Map")
         else {
-            error!("Cannot find map window");
-            return;
+            unreachable!("Cannot find map window");
         };
-        map_window.reset(map_settings, basemap);
+        map_window
+    }
+    pub fn reset_map_window(&mut self, app: &App) {
+        self.reset_map_window2(&app.map_settings, &app.project.basemap);
+    }
+    pub fn reset_map_window2(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
+        self.map_window_mut().reset2(map_settings, basemap);
     }
 }
 
@@ -60,15 +69,9 @@ impl DockWindow for MapWindow {
         self.toolbar(app, ui);
 
         let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::all());
-        let pt1 = self.world_to_screen(
-            &app.map_settings,
-            &Basemap::default(),
-            response.rect.center(),
-            geo::coord! {x: 0.0, y: 0.0},
-        );
+        let pt1 = self.world_to_screen(app, response.rect.center(), geo::coord! {x: 0.0, y: 0.0});
         let pt2 = self.world_to_screen(
-            &app.map_settings,
-            &Basemap::default(),
+            app,
             response.rect.center(),
             geo::coord! {x: 100.0, y: 100.0},
         );
@@ -76,17 +79,78 @@ impl DockWindow for MapWindow {
         painter.circle_filled(pt2, 5.0, egui::Color32::WHITE);
 
         if let Some(hover_pos) = response.hover_pos() {
-            self.prev_cursor_world_pos = Some(self.screen_to_world(
-                &app.map_settings,
-                &Basemap::default(),
-                response.rect.center(),
-                hover_pos,
-            ));
-            self.zoom += ui.ctx().input(|a| a.smooth_scroll_delta.y / 100.0);
+            let mut cursor_world_pos = self.screen_to_world(app, response.rect.center(), hover_pos);
+
+            let old_zoom = self.zoom;
+            self.zoom += ui.ctx().input(egui::InputState::zoom_delta).log2();
             self.zoom = self.zoom.clamp(
                 0.0,
-                Basemap::default().max_tile_zoom as f32 + app.map_settings.additional_zoom,
+                f32::from(app.project.basemap.max_tile_zoom) + app.map_settings.additional_zoom,
             );
+
+            if (old_zoom - self.zoom).abs() > f32::EPSILON {
+                let new_cursor_world_pos =
+                    self.screen_to_world(app, response.rect.center(), hover_pos);
+                self.centre_coord = self.centre_coord + cursor_world_pos - new_cursor_world_pos;
+                cursor_world_pos = new_cursor_world_pos;
+            }
+
+            let mut translation = ui.ctx().input(egui::InputState::translation_delta)
+                * app
+                    .map_settings
+                    .world_screen_ratio_at_zoom(app.project.basemap.max_tile_zoom, self.zoom);
+            translation.x -= if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(
+                    &app.shortcut_settings
+                        .action_to_keyboard(ShortcutAction::MoveMapLeft),
+                )
+            }) {
+                25.0
+            } else {
+                0.0
+            };
+            translation.x += if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(
+                    &app.shortcut_settings
+                        .action_to_keyboard(ShortcutAction::MoveMapRight),
+                )
+            }) {
+                25.0
+            } else {
+                0.0
+            };
+            translation.y += if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(
+                    &app.shortcut_settings
+                        .action_to_keyboard(ShortcutAction::MoveMapDown),
+                )
+            }) {
+                25.0
+            } else {
+                0.0
+            };
+            translation.y -= if ui.ctx().input_mut(|a| {
+                a.consume_shortcut(
+                    &app.shortcut_settings
+                        .action_to_keyboard(ShortcutAction::MoveMapUp),
+                )
+            }) {
+                25.0
+            } else {
+                0.0
+            };
+            translation += if response.dragged_by(egui::PointerButton::Middle) {
+                -response.drag_delta()
+                    * app
+                        .map_settings
+                        .world_screen_ratio_at_zoom(app.project.basemap.max_tile_zoom, self.zoom)
+            } else {
+                egui::Vec2::ZERO
+            };
+            self.centre_coord.x += translation.x;
+            self.centre_coord.y += translation.y;
+
+            self.prev_cursor_world_pos = Some(cursor_world_pos);
         } else {
             self.prev_cursor_world_pos = None;
         }
@@ -95,6 +159,14 @@ impl DockWindow for MapWindow {
 
 impl MapWindow {
     pub fn world_to_screen(
+        &self,
+        app: &App,
+        map_centre: egui::Pos2,
+        world: geo::Coord<f32>,
+    ) -> egui::Pos2 {
+        self.world_to_screen2(&app.map_settings, &app.project.basemap, map_centre, world)
+    }
+    pub fn world_to_screen2(
         &self,
         map_settings: &MapSettings,
         basemap: &Basemap,
@@ -106,7 +178,16 @@ impl MapWindow {
             world_delta / map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
         map_centre + egui::Vec2::from(screen_delta.x_y())
     }
+
     pub fn screen_to_world(
+        &self,
+        app: &App,
+        map_centre: egui::Pos2,
+        screen: egui::Pos2,
+    ) -> geo::Coord<f32> {
+        self.screen_to_world2(&app.map_settings, &app.project.basemap, map_centre, screen)
+    }
+    pub fn screen_to_world2(
         &self,
         map_settings: &MapSettings,
         basemap: &Basemap,

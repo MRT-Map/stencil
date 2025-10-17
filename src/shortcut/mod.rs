@@ -27,15 +27,32 @@ pub enum ShortcutAction {
     SettingsWindow,
     ComponentEditorWindow,
     NotifLogWindow,
+    MoveMapUp,
+    MoveMapDown,
+    MoveMapLeft,
+    MoveMapRight,
+    ZoomMapIn,
+    ZoomMapOut,
+}
+impl ShortcutAction {
+    pub const fn eventless(self) -> bool {
+        matches!(
+            self,
+            Self::MoveMapUp | Self::MoveMapDown | Self::MoveMapLeft | Self::MoveMapRight
+        )
+    }
 }
 
 impl App {
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
         for shortcut in self.shortcut_settings.shortcuts_ordered() {
+            let action = self.shortcut_settings.keyboard_to_action(shortcut).unwrap();
+            if action.eventless() {
+                continue;
+            }
             if !ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
                 continue;
             }
-            let action = self.shortcut_settings.keyboard_to_action(shortcut).unwrap();
             info!(
                 ?action,
                 shortcut = ctx.format_shortcut(&shortcut),
@@ -57,6 +74,13 @@ impl App {
                 ShortcutAction::NotifLogWindow => {
                     self.open_dock_window(NotifLogWindow);
                 }
+                ShortcutAction::ZoomMapIn => {
+                    self.ui.dock_layout.map_window_mut().zoom += 0.2;
+                }
+                ShortcutAction::ZoomMapOut => {
+                    self.ui.dock_layout.map_window_mut().zoom -= 0.2;
+                }
+                _ => {}
             }
         }
     }

@@ -24,28 +24,28 @@ impl_load_save!(toml ShortcutSettings, data_dir("settings").join("shortcut.toml"
 impl Default for ShortcutSettings {
     fn default() -> Self {
         let mut map = BiMap::new();
-        map.insert(
-            ShortcutAction::Quit,
-            egui::KeyboardShortcut::new(egui::Modifiers::NONE, egui::Key::Escape),
-        );
-        map.insert(
-            ShortcutAction::SettingsWindow,
-            egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::Comma),
-        );
-        map.insert(
-            ShortcutAction::ComponentEditorWindow,
-            egui::KeyboardShortcut::new(
-                egui::Modifiers::COMMAND | egui::Modifiers::ALT,
-                egui::Key::C,
-            ),
-        );
-        map.insert(
-            ShortcutAction::NotifLogWindow,
-            egui::KeyboardShortcut::new(
-                egui::Modifiers::COMMAND | egui::Modifiers::ALT,
-                egui::Key::N,
-            ),
-        );
+        macro_rules! shortcut {
+            ($action:ident => $($modifier:ident)|+ + $key:ident) => {
+                map.insert(
+                    ShortcutAction::$action,
+                    egui::KeyboardShortcut::new($(egui::Modifiers::$modifier)|+, egui::Key::$key),
+                );
+            };
+            ($action:ident -> $key:ident) => {
+                shortcut!($action => NONE + $key);
+            };
+        }
+
+        shortcut!(Quit -> Escape);
+        shortcut!(SettingsWindow => COMMAND + Comma);
+        shortcut!(ComponentEditorWindow => COMMAND | ALT + C);
+        shortcut!(NotifLogWindow => COMMAND | ALT + N);
+        shortcut!(MoveMapUp -> ArrowUp);
+        shortcut!(MoveMapDown -> ArrowDown);
+        shortcut!(MoveMapLeft -> ArrowLeft);
+        shortcut!(MoveMapRight -> ArrowRight);
+        shortcut!(ZoomMapIn -> Equals);
+        shortcut!(ZoomMapOut -> Minus);
         Self(map)
     }
 }
@@ -54,13 +54,14 @@ impl ShortcutSettings {
     pub fn action_to_keyboard(&mut self, action: ShortcutAction) -> egui::KeyboardShortcut {
         if let Some(shortcut) = self.0.get_by_left(&action) {
             return *shortcut;
-        };
+        }
+
         let shortcut = *Self::default().0.get_by_left(&action).unwrap();
         self.insert(action, shortcut);
         shortcut
     }
     pub fn keyboard_to_action(&self, keyboard: egui::KeyboardShortcut) -> Option<ShortcutAction> {
-        self.0.get_by_right(&keyboard).map(|a| *a)
+        self.0.get_by_right(&keyboard).copied()
     }
     pub fn insert(
         &mut self,
@@ -79,11 +80,11 @@ impl ShortcutSettings {
         self.0
             .right_values()
             .sorted_by_cached_key(|a| {
-                a.modifiers.alt as u8
-                    + a.modifiers.command as u8
-                    + a.modifiers.ctrl as u8
-                    + a.modifiers.shift as u8
-                    + a.modifiers.mac_cmd as u8
+                u8::from(a.modifiers.alt)
+                    + u8::from(a.modifiers.command)
+                    + u8::from(a.modifiers.ctrl)
+                    + u8::from(a.modifiers.shift)
+                    + u8::from(a.modifiers.mac_cmd)
             })
             .rev()
             .copied()
@@ -103,12 +104,11 @@ pub enum ShortcutsTabState {
     },
 }
 impl ShortcutsTabState {
-    pub fn changed_shortcut(&self) -> Option<ShortcutAction> {
+    pub const fn changed_shortcut(self) -> Option<ShortcutAction> {
         match self {
-            ShortcutsTabState::None => None,
-            ShortcutsTabState::WaitForShortcut(action) => Some(*action),
-            ShortcutsTabState::ChangeSuccess(action) => Some(*action),
-            ShortcutsTabState::ChangeFail { changing, .. } => Some(*changing),
+            Self::None => None,
+            Self::WaitForShortcut(action) | Self::ChangeSuccess(action) => Some(action),
+            Self::ChangeFail { changing, .. } => Some(changing),
         }
     }
 }
@@ -132,7 +132,7 @@ impl Settings for ShortcutSettings {
                 });
                 header.col(|_| ());
             })
-            .body(|mut body| {
+            .body(|body| {
                 let mut default = Self::default();
                 body.rows(10.0, ShortcutAction::COUNT, |mut row| {
                     let action = ShortcutAction::VARIANTS[row.index()];
@@ -155,7 +155,7 @@ impl Settings for ShortcutSettings {
                         }
                     });
                     row.col(|ui| {
-                        ui.label(format!("{action:?}").replace("ShortcutAction::", ""));
+                        ui.label(format!("{action}"));
                     });
                     row.col(|ui| {
                         ui.label(ui.ctx().format_shortcut(&self.action_to_keyboard(action)));
@@ -173,7 +173,7 @@ impl Settings for ShortcutSettings {
                             ShortcutsTabState::ChangeFail { taken_by, .. } => {
                                 ui.colored_label(
                                     egui::Color32::RED,
-                                    format!("Already taken by {taken_by:?}"),
+                                    format!("Already taken by {taken_by}"),
                                 );
                             }
                             _ => {}
@@ -184,7 +184,7 @@ impl Settings for ShortcutSettings {
                             *tab_state = ShortcutsTabState::WaitForShortcut(action);
                         }
                     });
-                })
+                });
             });
 
         let ShortcutsTabState::WaitForShortcut(action) = *tab_state else {
