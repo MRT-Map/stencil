@@ -8,8 +8,8 @@ use tracing::info;
 use crate::{
     App,
     component_editor::ComponentEditorWindow,
-    dirs_paths::data_path,
     event::{Event, Events},
+    file::data_path,
     impl_load_save,
     map::MapWindow,
     settings::SettingsWindow,

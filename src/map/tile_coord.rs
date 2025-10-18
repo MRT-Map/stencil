@@ -13,7 +13,7 @@ use lazy_regex::{Regex, lazy_regex};
 use lru::LruCache;
 use tracing::error;
 
-use crate::{dirs_paths::cache_dir, map::basemap::Basemap};
+use crate::{file::cache_dir, map::basemap::Basemap};
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -92,7 +92,7 @@ impl TileCoord {
                 }
                 Some(Ok(bytes)) => {
                     let cache_path = self.cache_path(basemap);
-                    let _ = std::fs::write(cache_path, &bytes).map(|a| error!("{a:?}"));
+                    let _ = std::fs::write(cache_path, &bytes).map_err(|a| error!("{a:?}"));
 
                     *item = TileCacheItem::Loaded(Ok(bytes.clone()));
                     Either::Left(bytes)

@@ -1,6 +1,6 @@
 mod component_editor;
-mod dirs_paths;
 mod event;
+mod file;
 mod info_windows;
 mod load_save;
 mod logging;
@@ -18,8 +18,8 @@ use eyre::Result;
 use tracing::{error, info};
 
 use crate::{
-    dirs_paths::DATA_DIR,
     event::{Event, Events},
+    file::DATA_DIR,
     load_save::LoadSave,
     logging::init_logger,
     map::{basemap::Basemap, settings::MapSettings},
@@ -70,7 +70,9 @@ impl App {
         let mut app = Self::load_state();
         app.reset_map_window();
         if app.map_settings.clear_cache_on_startup {
-            app.project.basemap.clear_cache_path();
+            app.project
+                .basemap
+                .clear_cache_path(&app.misc_settings, &mut app.ui.notifs);
         }
         app
     }

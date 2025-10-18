@@ -4,7 +4,7 @@ use egui_notify::ToastLevel;
 use eyre::Result;
 use tracing::{debug, info, warn};
 
-use crate::{settings::misc_settings::MiscSettings, ui::notif::NotifState};
+use crate::{file::safe_write, settings::misc_settings::MiscSettings, ui::notif::NotifState};
 
 #[macro_export]
 macro_rules! impl_load_save {
@@ -127,8 +127,7 @@ pub trait LoadSave: Default {
             }
         };
 
-        // TODO safe delete
-        match std::fs::write(Self::path(), vec) {
+        match safe_write(Self::path(), vec, misc_settings, notifs) {
             Ok(()) => {
                 debug!("Wrote file at {}", Self::path().display());
             }

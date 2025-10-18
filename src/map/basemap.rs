@@ -5,9 +5,10 @@ use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
-    dirs_paths::cache_dir,
+    file::{cache_dir, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::misc_settings::MiscSettings,
+    ui::notif::NotifState,
 };
 
 pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
@@ -86,9 +87,8 @@ impl Basemap {
     pub fn cache_path(&self) -> PathBuf {
         cache_dir("tile-cache").join(URL_REPLACER.replace_all(&self.url, "").as_ref())
     }
-    pub fn clear_cache_path(&self) {
-        // TODO safe delete
-        let _ = std::fs::remove_dir_all(self.cache_path()).map_err(|e| error!("{e:?}"));
+    pub fn clear_cache_path(&self, misc_settings: &MiscSettings, notifs: &mut NotifState) {
+        let _ = safe_delete(self.cache_path(), misc_settings, notifs);
     }
 }
 

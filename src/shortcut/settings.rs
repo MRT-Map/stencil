@@ -8,8 +8,8 @@ use strum::{EnumCount, VariantArray};
 use tracing::info;
 
 use crate::{
-    dirs_paths::data_dir,
     event::Events,
+    file::data_dir,
     impl_load_save,
     settings::{Settings, misc_settings::MiscSettings},
     shortcut::ShortcutAction,

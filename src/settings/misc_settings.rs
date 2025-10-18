@@ -3,7 +3,7 @@ use std::any::Any;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    dirs_paths::{data_dir, data_path},
+    file::{data_dir, data_path},
     impl_load_save,
     settings::Settings,
     settings_field,

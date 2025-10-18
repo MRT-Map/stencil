@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    dirs_paths::data_dir,
+    file::data_dir,
     impl_load_save,
     settings::{Settings, misc_settings::MiscSettings},
     settings_field,
