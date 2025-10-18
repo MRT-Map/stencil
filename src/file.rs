@@ -6,7 +6,7 @@ use std::{
 
 use egui_notify::ToastLevel;
 use eyre::Result;
-use tracing::error;
+use tracing::{debug, error};
 
 use crate::{settings::misc_settings::MiscSettings, ui::notif::NotifState};
 
@@ -83,7 +83,10 @@ pub fn safe_delete<T: AsRef<Path>>(
         path.file_name().unwrap_or_default().display()
     ));
     match std::fs::rename(path, &new_path) {
-        Ok(()) => Ok(Some(new_path)),
+        Ok(()) => {
+            debug!("Safe deleted {}", path.display());
+            Ok(Some(new_path))
+        }
         Err(e) => {
             error!(
                 "Could not safe delete file/directory {}:\n{e:?}",
