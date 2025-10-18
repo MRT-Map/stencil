@@ -50,7 +50,6 @@ image = "0.25.8"
 winit = "0.30.12"
 chrono = "0.4.42"
 
-hex_color = { version = "3.0.0", features = ["serde"] }
 bimap = { version = "0.6.3", features = ["serde"] }
 strum = { version = "0.27.2", features = ["derive"] }
 geo = { version = "0.31.0", features = ["use-serde"] }

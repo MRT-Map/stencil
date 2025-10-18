@@ -1,3 +1,6 @@
+pub mod pla3;
+pub mod skin;
+
 use serde::{Deserialize, Serialize};
 
 use crate::map::basemap::Basemap;
