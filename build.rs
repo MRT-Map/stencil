@@ -44,15 +44,14 @@ fn embed_resource() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    return Ok(());
-    if std::env::var("PROFILE")? != "debug" {
-        gather_licenses()?;
-    }
-    zip_assets()?;
-    embed_resource()?;
-
-    println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=assets");
+    // if std::env::var("PROFILE")? != "debug" {
+    //     gather_licenses()?;
+    // }
+    // zip_assets()?;
+    // embed_resource()?;
+    //
+    // println!("cargo:rerun-if-changed=build.rs");
+    // println!("cargo:rerun-if-changed=assets");
 
     Ok(())
 }

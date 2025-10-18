@@ -1,19 +1,17 @@
 use std::{
     fmt::{Display, Formatter},
-    num::{NonZero, NonZeroUsize},
+    num::NonZeroUsize,
     path::PathBuf,
     sync::{LazyLock, Mutex, MutexGuard},
 };
 
 use async_executor::{Executor, Task};
-use eyre::Result;
 use futures_lite::future;
 use itertools::Either;
-use lazy_regex::{Regex, lazy_regex};
 use lru::LruCache;
 use tracing::error;
 
-use crate::{file::cache_dir, map::basemap::Basemap};
+use crate::map::basemap::Basemap;
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {

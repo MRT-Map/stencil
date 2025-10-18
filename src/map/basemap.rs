@@ -2,7 +2,6 @@ use std::{path::PathBuf, sync::LazyLock};
 
 use lazy_regex::{Regex, lazy_regex};
 use serde::{Deserialize, Serialize};
-use tracing::error;
 
 use crate::{
     file::{cache_dir, safe_delete},

@@ -14,15 +14,14 @@ mod ui;
 use std::collections::VecDeque;
 
 use eframe::egui;
-use eyre::Result;
-use tracing::{error, info};
+use tracing::info;
 
 use crate::{
     event::{Event, Events},
     file::DATA_DIR,
     load_save::LoadSave,
     logging::init_logger,
-    map::{basemap::Basemap, settings::MapSettings},
+    map::settings::MapSettings,
     mode::EditorMode,
     project::Project,
     settings::misc_settings::MiscSettings,
@@ -104,7 +103,7 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.menu_bar(ctx);
         self.dock(ctx);
         self.popups(ctx);
@@ -117,7 +116,7 @@ impl eframe::App for App {
         }
     }
 
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+    fn save(&mut self, _storage: &mut dyn eframe::Storage) {
         // eframe::set_value(storage, eframe::APP_KEY, self);
         self.save_state();
     }

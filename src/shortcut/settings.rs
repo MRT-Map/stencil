@@ -1,20 +1,12 @@
 use std::any::Any;
 
 use bimap::BiMap;
-use eyre::OptionExt;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use strum::{EnumCount, VariantArray};
 use tracing::info;
 
-use crate::{
-    event::Events,
-    file::data_dir,
-    impl_load_save,
-    settings::{Settings, misc_settings::MiscSettings},
-    shortcut::ShortcutAction,
-    ui::dock::DockWindows,
-};
+use crate::{file::data_dir, impl_load_save, settings::Settings, shortcut::ShortcutAction};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ShortcutSettings(BiMap<ShortcutAction, egui::KeyboardShortcut>);
@@ -176,7 +168,7 @@ impl Settings for ShortcutSettings {
                                     format!("Already taken by {taken_by}"),
                                 );
                             }
-                            _ => {}
+                            ShortcutsTabState::None => {}
                         }
                     });
                     row.col(|ui| {

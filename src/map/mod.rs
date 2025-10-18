@@ -1,7 +1,4 @@
-use image::imageops::tile;
-use lru::LruCache;
 use serde::{Deserialize, Serialize};
-use tracing::error;
 
 use crate::{
     App,

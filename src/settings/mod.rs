@@ -1,13 +1,12 @@
 pub mod misc_settings;
 
-use std::{any::Any, fmt::Display, path::PathBuf};
+use std::{any::Any, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, load_save::LoadSave, settings::misc_settings::MiscSettings,
-    shortcut::settings::ShortcutsTabState, ui::dock::DockWindow,
+    App, load_save::LoadSave, shortcut::settings::ShortcutsTabState, ui::dock::DockWindow,
 };
 
 #[macro_export]
@@ -50,7 +49,7 @@ pub trait Settings: LoadSave {
                 .clicked()
             {
                 *get_mut(self) = default;
-            };
+            }
 
             edit_ui(ui, get_mut(self));
         });

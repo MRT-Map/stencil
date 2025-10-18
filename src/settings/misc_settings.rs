@@ -2,16 +2,11 @@ use std::any::Any;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    file::{data_dir, data_path},
-    impl_load_save,
-    settings::Settings,
-    settings_field,
-};
+use crate::{file::data_dir, impl_load_save, settings::Settings, settings_field};
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
 
-#[derive(Deserialize, Serialize, Clone, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug)]
 #[serde(default)]
 pub struct MiscSettings {
     #[serde(skip_serializing_if = "notif_duration_is_default")]

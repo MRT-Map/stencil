@@ -1,19 +1,10 @@
-use std::collections::VecDeque;
-
-use egui_dock::tab_viewer::OnCloseResponse;
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App,
-    component_editor::ComponentEditorWindow,
-    event::{Event, Events},
-    file::data_path,
-    impl_load_save,
-    map::MapWindow,
-    settings::SettingsWindow,
-    ui::notif::NotifLogWindow,
+    App, component_editor::ComponentEditorWindow, event::Event, file::data_path, impl_load_save,
+    map::MapWindow, settings::SettingsWindow, ui::notif::NotifLogWindow,
 };
 
 #[enum_dispatch]
@@ -28,6 +19,7 @@ pub trait DockWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
 }
 
+#[expect(clippy::enum_variant_names)]
 #[enum_dispatch(DockWindow)]
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]
@@ -110,7 +102,7 @@ impl App {
             self.ui.dock_layout.0.set_focused_node_and_surface(a);
         } else {
             info!("Creating new window {}", window.title());
-            self.ui.dock_layout.0.add_window(vec![window.into()]);
+            self.ui.dock_layout.0.add_window(vec![window]);
         }
     }
 }

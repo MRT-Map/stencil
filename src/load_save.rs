@@ -9,7 +9,7 @@ use crate::{file::safe_write, settings::misc_settings::MiscSettings, ui::notif::
 #[macro_export]
 macro_rules! impl_load_save {
     (toml $t:ty, $path:expr) => {
-        impl crate::load_save::LoadSave for $t {
+        impl $crate::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
@@ -24,7 +24,7 @@ macro_rules! impl_load_save {
         }
     };
     (toml $t:ty, $path:expr, $header:expr) => {
-        impl crate::load_save::LoadSave for $t {
+        impl $crate::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
@@ -39,7 +39,7 @@ macro_rules! impl_load_save {
         }
     };
     (mpk $t:ty, $path:expr) => {
-        impl crate::load_save::LoadSave for $t {
+        impl $crate::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
@@ -62,7 +62,7 @@ pub trait LoadSave: Default {
         if !Self::path().exists() {
             info!("Loading default file for {}", Self::path().display());
             let s = Self::default();
-            let _ = s.save(notifs, misc_settings);
+            let () = s.save(notifs, misc_settings);
             return s;
         }
 

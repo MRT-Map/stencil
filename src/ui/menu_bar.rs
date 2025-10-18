@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use egui::scroll_area::ScrollBarVisibility;
 use egui_notify::ToastLevel;
 use tracing::info;
@@ -7,14 +5,10 @@ use tracing::info;
 use crate::{
     App,
     component_editor::ComponentEditorWindow,
-    event::{Event, Events},
     info_windows::InfoWindowEv,
     settings::SettingsWindow,
     shortcut::ShortcutAction,
-    ui::{
-        dock::{DockWindows, ResetLayoutEv},
-        notif::NotifLogWindow,
-    },
+    ui::{dock::ResetLayoutEv, notif::NotifLogWindow},
 };
 
 impl App {
@@ -58,12 +52,12 @@ impl App {
                     ui.separator();
                     button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false }, ShortcutAction::Quit);
                 });
-                ui.menu_button("File", |ui| {
+                ui.menu_button("File", |_ui| {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
                     // button!(ui, commands, "Reload", ProjectEv::Reload);
                     // button!(ui, commands, "Save", ProjectEv::Save(false));
                 });
-                ui.menu_button("Edit", |ui| {
+                ui.menu_button("Edit", |_ui| {
                     // button!(ui, commands, "Undo", HistoryEv::Undo);
                     // button!(ui, commands, "Redo", HistoryEv::Redo);
                 });

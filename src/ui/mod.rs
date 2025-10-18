@@ -1,13 +1,6 @@
 use std::collections::HashMap;
 
-use egui_notify::Toasts;
-use serde::{Deserialize, Serialize};
-
-use crate::ui::{
-    dock::DockLayout,
-    notif::NotifState,
-    popup::{Popup, Popups},
-};
+use crate::ui::{dock::DockLayout, notif::NotifState, popup::Popups};
 
 pub mod dock;
 pub mod menu_bar;

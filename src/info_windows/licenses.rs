@@ -70,7 +70,7 @@ impl Popup for LicensesPopup {
                             name: package.name.to_string(),
                             version: package.version.to_string(),
                         };
-                        let display = format!("{}", package_value);
+                        let display = format!("{package_value}");
                         ui.selectable_value(&mut self.selected, package_value, display);
                     });
             });

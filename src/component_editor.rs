@@ -9,7 +9,7 @@ impl DockWindow for ComponentEditorWindow {
     fn title(&self) -> String {
         "Component Editor".into()
     }
-    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
+    fn ui(&mut self, _app: &mut App, ui: &mut egui::Ui) {
         ui.label("comp edit");
     }
 }

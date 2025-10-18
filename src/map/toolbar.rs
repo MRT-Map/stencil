@@ -1,10 +1,6 @@
 use tracing::info;
 
-use crate::{
-    App,
-    map::{MapWindow, basemap::Basemap},
-    mode::EditorMode,
-};
+use crate::{App, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
     pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
@@ -60,7 +56,6 @@ impl MapWindow {
                 EditorMode::CreatePoint => "Creating points: L-click to create point.",
                 EditorMode::CreateLine => "Creating lines: L-click to start and continue line, L-click previous node to undo it. R-click to end. Alt to snap to angle.",
                 EditorMode::CreateArea => "Creating areas: L-click to start and continue line, L-click previous node to undo it. L-click first node or R-click to end. Alt to snap to angle.",
-                _ => ""
             }.into();
         }
     }

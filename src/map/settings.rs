@@ -1,16 +1,8 @@
 use std::any::Any;
 
-use bimap::BiMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    App,
-    file::data_dir,
-    impl_load_save,
-    settings::{Settings, misc_settings::MiscSettings},
-    settings_field,
-    shortcut::ShortcutAction,
-};
+use crate::{App, file::data_dir, impl_load_save, settings::Settings, settings_field};
 
 settings_field!(
     MapSettings,

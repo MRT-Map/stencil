@@ -1,12 +1,10 @@
-use std::{any::Any, fmt::Display, sync::Mutex};
-
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
     App,
-    event::{Event, Events},
+    event::Events,
     info_windows::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
@@ -40,7 +38,7 @@ pub trait Popup {
         });
         if ui.button("Close").clicked() {
             if let Some(close_event) = close_event {
-                app.events.push_back(close_event.into())
+                app.events.push_back(close_event.into());
             }
             false
         } else {
@@ -73,12 +71,12 @@ pub trait Popup {
         ui.horizontal(|ui| {
             if ui.button(text1).clicked() {
                 if let Some(event1) = event1 {
-                    app.events.push_back(event1.into())
+                    app.events.push_back(event1.into());
                 }
                 false
             } else if ui.button(text2).clicked() {
                 if let Some(event2) = event2 {
-                    app.events.push_back(event2.into())
+                    app.events.push_back(event2.into());
                 }
                 false
             } else {
@@ -89,6 +87,7 @@ pub trait Popup {
     }
 }
 
+#[expect(clippy::enum_variant_names)]
 #[enum_dispatch(Popup)]
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "ty")]
@@ -101,7 +100,7 @@ pub enum Popups {
 }
 
 impl App {
-    pub fn add_popup(&mut self, popup: impl Into<Popups>) {
+    pub fn add_popup<P: Into<Popups>>(&mut self, popup: P) {
         let popup = popup.into();
         if self.ui.popups.contains_key(&popup.id()) {
             return;

@@ -4,11 +4,9 @@ pub mod licenses;
 pub mod manual;
 pub mod quit;
 
-use std::collections::VecDeque;
-
 use crate::{
     App,
-    event::{Event, Events},
+    event::Event,
     info_windows::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
