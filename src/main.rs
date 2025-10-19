@@ -19,6 +19,8 @@ use std::{
 
 use async_executor::{Executor, StaticExecutor};
 use eframe::egui;
+use futures_lite::future;
+use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 
 use crate::{
@@ -35,12 +37,19 @@ use crate::{
 };
 
 pub static EXECUTOR: StaticExecutor = StaticExecutor::new();
+pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 fn main() {
     // std::panic::set_hook(Box::new(panic::panic));
 
     init_logger();
     info!("Logger initialised");
+
+    std::thread::spawn(|| -> ! {
+        loop {
+            EXECUTOR.try_tick();
+        }
+    });
 
     eframe::run_native(
         "Stencil2",
@@ -112,6 +121,8 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let start = Instant::now();
+        self.project.load_skin();
+
         self.menu_bar(ctx);
         self.dock(ctx);
         self.popups(ctx);
@@ -121,11 +132,6 @@ impl eframe::App for App {
 
         while let Some(event) = self.events.pop_front() {
             event.log_react(ctx, self);
-        }
-
-        self.project.load_skin();
-        if EXECUTOR.try_tick() {
-            ctx.request_repaint_after_secs(0.5);
         }
 
         let end = Instant::now();

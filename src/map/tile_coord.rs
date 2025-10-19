@@ -65,11 +65,15 @@ impl TileCoord {
             {
                 return TileCacheItem::Loaded(Ok(a));
             }
+
             TileCacheItem::Pending(EXECUTOR.spawn(async move { surf::get(url).recv_bytes().await }))
         });
         let item_result = match item {
             TileCacheItem::Pending(task) => match future::block_on(future::poll_once(task)) {
-                None => Either::Right(true),
+                None => {
+                    ctx.request_repaint_after_secs(0.25);
+                    Either::Right(true)
+                }
                 Some(Ok(bytes)) => {
                     let cache_path = self.cache_path(basemap);
                     let _ = std::fs::write(cache_path, &bytes).map_err(|a| error!("{a:?}"));

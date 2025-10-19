@@ -1,16 +1,14 @@
-use std::{path::PathBuf, sync::LazyLock};
+use std::path::PathBuf;
 
-use lazy_regex::{Regex, lazy_regex};
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    URL_REPLACER,
     file::{cache_dir, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::misc_settings::MiscSettings,
     ui::notif::NotifState,
 };
-
-pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BasemapURLType {
