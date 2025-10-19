@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
+use tracing::error;
 
 use crate::{
-    App,
+    App, EXECUTOR,
     map::{
         basemap::Basemap,
         settings::MapSettings,
-        tile_coord::{TextureIdResult, TileCoord},
+        tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
@@ -97,7 +98,8 @@ impl MapWindow {
             min_tile_coord.world_top_left(&app.project.basemap),
         );
         let mut tile_screen_top_left = min_tile_screen_top_left;
-        let Some((mut tile_cache, executor)) = TileCoord::get_cache() else {
+
+        let Ok(mut tile_cache) = TILE_CACHE.lock().inspect_err(|e| error!("{e:?}")) else {
             return;
         };
 
@@ -107,7 +109,6 @@ impl MapWindow {
                     ui.ctx(),
                     &app.project.basemap,
                     &mut tile_cache,
-                    &executor,
                 ) {
                     Some(TextureIdResult::Success(texture_id)) => {
                         painter.image(

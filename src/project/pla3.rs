@@ -1,14 +1,18 @@
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter, Write},
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
 use egui_notify::ToastLevel;
-use eyre::{ContextCompat, Result, eyre};
+use eyre::{ContextCompat, Report, Result, eyre};
 use serde::{Deserialize, Serialize};
 
-use crate::{App, project::skin::SkinComponent};
+use crate::{
+    App,
+    project::{Project, skin::SkinComponent},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaNode {
@@ -60,7 +64,15 @@ impl Display for PlaComponent {
 }
 
 impl PlaComponent {
-    pub fn load_from_string(s: &str, namespace: String, id: String, app: &mut App) -> Result<Self> {
+    pub fn path(&self, root: &Path) -> PathBuf {
+        root.join(&self.namespace).join(format!("{}.pla3", self.id))
+    }
+    pub fn load_from_string(
+        s: &str,
+        namespace: String,
+        id: String,
+        project: &Project,
+    ) -> Result<(Self, Option<Report>)> {
         fn get_coord(split: &[&str], i: usize) -> Result<geo::Coord<i32>> {
             let (x, y) = (split[i], split[i + 1]);
             Ok(geo::Coord::from((x.parse()?, y.parse()?)))
@@ -75,6 +87,7 @@ impl PlaComponent {
             label.parse::<u8>().map(Some).map_err(Into::into)
         }
 
+        let mut unknown_type_error = None;
         let (nodes_str, attrs_str) = s
             .split_once("\n---\n")
             .wrap_err(format!("`---` not found in: {s}"))?;
@@ -108,9 +121,9 @@ impl PlaComponent {
         let mut display_name = String::new();
         let mut layer = 0.0f32;
         let mut skin_component = Arc::clone(if nodes.len() == 1 {
-            app.project.skin.get_type("simplePoint").unwrap()
+            project.skin().unwrap().get_type("simplePoint").unwrap()
         } else {
-            app.project.skin.get_type("simpleLine").unwrap()
+            project.skin().unwrap().get_type("simpleLine").unwrap()
         });
         let mut misc = HashMap::<String, toml::Value>::new();
         for (k, v) in toml::from_str::<toml::Table>(attrs_str)? {
@@ -128,18 +141,16 @@ impl PlaComponent {
                         .wrap_err(format!("`{v}` not number"))?;
                 }
                 "type" => {
-                    if let Some(s) = app
-                        .project
-                        .skin
+                    if let Some(s) = project
+                        .skin()
+                        .unwrap()
                         .get_type(v.as_str().wrap_err(format!("`{v}` not string"))?)
                     {
                         skin_component = Arc::clone(s);
                     } else {
-                        app.ui.notifs.push(
-                            format!("Unknown skin type for component {namespace}-{id}: {v}"),
-                            ToastLevel::Warning,
-                            &app.misc_settings,
-                        );
+                        unknown_type_error = Some(eyre!(
+                            "Unknown skin type for component {namespace}-{id}: {v}"
+                        ));
                     }
                 }
                 _ => {
@@ -148,15 +159,18 @@ impl PlaComponent {
             }
         }
 
-        Ok(Self {
-            namespace,
-            id,
-            skin_component,
-            display_name,
-            layer,
-            nodes,
-            misc,
-        })
+        Ok((
+            Self {
+                namespace,
+                id,
+                skin_component,
+                display_name,
+                layer,
+                nodes,
+                misc,
+            },
+            unknown_type_error,
+        ))
     }
     pub fn save_to_string(&self) -> Result<String> {
         let mut out = String::new();

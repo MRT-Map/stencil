@@ -11,7 +11,7 @@ use itertools::Either;
 use lru::LruCache;
 use tracing::error;
 
-use crate::map::basemap::Basemap;
+use crate::{EXECUTOR, map::basemap::Basemap};
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -51,25 +51,11 @@ impl TileCoord {
         let _ = std::fs::create_dir_all(&path);
         path.join(format!("{}.{}", self.y, basemap.extension))
     }
-    pub fn get_cache<'a>() -> Option<(
-        MutexGuard<'a, LruCache<Self, TileCacheItem>>,
-        MutexGuard<'a, Executor<'static>>,
-    )> {
-        let (tile_cache, executor) = match (TILE_CACHE.lock(), EXECUTOR.lock()) {
-            (Ok(a), Ok(b)) => (a, b),
-            e => {
-                error!("{e:?}");
-                return None;
-            }
-        };
-        Some((tile_cache, executor))
-    }
-    pub fn texture_id<'a>(
+    pub fn texture_id(
         self,
         ctx: &egui::Context,
         basemap: &Basemap,
-        tile_cache: &mut MutexGuard<'a, LruCache<Self, TileCacheItem>>,
-        executor: &MutexGuard<'a, Executor<'static>>,
+        tile_cache: &mut MutexGuard<LruCache<Self, TileCacheItem>>,
     ) -> Option<TextureIdResult> {
         let url = basemap.url(self);
         let item = tile_cache.get_or_insert_mut(self, || {
@@ -79,15 +65,11 @@ impl TileCoord {
             {
                 return TileCacheItem::Loaded(Ok(a));
             }
-            TileCacheItem::Pending(executor.spawn(async move { surf::get(url).recv_bytes().await }))
+            TileCacheItem::Pending(EXECUTOR.spawn(async move { surf::get(url).recv_bytes().await }))
         });
         let item_result = match item {
             TileCacheItem::Pending(task) => match future::block_on(future::poll_once(task)) {
-                None => {
-                    executor.try_tick();
-                    ctx.request_repaint_after_secs(0.5);
-                    Either::Right(true)
-                }
+                None => Either::Right(true),
                 Some(Ok(bytes)) => {
                     let cache_path = self.cache_path(basemap);
                     let _ = std::fs::write(cache_path, &bytes).map_err(|a| error!("{a:?}"));
@@ -131,6 +113,5 @@ pub enum TextureIdResult {
     Success(egui::TextureId),
     Loading,
 }
-static EXECUTOR: LazyLock<Mutex<Executor>> = LazyLock::new(Mutex::default);
-static TILE_CACHE: LazyLock<Mutex<LruCache<TileCoord, TileCacheItem>>> =
+pub static TILE_CACHE: LazyLock<Mutex<LruCache<TileCoord, TileCacheItem>>> =
     LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(0x1_0000).unwrap())));

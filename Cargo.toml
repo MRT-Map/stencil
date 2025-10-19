@@ -11,7 +11,7 @@ documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
 keywords = ["stencil", "stencil2", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
-rust-version = "1.88"
+rust-version = "1.91"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -34,7 +34,7 @@ surf = "2.3.2"
 async-fs = "2.2.0"
 futures-lite = "2.6.1"
 async-lock = "3.4.1"
-async-executor = "1.13.3"
+async-executor = { version = "1.13.3", features = ["static"] }
 
 backtrace = "0.3.76"
 color-backtrace = "0.7.1"

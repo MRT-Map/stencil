@@ -11,8 +11,13 @@ mod settings;
 mod shortcut;
 mod ui;
 
-use std::{collections::VecDeque, time::Instant};
+use std::{
+    collections::VecDeque,
+    sync::{LazyLock, Mutex, MutexGuard},
+    time::Instant,
+};
 
+use async_executor::{Executor, StaticExecutor};
 use eframe::egui;
 use tracing::info;
 
@@ -28,6 +33,8 @@ use crate::{
     shortcut::settings::ShortcutSettings,
     ui::{UiState, dock::DockLayout, notif::NotifState},
 };
+
+pub static EXECUTOR: StaticExecutor = StaticExecutor::new();
 
 fn main() {
     // std::panic::set_hook(Box::new(panic::panic));
@@ -114,6 +121,11 @@ impl eframe::App for App {
 
         while let Some(event) = self.events.pop_front() {
             event.log_react(ctx, self);
+        }
+
+        self.project.load_skin();
+        if EXECUTOR.try_tick() {
+            ctx.request_repaint_after_secs(0.5);
         }
 
         let end = Instant::now();
