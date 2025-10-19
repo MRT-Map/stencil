@@ -6,12 +6,14 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Unexpected};
 
 base64_serde_type!(Base64Standard, STANDARD);
 
+#[expect(clippy::ref_option, clippy::trivially_copy_pass_by_ref)]
 fn serialise_option_color32<S: Serializer>(
     c: &Option<egui::Color32>,
     ser: S,
 ) -> Result<S::Ok, S::Error> {
     c.map(|c| c.to_hex()).serialize(ser)
 }
+#[expect(clippy::trivially_copy_pass_by_ref)]
 fn serialise_color32<S: Serializer>(c: &egui::Color32, ser: S) -> Result<S::Ok, S::Error> {
     c.to_hex().serialize(ser)
 }
@@ -21,24 +23,28 @@ fn deserialise_option_color32<'de, D: Deserializer<'de>>(
     let Some(s) = Option::<&str>::deserialize(de)? else {
         return Ok(None);
     };
-    match egui::Color32::from_hex(s) {
-        Ok(c) => Ok(Some(c)),
-        Err(_) => Err(<D::Error as serde::de::Error>::invalid_value(
-            Unexpected::Str(s),
-            &"valid hex",
-        )),
-    }
+    egui::Color32::from_hex(s).map_or_else(
+        |_| {
+            Err(<D::Error as serde::de::Error>::invalid_value(
+                Unexpected::Str(s),
+                &"valid hex",
+            ))
+        },
+        |c| Ok(Some(c)),
+    )
 }
 fn deserialise_color32<'de, D: Deserializer<'de>>(de: D) -> Result<egui::Color32, D::Error> {
     let s = <&str>::deserialize(de)?;
 
-    match egui::Color32::from_hex(s) {
-        Ok(c) => Ok(c),
-        Err(_) => Err(<D::Error as serde::de::Error>::invalid_value(
-            Unexpected::Str(s),
-            &"valid hex",
-        )),
-    }
+    egui::Color32::from_hex(s).map_or_else(
+        |_| {
+            Err(<D::Error as serde::de::Error>::invalid_value(
+                Unexpected::Str(s),
+                &"valid hex",
+            ))
+        },
+        Ok,
+    )
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -314,7 +320,7 @@ impl SkinComponent {
     #[must_use]
     pub fn widget_text(
         &self,
-        ui: &mut egui::Ui,
+        ui: &egui::Ui,
         text_style: &egui::TextStyle,
     ) -> impl Into<egui::WidgetText> + use<> {
         let font_id = &ui.style().text_styles[text_style];
@@ -381,7 +387,7 @@ impl Skin {
     pub fn show_type(
         &self,
         ty: &str,
-        ui: &mut egui::Ui,
+        ui: &egui::Ui,
         text_style: &egui::TextStyle,
     ) -> impl Into<egui::WidgetText> + use<> {
         self.get_type(ty).map_or_else(

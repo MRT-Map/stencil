@@ -18,10 +18,10 @@ pub struct UiState {
 impl Default for UiState {
     fn default() -> Self {
         Self {
-            status: Default::default(),
-            dock_layout: Default::default(),
-            popups: Default::default(),
-            notifs: Default::default(),
+            status: egui::RichText::default(),
+            dock_layout: DockLayout::default(),
+            popups: HashMap::default(),
+            notifs: NotifState::default(),
             mspf: egui::util::History::new(1..usize::MAX, 1.0),
         }
     }

@@ -1,22 +1,16 @@
 use std::{
     collections::HashMap,
-    fmt::{Display, Formatter},
-    str::FromStr,
+    fmt::{Display, Formatter, Write},
     sync::Arc,
 };
 
 use egui_notify::ToastLevel;
 use eyre::{ContextCompat, Result, eyre};
-use itertools::Either;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    App,
-    project::skin::{Skin, SkinComponent},
-    ui::notif::NotifState,
-};
+use crate::{App, project::skin::SkinComponent};
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaNode {
     Line {
         label: Option<u8>,
@@ -35,7 +29,7 @@ pub enum PlaNode {
     },
 }
 impl PlaNode {
-    pub fn label(self) -> Option<u8> {
+    pub const fn label(self) -> Option<u8> {
         match self {
             Self::Line { label, .. }
             | Self::QuadraticBezier { label, .. }
@@ -67,10 +61,6 @@ impl Display for PlaComponent {
 
 impl PlaComponent {
     pub fn load_from_string(s: &str, namespace: String, id: String, app: &mut App) -> Result<Self> {
-        let (nodes_str, attrs_str) = s
-            .split_once("\n---\n")
-            .wrap_err(format!("`---` not found in: {s}"))?;
-
         fn get_coord(split: &[&str], i: usize) -> Result<geo::Coord<i32>> {
             let (x, y) = (split[i], split[i + 1]);
             Ok(geo::Coord::from((x.parse()?, y.parse()?)))
@@ -84,10 +74,15 @@ impl PlaComponent {
             };
             label.parse::<u8>().map(Some).map_err(Into::into)
         }
+
+        let (nodes_str, attrs_str) = s
+            .split_once("\n---\n")
+            .wrap_err(format!("`---` not found in: {s}"))?;
+
         let nodes = nodes_str
-            .split("\n")
+            .split('\n')
             .map(|node_str| {
-                let split = node_str.split(" ").collect::<Vec<_>>();
+                let split = node_str.split(' ').collect::<Vec<_>>();
                 match split.len() {
                     2 | 3 => Ok(Some(PlaNode::Line {
                         coord: get_coord(&split, 0)?,
@@ -107,7 +102,7 @@ impl PlaComponent {
                     len => Err(eyre!("`{node_str}` has invalid split length {len}")),
                 }
             })
-            .filter_map(|a| a.transpose())
+            .filter_map(std::result::Result::transpose)
             .collect::<Result<Vec<_>>>()?;
 
         let mut display_name = String::new();
@@ -121,14 +116,16 @@ impl PlaComponent {
         for (k, v) in toml::from_str::<toml::Table>(attrs_str)? {
             match &*k {
                 "display_name" => {
-                    display_name = v.as_str().wrap_err(format!("`{v}` not string"))?.to_owned();
+                    v.as_str()
+                        .wrap_err(format!("`{v}` not string"))?
+                        .clone_into(&mut display_name);
                 }
                 "layer" => {
                     layer = v
                         .as_float()
                         .map(|a| a as f32)
                         .or_else(|| v.as_integer().map(|a| a as f32))
-                        .wrap_err(format!("`{v}` not number"))?
+                        .wrap_err(format!("`{v}` not number"))?;
                 }
                 "type" => {
                     if let Some(s) = app
@@ -142,7 +139,7 @@ impl PlaComponent {
                             format!("Unknown skin type for component {namespace}-{id}: {v}"),
                             ToastLevel::Warning,
                             &app.misc_settings,
-                        )
+                        );
                     }
                 }
                 _ => {
@@ -154,10 +151,10 @@ impl PlaComponent {
         Ok(Self {
             namespace,
             id,
-            nodes,
+            skin_component,
             display_name,
             layer,
-            skin_component,
+            nodes,
             misc,
         })
     }
@@ -165,23 +162,24 @@ impl PlaComponent {
         let mut out = String::new();
 
         for node in &self.nodes {
-            out += &match node {
-                PlaNode::Line { coord, .. } => format!("{} {}", coord.x, coord.y),
+            match node {
+                PlaNode::Line { coord, .. } => write!(out, "{} {}", coord.x, coord.y)?,
                 PlaNode::QuadraticBezier { ctrl, coord, .. } => {
-                    format!("{} {} {} {}", ctrl.x, ctrl.y, coord.x, coord.y)
+                    write!(out, "{} {} {} {}", ctrl.x, ctrl.y, coord.x, coord.y)?
                 }
                 PlaNode::CubicBezier {
                     ctrl1,
                     ctrl2,
                     coord,
                     ..
-                } => format!(
+                } => write!(
+                    out,
                     "{} {} {} {} {} {}",
                     ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, coord.x, coord.y
-                ),
-            };
+                )?,
+            }
             if let Some(label) = node.label() {
-                out += &format!(" #{label}\n")
+                writeln!(out, " #{label}")?;
             } else {
                 out += "\n";
             }
@@ -190,10 +188,10 @@ impl PlaComponent {
 
         let attrs = self
             .misc
-            .to_owned()
+            .clone()
             .into_iter()
             .chain([
-                ("display_name".into(), self.display_name.to_owned().into()),
+                ("display_name".into(), self.display_name.clone().into()),
                 ("layer".into(), self.layer.into()),
                 ("type".into(), self.skin_component.name().as_str().into()),
             ])
