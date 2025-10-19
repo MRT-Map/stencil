@@ -87,12 +87,19 @@ impl App {
                 }
                 ui.separator();
 
-                egui::ScrollArea::horizontal()
-                    .max_width(ui.available_width())
-                    .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
-                    .show(ui, |ui| {
-                        ui.label(self.ui.status.clone());
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
+                    ui.label(format!("ms/frame: {:.3}", self.ui.mspf.average().unwrap_or_default()));
+                    ui.separator();
+
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
+                        egui::ScrollArea::horizontal()
+                            .max_width(ui.available_width())
+                            .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
+                            .show(ui, |ui| {
+                                ui.label(self.ui.status.clone());
+                            });
                     });
+                });
             });
         });
     }

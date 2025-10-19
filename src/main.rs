@@ -11,7 +11,7 @@ mod settings;
 mod shortcut;
 mod ui;
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, time::Instant};
 
 use eframe::egui;
 use tracing::info;
@@ -104,6 +104,7 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let start = Instant::now();
         self.menu_bar(ctx);
         self.dock(ctx);
         self.popups(ctx);
@@ -114,6 +115,11 @@ impl eframe::App for App {
         while let Some(event) = self.events.pop_front() {
             event.log_react(ctx, self);
         }
+
+        let end = Instant::now();
+        self.ui
+            .mspf
+            .add(ctx.input(|a| a.time), (end - start).as_millis() as f32);
     }
 
     fn save(&mut self, _storage: &mut dyn eframe::Storage) {
