@@ -356,7 +356,7 @@ impl SkinComponent {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
 pub struct Skin {
     pub version: u8,
     pub name: String,
