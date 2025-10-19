@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
-    App, EXECUTOR,
+    App,
     map::{
         basemap::Basemap,
         settings::MapSettings,

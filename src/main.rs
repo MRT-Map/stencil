@@ -11,15 +11,10 @@ mod settings;
 mod shortcut;
 mod ui;
 
-use std::{
-    collections::VecDeque,
-    sync::{LazyLock, Mutex, MutexGuard},
-    time::Instant,
-};
+use std::{collections::VecDeque, sync::LazyLock, time::Instant};
 
-use async_executor::{Executor, StaticExecutor};
+use async_executor::StaticExecutor;
 use eframe::egui;
-use futures_lite::future;
 use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 

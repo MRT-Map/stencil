@@ -1,10 +1,7 @@
 pub mod pla3;
 pub mod skin;
 
-use std::{
-    borrow::Cow,
-    path::{Path, PathBuf},
-};
+use std::{borrow::Cow, path::PathBuf};
 
 use async_executor::Task;
 use eyre::{Report, Result};
@@ -15,7 +12,7 @@ use tracing::{error, info};
 use crate::{
     EXECUTOR, URL_REPLACER,
     file::cache_dir,
-    map::{basemap::Basemap, tile_coord::TILE_CACHE},
+    map::basemap::Basemap,
     project::{pla3::PlaComponent, skin::Skin},
 };
 
@@ -70,7 +67,7 @@ impl Project {
                     && let Ok(s) = std::fs::read_to_string(&skin_cache)
                         .inspect_err(|e| error!(?skin_cache, "Cannot read skin cache: {e:?}"))
                     && let Ok(skin) = serde_json::from_str(&s).inspect_err(|e| {
-                        error!(?skin_cache, "Cannot deserialise skin cache: {e:?}")
+                        error!(?skin_cache, "Cannot deserialise skin cache: {e:?}");
                     })
                 {
                     info!(?skin_cache, "Loaded skin cache");
@@ -94,7 +91,7 @@ impl Project {
 
                     let skin_cache = self.skin_cache_path();
                     if let Ok(s) = serde_json::to_string(&skin).inspect_err(|e| {
-                        error!(self.skin_url, "Cannot serialise skin cache: {e:?}")
+                        error!(self.skin_url, "Cannot serialise skin cache: {e:?}");
                     }) && std::fs::write(&skin_cache, &s)
                         .inspect_err(|e| error!(?skin_cache, "Cannot write skin cache: {e:?}"))
                         .is_ok()

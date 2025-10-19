@@ -5,7 +5,7 @@ use std::{
     sync::{LazyLock, Mutex, MutexGuard},
 };
 
-use async_executor::{Executor, Task};
+use async_executor::Task;
 use futures_lite::future;
 use itertools::Either;
 use lru::LruCache;

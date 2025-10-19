@@ -5,14 +5,10 @@ use std::{
     sync::Arc,
 };
 
-use egui_notify::ToastLevel;
 use eyre::{ContextCompat, Report, Result, eyre};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    App,
-    project::{Project, skin::SkinComponent},
-};
+use crate::project::{Project, skin::SkinComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaNode {
@@ -179,7 +175,7 @@ impl PlaComponent {
             match node {
                 PlaNode::Line { coord, .. } => write!(out, "{} {}", coord.x, coord.y)?,
                 PlaNode::QuadraticBezier { ctrl, coord, .. } => {
-                    write!(out, "{} {} {} {}", ctrl.x, ctrl.y, coord.x, coord.y)?
+                    write!(out, "{} {} {} {}", ctrl.x, ctrl.y, coord.x, coord.y)?;
                 }
                 PlaNode::CubicBezier {
                     ctrl1,
