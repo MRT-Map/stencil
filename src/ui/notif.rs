@@ -1,9 +1,7 @@
 use std::{
-    cell::LazyCell,
-    error::Error,
     fmt::{Debug, Display},
     sync::{
-        LazyLock, RwLock,
+        LazyLock,
         atomic::{AtomicU64, Ordering},
     },
     time::{Duration, SystemTime},
@@ -13,11 +11,7 @@ use chrono::{DateTime, Utc};
 use egui_notify::{Toast, ToastLevel, Toasts};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use tracing::{
-    error, info,
-    log::{Level, log},
-    warn,
-};
+use tracing::{error, info, warn};
 
 use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
 
@@ -48,13 +42,13 @@ impl NotifState {
             ToastLevel::Error => error!(msg = message.text(), "Sending notification"),
             ToastLevel::Warning => warn!(msg = message.text(), "Sending notification"),
             _ => info!(msg = message.text(), "Sending notification"),
-        };
+        }
         self.push_base(message, level);
     }
-    pub fn push_error<S: Display>(
+    pub fn push_error<S: Display, E: Debug + Display>(
         &mut self,
         message: S,
-        error: impl Debug + Display,
+        error: E,
         level: ToastLevel,
     ) {
         match level {
@@ -64,10 +58,10 @@ impl NotifState {
         }
         self.push_base(format!("{message}\n{error}").into(), level);
     }
-    pub fn push_errors<S: Display>(
+    pub fn push_errors<S: Display, E: Debug + Display>(
         &mut self,
         message: S,
-        errors: &[impl Debug + Display],
+        errors: &[E],
         level: ToastLevel,
     ) {
         match level {

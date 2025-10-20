@@ -1,10 +1,6 @@
 use tracing::info;
 
-use crate::{
-    App,
-    map::{MapWindow, tile_coord::TILE_CACHE},
-    mode::EditorMode,
-};
+use crate::{App, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
     pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {

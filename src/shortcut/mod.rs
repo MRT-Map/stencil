@@ -63,12 +63,9 @@ impl App {
                 "Handling shortcut"
             );
             match action {
-                ShortcutAction::Quit => self.events.push_back(
-                    InfoWindowEv::Quit {
-                        confirm: cfg!(debug_assertions),
-                    }
-                    .into(),
-                ),
+                ShortcutAction::Quit => self.push_event(InfoWindowEv::Quit {
+                    confirm: cfg!(debug_assertions),
+                }),
                 ShortcutAction::SettingsWindow => {
                     self.open_dock_window(SettingsWindow::default());
                 }

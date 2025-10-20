@@ -38,7 +38,7 @@ pub trait Popup {
         });
         if ui.button("Close").clicked() {
             if let Some(close_event) = close_event {
-                app.events.push_back(close_event.into());
+                app.push_event(close_event.into());
             }
             false
         } else {
@@ -71,12 +71,12 @@ pub trait Popup {
         ui.horizontal(|ui| {
             if ui.button(text1).clicked() {
                 if let Some(event1) = event1 {
-                    app.events.push_back(event1.into());
+                    app.push_event(event1.into());
                 }
                 false
             } else if ui.button(text2).clicked() {
                 if let Some(event2) = event2 {
-                    app.events.push_back(event2.into());
+                    app.push_event(event2.into());
                 }
                 false
             } else {

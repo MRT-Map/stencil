@@ -3,9 +3,7 @@ use egui_notify::ToastLevel;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    App, event::Event, file::safe_delete, project::pla3::PlaComponent, ui::dock::DockWindow,
-};
+use crate::{App, event::Event, file::safe_delete, ui::dock::DockWindow};
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct ProjectEditorWindow {
@@ -31,7 +29,7 @@ impl DockWindow for ProjectEditorWindow {
                 )
                 .clicked()
             {
-                app.events.push_back(ProjectEv::Save.into());
+                app.push_event(ProjectEv::Save);
             }
         });
         ui.separator();
@@ -140,7 +138,7 @@ pub enum ProjectEv {
 }
 
 impl Event for ProjectEv {
-    fn react(self, ctx: &egui::Context, app: &mut App) {
+    fn react(self, _ctx: &egui::Context, app: &mut App) {
         match self {
             Self::Load(namespace) => match app.project.load_namespace(&namespace) {
                 Ok(errors) => {

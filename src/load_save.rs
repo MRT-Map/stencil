@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use egui_notify::ToastLevel;
 use eyre::Result;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
-use crate::{file::safe_write, settings::misc_settings::MiscSettings, ui::notif::NotifState};
+use crate::{file::safe_write, ui::notif::NotifState};
 
 #[macro_export]
 macro_rules! impl_load_save {

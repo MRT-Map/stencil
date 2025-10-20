@@ -19,13 +19,13 @@ impl App {
                     ($ui:ident, event $label:literal, $event:expr) => {
                         if $ui.button($label).clicked() {
                             info!(label = $label, "Clicked menu item");
-                            self.events.push_back($event.into());
+                            self.push_event($event);
                         }
                     };
                     ($ui:ident, event $label:literal, $event:expr, $action:expr) => {
                         if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
                             info!(label = $label, "Clicked menu item");
-                            self.events.push_back($event.into());
+                            self.push_event($event);
                         }
                     };
                     ($ui:ident, window $label:literal, $window:expr) => {

@@ -6,9 +6,9 @@ use std::{
 
 use egui_notify::ToastLevel;
 use eyre::Result;
-use tracing::{debug, error};
+use tracing::debug;
 
-use crate::{settings::misc_settings::MiscSettings, ui::notif::NotifState};
+use crate::ui::notif::NotifState;
 
 pub static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[cfg(debug_assertions)]

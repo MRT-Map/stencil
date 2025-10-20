@@ -6,7 +6,6 @@ use crate::{
     URL_REPLACER,
     file::{cache_dir, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
-    settings::misc_settings::MiscSettings,
     ui::notif::NotifState,
 };
 

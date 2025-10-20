@@ -16,10 +16,17 @@ pub trait Event: Debug + Sized {
     fn react(self, ctx: &egui::Context, app: &mut App);
 }
 
+#[expect(clippy::enum_variant_names)]
 #[enum_dispatch(Event)]
 #[derive(Clone, Debug)]
 pub enum Events {
     InfoWindowEv,
     ResetLayoutEv,
     ProjectEv,
+}
+
+impl App {
+    pub fn push_event<E: Into<Events>>(&mut self, event: E) {
+        self.events.push_back(event.into());
+    }
 }
