@@ -59,17 +59,12 @@ pub fn cache_path<T: AsRef<Path>>(next: T) -> PathBuf {
 pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
     path: P,
     contents: C,
-    misc_settings: &MiscSettings,
     notifs: &mut NotifState,
 ) -> std::io::Result<()> {
-    let _ = safe_delete(&path, misc_settings, notifs);
+    let _ = safe_delete(&path, notifs);
     std::fs::write(path, contents)
 }
-pub fn safe_delete<T: AsRef<Path>>(
-    path: T,
-    misc_settings: &MiscSettings,
-    notifs: &mut NotifState,
-) -> Result<Option<PathBuf>> {
+pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<Option<PathBuf>> {
     let path = path.as_ref();
     if !path.exists() {
         return Ok(None);
@@ -88,17 +83,10 @@ pub fn safe_delete<T: AsRef<Path>>(
             Ok(Some(new_path))
         }
         Err(e) => {
-            error!(
-                "Could not safe delete file/directory {}:\n{e:?}",
-                path.display()
-            );
-            notifs.push(
-                format!(
-                    "Could not safe delete file/directory {}:\n{e}",
-                    path.display()
-                ),
+            notifs.push_error(
+                format!("Could not safe delete file/directory {}", path.display()),
+                &e,
                 ToastLevel::Warning,
-                misc_settings,
             );
             Err(e.into())
         }

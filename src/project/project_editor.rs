@@ -151,20 +151,17 @@ impl Event for ProjectEv {
                                 errors.iter().map(|e| format!("{e}")).join("\n")
                             ),
                             ToastLevel::Warning,
-                            &app.misc_settings,
                         );
                     }
                     app.ui.notifs.push(
                         format!("Loaded namespace `{namespace}`"),
                         ToastLevel::Success,
-                        &app.misc_settings,
                     );
                     app.project.namespaces.insert(namespace, true);
                 }
                 Err(e) => app.ui.notifs.push(
                     format!("Error while loading `{namespace}`: {e}"),
                     ToastLevel::Error,
-                    &app.misc_settings,
                 ),
             },
             Self::Hide(namespace) => {
@@ -176,38 +173,32 @@ impl Event for ProjectEv {
                     .collect::<Vec<_>>();
                 let errors = app.project.save_components(components);
                 if !errors.is_empty() {
-                    app.ui.notifs.push(
-                        format!(
-                            "Errors while saving `{namespace}`:\n{}",
-                            errors.iter().map(|e| format!("{e}")).join("\n")
-                        ),
+                    app.ui.notifs.push_errors(
+                        format!("Errors while saving `{namespace}`"),
+                        &errors,
                         ToastLevel::Warning,
-                        &app.misc_settings,
                     );
                     return;
                 }
                 app.project.components.retain(|a| a.namespace != namespace);
-                app.ui.notifs.push(
-                    format!("Hid namespace `{namespace}`"),
-                    ToastLevel::Success,
-                    &app.misc_settings,
-                );
+                app.ui
+                    .notifs
+                    .push(format!("Hid namespace `{namespace}`"), ToastLevel::Success);
                 app.project.namespaces.insert(namespace, false);
             }
             Self::Create(namespace) => {
                 if let Some(path) = &app.project.path
                     && let Err(e) = std::fs::create_dir_all(path.join(&namespace))
                 {
-                    app.ui.notifs.push(
-                        format!("Error while creating `{namespace}`:\n{e}"),
+                    app.ui.notifs.push_error(
+                        format!("Error while creating `{namespace}`"),
+                        e,
                         ToastLevel::Warning,
-                        &app.misc_settings,
                     );
                 }
                 app.ui.notifs.push(
                     format!("Created namespace `{namespace}`"),
                     ToastLevel::Success,
-                    &app.misc_settings,
                 );
                 app.project.namespaces.insert(namespace, true);
             }
@@ -221,23 +212,17 @@ impl Event for ProjectEv {
                     app.ui.notifs.push(
                         format!("Attempted to delete non-empty namespace `{namespace}`"),
                         ToastLevel::Error,
-                        &app.misc_settings,
                     );
                     return;
                 }
                 if let Some(path) = &app.project.path {
-                    let _ = safe_delete(
-                        path.join(&namespace),
-                        &app.misc_settings,
-                        &mut app.ui.notifs,
-                    );
+                    let _ = safe_delete(path.join(&namespace), &mut app.ui.notifs);
                 }
                 app.project.components.retain(|a| a.namespace != namespace);
                 app.project.namespaces.remove(&namespace);
                 app.ui.notifs.push(
                     format!("Deleted namespace `{namespace}`"),
                     ToastLevel::Success,
-                    &app.misc_settings,
                 );
             }
             Self::Save => {
@@ -246,19 +231,12 @@ impl Event for ProjectEv {
                 }
                 let errors = app.project.save();
                 if !errors.is_empty() {
-                    app.ui.notifs.push(
-                        format!(
-                            "Errors while saving:\n{}",
-                            errors.iter().map(|e| format!("{e}")).join("\n")
-                        ),
-                        ToastLevel::Warning,
-                        &app.misc_settings,
-                    );
+                    app.ui
+                        .notifs
+                        .push_errors("Errors while saving", &errors, ToastLevel::Warning);
                     return;
                 }
-                app.ui
-                    .notifs
-                    .push("Saved project", ToastLevel::Success, &app.misc_settings);
+                app.ui.notifs.push("Saved project", ToastLevel::Success);
             }
         }
     }

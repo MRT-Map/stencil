@@ -77,7 +77,7 @@ impl App {
                             info!(label = "Trigger Warning", "Clicked menu item");
                             self.ui
                                 .notifs
-                                .push("Warning Triggered", ToastLevel::Warning, &self.misc_settings);
+                                .push("Warning Triggered", ToastLevel::Warning);
                         }
                         if ui.button("Trigger Panic").clicked() {
                             info!(label = "Trigger Panic", "Clicked menu item");

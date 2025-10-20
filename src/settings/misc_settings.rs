@@ -1,8 +1,10 @@
-use std::any::Any;
+use std::{any::Any, sync::atomic::Ordering};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{file::data_dir, impl_load_save, settings::Settings, settings_field};
+use crate::{
+    file::data_dir, impl_load_save, settings::Settings, settings_field, ui::notif::NOTIF_DURATION,
+};
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
 
@@ -23,6 +25,7 @@ impl_load_save!(toml MiscSettings, data_dir("settings").join("misc.toml"), "# Do
 
 impl Settings for MiscSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
+        let mut changed = false;
         self.ui_field(
             ui,
             |a| a.notif_duration,
@@ -30,12 +33,23 @@ impl Settings for MiscSettings {
             |a| &mut a.notif_duration,
             Some("Time before success and info notifications expire. Set to 0 to disable expiry"),
             |ui, value| {
-                ui.add(
-                    egui::Slider::new(value, 0..=10)
-                        .suffix("s")
-                        .text("Notification duration"),
-                );
+                changed = ui
+                    .add(
+                        egui::Slider::new(value, 0..=10)
+                            .suffix("s")
+                            .text("Notification duration"),
+                    )
+                    .changed();
             },
         );
+        if changed {
+            self.update_notif_duration();
+        }
+    }
+}
+
+impl MiscSettings {
+    pub fn update_notif_duration(&self) {
+        NOTIF_DURATION.store(self.notif_duration, Ordering::Relaxed);
     }
 }

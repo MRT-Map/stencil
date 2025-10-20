@@ -84,8 +84,8 @@ impl Basemap {
     pub fn cache_path(&self) -> PathBuf {
         cache_dir("tile-cache").join(URL_REPLACER.replace_all(&self.url, "").as_ref())
     }
-    pub fn clear_cache_path(&self, misc_settings: &MiscSettings, notifs: &mut NotifState) {
-        let _ = safe_delete(self.cache_path(), misc_settings, notifs);
+    pub fn clear_cache_path(&self, notifs: &mut NotifState) {
+        let _ = safe_delete(self.cache_path(), notifs);
     }
 }
 

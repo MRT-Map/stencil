@@ -58,11 +58,11 @@ pub trait LoadSave: Default {
     fn ser(&self) -> Result<Vec<u8>>;
     fn de(ser: &[u8]) -> Result<Self>;
 
-    fn load(notifs: &mut NotifState, misc_settings: &MiscSettings) -> Self {
+    fn load(notifs: &mut NotifState) -> Self {
         if !Self::path().exists() {
             info!("Loading default file for {}", Self::path().display());
             let s = Self::default();
-            let () = s.save(notifs, misc_settings);
+            let () = s.save(notifs);
             return s;
         }
 
@@ -72,11 +72,10 @@ pub trait LoadSave: Default {
                 vec
             }
             Err(e) => {
-                warn!("Couldn't open file at {}: {e:?}", Self::path().display());
-                notifs.push(
-                    format!("Couldn't open file at {}:\n{e}", Self::path().display()),
+                notifs.push_error(
+                    format!("Couldn't open file at {}", Self::path().display()),
+                    e,
                     ToastLevel::Error,
-                    misc_settings,
                 );
                 return Self::default();
             }
@@ -88,55 +87,40 @@ pub trait LoadSave: Default {
                 s
             }
             Err(e) => {
-                warn!(
-                    "Couldn't deserialise file at {}: {e:?}",
-                    Self::path().display()
-                );
-                notifs.push(
-                    format!(
-                        "Couldn't deserialise file at {}:\n{e}",
-                        Self::path().display()
-                    ),
+                notifs.push_error(
+                    format!("Couldn't deserialise file at {}", Self::path().display()),
+                    e,
                     ToastLevel::Error,
-                    misc_settings,
                 );
                 Self::default()
             }
         }
     }
-    fn save(&self, notifs: &mut NotifState, misc_settings: &MiscSettings) {
+    fn save(&self, notifs: &mut NotifState) {
         let vec = match self.ser() {
             Ok(vec) => {
                 debug!("Serialised file for {}", Self::path().display());
                 vec
             }
             Err(e) => {
-                warn!(
-                    "Couldn't serialise file for {}: {e:?}",
-                    Self::path().display()
-                );
-                notifs.push(
-                    format!(
-                        "Couldn't serialise file for {}:\n{e}",
-                        Self::path().display()
-                    ),
+                notifs.push_error(
+                    format!("Couldn't serialise file for {}", Self::path().display()),
+                    e,
                     ToastLevel::Error,
-                    misc_settings,
                 );
                 return;
             }
         };
 
-        match safe_write(Self::path(), vec, misc_settings, notifs) {
+        match safe_write(Self::path(), vec, notifs) {
             Ok(()) => {
                 debug!("Wrote file at {}", Self::path().display());
             }
             Err(e) => {
-                warn!("Couldn't write file for {}: {e:?}", Self::path().display());
-                notifs.push(
-                    format!("Couldn't write file for {}:\n{e}", Self::path().display()),
+                notifs.push_error(
+                    format!("Couldn't write file for {}", Self::path().display()),
+                    e,
                     ToastLevel::Error,
-                    misc_settings,
                 );
             }
         }

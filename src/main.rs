@@ -79,36 +79,29 @@ impl App {
         let mut app = Self::load_state();
         app.reset_map_window();
         if app.map_settings.clear_cache_on_startup {
-            app.project
-                .basemap
-                .clear_cache_path(&app.misc_settings, &mut app.ui.notifs);
+            app.project.basemap.clear_cache_path(&mut app.ui.notifs);
         }
         app
     }
     fn load_state() -> Self {
         let mut notifs = NotifState::default();
-        let misc_settings = MiscSettings::load(&mut notifs, &MiscSettings::default());
+        let misc_settings = MiscSettings::load(&mut notifs);
         Self {
             ui: UiState {
-                dock_layout: DockLayout::load(&mut notifs, &misc_settings),
+                dock_layout: DockLayout::load(&mut notifs),
                 ..UiState::default()
             },
-            shortcut_settings: ShortcutSettings::load(&mut notifs, &misc_settings),
-            map_settings: MapSettings::load(&mut notifs, &misc_settings),
+            shortcut_settings: ShortcutSettings::load(&mut notifs),
+            map_settings: MapSettings::load(&mut notifs),
             misc_settings,
             ..Self::default()
         }
     }
     fn save_state(&mut self) {
-        self.ui
-            .dock_layout
-            .save(&mut self.ui.notifs, &self.misc_settings);
-        self.misc_settings
-            .save(&mut self.ui.notifs, &self.misc_settings);
-        self.shortcut_settings
-            .save(&mut self.ui.notifs, &self.misc_settings);
-        self.map_settings
-            .save(&mut self.ui.notifs, &self.misc_settings);
+        self.ui.dock_layout.save(&mut self.ui.notifs);
+        self.misc_settings.save(&mut self.ui.notifs);
+        self.shortcut_settings.save(&mut self.ui.notifs);
+        self.map_settings.save(&mut self.ui.notifs);
     }
 }
 

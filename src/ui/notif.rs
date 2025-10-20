@@ -1,13 +1,28 @@
 use std::{
-    fmt::Debug,
+    cell::LazyCell,
+    error::Error,
+    fmt::{Debug, Display},
+    sync::{
+        LazyLock, RwLock,
+        atomic::{AtomicU64, Ordering},
+    },
     time::{Duration, SystemTime},
 };
 
 use chrono::{DateTime, Utc};
 use egui_notify::{Toast, ToastLevel, Toasts};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use tracing::{
+    error, info,
+    log::{Level, log},
+    warn,
+};
 
 use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
+
+pub static NOTIF_DURATION: LazyLock<AtomicU64> =
+    LazyLock::new(|| AtomicU64::new(MiscSettings::default().notif_duration));
 
 #[derive(Default)]
 pub struct NotifState {
@@ -15,21 +30,59 @@ pub struct NotifState {
     pub toasts: Toasts,
 }
 impl NotifState {
-    pub fn push<S: Into<egui::RichText>>(
-        &mut self,
-        message: S,
-        level: ToastLevel,
-        misc_settings: &MiscSettings,
-    ) {
-        let message = message.into();
+    fn push_base(&mut self, message: egui::RichText, level: ToastLevel) {
+        let notif_duration = NOTIF_DURATION.load(Ordering::Relaxed);
         self.toasts
             .add(Toast::custom(message.clone(), level.clone()))
             .duration(
                 ((level == ToastLevel::Info || level == ToastLevel::Success)
-                    && misc_settings.notif_duration != 0)
-                    .then(|| Duration::from_secs(misc_settings.notif_duration)),
+                    && notif_duration != 0)
+                    .then(|| Duration::from_secs(notif_duration)),
             );
         self.notifs.push(Notif::new(message, level));
+    }
+
+    pub fn push<S: Into<egui::RichText>>(&mut self, message: S, level: ToastLevel) {
+        let message = message.into();
+        match level {
+            ToastLevel::Error => error!(msg = message.text(), "Sending notification"),
+            ToastLevel::Warning => warn!(msg = message.text(), "Sending notification"),
+            _ => info!(msg = message.text(), "Sending notification"),
+        };
+        self.push_base(message, level);
+    }
+    pub fn push_error<S: Display>(
+        &mut self,
+        message: S,
+        error: impl Debug + Display,
+        level: ToastLevel,
+    ) {
+        match level {
+            ToastLevel::Error => error!(msg=%message, ?error, "Sending notification"),
+            ToastLevel::Warning => warn!(msg=%message, ?error, "Sending notification"),
+            _ => info!(msg=%message, ?error, "Sending notification"),
+        }
+        self.push_base(format!("{message}\n{error}").into(), level);
+    }
+    pub fn push_errors<S: Display>(
+        &mut self,
+        message: S,
+        errors: &[impl Debug + Display],
+        level: ToastLevel,
+    ) {
+        match level {
+            ToastLevel::Error => error!(msg=%message, ?errors, "Sending notification"),
+            ToastLevel::Warning => warn!(msg=%message, ?errors, "Sending notification"),
+            _ => info!(msg=%message, ?errors, "Sending notification"),
+        }
+        self.push_base(
+            format!(
+                "{message}\n{}",
+                errors.iter().map(|e| format!("{e}")).join("\n")
+            )
+            .into(),
+            level,
+        );
     }
 }
 #[derive(Clone, Debug)]
