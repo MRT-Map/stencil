@@ -3,8 +3,14 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, component_editor::ComponentEditorWindow, event::Event, file::data_path, impl_load_save,
-    map::MapWindow, settings::SettingsWindow, ui::notif::NotifLogWindow,
+    App,
+    event::Event,
+    file::data_path,
+    impl_load_save,
+    map::MapWindow,
+    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
+    settings::SettingsWindow,
+    ui::notif::NotifLogWindow,
 };
 
 #[enum_dispatch]
@@ -26,7 +32,7 @@ pub trait DockWindow {
 pub enum DockWindows {
     MapWindow,
     ComponentEditorWindow,
-    // ProjectEditor,
+    ProjectEditorWindow,
     SettingsWindow,
     NotifLogWindow,
     // ComponentList,
@@ -47,15 +53,15 @@ impl Default for DockLayout {
             0.2,
             vec![ComponentEditorWindow.into()],
         );
-        // let [_, _] = tree.split_right(
-        //     NodeIndex::root(),
-        //     0.8,
-        //     vec![
-        //         ProjectEditor.into(),
-        //         ComponentList.into(),
-        //         HistoryViewer.into(),
-        //     ],
-        // );
+        let [_, _] = tree.split_right(
+            egui_dock::NodeIndex::root(),
+            0.8,
+            vec![
+                ProjectEditorWindow::default().into(),
+                // ComponentList.into(),
+                // HistoryViewer.into(),
+            ],
+        );
         Self(state)
     }
 }

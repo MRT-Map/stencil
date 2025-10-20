@@ -3,7 +3,9 @@ use std::fmt::Debug;
 use enum_dispatch::enum_dispatch;
 use tracing::debug;
 
-use crate::{App, info_windows::InfoWindowEv, ui::dock::ResetLayoutEv};
+use crate::{
+    App, info_windows::InfoWindowEv, project::project_editor::ProjectEv, ui::dock::ResetLayoutEv,
+};
 
 #[enum_dispatch]
 pub trait Event: Debug + Sized {
@@ -19,4 +21,5 @@ pub trait Event: Debug + Sized {
 pub enum Events {
     InfoWindowEv,
     ResetLayoutEv,
+    ProjectEv,
 }

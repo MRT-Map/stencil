@@ -4,8 +4,8 @@ use tracing::info;
 
 use crate::{
     App,
-    component_editor::ComponentEditorWindow,
     info_windows::InfoWindowEv,
+    project::component_editor::ComponentEditorWindow,
     settings::SettingsWindow,
     shortcut::ShortcutAction,
     ui::{dock::ResetLayoutEv, notif::NotifLogWindow},

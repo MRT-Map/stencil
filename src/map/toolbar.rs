@@ -1,6 +1,10 @@
 use tracing::info;
 
-use crate::{App, map::MapWindow, mode::EditorMode};
+use crate::{
+    App,
+    map::{MapWindow, tile_coord::TILE_CACHE},
+    mode::EditorMode,
+};
 
 impl MapWindow {
     pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
@@ -22,20 +26,22 @@ impl MapWindow {
                 button!("Line", EditorMode::CreateLine);
                 button!("Area", EditorMode::CreateArea);
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
-                    ui.label(format!(
-                        "# Pending Tiles: {}",
-                        0 /*pending_tiles.0.len()*/
-                    ));
-                    ui.separator();
+                if app.project.path.is_none() {
+                    ui.label(
+                        egui::RichText::new(" THIS IS A SCRATCHPAD - NOTHING WILL BE SAVED ")
+                            .background_color(egui::Color32::LIGHT_RED)
+                            .color(egui::Color32::BLACK),
+                    );
+                }
 
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
                     if ui.button("Reset View").clicked() {
                         info!("Resetting view");
                         self.reset(app);
                     }
                     if let Some(prev_cursor_world_pos) = self.prev_cursor_world_pos {
                         ui.label(format!(
-                            "x: {:} z: {:} \u{1f50d}: {:.2}",
+                            "x: {} z: {} \u{1f50d}: {:.2}",
                             prev_cursor_world_pos.x.round() as i32,
                             prev_cursor_world_pos.y.round() as i32,
                             self.zoom

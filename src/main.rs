@@ -1,4 +1,3 @@
-mod component_editor;
 mod event;
 mod file;
 mod info_windows;
@@ -116,7 +115,7 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let start = Instant::now();
-        self.project.load_skin();
+        self.project.load_skin(ctx);
 
         self.menu_bar(ctx);
         self.dock(ctx);

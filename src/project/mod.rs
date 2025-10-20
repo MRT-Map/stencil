@@ -1,10 +1,13 @@
+pub mod component_editor;
 pub mod pla3;
+pub mod project_editor;
 pub mod skin;
 
-use std::{borrow::Cow, path::PathBuf};
+use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 
 use async_executor::Task;
-use eyre::{Report, Result};
+use egui::ahash::HashMap;
+use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
@@ -31,6 +34,7 @@ pub struct Project {
     pub skin_status: SkinStatus,
     pub skin_url: String,
     pub components: Vec<PlaComponent>,
+    pub namespaces: HashMap<String, bool>,
     pub path: Option<PathBuf>,
 }
 
@@ -41,6 +45,7 @@ impl Default for Project {
             skin_status: SkinStatus::default(),
             skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
             components: Vec::new(),
+            namespaces: HashMap::default(),
             path: None,
         }
     }
@@ -59,7 +64,7 @@ impl Project {
             URL_REPLACER.replace_all(&self.skin_url, "")
         ))
     }
-    pub fn load_skin(&mut self) {
+    pub fn load_skin(&mut self, ctx: &egui::Context) {
         match &mut self.skin_status {
             SkinStatus::Unloaded => {
                 let skin_cache = self.skin_cache_path();
@@ -105,7 +110,9 @@ impl Project {
                     error!("Skin failed to load: {e:?}");
                     self.skin_status = SkinStatus::Failed(e);
                 }
-                None => {}
+                None => {
+                    ctx.request_repaint_after_secs(1.0);
+                }
             },
             _ => {}
         }
@@ -122,13 +129,48 @@ impl Project {
     pub fn load(path: PathBuf) -> Result<Self> {
         let project_toml: ProjectToml =
             toml::from_str(&std::fs::read_to_string(path.join("project.toml"))?)?;
-        Ok(Self {
+        let mut s = Self {
             basemap: project_toml.basemap.into_owned(),
-            skin_status: SkinStatus::default(),
             skin_url: project_toml.skin_url.into_owned(),
-            components: Vec::new(),
             path: Some(path),
-        })
+            ..Self::default()
+        };
+        s.update_namespace_list()?;
+        Ok(s)
+    }
+    pub fn update_namespace_list(&mut self) -> Result<Vec<Report>> {
+        let Some(path) = &self.path else {
+            return Ok(Vec::new());
+        };
+        let mut errors = Vec::new();
+
+        let mut folders = HashSet::new();
+        for dir_entry in std::fs::read_dir(path)? {
+            let Ok(dir_entry) = dir_entry.map_err(|e| errors.push(Report::from(e))) else {
+                continue;
+            };
+            if let Ok(file_type) = dir_entry
+                .file_type()
+                .map_err(|e| errors.push(Report::from(e)))
+                && file_type.is_dir()
+            {
+                folders.insert(dir_entry.file_name().to_string_lossy().into_owned());
+            }
+        }
+
+        self.namespaces.retain(|namespace, loaded| {
+            if folders.contains(namespace) {
+                folders.remove(namespace);
+                true
+            } else {
+                *loaded
+            }
+        });
+        for namespace in folders {
+            self.namespaces.insert(namespace, false);
+        }
+
+        Ok(errors)
     }
     pub fn load_namespace(&mut self, namespace: &str) -> Result<Vec<Report>> {
         let Some(path) = &self.path else {
@@ -191,7 +233,10 @@ impl Project {
 
         errors
     }
-    pub fn save_components(&self, components: &[PlaComponent]) -> Vec<Report> {
+    pub fn save_components<'a, C: IntoIterator<Item = &'a PlaComponent>>(
+        &self,
+        components: C,
+    ) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();
         };
@@ -209,12 +254,15 @@ impl Project {
         errors
     }
     pub fn namespace_component_count(&self, namespace: &str) -> Result<usize> {
-        let Some(path) = &self.path else {
+        if self.namespaces.get(namespace).is_some_and(|a| *a) {
             return Ok(self
                 .components
                 .iter()
                 .filter(|a| a.namespace == namespace)
                 .count());
+        }
+        let Some(path) = &self.path else {
+            return Err(eyre!("scratchpad contains unloaded namespace"));
         };
         Ok(std::fs::read_dir(path.join(namespace))?
             .filter_map(Result::ok)

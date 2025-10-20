@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, component_editor::ComponentEditorWindow, info_windows::InfoWindowEv,
+    App, info_windows::InfoWindowEv, project::component_editor::ComponentEditorWindow,
     settings::SettingsWindow, ui::notif::NotifLogWindow,
 };
 
