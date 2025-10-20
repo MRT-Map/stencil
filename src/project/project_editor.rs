@@ -198,7 +198,8 @@ impl Event for ProjectEv {
                     format!("Created namespace `{namespace}`"),
                     ToastLevel::Success,
                 );
-                app.project.namespaces.insert(namespace, true);
+                app.project.namespaces.insert(namespace.clone(), true);
+                app.project.new_component_ns = namespace;
             }
             Self::Delete(namespace) => {
                 if app

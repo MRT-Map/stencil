@@ -35,6 +35,7 @@ pub struct Project {
     pub skin_url: String,
     pub components: Vec<PlaComponent>,
     pub namespaces: HashMap<String, bool>,
+    pub new_component_ns: String,
     pub path: Option<PathBuf>,
 }
 
@@ -46,6 +47,7 @@ impl Default for Project {
             skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
             components: Vec::new(),
             namespaces: HashMap::default(),
+            new_component_ns: String::new(),
             path: None,
         }
     }

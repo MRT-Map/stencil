@@ -1,6 +1,6 @@
 use tracing::info;
 
-use crate::{App, map::MapWindow, mode::EditorMode};
+use crate::{App, map::MapWindow, mode::EditorMode, project::project_editor::ProjectEditorWindow};
 
 impl MapWindow {
     pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
@@ -21,6 +21,48 @@ impl MapWindow {
                 button!("Point", EditorMode::CreatePoint);
                 button!("Line", EditorMode::CreateLine);
                 button!("Area", EditorMode::CreateArea);
+
+                ui.label("in namespace");
+                if !app.project.new_component_ns.is_empty()
+                    && app
+                        .project
+                        .namespaces
+                        .get(&app.project.new_component_ns)
+                        .is_none_or(|a| !*a)
+                {
+                    app.project.new_component_ns.clear();
+                }
+                egui::ComboBox::from_id_salt("toolbar_namespace")
+                    .selected_text(if app.project.new_component_ns.is_empty() {
+                        egui::RichText::new("select...").italics()
+                    } else {
+                        (&app.project.new_component_ns).into()
+                    })
+                    .show_ui(ui, |ui| {
+                        if app
+                            .project
+                            .namespaces
+                            .iter()
+                            .filter(|(_, vis)| **vis)
+                            .map(|(ns, _)| {
+                                ui.selectable_value(
+                                    &mut app.project.new_component_ns,
+                                    ns.to_owned(),
+                                    ns,
+                                );
+                            })
+                            .next()
+                            .is_none()
+                        {
+                            ui.horizontal(|ui| {
+                                ui.label("Create or load namespaces in the");
+                                if ui.small_button("Project Editor").clicked() {
+                                    app.open_dock_window(ProjectEditorWindow::default());
+                                }
+                            });
+                        }
+                    });
+                ui.separator();
 
                 if app.project.path.is_none() {
                     ui.label(

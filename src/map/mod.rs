@@ -8,6 +8,7 @@ use crate::{
         settings::MapSettings,
         tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
+    mode::EditorMode,
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -78,6 +79,7 @@ impl DockWindow for MapWindow {
 
         self.tiles(app, ui, &response, &painter);
         self.interaction(app, ui, &response);
+        self.cursor(app, ui, &response, &painter);
     }
 }
 impl MapWindow {
@@ -149,6 +151,76 @@ impl MapWindow {
             }
             tile_screen_top_left.x += tile_screen_size;
             tile_screen_top_left.y = min_tile_screen_top_left.y;
+        }
+    }
+    fn cursor(&self, app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+        if response.hover_pos().is_none() {
+            return;
+        }
+        if response.dragged_by(egui::PointerButton::Middle) {
+            ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
+            return;
+        }
+        match app.mode {
+            EditorMode::Select | EditorMode::Nodes => {
+                ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
+            }
+            EditorMode::CreateArea | EditorMode::CreateLine | EditorMode::CreatePoint => {
+                if app.project.new_component_ns.is_empty() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                    egui::Tooltip::always_open(
+                        ui.ctx().to_owned(),
+                        response.layer_id,
+                        response.id,
+                        egui::PopupAnchor::Pointer,
+                    )
+                    .show(|ui| ui.label("Set a namespace in the toolbar first"));
+                    return;
+                }
+                let Some(pointer_screen_pos) = ui.ctx().pointer_latest_pos() else {
+                    return;
+                };
+                let pointer_world_pos =
+                    self.screen_to_world(app, response.rect.center(), pointer_screen_pos);
+                let crosshair_screen_pos = self.world_to_screen(
+                    app,
+                    response.rect.center(),
+                    geo::Coord::from((pointer_world_pos.x.round(), pointer_world_pos.y.round())),
+                );
+                let (x, y) = (crosshair_screen_pos.x, crosshair_screen_pos.y);
+
+                ui.ctx().set_cursor_icon(egui::CursorIcon::None);
+                painter.hline(
+                    egui::Rangef::new(x + 1.0 - 16.0, x + 1.0 + 16.0),
+                    y + 1.0,
+                    egui::Stroke::new(8.0, egui::Color32::BLACK.gamma_multiply(0.25)),
+                );
+                painter.vline(
+                    x + 1.0,
+                    egui::Rangef::new(y + 1.0 - 16.0, y + 1.0 + 16.0),
+                    egui::Stroke::new(8.0, egui::Color32::BLACK.gamma_multiply(0.25)),
+                );
+                painter.hline(
+                    egui::Rangef::new(x - 16.0, x + 16.0),
+                    y,
+                    egui::Stroke::new(6.0, egui::Color32::BLACK),
+                );
+                painter.vline(
+                    x,
+                    egui::Rangef::new(y - 16.0, y + 16.0),
+                    egui::Stroke::new(6.0, egui::Color32::BLACK),
+                );
+                painter.hline(
+                    egui::Rangef::new(x - 14.0, x + 14.0),
+                    y,
+                    egui::Stroke::new(2.0, egui::Color32::WHITE),
+                );
+                painter.vline(
+                    x,
+                    egui::Rangef::new(y - 14.0, y + 14.0),
+                    egui::Stroke::new(2.0, egui::Color32::WHITE),
+                );
+            }
         }
     }
     fn interaction(&mut self, app: &mut App, ui: &egui::Ui, response: &egui::Response) {

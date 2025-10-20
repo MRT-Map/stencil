@@ -86,6 +86,7 @@ impl App {
     fn load_state() -> Self {
         let mut notifs = NotifState::default();
         let misc_settings = MiscSettings::load(&mut notifs);
+        misc_settings.update_notif_duration();
         Self {
             ui: UiState {
                 dock_layout: DockLayout::load(&mut notifs),
