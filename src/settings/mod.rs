@@ -32,30 +32,28 @@ pub trait Settings: LoadSave {
         ui.separator();
         self.ui_inner(ui, tab_state);
     }
-    fn ui_field<T: PartialEq + Display>(
-        &mut self,
-        ui: &mut egui::Ui,
-        get: impl Fn(Self) -> T,
-        get_ref: impl Fn(&Self) -> &T,
-        get_mut: impl Fn(&mut Self) -> &mut T,
-        description: Option<impl Into<egui::WidgetText>>,
-        edit_ui: impl FnOnce(&mut egui::Ui, &mut T),
-    ) {
-        ui.horizontal(|ui| {
-            let default = get(Self::default());
-            if ui
-                .add_enabled(*get_ref(self) != default, egui::Button::new("⟲"))
-                .on_hover_text(format!("Default: {default}"))
-                .clicked()
-            {
-                *get_mut(self) = default;
-            }
+}
 
-            edit_ui(ui, get_mut(self));
-        });
-        if let Some(description) = description {
-            ui.label(description);
+pub fn settings_ui_field<T: PartialEq + Display>(
+    ui: &mut egui::Ui,
+    value: &mut T,
+    default: T,
+    description: Option<impl Into<egui::WidgetText>>,
+    edit_ui: impl FnOnce(&mut egui::Ui, &mut T),
+) {
+    ui.horizontal(|ui| {
+        if ui
+            .add_enabled(*value != default, egui::Button::new("⟲"))
+            .on_hover_text(format!("Default: {default}"))
+            .clicked()
+        {
+            *value = default;
         }
+
+        edit_ui(ui, value);
+    });
+    if let Some(description) = description {
+        ui.label(description);
     }
 }
 

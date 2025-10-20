@@ -3,7 +3,11 @@ use std::{any::Any, sync::atomic::Ordering};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    file::data_dir, impl_load_save, settings::Settings, settings_field, ui::notif::NOTIF_DURATION,
+    file::data_dir,
+    impl_load_save,
+    settings::{Settings, settings_ui_field},
+    settings_field,
+    ui::notif::NOTIF_DURATION,
 };
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
@@ -25,12 +29,13 @@ impl_load_save!(toml MiscSettings, data_dir("settings").join("misc.toml"), "# Do
 
 impl Settings for MiscSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
+        let default = Self::default();
+
         let mut changed = false;
-        self.ui_field(
+        settings_ui_field(
             ui,
-            |a| a.notif_duration,
-            |a| &a.notif_duration,
-            |a| &mut a.notif_duration,
+            &mut self.notif_duration,
+            default.notif_duration,
             Some("Time before success and info notifications expire. Set to 0 to disable expiry"),
             |ui, value| {
                 changed = ui

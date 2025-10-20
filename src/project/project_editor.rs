@@ -1,9 +1,16 @@
-use egui::TextBuffer;
+use egui::{TextBuffer, Widget};
 use egui_notify::ToastLevel;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::{App, event::Event, file::safe_delete, ui::dock::DockWindow};
+use crate::{
+    App,
+    event::Event,
+    file::safe_delete,
+    project::{Project, SkinStatus},
+    settings::settings_ui_field,
+    ui::dock::DockWindow,
+};
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct ProjectEditorWindow {
@@ -125,6 +132,29 @@ impl DockWindow for ProjectEditorWindow {
                     });
                 });
             });
+
+        ui.separator();
+
+        ui.heading("Configuration");
+        ui.collapsing("Skin", |ui| {
+            settings_ui_field(
+                ui,
+                &mut app.project.skin_url,
+                Project::default().skin_url,
+                Option::<&str>::None,
+                |ui, value| {
+                    ui.add(egui::TextEdit::singleline(value).desired_width(200.0));
+                    // ui.text_edit_singleline(value);
+                    ui.label("Skin URL");
+                    if ui.button("Reload").clicked() {
+                        app.project.skin_status = SkinStatus::Unloaded;
+                    }
+                },
+            );
+        });
+        ui.collapsing("Basemap", |ui| {
+            app.project.basemap.config_ui(ui);
+        });
     }
 }
 

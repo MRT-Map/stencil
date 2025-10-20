@@ -9,6 +9,7 @@ use crate::{
         tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
     mode::EditorMode,
+    project::SkinStatus,
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -166,17 +167,31 @@ impl MapWindow {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
             }
             EditorMode::CreateArea | EditorMode::CreateLine | EditorMode::CreatePoint => {
-                if app.project.new_component_ns.is_empty() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                let tooltip = |text: &str| {
                     egui::Tooltip::always_open(
                         ui.ctx().to_owned(),
                         response.layer_id,
                         response.id,
                         egui::PopupAnchor::Pointer,
                     )
-                    .show(|ui| ui.label("Set a namespace in the toolbar first"));
+                    .show(|ui| ui.label(text));
+                };
+                if app.project.new_component_ns.is_empty() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                    tooltip("Set a namespace in the toolbar first");
                     return;
                 }
+                if matches!(app.project.skin_status, SkinStatus::Failed(_)) {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                    tooltip("Skin failed to load. See Project Editor");
+                    return;
+                }
+                if app.project.skin().is_none() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::Wait);
+                    tooltip("Waiting for skin to load...");
+                    return;
+                }
+
                 let Some(pointer_screen_pos) = ui.ctx().pointer_latest_pos() else {
                     return;
                 };
