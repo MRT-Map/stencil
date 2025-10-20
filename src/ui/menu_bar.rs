@@ -5,7 +5,10 @@ use tracing::info;
 use crate::{
     App,
     info_windows::InfoWindowEv,
-    project::component_editor::ComponentEditorWindow,
+    project::{
+        component_editor::ComponentEditorWindow,
+        project_editor::{ProjectEditorWindow, ProjectEv},
+    },
     settings::SettingsWindow,
     shortcut::ShortcutAction,
     ui::{dock::ResetLayoutEv, notif::NotifLogWindow},
@@ -52,10 +55,10 @@ impl App {
                     ui.separator();
                     button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false }, ShortcutAction::Quit);
                 });
-                ui.menu_button("File", |_ui| {
+                ui.menu_button("File", |ui| {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
                     // button!(ui, commands, "Reload", ProjectEv::Reload);
-                    // button!(ui, commands, "Save", ProjectEv::Save(false));
+                    button!(ui, event "Save", ProjectEv::Save, ShortcutAction::SaveProject);
                 });
                 ui.menu_button("Edit", |_ui| {
                     // button!(ui, commands, "Undo", HistoryEv::Undo);
@@ -64,7 +67,7 @@ impl App {
                 ui.menu_button("View", |ui| {
                     // button!(ui, commands, "Component List", OpenComponentListEv);
                     button!(ui, window "Component Editor", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
-                    // button!(ui, commands, "Project", OpenProjectEditorEv);
+                    button!(ui, window "Project Editor", ProjectEditorWindow::default(), ShortcutAction::ProjectEditorWindow);
                     // button!(ui, commands, "History", OpenHistoryViewerEv);
                     button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();

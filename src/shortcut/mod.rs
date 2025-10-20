@@ -2,8 +2,15 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, info_windows::InfoWindowEv, project::component_editor::ComponentEditorWindow,
-    settings::SettingsWindow, ui::notif::NotifLogWindow,
+    App,
+    info_windows::InfoWindowEv,
+    mode::EditorMode,
+    project::{
+        component_editor::ComponentEditorWindow,
+        project_editor::{ProjectEditorWindow, ProjectEv},
+    },
+    settings::SettingsWindow,
+    ui::notif::NotifLogWindow,
 };
 
 pub mod settings;
@@ -26,12 +33,23 @@ pub enum ShortcutAction {
     SettingsWindow,
     ComponentEditorWindow,
     NotifLogWindow,
+    ProjectEditorWindow,
     PanMapUp,
     PanMapDown,
     PanMapLeft,
     PanMapRight,
     ZoomMapIn,
     ZoomMapOut,
+    OpenProject,
+    ReloadProject,
+    SaveProject,
+    Undo,
+    Redo,
+    EditorModeSelect,
+    EditorModeNodes,
+    EditorModeCreatePoint,
+    EditorModeCreateLine,
+    EditorModeCreateArea,
 }
 impl ShortcutAction {
     pub const fn eventless(self) -> bool {
@@ -74,6 +92,27 @@ impl App {
                 }
                 ShortcutAction::NotifLogWindow => {
                     self.open_dock_window(NotifLogWindow);
+                }
+                ShortcutAction::ProjectEditorWindow => {
+                    self.open_dock_window(ProjectEditorWindow::default());
+                }
+                ShortcutAction::SaveProject => {
+                    self.push_event(ProjectEv::Save);
+                }
+                ShortcutAction::EditorModeSelect => {
+                    self.mode = EditorMode::Select;
+                }
+                ShortcutAction::EditorModeNodes => {
+                    self.mode = EditorMode::Nodes;
+                }
+                ShortcutAction::EditorModeCreatePoint => {
+                    self.mode = EditorMode::CreatePoint;
+                }
+                ShortcutAction::EditorModeCreateLine => {
+                    self.mode = EditorMode::CreateLine;
+                }
+                ShortcutAction::EditorModeCreateArea => {
+                    self.mode = EditorMode::CreateArea;
                 }
                 _ => {}
             }

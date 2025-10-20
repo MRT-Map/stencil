@@ -9,6 +9,7 @@ use crate::{
     file::safe_delete,
     project::{Project, SkinStatus},
     settings::settings_ui_field,
+    shortcut::ShortcutAction,
     ui::dock::DockWindow,
 };
 
@@ -23,16 +24,41 @@ impl DockWindow for ProjectEditorWindow {
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
-            if ui.button("Open").clicked() {
+            if ui
+                .add(
+                    egui::Button::new("Open").shortcut_text(
+                        ui.ctx().format_shortcut(
+                            &app.shortcut_settings
+                                .action_to_keyboard(ShortcutAction::OpenProject),
+                        ),
+                    ),
+                )
+                .clicked()
+            {
                 // commands.trigger(ProjectEv::Open);
             }
-            if ui.button("Reload").clicked() {
+            if ui
+                .add(
+                    egui::Button::new("Reload").shortcut_text(
+                        ui.ctx().format_shortcut(
+                            &app.shortcut_settings
+                                .action_to_keyboard(ShortcutAction::ReloadProject),
+                        ),
+                    ),
+                )
+                .clicked()
+            {
                 // commands.trigger(ProjectEv::Reload);
             }
             if ui
                 .add_enabled(
                     app.project.path.is_some(),
-                    egui::Button::new("Save").shortcut_text("TODO"),
+                    egui::Button::new("Save").shortcut_text(
+                        ui.ctx().format_shortcut(
+                            &app.shortcut_settings
+                                .action_to_keyboard(ShortcutAction::SaveProject),
+                        ),
+                    ),
                 )
                 .clicked()
             {

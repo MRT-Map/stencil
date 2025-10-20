@@ -32,12 +32,23 @@ impl Default for ShortcutSettings {
         shortcut!(SettingsWindow => COMMAND + Comma);
         shortcut!(ComponentEditorWindow => COMMAND | ALT + C);
         shortcut!(NotifLogWindow => COMMAND | ALT + N);
+        shortcut!(ProjectEditorWindow => COMMAND | ALT + P);
         shortcut!(PanMapUp -> ArrowUp);
         shortcut!(PanMapDown -> ArrowDown);
         shortcut!(PanMapLeft -> ArrowLeft);
         shortcut!(PanMapRight -> ArrowRight);
         shortcut!(ZoomMapIn -> Equals);
         shortcut!(ZoomMapOut -> Minus);
+        shortcut!(OpenProject => COMMAND + O);
+        shortcut!(ReloadProject => COMMAND + R);
+        shortcut!(SaveProject => COMMAND + S);
+        shortcut!(Undo => COMMAND + Z);
+        shortcut!(Redo => COMMAND | SHIFT + Z);
+        shortcut!(EditorModeSelect => COMMAND + Num1);
+        shortcut!(EditorModeNodes => COMMAND + Num2);
+        shortcut!(EditorModeCreatePoint => COMMAND + Num3);
+        shortcut!(EditorModeCreateLine => COMMAND + Num4);
+        shortcut!(EditorModeCreateArea => COMMAND + Num5);
         Self(map)
     }
 }
@@ -185,7 +196,13 @@ impl Settings for ShortcutSettings {
         let Some(key) = ui.ctx().input(|i| i.keys_down.iter().next().copied()) else {
             return;
         };
-        let new_shortcut = egui::KeyboardShortcut::new(ui.ctx().input(|i| i.modifiers), key);
+        let mut new_shortcut = egui::KeyboardShortcut::new(ui.ctx().input(|i| i.modifiers), key);
+        #[cfg(not(target_os = "macos"))]
+        if new_shortcut.modifiers.ctrl {
+            new_shortcut.modifiers.command = true;
+            new_shortcut.modifiers.ctrl = false;
+        }
+
         assert!(ui.ctx().input_mut(|i| i.consume_shortcut(&new_shortcut)));
 
         if let Some(taken_by) = self.keyboard_to_action(new_shortcut)
