@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    App, URL_REPLACER,
+    URL_REPLACER,
     file::{cache_dir, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,

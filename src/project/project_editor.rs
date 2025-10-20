@@ -161,6 +161,24 @@ impl DockWindow for ProjectEditorWindow {
 
         ui.separator();
 
+        match &app.project.skin_status {
+            SkinStatus::Unloaded => {
+                ui.colored_label(egui::Color32::ORANGE, "Skin is unloaded");
+            }
+            SkinStatus::Loading(_) => {
+                ui.colored_label(egui::Color32::YELLOW, "Skin is loading");
+            }
+            SkinStatus::Failed(e) => {
+                ui.colored_label(egui::Color32::RED, "Skin failed to load");
+                ui.code(format!("{e:?}"));
+            }
+            SkinStatus::Loaded(_) => {
+                ui.colored_label(egui::Color32::GREEN, "Skin is loaded");
+            }
+        }
+
+        ui.separator();
+
         ui.heading("Configuration");
         ui.collapsing("Skin", |ui| {
             settings_ui_field(

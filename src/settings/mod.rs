@@ -34,12 +34,16 @@ pub trait Settings: LoadSave {
     }
 }
 
-pub fn settings_ui_field<T: PartialEq + Display>(
+pub fn settings_ui_field<
+    T: PartialEq + Display,
+    D: Into<egui::WidgetText>,
+    F: FnOnce(&mut egui::Ui, &mut T),
+>(
     ui: &mut egui::Ui,
     value: &mut T,
     default: T,
-    description: Option<impl Into<egui::WidgetText>>,
-    edit_ui: impl FnOnce(&mut egui::Ui, &mut T),
+    description: Option<D>,
+    edit_ui: F,
 ) {
     ui.horizontal(|ui| {
         if ui
