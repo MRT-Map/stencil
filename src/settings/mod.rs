@@ -80,36 +80,38 @@ impl DockWindow for SettingsWindow {
         "Settings".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
-            macro_rules! selectable_button {
-                ($label:literal, $new_val:expr, $match_:pat) => {
-                    if ui
-                        .add(egui::Button::selectable(
-                            matches!(self.tab, $match_),
-                            $label,
-                        ))
-                        .clicked()
-                    {
-                        info!(tab = $label, "Switching settings tab");
-                        self.tab = $new_val;
-                    }
-                };
-            }
-            selectable_button!("Map", SettingsTab::Map, SettingsTab::Map);
-            selectable_button!("Window", SettingsTab::Window, SettingsTab::Window);
-            selectable_button!(
-                "Shortcuts",
-                SettingsTab::Shortcuts(ShortcutsTabState::default()),
-                SettingsTab::Shortcuts(_)
-            );
-            selectable_button!(
-                "Miscellaneous",
-                SettingsTab::Miscellaneous,
-                SettingsTab::Miscellaneous
-            );
+        egui::TopBottomPanel::top("select_settings").show_inside(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
+                macro_rules! selectable_button {
+                    ($label:literal, $new_val:expr, $match_:pat) => {
+                        if ui
+                            .add(egui::Button::selectable(
+                                matches!(self.tab, $match_),
+                                $label,
+                            ))
+                            .clicked()
+                        {
+                            info!(tab = $label, "Switching settings tab");
+                            self.tab = $new_val;
+                        }
+                    };
+                }
+                selectable_button!("Map", SettingsTab::Map, SettingsTab::Map);
+                selectable_button!("Window", SettingsTab::Window, SettingsTab::Window);
+                selectable_button!(
+                    "Shortcuts",
+                    SettingsTab::Shortcuts(ShortcutsTabState::default()),
+                    SettingsTab::Shortcuts(_)
+                );
+                selectable_button!(
+                    "Miscellaneous",
+                    SettingsTab::Miscellaneous,
+                    SettingsTab::Miscellaneous
+                );
+            });
         });
-        ui.separator();
-        match &mut self.tab {
+
+        egui::ScrollArea::vertical().show(ui, |ui| match &mut self.tab {
             SettingsTab::Map => {
                 app.map_settings.ui(ui, &mut ());
             }
@@ -122,6 +124,6 @@ impl DockWindow for SettingsWindow {
             SettingsTab::Miscellaneous => {
                 app.misc_settings.ui(ui, &mut ());
             }
-        }
+        });
     }
 }

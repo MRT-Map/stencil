@@ -47,6 +47,12 @@ settings_field!(
     shortcut_zoom_amount,
     f32
 );
+settings_field!(
+    MapSettings,
+    invert_scroll_is_default,
+    invert_scroll,
+    egui::Vec2b
+);
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 #[serde(default)]
@@ -68,6 +74,9 @@ pub struct MapSettings {
     pub shortcut_pan_amount: f32,
     #[serde(skip_serializing_if = "shortcut_zoom_amount_is_default")]
     pub shortcut_zoom_amount: f32,
+
+    #[serde(skip_serializing_if = "invert_scroll_is_default")]
+    pub invert_scroll: egui::Vec2b,
 }
 
 impl Default for MapSettings {
@@ -80,6 +89,7 @@ impl Default for MapSettings {
             world_screen_ratio: 0.25,
             shortcut_pan_amount: 25.0,
             shortcut_zoom_amount: 0.2,
+            invert_scroll: egui::Vec2b::default(),
         }
     }
 }
@@ -198,6 +208,23 @@ impl Settings for MapSettings {
                 ui.add(egui::Slider::new(value, 0.01..=1.0).text("Shortcut Zoom Amount"));
             },
         );
+
+        ui.horizontal(|ui| {
+            if ui
+                .add_enabled(
+                    self.invert_scroll != default.invert_scroll,
+                    egui::Button::new("⟲"),
+                )
+                .on_hover_text(format!("Default: {:?}", default.invert_scroll))
+                .clicked()
+            {
+                self.invert_scroll = default.invert_scroll;
+            }
+
+            ui.checkbox(&mut self.invert_scroll.x, "Horizontal");
+            ui.checkbox(&mut self.invert_scroll.y, "Vertical");
+            ui.label("Inverted scroll");
+        });
     }
 }
 
