@@ -1,3 +1,4 @@
+mod actions;
 mod event;
 mod file;
 mod info_windows;

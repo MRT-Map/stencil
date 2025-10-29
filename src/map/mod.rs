@@ -9,7 +9,7 @@ use crate::{
         tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
     mode::EditorMode,
-    project::SkinStatus,
+    project::{SkinStatus, pla3::PlaNode},
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -24,6 +24,7 @@ pub struct MapWindow {
     pub centre_coord: geo::Coord<f32>,
     pub zoom: f32,
     pub prev_cursor_world_pos: Option<geo::Coord<f32>>,
+    pub created_nodes: Vec<PlaNode>,
 }
 
 impl Default for MapWindow {
@@ -32,6 +33,7 @@ impl Default for MapWindow {
             centre_coord: geo::Coord::<f32>::default(),
             zoom: 0.0,
             prev_cursor_world_pos: None,
+            created_nodes: Vec::new(),
         }
     }
 }
@@ -309,6 +311,12 @@ impl MapWindow {
         self.centre_coord.y += translation.y;
 
         self.prev_cursor_world_pos = Some(cursor_world_pos);
+
+        #[expect(clippy::single_match)]
+        match app.mode {
+            EditorMode::CreatePoint => self.create_point(app, response, cursor_world_pos),
+            _ => {}
+        }
     }
 }
 
