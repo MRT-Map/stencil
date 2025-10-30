@@ -1,6 +1,13 @@
+use std::sync::Arc;
+
 use tracing::info;
 
-use crate::{App, map::MapWindow, mode::EditorMode, project::project_editor::ProjectEditorWindow};
+use crate::{
+    App,
+    map::MapWindow,
+    mode::EditorMode,
+    project::{project_editor::ProjectEditorWindow, skin::SkinType},
+};
 
 impl MapWindow {
     pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
@@ -22,46 +29,124 @@ impl MapWindow {
                 button!("Line", EditorMode::CreateLine);
                 button!("Area", EditorMode::CreateArea);
 
-                ui.label("in namespace");
-                if !app.project.new_component_ns.is_empty()
-                    && app
-                        .project
-                        .namespaces
-                        .get(&app.project.new_component_ns)
-                        .is_none_or(|a| !*a)
-                {
-                    app.project.new_component_ns.clear();
-                }
-                egui::ComboBox::from_id_salt("toolbar_namespace")
-                    .selected_text(if app.project.new_component_ns.is_empty() {
-                        egui::RichText::new("select...").italics()
-                    } else {
-                        (&app.project.new_component_ns).into()
-                    })
-                    .show_ui(ui, |ui| {
-                        if app
+                let mut in_namespace = |app: &mut App| {
+                    ui.label("in namespace");
+                    if !app.project.new_component_ns.is_empty()
+                        && app
                             .project
                             .namespaces
-                            .iter()
-                            .filter(|(_, vis)| **vis)
-                            .map(|(ns, _)| {
-                                ui.selectable_value(
-                                    &mut app.project.new_component_ns,
-                                    ns.to_owned(),
-                                    ns,
-                                );
-                            })
-                            .next()
-                            .is_none()
-                        {
-                            ui.horizontal(|ui| {
-                                ui.label("Create or load namespaces in the");
-                                if ui.small_button("Project Editor").clicked() {
-                                    app.open_dock_window(ProjectEditorWindow::default());
-                                }
-                            });
+                            .get(&app.project.new_component_ns)
+                            .is_none_or(|a| !*a)
+                    {
+                        app.project.new_component_ns.clear();
+                    }
+
+                    egui::ComboBox::from_id_salt("toolbar_namespace")
+                        .selected_text(if app.project.new_component_ns.is_empty() {
+                            egui::RichText::new("select...").italics()
+                        } else {
+                            (&app.project.new_component_ns).into()
+                        })
+                        .show_ui(ui, |ui| {
+                            if app
+                                .project
+                                .namespaces
+                                .iter()
+                                .filter(|(_, vis)| **vis)
+                                .map(|(ns, _)| {
+                                    ui.selectable_value(
+                                        &mut app.project.new_component_ns,
+                                        ns.to_owned(),
+                                        ns,
+                                    );
+                                })
+                                .next()
+                                .is_none()
+                            {
+                                ui.horizontal(|ui| {
+                                    ui.label("Create or load namespaces in the");
+                                    if ui.small_button("Project Editor").clicked() {
+                                        app.open_dock_window(ProjectEditorWindow::default());
+                                    }
+                                });
+                            }
+                        });
+                };
+                if let Some(skin) = app.project.skin() {
+                    match &app.mode {
+                        EditorMode::CreatePoint => {
+                            in_namespace(app);
+                            ui.label("with type");
+                            egui::ComboBox::from_id_salt("toolbar_type")
+                                .selected_text(
+                                    self.created_point_type
+                                        .as_ref()
+                                        .unwrap_or_else(|| skin.get_type("simplePoint").unwrap())
+                                        .widget_text(ui, &egui::TextStyle::Button),
+                                )
+                                .show_ui(ui, |ui| {
+                                    for ty in &skin.types {
+                                        if !matches!(ty.as_ref(), SkinType::Point { .. }) {
+                                            continue;
+                                        }
+                                        ui.selectable_value(
+                                            &mut self.created_point_type,
+                                            Some(Arc::clone(ty)),
+                                            ty.widget_text(ui, &egui::TextStyle::Button),
+                                        );
+                                    }
+                                });
                         }
-                    });
+                        EditorMode::CreateLine => {
+                            in_namespace(app);
+                            ui.label("with type");
+                            egui::ComboBox::from_id_salt("toolbar_type")
+                                .selected_text(
+                                    self.created_line_type
+                                        .as_ref()
+                                        .unwrap_or_else(|| skin.get_type("simpleLine").unwrap())
+                                        .widget_text(ui, &egui::TextStyle::Button),
+                                )
+                                .show_ui(ui, |ui| {
+                                    for ty in &skin.types {
+                                        if !matches!(ty.as_ref(), SkinType::Line { .. }) {
+                                            continue;
+                                        }
+                                        ui.selectable_value(
+                                            &mut self.created_line_type,
+                                            Some(Arc::clone(ty)),
+                                            ty.widget_text(ui, &egui::TextStyle::Button),
+                                        );
+                                    }
+                                });
+                        }
+                        EditorMode::CreateArea => {
+                            in_namespace(app);
+                            ui.label("with type");
+                            egui::ComboBox::from_id_salt("toolbar_type")
+                                .selected_text(
+                                    self.created_area_type
+                                        .as_ref()
+                                        .unwrap_or_else(|| skin.get_type("simpleArea").unwrap())
+                                        .widget_text(ui, &egui::TextStyle::Button),
+                                )
+                                .show_ui(ui, |ui| {
+                                    for ty in &skin.types {
+                                        if !matches!(ty.as_ref(), SkinType::Area { .. }) {
+                                            continue;
+                                        }
+                                        ui.selectable_value(
+                                            &mut self.created_area_type,
+                                            Some(Arc::clone(ty)),
+                                            ty.widget_text(ui, &egui::TextStyle::Button),
+                                        );
+                                    }
+                                });
+                        }
+                        _ => {}
+                    }
+                }
+
                 ui.separator();
 
                 if app.project.path.is_none() {

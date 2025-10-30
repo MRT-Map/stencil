@@ -1,4 +1,4 @@
-use egui::{TextBuffer, Widget};
+use egui::TextBuffer;
 use egui_notify::ToastLevel;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};

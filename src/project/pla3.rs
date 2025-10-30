@@ -8,7 +8,7 @@ use std::{
 use eyre::{ContextCompat, Report, Result, eyre};
 use serde::{Deserialize, Serialize};
 
-use crate::project::{Project, skin::SkinComponent};
+use crate::project::{Project, skin::SkinType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaNode {
@@ -42,7 +42,7 @@ impl PlaNode {
 pub struct PlaComponent {
     pub namespace: String,
     pub id: String,
-    pub skin_component: Arc<SkinComponent>,
+    pub ty: Arc<SkinType>,
     pub display_name: String,
     pub layer: f32,
     pub nodes: Vec<PlaNode>,
@@ -159,7 +159,7 @@ impl PlaComponent {
             Self {
                 namespace,
                 id,
-                skin_component,
+                ty: skin_component,
                 display_name,
                 layer,
                 nodes,
@@ -203,7 +203,7 @@ impl PlaComponent {
             .chain([
                 ("display_name".into(), self.display_name.clone().into()),
                 ("layer".into(), self.layer.into()),
-                ("type".into(), self.skin_component.name().as_str().into()),
+                ("type".into(), self.ty.name().as_str().into()),
             ])
             .collect::<toml::Table>();
         out += &toml::to_string_pretty(&attrs)?;

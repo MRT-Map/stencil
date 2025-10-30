@@ -181,7 +181,7 @@ pub enum PointStyle {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "shape")]
-pub enum SkinComponent {
+pub enum SkinType {
     #[serde(rename = "point")]
     Point {
         name: String,
@@ -201,7 +201,7 @@ pub enum SkinComponent {
         styles: HashMap<String, Vec<AreaStyle>>,
     },
 }
-impl SkinComponent {
+impl SkinType {
     #[must_use]
     pub const fn name(&self) -> &String {
         match self {
@@ -366,7 +366,7 @@ impl SkinComponent {
 pub struct Skin {
     pub version: u8,
     pub name: String,
-    pub types: Vec<Arc<SkinComponent>>,
+    pub types: Vec<Arc<SkinType>>,
     pub font_files: Vec<(String, String)>,
     pub font_string: String,
     #[serde(
@@ -376,13 +376,14 @@ pub struct Skin {
     pub background: egui::Color32,
     pub prune_small_text: Option<f32>,
     pub licence: String,
-    #[serde(skip_deserializing)]
+
+    #[serde(default)]
     pub order: HashMap<String, usize>,
 }
 
 impl Skin {
     #[must_use]
-    pub fn get_type(&self, ty: &str) -> Option<&Arc<SkinComponent>> {
+    pub fn get_type(&self, ty: &str) -> Option<&Arc<SkinType>> {
         self.types.iter().find(|a| a.name() == ty)
     }
     #[must_use]
@@ -391,7 +392,7 @@ impl Skin {
         ty: &str,
         ui: &egui::Ui,
         text_style: &egui::TextStyle,
-    ) -> impl Into<egui::WidgetText> {
+    ) -> impl Into<egui::WidgetText> + use<> {
         self.get_type(ty).map_or_else(
             || egui::WidgetText::from(ty),
             |a| a.widget_text(ui, text_style).into(),

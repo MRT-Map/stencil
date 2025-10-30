@@ -2,7 +2,7 @@ use std::{cmp::Ordering, sync::Arc};
 
 use itertools::Itertools;
 
-use crate::project::{Project, pla3::PlaComponent, skin::Skin};
+use crate::project::{pla3::PlaComponent, skin::Skin};
 
 #[derive(Debug, Clone, Default)]
 pub struct ComponentList(Vec<ComponentListItem>);
@@ -38,7 +38,7 @@ impl Ord for ComponentListItem {
 impl ComponentListItem {
     fn from_component(item: PlaComponent, skin: &Skin) -> Self {
         Self {
-            order: skin.order[item.skin_component.name()],
+            order: skin.order[item.ty.name()],
             value: Arc::new(item),
         }
     }
@@ -105,15 +105,13 @@ impl ComponentList {
             .0
             .iter_mut()
             .map(|ComponentListItem { value, order }| {
-                let old_component_type = Arc::clone(&value.skin_component);
+                let old_component_type = Arc::clone(&value.ty);
                 let old_layer = value.layer;
                 let out = f(value);
 
                 #[expect(clippy::float_cmp)]
-                if !Arc::ptr_eq(&old_component_type, &value.skin_component)
-                    || old_layer != value.layer
-                {
-                    *order = skin.order[value.skin_component.name()];
+                if !Arc::ptr_eq(&old_component_type, &value.ty) || old_layer != value.layer {
+                    *order = skin.order[value.ty.name()];
                     reorders.push(Arc::clone(value));
                 }
 

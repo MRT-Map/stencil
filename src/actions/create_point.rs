@@ -16,6 +16,17 @@ impl MapWindow {
         response: &egui::Response,
         cursor_world_pos: geo::Coord<f32>,
     ) {
+        if app.project.skin().is_none() || app.project.new_component_ns.is_empty() {
+            return;
+        }
+        let Some(ty) = self
+            .created_point_type
+            .as_ref()
+            .or_else(|| app.project.skin().and_then(|a| a.get_type("simplePoint")))
+        else {
+            return;
+        };
+
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
         }
@@ -26,9 +37,7 @@ impl MapWindow {
         let component = PlaComponent {
             namespace: app.project.new_component_ns.clone(),
             id: Alphanumeric.sample_string(&mut rand::rng(), 16),
-            skin_component: Arc::clone(
-                app.project.skin().unwrap().get_type("simplePoint").unwrap(),
-            ),
+            ty: Arc::clone(ty),
             display_name: String::new(),
             layer: 0.0,
             nodes: vec![PlaNode::Line { coord, label: None }],

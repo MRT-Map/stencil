@@ -234,7 +234,7 @@ impl Project {
 
         errors
     }
-    pub fn save_components<'a, C: Iterator<Item = impl AsRef<PlaComponent>>>(
+    pub fn save_components<C: Iterator<Item = P>, P: AsRef<PlaComponent>>(
         &self,
         components: C,
     ) -> Vec<Report> {

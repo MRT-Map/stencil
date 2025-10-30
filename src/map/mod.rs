@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
@@ -9,7 +11,7 @@ use crate::{
         tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
     mode::EditorMode,
-    project::{SkinStatus, pla3::PlaNode},
+    project::{SkinStatus, pla3::PlaNode, skin::SkinType},
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -25,6 +27,9 @@ pub struct MapWindow {
     pub zoom: f32,
     pub prev_cursor_world_pos: Option<geo::Coord<f32>>,
     pub created_nodes: Vec<PlaNode>,
+    pub created_point_type: Option<Arc<SkinType>>,
+    pub created_line_type: Option<Arc<SkinType>>,
+    pub created_area_type: Option<Arc<SkinType>>,
 }
 
 impl Default for MapWindow {
@@ -34,6 +39,9 @@ impl Default for MapWindow {
             zoom: 0.0,
             prev_cursor_world_pos: None,
             created_nodes: Vec::new(),
+            created_point_type: None,
+            created_line_type: None,
+            created_area_type: None,
         }
     }
 }
