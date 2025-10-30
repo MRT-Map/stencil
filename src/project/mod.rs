@@ -1,4 +1,5 @@
 pub mod component_editor;
+pub mod component_list;
 pub mod pla3;
 pub mod project_editor;
 pub mod skin;
@@ -16,7 +17,7 @@ use crate::{
     EXECUTOR, URL_REPLACER,
     file::cache_dir,
     map::basemap::Basemap,
-    project::{pla3::PlaComponent, skin::Skin},
+    project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
 };
 
 #[derive(Debug, Default)]
@@ -25,7 +26,7 @@ pub enum SkinStatus {
     Unloaded,
     Loading(Task<surf::Result<Skin>>),
     Failed(surf::Error),
-    Loaded(Skin),
+    Loaded(&'static Skin),
 }
 
 #[derive(Debug)]
@@ -33,7 +34,7 @@ pub struct Project {
     pub basemap: Basemap,
     pub skin_status: SkinStatus,
     pub skin_url: String,
-    pub components: Vec<PlaComponent>,
+    pub components: ComponentList,
     pub namespaces: HashMap<String, bool>,
     pub new_component_ns: String,
     pub path: Option<PathBuf>,
@@ -45,7 +46,7 @@ impl Default for Project {
             basemap: Basemap::default(),
             skin_status: SkinStatus::default(),
             skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
-            components: Vec::new(),
+            components: ComponentList::default(),
             namespaces: HashMap::default(),
             new_component_ns: String::new(),
             path: None,
@@ -54,17 +55,14 @@ impl Default for Project {
 }
 
 impl Project {
-    pub const fn skin(&self) -> Option<&Skin> {
+    pub const fn skin(&self) -> Option<&'static Skin> {
         match &self.skin_status {
             SkinStatus::Loaded(skin) => Some(skin),
             _ => None,
         }
     }
     pub fn skin_cache_path(&self) -> PathBuf {
-        cache_dir("skin").join(format!(
-            "{}.json",
-            URL_REPLACER.replace_all(&self.skin_url, "")
-        ))
+        cache_dir("skin").join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
     }
     pub fn load_skin(&mut self, ctx: &egui::Context) {
         match &mut self.skin_status {
@@ -78,7 +76,7 @@ impl Project {
                     })
                 {
                     info!(?skin_cache, "Loaded skin cache");
-                    self.skin_status = SkinStatus::Loaded(skin);
+                    self.skin_status = SkinStatus::Loaded(Box::leak(skin));
                     return;
                 }
 
@@ -93,7 +91,8 @@ impl Project {
                 self.skin_status = SkinStatus::Loading(task);
             }
             SkinStatus::Loading(task) => match future::block_on(future::poll_once(task)) {
-                Some(Ok(skin)) => {
+                Some(Ok(mut skin)) => {
+                    skin.setup_order_cache();
                     info!("Skin loaded");
 
                     let skin_cache = self.skin_cache_path();
@@ -106,7 +105,7 @@ impl Project {
                         info!(?skin_cache, "Wrote skin to cache file");
                     }
 
-                    self.skin_status = SkinStatus::Loaded(skin);
+                    self.skin_status = SkinStatus::Loaded(Box::leak(skin.into()));
                 }
                 Some(Err(e)) => {
                     error!("Skin failed to load: {e:?}");
@@ -206,7 +205,7 @@ impl Project {
                     if let Some(e) = unknown_type_error {
                         errors.push(e);
                     }
-                    self.components.push(component);
+                    self.components.insert(self.skin().unwrap(), component);
                 }
                 Err(e) => errors.push(e),
             }
@@ -231,11 +230,11 @@ impl Project {
             errors.push(e);
         }
 
-        errors.extend(self.save_components(&self.components));
+        errors.extend(self.save_components(self.components.iter()));
 
         errors
     }
-    pub fn save_components<'a, C: IntoIterator<Item = &'a PlaComponent>>(
+    pub fn save_components<'a, C: Iterator<Item = impl AsRef<PlaComponent>>>(
         &self,
         components: C,
     ) -> Vec<Report> {
@@ -245,10 +244,9 @@ impl Project {
         let mut errors = Vec::new();
 
         for component in components {
-            if let Err(e) = component
-                .save_to_string()
-                .and_then(|s| std::fs::write(component.path(path), s).map_err(Report::from))
-            {
+            if let Err(e) = component.as_ref().save_to_string().and_then(|s| {
+                std::fs::write(component.as_ref().path(path), s).map_err(Report::from)
+            }) {
                 errors.push(e);
             }
         }

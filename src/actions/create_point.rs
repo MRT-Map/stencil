@@ -36,6 +36,8 @@ impl MapWindow {
         };
         info!(?coord, %component, "Created new point");
 
-        app.project.components.push(component);
+        app.project
+            .components
+            .insert(app.project.skin().unwrap(), component);
     }
 }

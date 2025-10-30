@@ -376,6 +376,8 @@ pub struct Skin {
     pub background: egui::Color32,
     pub prune_small_text: Option<f32>,
     pub licence: String,
+    #[serde(skip_deserializing)]
+    pub order: HashMap<String, usize>,
 }
 
 impl Skin {
@@ -389,14 +391,18 @@ impl Skin {
         ty: &str,
         ui: &egui::Ui,
         text_style: &egui::TextStyle,
-    ) -> impl Into<egui::WidgetText> + use<> {
+    ) -> impl Into<egui::WidgetText> {
         self.get_type(ty).map_or_else(
             || egui::WidgetText::from(ty),
             |a| a.widget_text(ui, text_style).into(),
         )
     }
-    #[must_use]
-    pub fn get_order(&self, ty: &str) -> Option<usize> {
-        self.types.iter().position(|a| a.name() == ty)
+    pub fn setup_order_cache(&mut self) {
+        self.order = self
+            .types
+            .iter()
+            .enumerate()
+            .map(|(i, a)| (a.name().into(), i))
+            .collect();
     }
 }

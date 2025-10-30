@@ -241,8 +241,7 @@ impl Event for ProjectEv {
                     .project
                     .components
                     .iter()
-                    .filter(|a| a.namespace == namespace)
-                    .collect::<Vec<_>>();
+                    .filter(|a| a.namespace == namespace);
                 let errors = app.project.save_components(components);
                 if !errors.is_empty() {
                     app.ui.notifs.push_errors(
@@ -252,7 +251,7 @@ impl Event for ProjectEv {
                     );
                     return;
                 }
-                app.project.components.retain(|a| a.namespace != namespace);
+                app.project.components.remove_namespace(&namespace);
                 app.ui
                     .notifs
                     .push(format!("Hid namespace `{namespace}`"), ToastLevel::Success);
@@ -291,7 +290,7 @@ impl Event for ProjectEv {
                 if let Some(path) = &app.project.path {
                     let _ = safe_delete(path.join(&namespace), &mut app.ui.notifs);
                 }
-                app.project.components.retain(|a| a.namespace != namespace);
+                app.project.components.remove_namespace(&namespace);
                 app.project.namespaces.remove(&namespace);
                 app.ui.notifs.push(
                     format!("Deleted namespace `{namespace}`"),
