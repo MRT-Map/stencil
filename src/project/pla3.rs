@@ -270,16 +270,16 @@ impl PlaComponent {
 
         let mut cmp = |coord: geo::Coord<i32>| {
             if (coord.x as f32) < x_min {
-                x_min = coord.x as f32
+                x_min = coord.x as f32;
             }
             if (coord.x as f32) > x_max {
-                x_max = coord.x as f32
+                x_max = coord.x as f32;
             }
             if (coord.y as f32) < y_min {
-                y_min = coord.y as f32
+                y_min = coord.y as f32;
             }
             if (coord.y as f32) > y_max {
-                y_max = coord.y as f32
+                y_max = coord.y as f32;
             }
         };
 

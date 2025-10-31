@@ -1,12 +1,12 @@
 use std::{borrow::Cow, sync::Arc};
 
-use geo::{BooleanOps, Buffer, Distance, EuclideanDistance, Intersects, MapCoords};
+use geo::Distance;
 
 use crate::{
     App,
-    map::{MapWindow, tile_coord::TextureIdResult},
+    map::MapWindow,
     project::{
-        pla3::{PlaComponent, PlaNode, PlaNodeScreen},
+        pla3::{PlaComponent, PlaNodeScreen},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
     },
 };
@@ -24,9 +24,9 @@ macro_rules! hovering {
 }
 
 impl MapWindow {
-    pub fn paint_components<'a>(
+    pub fn paint_components(
         &mut self,
-        app: &'a App,
+        app: &App,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
@@ -39,7 +39,7 @@ impl MapWindow {
                 hovered = Some(component);
             }
         }
-        if let Some(hovered) = hovered {
+        if let Some(_hovered) = hovered {
             // todo
         }
 
@@ -68,7 +68,7 @@ impl MapWindow {
         let mut screen_coords = component
             .nodes
             .iter()
-            .map(|a| a.to_screen(app, &self, response.rect.center()));
+            .map(|a| a.to_screen(app, self, response.rect.center()));
         match &*component.ty {
             SkinType::Point { styles, .. } => {
                 let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
@@ -77,13 +77,13 @@ impl MapWindow {
                 let PlaNodeScreen::Line { coord, .. } = screen_coords.next().unwrap() else {
                     unreachable!();
                 };
-                self.paint_point(ui, response, painter, detect_hovered, coord, style)
+                Self::paint_point(ui, response, painter, detect_hovered, coord, style)
             }
             SkinType::Line { styles, .. } => {
                 let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
                     return false;
                 };
-                self.paint_line(
+                Self::paint_line(
                     response,
                     painter,
                     detect_hovered,
@@ -95,7 +95,7 @@ impl MapWindow {
                 let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
                     return false;
                 };
-                self.paint_area(
+                Self::paint_area(
                     response,
                     painter,
                     detect_hovered,
@@ -106,7 +106,6 @@ impl MapWindow {
         }
     }
     pub fn paint_area(
-        &self,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
@@ -223,7 +222,6 @@ impl MapWindow {
         detect_hovered && is_hovered
     }
     pub fn paint_line(
-        &self,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
@@ -340,7 +338,6 @@ impl MapWindow {
         detect_hovered && is_hovered
     }
     pub fn paint_point(
-        &self,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,

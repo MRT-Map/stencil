@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use rand::distr::{Alphanumeric, SampleString};
 use tracing::info;
 
 use crate::{
@@ -41,7 +40,7 @@ impl MapWindow {
             return;
         };
 
-        self.paint_point(ui, response, painter, false, hover_pos, style);
+        Self::paint_point(ui, response, painter, false, hover_pos, style);
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;

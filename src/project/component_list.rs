@@ -133,8 +133,7 @@ impl ComponentList {
         if self
             .0
             .iter()
-            .find(|a| a.value.namespace == namespace && a.value.id == id)
-            .is_some()
+            .any(|a| a.value.namespace == namespace && a.value.id == id)
         {
             return self.get_new_id(namespace);
         }
