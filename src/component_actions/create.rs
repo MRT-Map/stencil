@@ -6,19 +6,26 @@ use tracing::info;
 use crate::{
     App,
     map::MapWindow,
-    project::pla3::{PlaComponent, PlaNode},
+    project::{
+        pla3::{PlaComponent, PlaNode},
+        skin::SkinType,
+    },
 };
 
 impl MapWindow {
     pub fn create_point(
         &self,
         app: &mut App,
+        ui: &egui::Ui,
         response: &egui::Response,
-        cursor_world_pos: geo::Coord<f32>,
+        painter: &egui::Painter,
     ) {
         if app.project.skin().is_none() || app.project.new_component_ns.is_empty() {
             return;
         }
+        let Some(hover_pos) = response.hover_pos() else {
+            return;
+        };
         let Some(ty) = self
             .created_point_type
             .as_ref()
@@ -26,17 +33,29 @@ impl MapWindow {
         else {
             return;
         };
+        let SkinType::Point { styles, .. } = &**ty else {
+            return;
+        };
+
+        let Some(style) = SkinType::style_in_zoom_level(styles, self.zoom_level(app)) else {
+            return;
+        };
+
+        self.paint_point(ui, response, painter, false, hover_pos, style);
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
         }
-        let coord = geo::Coord::from((
-            cursor_world_pos.x.round() as i32,
-            cursor_world_pos.y.round() as i32,
-        ));
+        let coord = geo::coord! {
+            x: self.cursor_world_pos.unwrap().x.round() as i32,
+            y: self.cursor_world_pos.unwrap().y.round() as i32,
+        };
         let component = PlaComponent {
             namespace: app.project.new_component_ns.clone(),
-            id: Alphanumeric.sample_string(&mut rand::rng(), 16),
+            id: app
+                .project
+                .components
+                .get_new_id(&app.project.new_component_ns),
             ty: Arc::clone(ty),
             display_name: String::new(),
             layer: 0.0,

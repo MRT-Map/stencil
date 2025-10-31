@@ -1,6 +1,7 @@
 use std::{cmp::Ordering, sync::Arc};
 
 use itertools::Itertools;
+use rand::distr::{Alphanumeric, SampleString};
 
 use crate::project::{pla3::PlaComponent, skin::Skin};
 
@@ -126,5 +127,17 @@ impl ComponentList {
     }
     pub fn remove_namespace(&mut self, namespace: &str) {
         self.0.retain(|a| a.value.namespace != namespace);
+    }
+    pub fn get_new_id(&self, namespace: &str) -> String {
+        let id = Alphanumeric.sample_string(&mut rand::rng(), 16);
+        if self
+            .0
+            .iter()
+            .find(|a| a.value.namespace == namespace && a.value.id == id)
+            .is_some()
+        {
+            return self.get_new_id(namespace);
+        }
+        id
     }
 }

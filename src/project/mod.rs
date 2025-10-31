@@ -47,7 +47,7 @@ impl Default for Project {
             skin_status: SkinStatus::default(),
             skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
             components: ComponentList::default(),
-            namespaces: HashMap::default(),
+            namespaces: HashMap::from_iter([("default".into(), true)]),
             new_component_ns: String::new(),
             path: None,
         }

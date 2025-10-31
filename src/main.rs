@@ -1,4 +1,4 @@
-mod actions;
+mod component_actions;
 mod event;
 mod file;
 mod info_windows;

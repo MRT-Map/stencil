@@ -162,7 +162,7 @@ impl MapWindow {
                         info!("Resetting view");
                         self.reset(app);
                     }
-                    if let Some(prev_cursor_world_pos) = self.prev_cursor_world_pos {
+                    if let Some(prev_cursor_world_pos) = self.cursor_world_pos {
                         ui.label(format!(
                             "x: {} z: {} \u{1f50d}: {:.2}",
                             prev_cursor_world_pos.x.round() as i32,

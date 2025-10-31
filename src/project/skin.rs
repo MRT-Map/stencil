@@ -1,8 +1,12 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, ops::RangeInclusive, sync::Arc};
 
 use base64::engine::general_purpose::STANDARD;
 use base64_serde::base64_serde_type;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Unexpected};
+use itertools::Itertools;
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
+    de::{DeserializeOwned, Unexpected},
+};
 
 base64_serde_type!(Base64Standard, STANDARD);
 
@@ -25,7 +29,7 @@ fn deserialise_option_color32<'de, D: Deserializer<'de>>(
     };
     egui::Color32::from_hex(s).map_or_else(
         |_| {
-            Err(<D::Error as serde::de::Error>::invalid_value(
+            Err(serde::de::Error::invalid_value(
                 Unexpected::Str(s),
                 &"valid hex",
             ))
@@ -38,13 +42,47 @@ fn deserialise_color32<'de, D: Deserializer<'de>>(de: D) -> Result<egui::Color32
 
     egui::Color32::from_hex(s).map_or_else(
         |_| {
-            Err(<D::Error as serde::de::Error>::invalid_value(
+            Err(serde::de::Error::invalid_value(
                 Unexpected::Str(s),
                 &"valid hex",
             ))
         },
         Ok,
     )
+}
+fn serialise_styles<S: Serializer, T: Serialize>(
+    map: &HashMap<(u8, u8), T>,
+    ser: S,
+) -> Result<S::Ok, S::Error> {
+    map.iter()
+        .map(|((k1, k2), v)| (format!("{k1}-{k2}"), v))
+        .collect::<HashMap<_, _>>()
+        .serialize(ser)
+}
+fn deserialise_styles<'de, D: Deserializer<'de>, T: DeserializeOwned>(
+    de: D,
+) -> Result<HashMap<(u8, u8), T>, D::Error> {
+    HashMap::<String, T>::deserialize(de)?
+        .into_iter()
+        .map(|(k, v)| {
+            Ok((
+                {
+                    let (k1, k2) = k.split('-').collect_tuple().ok_or_else(|| {
+                        serde::de::Error::invalid_type(Unexpected::Str(&k), &"zoom level range")
+                    })?;
+                    (
+                        k1.parse::<u8>().map_err(serde::de::Error::custom)?,
+                        if k2.is_empty() {
+                            u8::MAX
+                        } else {
+                            k2.parse::<u8>().map_err(serde::de::Error::custom)?
+                        },
+                    )
+                },
+                v,
+            ))
+        })
+        .collect()
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -186,19 +224,31 @@ pub enum SkinType {
     Point {
         name: String,
         tags: Vec<String>,
-        styles: HashMap<String, Vec<PointStyle>>,
+        #[serde(
+            serialize_with = "serialise_styles",
+            deserialize_with = "deserialise_styles"
+        )]
+        styles: HashMap<(u8, u8), Vec<PointStyle>>,
     },
     #[serde(rename = "line")]
     Line {
         name: String,
         tags: Vec<String>,
-        styles: HashMap<String, Vec<LineStyle>>,
+        #[serde(
+            serialize_with = "serialise_styles",
+            deserialize_with = "deserialise_styles"
+        )]
+        styles: HashMap<(u8, u8), Vec<LineStyle>>,
     },
     #[serde(rename = "area")]
     Area {
         name: String,
         tags: Vec<String>,
-        styles: HashMap<String, Vec<AreaStyle>>,
+        #[serde(
+            serialize_with = "serialise_styles",
+            deserialize_with = "deserialise_styles"
+        )]
+        styles: HashMap<(u8, u8), Vec<AreaStyle>>,
     },
 }
 impl SkinType {
@@ -214,14 +264,17 @@ impl SkinType {
             Self::Point { tags, .. } | Self::Line { tags, .. } | Self::Area { tags, .. } => tags,
         }
     }
-    fn style_in_max_zoom<T>(style: &HashMap<String, Vec<T>>) -> Option<&Vec<T>> {
-        Some(
-            style
-                .iter()
-                .map(|(zl, v)| (zl.split('-').next().unwrap().parse::<u8>().unwrap(), v))
-                .find(|(min, _)| *min == 0)?
-                .1,
-        )
+    pub fn style_in_zoom_level<T>(
+        style: &HashMap<(u8, u8), Vec<T>>,
+        zoom_level: u8,
+    ) -> Option<&Vec<T>> {
+        style
+            .iter()
+            .find(|((min, max), _)| (*min..=*max).contains(&zoom_level))
+            .map(|(_, v)| v)
+    }
+    fn style_in_max_zoom<T>(style: &HashMap<(u8, u8), Vec<T>>) -> Option<&Vec<T>> {
+        style.iter().find(|((min, _), _)| *min == 0).map(|(_, v)| v)
     }
 
     #[must_use]

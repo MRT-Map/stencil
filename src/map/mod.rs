@@ -11,7 +11,11 @@ use crate::{
         tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     },
     mode::EditorMode,
-    project::{SkinStatus, pla3::PlaNode, skin::SkinType},
+    project::{
+        SkinStatus,
+        pla3::{PlaComponent, PlaNode},
+        skin::SkinType,
+    },
     shortcut::ShortcutAction,
     ui::dock::{DockLayout, DockWindow, DockWindows},
 };
@@ -25,11 +29,16 @@ pub mod toolbar;
 pub struct MapWindow {
     pub centre_coord: geo::Coord<f32>,
     pub zoom: f32,
-    pub prev_cursor_world_pos: Option<geo::Coord<f32>>,
+    pub cursor_world_pos: Option<geo::Coord<f32>>,
     pub created_nodes: Vec<PlaNode>,
+    #[serde(skip)]
     pub created_point_type: Option<Arc<SkinType>>,
+    #[serde(skip)]
     pub created_line_type: Option<Arc<SkinType>>,
+    #[serde(skip)]
     pub created_area_type: Option<Arc<SkinType>>,
+    #[serde(skip)]
+    pub hovered_component: Option<Arc<PlaComponent>>,
 }
 
 impl Default for MapWindow {
@@ -37,11 +46,12 @@ impl Default for MapWindow {
         Self {
             centre_coord: geo::Coord::<f32>::default(),
             zoom: 0.0,
-            prev_cursor_world_pos: None,
+            cursor_world_pos: None,
             created_nodes: Vec::new(),
             created_point_type: None,
             created_line_type: None,
             created_area_type: None,
+            hovered_component: None,
         }
     }
 }
@@ -90,6 +100,7 @@ impl DockWindow for MapWindow {
 
         self.tiles(app, ui, &response, &painter);
         self.interaction(app, ui, &response);
+        self.components(app, ui, &response, &painter);
         self.cursor(app, ui, &response, &painter);
     }
 }
@@ -174,7 +185,11 @@ impl MapWindow {
         }
         match app.mode {
             EditorMode::Select | EditorMode::Nodes => {
-                ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
+                if self.hovered_component.is_some() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                } else {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
+                }
             }
             EditorMode::CreateArea | EditorMode::CreateLine | EditorMode::CreatePoint => {
                 let tooltip = |text: &str| {
@@ -250,7 +265,7 @@ impl MapWindow {
     }
     fn interaction(&mut self, app: &mut App, ui: &egui::Ui, response: &egui::Response) {
         let Some(hover_pos) = response.hover_pos() else {
-            self.prev_cursor_world_pos = None;
+            self.cursor_world_pos = None;
             return;
         };
         let mut cursor_world_pos = self.screen_to_world(app, response.rect.center(), hover_pos);
@@ -318,11 +333,20 @@ impl MapWindow {
         self.centre_coord.x += translation.x;
         self.centre_coord.y += translation.y;
 
-        self.prev_cursor_world_pos = Some(cursor_world_pos);
+        self.cursor_world_pos = Some(cursor_world_pos);
+    }
+    fn components(
+        &mut self,
+        app: &mut App,
+        ui: &egui::Ui,
+        response: &egui::Response,
+        painter: &egui::Painter,
+    ) {
+        self.paint_components(app, ui, response, painter);
 
         #[expect(clippy::single_match)]
         match app.mode {
-            EditorMode::CreatePoint => self.create_point(app, response, cursor_world_pos),
+            EditorMode::CreatePoint => self.create_point(app, ui, response, painter),
             _ => {}
         }
     }
@@ -376,5 +400,11 @@ impl MapWindow {
             self.screen_to_world(app, map_rect.center(), map_rect.min),
             self.screen_to_world(app, map_rect.center(), map_rect.max),
         )
+    }
+
+    pub fn zoom_level(&self, app: &App) -> u8 {
+        (app.project.basemap.max_tile_zoom - self.zoom.round() as i8)
+            .max(0)
+            .cast_unsigned()
     }
 }

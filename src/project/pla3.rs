@@ -1,39 +1,85 @@
 use std::{
     collections::HashMap,
-    fmt::{Display, Formatter, Write},
+    fmt::{Debug, Display, Formatter, Write},
     path::{Path, PathBuf},
     sync::Arc,
 };
 
 use eyre::{ContextCompat, Report, Result, eyre};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
-use crate::project::{Project, skin::SkinType};
+use crate::{
+    App,
+    map::MapWindow,
+    project::{Project, skin::SkinType},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PlaNode {
+#[serde(bound = "T: Serialize + DeserializeOwned")]
+pub enum PlaNodeBase<T: Debug + Clone + Copy + PartialEq + Eq> {
     Line {
         label: Option<u8>,
-        coord: geo::Coord<i32>,
+        coord: T,
     },
     QuadraticBezier {
         label: Option<u8>,
-        ctrl: geo::Coord<i32>,
-        coord: geo::Coord<i32>,
+        ctrl: T,
+        coord: T,
     },
     CubicBezier {
         label: Option<u8>,
-        ctrl1: geo::Coord<i32>,
-        ctrl2: geo::Coord<i32>,
-        coord: geo::Coord<i32>,
+        ctrl1: T,
+        ctrl2: T,
+        coord: T,
     },
 }
+pub type PlaNode = PlaNodeBase<geo::Coord<i32>>;
+pub type PlaNodeScreen = PlaNodeBase<egui::Pos2>;
 impl PlaNode {
     pub const fn label(self) -> Option<u8> {
         match self {
             Self::Line { label, .. }
             | Self::QuadraticBezier { label, .. }
             | Self::CubicBezier { label, .. } => label,
+        }
+    }
+    pub fn to_screen(
+        self,
+        app: &App,
+        map_window: &MapWindow,
+        map_centre: egui::Pos2,
+    ) -> PlaNodeScreen {
+        let world_to_screen = |coord: geo::Coord<i32>| {
+            map_window.world_to_screen(
+                app,
+                map_centre,
+                geo::coord! {
+                    x: coord.x as f32,
+                    y: coord.y as f32,
+                },
+            )
+        };
+        match self {
+            Self::Line { coord, label } => PlaNodeScreen::Line {
+                coord: world_to_screen(coord),
+                label,
+            },
+            Self::QuadraticBezier { ctrl, coord, label } => PlaNodeBase::QuadraticBezier {
+                ctrl: world_to_screen(ctrl),
+                coord: world_to_screen(coord),
+                label,
+            },
+            Self::CubicBezier {
+                ctrl1,
+                ctrl2,
+                coord,
+                label,
+            } => PlaNodeBase::CubicBezier {
+                ctrl1: world_to_screen(ctrl1),
+                ctrl2: world_to_screen(ctrl2),
+                coord: world_to_screen(coord),
+                label,
+            },
         }
     }
 }
@@ -111,8 +157,15 @@ impl PlaComponent {
                     len => Err(eyre!("`{node_str}` has invalid split length {len}")),
                 }
             })
-            .filter_map(std::result::Result::transpose)
+            .filter_map(Result::transpose)
             .collect::<Result<Vec<_>>>()?;
+
+        if !matches!(nodes.first(), Some(PlaNode::Line { .. })) {
+            return Err(eyre!(
+                "First node must exist and not be a curve (Got {:?})",
+                nodes.first()
+            ));
+        }
 
         let mut display_name = String::new();
         let mut layer = 0.0f32;
@@ -208,5 +261,51 @@ impl PlaComponent {
             .collect::<toml::Table>();
         out += &toml::to_string_pretty(&attrs)?;
         Ok(out)
+    }
+    pub fn bounding_rect(&self) -> geo::Rect<f32> {
+        let mut x_min = f32::MAX;
+        let mut x_max = f32::MIN;
+        let mut y_min = f32::MAX;
+        let mut y_max = f32::MIN;
+
+        let mut cmp = |coord: geo::Coord<i32>| {
+            if (coord.x as f32) < x_min {
+                x_min = coord.x as f32
+            }
+            if (coord.x as f32) > x_max {
+                x_max = coord.x as f32
+            }
+            if (coord.y as f32) < y_min {
+                y_min = coord.y as f32
+            }
+            if (coord.y as f32) > y_max {
+                y_max = coord.y as f32
+            }
+        };
+
+        for node in &self.nodes {
+            match node {
+                PlaNode::Line { coord, .. } => cmp(*coord),
+                PlaNode::QuadraticBezier { ctrl, coord, .. } => {
+                    cmp(*ctrl);
+                    cmp(*coord);
+                }
+                PlaNode::CubicBezier {
+                    ctrl1,
+                    ctrl2,
+                    coord,
+                    ..
+                } => {
+                    cmp(*ctrl1);
+                    cmp(*ctrl2);
+                    cmp(*coord);
+                }
+            }
+        }
+
+        geo::Rect::new(
+            geo::coord! {x: x_min, y: y_min},
+            geo::coord! {x: x_max, y: y_max},
+        )
     }
 }
