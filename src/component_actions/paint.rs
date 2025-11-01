@@ -138,6 +138,32 @@ impl MapWindow {
         ));
         dashes
     }
+    fn image_shape_from_bytes(
+        ui: &egui::Ui,
+        uri: impl Into<Cow<'static, str>>,
+        bytes: impl Into<egui::load::Bytes>,
+        rect: egui::Rect,
+    ) -> Option<egui::Shape> {
+        let texture_id = egui::ImageSource::Bytes {
+            uri: uri.into(),
+            bytes: bytes.into(),
+        }
+        .load(
+            ui.ctx(),
+            egui::TextureOptions::LINEAR,
+            egui::SizeHint::Scale(2.0.into()),
+        )
+        .inspect_err(|e| error!("{e:?}"))
+        .ok()
+        .and_then(|a| a.texture_id())?;
+
+        Some(egui::Shape::image(
+            texture_id,
+            rect,
+            egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+            egui::Color32::WHITE,
+        ))
+    }
     pub fn paint_area(
         ui: &egui::Ui,
         response: &egui::Response,
@@ -421,35 +447,21 @@ impl MapWindow {
                     extension,
                     ..
                 } => {
-                    let Some(texture_id) = egui::ImageSource::Bytes {
-                        uri: format!(
+                    let Some(shape) = Self::image_shape_from_bytes(
+                        ui,
+                        format!(
                             "{style_name}.{}",
                             if extension == "svg+xml" {
                                 "svg"
                             } else {
                                 &extension
                             }
-                        )
-                        .into(),
-                        bytes: image.clone().into(),
-                    }
-                    .load(
-                        ui.ctx(),
-                        egui::TextureOptions::LINEAR,
-                        egui::SizeHint::Scale(2.0.into()),
-                    )
-                    .inspect_err(|e| error!("{e:?} {extension}"))
-                    .ok()
-                    .and_then(|a| a.texture_id()) else {
+                        ),
+                        image.clone(),
+                        egui::Rect::from_center_size(coord + *offset, *size * 4.0),
+                    ) else {
                         continue;
                     };
-
-                    let shape = egui::Shape::image(
-                        texture_id,
-                        egui::Rect::from_center_size(coord + *offset, *size * 4.0),
-                        egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-                        egui::Color32::WHITE,
-                    );
                     if !is_hovered
                         && let Some(hover_pos) = response.hover_pos()
                         && shape.visual_bounding_rect().contains(hover_pos)
