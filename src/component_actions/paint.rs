@@ -1,6 +1,7 @@
 use std::{borrow::Cow, sync::Arc};
 
 use geo::Distance;
+use tracing::error;
 
 use crate::{
     App,
@@ -31,19 +32,26 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        let mut hovered = None;
+        let mut hovered_shape = None;
+        self.hovered_component = None;
         for component in app.project.components.iter() {
-            let is_hovered =
-                self.paint_component(app, ui, response, painter, hovered.is_none(), component);
-            if is_hovered {
-                hovered = Some(component);
+            let shape = self.paint_component(
+                app,
+                ui,
+                response,
+                painter,
+                hovered_shape.is_none(),
+                component,
+            );
+            if shape.is_some() {
+                self.hovered_component = Some(Arc::clone(component));
+                hovered_shape = shape;
             }
         }
-        if let Some(_hovered) = hovered {
-            // todo
+        if let Some(hovered_shape) = hovered_shape {
+            painter.add(hovered_shape);
+            ui.ctx().request_repaint_after_secs(0.5);
         }
-
-        self.hovered_component = hovered.map(Arc::clone);
     }
     pub fn paint_component(
         &self,
@@ -53,7 +61,7 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         component: &PlaComponent,
-    ) -> bool {
+    ) -> Option<Vec<egui::Shape>> {
         let bounding_rect = component.bounding_rect();
         let world_boundaries = self.map_world_boundaries(app, response.rect);
         if world_boundaries.max().x < bounding_rect.min().x
@@ -61,7 +69,7 @@ impl MapWindow {
             || world_boundaries.max().y < bounding_rect.min().y
             || bounding_rect.max().y < world_boundaries.min().y
         {
-            return false;
+            return None;
         }
 
         let zl = self.zoom_level(app);
@@ -70,20 +78,29 @@ impl MapWindow {
             .iter()
             .map(|a| a.to_screen(app, self, response.rect.center()));
         match &*component.ty {
-            SkinType::Point { styles, .. } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return false;
-                };
+            SkinType::Point {
+                styles,
+                name: style_name,
+                ..
+            } => {
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
                 let PlaNodeScreen::Line { coord, .. } = screen_coords.next().unwrap() else {
                     unreachable!();
                 };
-                Self::paint_point(ui, response, painter, detect_hovered, coord, style)
+                Self::paint_point(
+                    ui,
+                    response,
+                    painter,
+                    detect_hovered,
+                    coord,
+                    style_name,
+                    style,
+                )
             }
             SkinType::Line { styles, .. } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return false;
-                };
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
                 Self::paint_line(
+                    ui,
                     response,
                     painter,
                     detect_hovered,
@@ -92,10 +109,9 @@ impl MapWindow {
                 )
             }
             SkinType::Area { styles, .. } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return false;
-                };
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
                 Self::paint_area(
+                    ui,
                     response,
                     painter,
                     detect_hovered,
@@ -105,14 +121,35 @@ impl MapWindow {
             }
         }
     }
+    fn hover_dash(ui: &egui::Ui, path: &[egui::Pos2]) -> Vec<egui::Shape> {
+        let mut dashes = egui::Shape::dashed_line_with_offset(
+            path,
+            egui::Stroke::new(6.0, egui::Color32::BLACK),
+            &[8.0],
+            &[8.0],
+            ui.ctx().input(|a| a.time * 4.0 % 16.0) as f32,
+        );
+        dashes.extend(egui::Shape::dashed_line_with_offset(
+            path,
+            egui::Stroke::new(2.0, egui::Color32::WHITE),
+            &[8.0],
+            &[8.0],
+            ui.ctx().input(|a| a.time * 4.0 % 16.0) as f32,
+        ));
+        dashes
+    }
     pub fn paint_area(
+        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
         nodes: &[PlaNodeScreen],
         style: &[AreaStyle],
-    ) -> bool {
+    ) -> Option<Vec<egui::Shape>> {
         let mut is_hovered = !detect_hovered;
+
+        let mut hover_coords = Vec::new();
+        let mut hover_coords_is_filled = !detect_hovered;
 
         for style in style {
             let AreaStyle::Fill {
@@ -136,6 +173,9 @@ impl MapWindow {
                                 egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
                             );
                             shapes.push(shape);
+                            if !hover_coords_is_filled {
+                                hover_coords.extend([previous_coord, coord]);
+                            }
                         }
                         coord
                     }
@@ -147,6 +187,10 @@ impl MapWindow {
                             egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
                         );
 
+                        if !hover_coords_is_filled {
+                            hover_coords
+                                .extend(shape.flatten(None).iter().map(|a| egui::pos2(a.x, a.y)));
+                        }
                         shapes.push(shape.into());
                         coord
                     }
@@ -163,6 +207,10 @@ impl MapWindow {
                             egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
                         );
 
+                        if !hover_coords_is_filled {
+                            hover_coords
+                                .extend(shape.flatten(None).iter().map(|a| egui::pos2(a.x, a.y)));
+                        }
                         shapes.push(shape.into());
                         coord
                     }
@@ -175,6 +223,7 @@ impl MapWindow {
                 ));
                 previous_coord = Some(final_coord);
             }
+            hover_coords_is_filled = true;
 
             let polygon = geo::Polygon::new(
                 shapes
@@ -219,16 +268,20 @@ impl MapWindow {
             ));
         }
 
-        detect_hovered && is_hovered
+        (detect_hovered && is_hovered).then(|| Self::hover_dash(ui, &hover_coords))
     }
     pub fn paint_line(
+        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
         nodes: &[PlaNodeScreen],
         style: &[LineStyle],
-    ) -> bool {
+    ) -> Option<Vec<egui::Shape>> {
         let mut is_hovered = !detect_hovered;
+
+        let mut hover_coords = Vec::new();
+        let mut hover_coords_is_filled = !detect_hovered;
 
         for style in style {
             let mut previous_coord = Option::<egui::Pos2>::None;
@@ -263,6 +316,9 @@ impl MapWindow {
                                         [previous_coord, coord],
                                         egui::Stroke::new(*width, colour.unwrap_or_default()),
                                     );
+                                    if !hover_coords_is_filled {
+                                        hover_coords.extend([previous_coord, coord]);
+                                    }
                                 }
                                 coord
                             }
@@ -274,17 +330,20 @@ impl MapWindow {
                                     egui::Stroke::new(*width, colour.unwrap_or_default()),
                                 );
 
+                                let approx = shape
+                                    .flatten(None)
+                                    .into_iter()
+                                    .map(|a| geo::coord! { x: a.x, y: a.y })
+                                    .collect::<Vec<_>>();
+                                if !hover_coords_is_filled {
+                                    hover_coords
+                                        .extend(approx.iter().map(|a| egui::pos2(a.x, a.y)));
+                                }
                                 hovering!(
                                     is_hovered,
                                     response,
                                     width,
-                                    geo::LineString::new(
-                                        shape
-                                            .flatten(None)
-                                            .into_iter()
-                                            .map(|a| geo::coord! { x: a.x, y: a.y })
-                                            .collect()
-                                    )
+                                    geo::LineString::new(approx)
                                 );
 
                                 painter.add(shape);
@@ -303,17 +362,20 @@ impl MapWindow {
                                     egui::Stroke::new(*width, colour.unwrap_or_default()),
                                 );
 
+                                let approx = shape
+                                    .flatten(None)
+                                    .into_iter()
+                                    .map(|a| geo::coord! { x: a.x, y: a.y })
+                                    .collect::<Vec<_>>();
+                                if !hover_coords_is_filled {
+                                    hover_coords
+                                        .extend(approx.iter().map(|a| egui::pos2(a.x, a.y)));
+                                }
                                 hovering!(
                                     is_hovered,
                                     response,
                                     width,
-                                    geo::LineString::new(
-                                        shape
-                                            .flatten(None)
-                                            .into_iter()
-                                            .map(|a| geo::coord! { x: a.x, y: a.y })
-                                            .collect()
-                                    )
+                                    geo::LineString::new(approx)
                                 );
 
                                 painter.add(shape);
@@ -328,14 +390,16 @@ impl MapWindow {
                                 colour.unwrap_or_default(),
                             );
                         }
+
                         previous_coord = Some(final_coord);
                     }
+                    hover_coords_is_filled = true;
                 }
                 LineStyle::Text { .. } => {}
             }
         }
 
-        detect_hovered && is_hovered
+        (detect_hovered && is_hovered).then(|| Self::hover_dash(ui, &hover_coords))
     }
     pub fn paint_point(
         ui: &egui::Ui,
@@ -343,8 +407,9 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         coord: egui::Pos2,
+        style_name: &str,
         styles: &[PointStyle],
-    ) -> bool {
+    ) -> Option<Vec<egui::Shape>> {
         let mut is_hovered = !detect_hovered;
 
         for style in styles {
@@ -353,10 +418,19 @@ impl MapWindow {
                     image,
                     size,
                     offset,
+                    extension,
                     ..
                 } => {
                     let Some(texture_id) = egui::ImageSource::Bytes {
-                        uri: Cow::default(),
+                        uri: format!(
+                            "{style_name}.{}",
+                            if extension == "svg+xml" {
+                                "svg"
+                            } else {
+                                &extension
+                            }
+                        )
+                        .into(),
                         bytes: image.clone().into(),
                     }
                     .load(
@@ -364,6 +438,7 @@ impl MapWindow {
                         egui::TextureOptions::LINEAR,
                         egui::SizeHint::Scale(2.0.into()),
                     )
+                    .inspect_err(|e| error!("{e:?} {extension}"))
                     .ok()
                     .and_then(|a| a.texture_id()) else {
                         continue;
@@ -406,6 +481,26 @@ impl MapWindow {
             }
         }
 
-        detect_hovered && is_hovered
+        (detect_hovered && is_hovered).then(|| {
+            let dimensions = styles
+                .iter()
+                .filter_map(|a| match a {
+                    PointStyle::Image { size, .. } => Some(*size),
+                    PointStyle::Square { size, .. } => Some(egui::Vec2::splat(*size)),
+                    PointStyle::Text { .. } => None,
+                })
+                .reduce(egui::Vec2::max)
+                .unwrap_or_else(|| egui::Vec2::splat(8.0));
+
+            Self::hover_dash(
+                ui,
+                &[
+                    coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
+                    coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
+                    coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
+                    coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
+                ],
+            )
+        })
     }
 }

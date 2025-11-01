@@ -32,7 +32,12 @@ impl MapWindow {
         else {
             return;
         };
-        let SkinType::Point { styles, .. } = &**ty else {
+        let SkinType::Point {
+            styles,
+            name: style_name,
+            ..
+        } = &**ty
+        else {
             return;
         };
 
@@ -40,7 +45,7 @@ impl MapWindow {
             return;
         };
 
-        Self::paint_point(ui, response, painter, false, hover_pos, style);
+        Self::paint_point(ui, response, painter, false, hover_pos, style_name, style);
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;

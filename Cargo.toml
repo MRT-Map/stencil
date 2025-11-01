@@ -19,7 +19,7 @@ rust-version = "1.91"
 egui = { version = "0.33.0", features = ["serde"] }
 eframe = { version = "0.33.0", features = ["persistence"] }
 egui_commonmark = "0.22.0"
-egui_extras = { version = "0.33.0", features = ["http"] }
+egui_extras = { version = "0.33.0", features = ["http", "all_loaders"] }
 egui_dock = { git = "https://github.com/Avarel/egui_dock", branch = "egui_0.33", features = ["serde"] }
 egui-file-dialog = "0.12.0"
 egui-notify = "0.21.0"
