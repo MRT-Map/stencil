@@ -6,6 +6,7 @@ use tracing::error;
 use crate::{
     App,
     map::MapWindow,
+    mode::EditorMode,
     project::{
         pla3::{PlaComponent, PlaNodeScreen},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
@@ -32,7 +33,9 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        let mut hovered_shape = None;
+        let mut hovered_shape = [EditorMode::Select, EditorMode::Nodes]
+            .contains(&app.mode)
+            .then_some(None);
         self.hovered_component = None;
         for component in app.project.components.iter() {
             let shape = self.paint_component(
@@ -40,15 +43,17 @@ impl MapWindow {
                 ui,
                 response,
                 painter,
-                hovered_shape.is_none(),
+                hovered_shape.as_ref().is_none_or(|a| a.is_none()),
                 component,
             );
-            if shape.is_some() {
+            if shape.is_some()
+                && let Some(hovered_shape) = &mut hovered_shape
+            {
                 self.hovered_component = Some(Arc::clone(component));
-                hovered_shape = shape;
+                *hovered_shape = shape;
             }
         }
-        if let Some(hovered_shape) = hovered_shape {
+        if let Some(Some(hovered_shape)) = hovered_shape {
             painter.add(hovered_shape);
             ui.ctx().request_repaint_after_secs(0.5);
         }

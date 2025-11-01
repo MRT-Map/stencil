@@ -45,15 +45,28 @@ impl MapWindow {
             return;
         };
 
-        Self::paint_point(ui, response, painter, false, hover_pos, style_name, style);
+        let world_coord = geo::coord! {
+            x: self.cursor_world_pos.unwrap().x.round() as i32,
+            y: self.cursor_world_pos.unwrap().y.round() as i32,
+        };
+        let screen_coord = self.world_to_screen(
+            app,
+            response.rect.center(),
+            geo::coord! { x: world_coord.x as f32, y: world_coord.y as f32 },
+        );
+        Self::paint_point(
+            ui,
+            response,
+            painter,
+            false,
+            screen_coord,
+            style_name,
+            style,
+        );
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
         }
-        let coord = geo::coord! {
-            x: self.cursor_world_pos.unwrap().x.round() as i32,
-            y: self.cursor_world_pos.unwrap().y.round() as i32,
-        };
         let component = PlaComponent {
             namespace: app.project.new_component_ns.clone(),
             id: app
@@ -63,10 +76,13 @@ impl MapWindow {
             ty: Arc::clone(ty),
             display_name: String::new(),
             layer: 0.0,
-            nodes: vec![PlaNode::Line { coord, label: None }],
+            nodes: vec![PlaNode::Line {
+                coord: world_coord,
+                label: None,
+            }],
             misc: HashMap::default(),
         };
-        info!(?coord, %component, "Created new point");
+        info!(?world_coord, %component, "Created new point");
 
         app.project
             .components
