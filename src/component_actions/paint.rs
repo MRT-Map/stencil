@@ -331,6 +331,7 @@ impl MapWindow {
                     unrounded,
                     ..
                 } => {
+                    let width = 2.0 * width;
                     for (i, node) in nodes.iter().enumerate() {
                         let final_coord = match *node {
                             PlaNodeScreen::Line { coord, .. } => {
@@ -347,7 +348,7 @@ impl MapWindow {
 
                                     painter.line_segment(
                                         [previous_coord, coord],
-                                        egui::Stroke::new(*width, colour.unwrap_or_default()),
+                                        egui::Stroke::new(width, colour.unwrap_or_default()),
                                     );
                                     if !hover_coords_is_filled {
                                         hover_coords.extend([previous_coord, coord]);
@@ -360,7 +361,7 @@ impl MapWindow {
                                     [previous_coord.unwrap(), ctrl, coord],
                                     false,
                                     egui::Color32::TRANSPARENT,
-                                    egui::Stroke::new(*width, colour.unwrap_or_default()),
+                                    egui::Stroke::new(width, colour.unwrap_or_default()),
                                 );
 
                                 let approx = shape
@@ -392,7 +393,7 @@ impl MapWindow {
                                     [previous_coord.unwrap(), ctrl1, ctrl2, coord],
                                     false,
                                     egui::Color32::TRANSPARENT,
-                                    egui::Stroke::new(*width, colour.unwrap_or_default()),
+                                    egui::Stroke::new(width, colour.unwrap_or_default()),
                                 );
 
                                 let approx = shape

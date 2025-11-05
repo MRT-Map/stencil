@@ -43,6 +43,13 @@ impl PlaNode {
             | Self::CubicBezier { label, .. } => label,
         }
     }
+    pub const fn coord(self) -> geo::Coord<i32> {
+        match self {
+            Self::Line { coord, .. }
+            | Self::QuadraticBezier { coord, .. }
+            | Self::CubicBezier { coord, .. } => coord,
+        }
+    }
     pub fn to_screen(
         self,
         app: &App,

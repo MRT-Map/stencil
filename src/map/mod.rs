@@ -350,6 +350,7 @@ impl MapWindow {
         #[expect(clippy::single_match)]
         match app.mode {
             EditorMode::CreatePoint => self.create_point(app, ui, response, painter),
+            EditorMode::CreateLine => self.create_line(app, ui, response, painter),
             _ => {}
         }
     }

@@ -179,6 +179,7 @@ impl MapWindow {
         });
 
         if old_mode != app.mode {
+            self.created_nodes.clear();
             app.ui.status = match app.mode {
                 EditorMode::Select => "Select: L-Click to select component. Scroll to pan. Shift and scroll to pan horizontally. Ctrl and scroll to zoom.",
                 EditorMode::Nodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
