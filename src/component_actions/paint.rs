@@ -221,8 +221,12 @@ impl MapWindow {
                         );
 
                         if !hover_coords_is_filled {
-                            hover_coords
-                                .extend(shape.flatten(None).iter().map(|a| egui::pos2(a.x, a.y)));
+                            hover_coords.extend(
+                                shape
+                                    .flatten(Some(0.1))
+                                    .iter()
+                                    .map(|a| egui::pos2(a.x, a.y)),
+                            );
                         }
                         shapes.push(shape.into());
                         coord
@@ -241,8 +245,12 @@ impl MapWindow {
                         );
 
                         if !hover_coords_is_filled {
-                            hover_coords
-                                .extend(shape.flatten(None).iter().map(|a| egui::pos2(a.x, a.y)));
+                            hover_coords.extend(
+                                shape
+                                    .flatten(Some(0.1))
+                                    .iter()
+                                    .map(|a| egui::pos2(a.x, a.y)),
+                            );
                         }
                         shapes.push(shape.into());
                         coord
@@ -267,15 +275,16 @@ impl MapWindow {
                             geo::coord! { x: points[1].x, y: points[1].y },
                         ],
                         egui::Shape::QuadraticBezier(shape) => shape
-                            .flatten(None)
+                            .flatten(Some(0.1))
                             .into_iter()
                             .map(|a| geo::coord! { x: a.x, y: a.y })
                             .collect(),
                         egui::Shape::CubicBezier(shape) => shape
-                            .flatten(None)
+                            .flatten(Some(0.1))
                             .into_iter()
                             .map(|a| geo::coord! { x: a.x, y: a.y })
                             .collect(),
+                        egui::Shape::Circle(_) => Vec::new(),
                         _ => unreachable!(),
                     })
                     .collect(),
@@ -365,7 +374,7 @@ impl MapWindow {
                                 );
 
                                 let approx = shape
-                                    .flatten(None)
+                                    .flatten(Some(0.1))
                                     .into_iter()
                                     .map(|a| geo::coord! { x: a.x, y: a.y })
                                     .collect::<Vec<_>>();
@@ -397,7 +406,7 @@ impl MapWindow {
                                 );
 
                                 let approx = shape
-                                    .flatten(None)
+                                    .flatten(Some(0.1))
                                     .into_iter()
                                     .map(|a| geo::coord! { x: a.x, y: a.y })
                                     .collect::<Vec<_>>();
