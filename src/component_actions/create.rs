@@ -150,34 +150,18 @@ impl MapWindow {
                 | PlaNode::CubicBezier { coord, .. },
             ) => *coord = world_coord,
         }
+
+        let screen_nodes = self
+            .created_nodes
+            .iter()
+            .map(|a| a.to_screen(app, self, response.rect.center()))
+            .collect::<Vec<_>>();
         match style {
             Either::Left(style) => {
-                Self::paint_line(
-                    ui,
-                    response,
-                    painter,
-                    false,
-                    &self
-                        .created_nodes
-                        .iter()
-                        .map(|a| a.to_screen(app, self, response.rect.center()))
-                        .collect::<Vec<_>>(),
-                    style,
-                );
+                Self::paint_line(ui, response, painter, false, &screen_nodes, style);
             }
             Either::Right(style) => {
-                Self::paint_area(
-                    ui,
-                    response,
-                    painter,
-                    false,
-                    &self
-                        .created_nodes
-                        .iter()
-                        .map(|a| a.to_screen(app, self, response.rect.center()))
-                        .collect::<Vec<_>>(),
-                    style,
-                );
+                Self::paint_area(ui, response, painter, false, &screen_nodes, style);
             }
         }
 
@@ -234,14 +218,14 @@ impl MapWindow {
                 PlaNode::Line { .. } => {
                     self.created_nodes.pop();
                 }
-                PlaNode::QuadraticBezier { ctrl, coord, label } => {
+                PlaNode::QuadraticBezier { coord, label, .. } => {
                     *last_node = PlaNodeBase::Line { coord, label }
                 }
                 PlaNode::CubicBezier {
                     ctrl1,
-                    ctrl2,
                     coord,
                     label,
+                    ..
                 } => {
                     *last_node = PlaNode::QuadraticBezier {
                         ctrl: ctrl1,
@@ -269,7 +253,7 @@ impl MapWindow {
                             label,
                         }
                     }
-                    _ => {}
+                    PlaNode::CubicBezier { .. } => {}
                 }
             } else {
                 self.created_nodes.push(PlaNode::Line {
