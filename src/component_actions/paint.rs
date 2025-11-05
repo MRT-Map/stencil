@@ -43,7 +43,7 @@ impl MapWindow {
                 ui,
                 response,
                 painter,
-                hovered_shape.as_ref().is_none_or(|a| a.is_none()),
+                hovered_shape.as_ref().is_none_or(Option::is_none),
                 component,
             );
             if shape.is_some()
@@ -126,6 +126,7 @@ impl MapWindow {
             }
         }
     }
+
     fn hover_dash(ui: &egui::Ui, path: &[egui::Pos2]) -> Vec<egui::Shape> {
         let mut dashes = egui::Shape::dashed_line_with_offset(
             path,
@@ -169,6 +170,7 @@ impl MapWindow {
             egui::Color32::WHITE,
         ))
     }
+
     pub fn paint_area(
         ui: &egui::Ui,
         response: &egui::Response,

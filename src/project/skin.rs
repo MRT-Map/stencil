@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use base64::engine::general_purpose::STANDARD;
 use base64_serde::base64_serde_type;
+use duplicate::duplicate_item;
 use itertools::Itertools;
 use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
@@ -264,17 +265,51 @@ impl SkinType {
             Self::Point { tags, .. } | Self::Line { tags, .. } | Self::Area { tags, .. } => tags,
         }
     }
+    #[duplicate_item(
+        fn_name          StyleType      TypeName ;
+        [ point_styles ] [ PointStyle ] [ Point ];
+        [ line_styles  ] [ LineStyle  ] [ Line  ];
+        [ area_styles  ] [ AreaStyle  ] [ Area  ];
+    )]
+    #[must_use]
+    pub const fn fn_name(&self) -> Option<&HashMap<(u8, u8), Vec<StyleType>>> {
+        if let Self::TypeName { styles, .. } = self {
+            Some(styles)
+        } else {
+            None
+        }
+    }
     pub fn style_in_zoom_level<T>(
-        style: &HashMap<(u8, u8), Vec<T>>,
+        styles: &HashMap<(u8, u8), Vec<T>>,
         zoom_level: u8,
     ) -> Option<&Vec<T>> {
-        style
+        styles
             .iter()
             .find(|((min, max), _)| (*min..=*max).contains(&zoom_level))
             .map(|(_, v)| v)
     }
+    #[duplicate_item(
+        fn_name                       style_fn_name    StyleType     ;
+        [ point_style_in_zoom_level ] [ point_styles ] [ PointStyle ];
+        [ line_style_in_zoom_level  ] [ line_styles  ] [ LineStyle  ];
+        [ area_style_in_zoom_level  ] [ area_styles  ] [ AreaStyle  ];
+    )]
+    #[must_use]
+    pub fn fn_name(&self, zoom_level: u8) -> Option<&Vec<StyleType>> {
+        Self::style_in_zoom_level(self.style_fn_name()?, zoom_level)
+    }
     fn style_in_max_zoom<T>(style: &HashMap<(u8, u8), Vec<T>>) -> Option<&Vec<T>> {
         style.iter().find(|((min, _), _)| *min == 0).map(|(_, v)| v)
+    }
+    #[duplicate_item(
+        fn_name                     style_fn_name    StyleType     ;
+        [ point_style_in_max_zoom ] [ point_styles ] [ PointStyle ];
+        [ line_style_in_max_zoom  ] [ line_styles  ] [ LineStyle  ];
+        [ area_style_in_max_zoom  ] [ area_styles  ] [ AreaStyle  ];
+    )]
+    #[must_use]
+    pub fn fn_name(&self) -> Option<&Vec<StyleType>> {
+        Self::style_in_max_zoom(self.style_fn_name()?)
     }
 
     #[must_use]
@@ -350,7 +385,7 @@ impl SkinType {
         }
     }
     #[must_use]
-    pub fn weight(&self) -> Option<f32> {
+    pub fn width(&self) -> Option<f32> {
         match self {
             Self::Point { .. } => None,
             Self::Line { styles, .. } => Self::style_in_max_zoom(styles)?

@@ -117,7 +117,7 @@ impl PlaComponent {
     ) -> Result<(Self, Option<Report>)> {
         fn get_coord(split: &[&str], i: usize) -> Result<geo::Coord<i32>> {
             let (x, y) = (split[i], split[i + 1]);
-            Ok(geo::Coord::from((x.parse()?, y.parse()?)))
+            Ok(geo::coord! { x: x.parse()?, y: y.parse()? })
         }
         fn get_label(split: &[&str], i: usize) -> Result<Option<u8>> {
             let Some(label) = split.get(i) else {

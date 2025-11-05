@@ -30,6 +30,8 @@ pub struct MapWindow {
     pub centre_coord: geo::Coord<f32>,
     pub zoom: f32,
     pub cursor_world_pos: Option<geo::Coord<f32>>,
+
+    #[serde(skip)]
     pub created_nodes: Vec<PlaNode>,
     #[serde(skip)]
     pub created_point_type: Option<Arc<SkinType>>,
@@ -37,6 +39,7 @@ pub struct MapWindow {
     pub created_line_type: Option<Arc<SkinType>>,
     #[serde(skip)]
     pub created_area_type: Option<Arc<SkinType>>,
+
     #[serde(skip)]
     pub hovered_component: Option<Arc<PlaComponent>>,
 }
@@ -225,7 +228,7 @@ impl MapWindow {
                 let crosshair_screen_pos = self.world_to_screen(
                     app,
                     response.rect.center(),
-                    geo::Coord::from((pointer_world_pos.x.round(), pointer_world_pos.y.round())),
+                    geo::coord! { x: pointer_world_pos.x.round(), y: pointer_world_pos.y.round() },
                 );
                 let (x, y) = (crosshair_screen_pos.x, crosshair_screen_pos.y);
 
@@ -392,7 +395,7 @@ impl MapWindow {
         let screen_delta = screen - map_centre;
         let world_delta = screen_delta
             * map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
-        self.centre_coord + geo::Coord::from((world_delta.x, world_delta.y))
+        self.centre_coord + geo::coord! { x: world_delta.x, y: world_delta.y }
     }
 
     pub fn map_world_boundaries(&self, app: &App, map_rect: egui::Rect) -> geo::Rect<f32> {

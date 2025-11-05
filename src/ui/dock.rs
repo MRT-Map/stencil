@@ -122,12 +122,3 @@ impl Event for ResetLayoutEv {
         app.reset_map_window();
     }
 }
-
-#[derive(Clone, Debug)]
-pub struct OpenWindowEv(DockWindows);
-
-impl Event for OpenWindowEv {
-    fn react(self, _ctx: &egui::Context, app: &mut App) {
-        app.open_dock_window(self.0);
-    }
-}

@@ -19,50 +19,34 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        if app.project.skin().is_none() || app.project.new_component_ns.is_empty() {
+        if app.project.new_component_ns.is_empty() {
             return;
         }
-        let Some(hover_pos) = response.hover_pos() else {
+        let (Some(cursor_world_pos), Some(skin)) = (self.cursor_world_pos, app.project.skin())
+        else {
             return;
         };
         let Some(ty) = self
             .created_point_type
             .as_ref()
-            .or_else(|| app.project.skin().and_then(|a| a.get_type("simplePoint")))
+            .or_else(|| skin.get_type("simplePoint"))
         else {
             return;
         };
-        let SkinType::Point {
-            styles,
-            name: style_name,
-            ..
-        } = &**ty
-        else {
-            return;
-        };
-
-        let Some(style) = SkinType::style_in_zoom_level(styles, self.zoom_level(app)) else {
+        let Some(style) = ty.point_style_in_zoom_level(self.zoom_level(app)) else {
             return;
         };
 
         let world_coord = geo::coord! {
-            x: self.cursor_world_pos.unwrap().x.round() as i32,
-            y: self.cursor_world_pos.unwrap().y.round() as i32,
+            x: cursor_world_pos.x.round() as i32,
+            y: cursor_world_pos.y.round() as i32,
         };
         let screen_coord = self.world_to_screen(
             app,
             response.rect.center(),
             geo::coord! { x: world_coord.x as f32, y: world_coord.y as f32 },
         );
-        Self::paint_point(
-            ui,
-            response,
-            painter,
-            false,
-            screen_coord,
-            style_name,
-            style,
-        );
+        Self::paint_point(ui, response, painter, false, screen_coord, ty.name(), style);
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
@@ -84,8 +68,6 @@ impl MapWindow {
         };
         info!(?world_coord, %component, "Created new point");
 
-        app.project
-            .components
-            .insert(app.project.skin().unwrap(), component);
+        app.project.components.insert(skin, component);
     }
 }
