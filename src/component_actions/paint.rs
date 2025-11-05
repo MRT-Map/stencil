@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use geo::Distance;
+use geo::{Contains, Distance};
 use tracing::error;
 
 use crate::{
@@ -18,7 +18,7 @@ macro_rules! hovering {
         if !$is_hovered
             && let Some(hover_pos) = $response.hover_pos()
             && geo::Euclidean.distance(&$line, &geo::point! { x: hover_pos.x, y: hover_pos.y })
-                < $width / 2.0
+                < $width / 2.0 * 1.5
         {
             $is_hovered = true;
         }
@@ -293,7 +293,12 @@ impl MapWindow {
 
             // let polygon_edge = polygon.difference(&polygon.buffer(16.0 * outline_width));
 
-            hovering!(is_hovered, response, outline_width, polygon);
+            if !is_hovered
+                && let Some(hover_pos) = response.hover_pos()
+                && polygon.contains(&geo::point! { x: hover_pos.x, y: hover_pos.y })
+            {
+                is_hovered = true;
+            }
 
             let coords = polygon
                 .exterior()
@@ -308,6 +313,7 @@ impl MapWindow {
                     outline.unwrap_or(egui::Color32::TRANSPARENT),
                 ),
             ));
+            painter.add(shapes);
         }
 
         (detect_hovered && is_hovered).then(|| Self::hover_dash(ui, &hover_coords))

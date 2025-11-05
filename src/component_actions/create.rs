@@ -255,7 +255,11 @@ impl MapWindow {
                     }
                     PlaNode::CubicBezier { .. } => {}
                 }
-            } else {
+            } else if self
+                .created_nodes
+                .last_chunk::<2>()
+                .is_none_or(|[sl, l]| sl.coord() != l.coord())
+            {
                 self.created_nodes.push(PlaNode::Line {
                     coord: world_coord,
                     label: None,
@@ -267,6 +271,15 @@ impl MapWindow {
         {
             self.created_nodes.pop();
             if self.created_nodes.len() >= (if IS_LINE { 2 } else { 3 }) {
+                if !IS_LINE
+                    && self.created_nodes.first().unwrap().coord()
+                        != self.created_nodes.last().unwrap().coord()
+                {
+                    self.created_nodes.push(PlaNode::Line {
+                        coord: self.created_nodes.first().unwrap().coord(),
+                        label: None,
+                    });
+                }
                 let component = PlaComponent {
                     namespace: app.project.new_component_ns.clone(),
                     id: app
