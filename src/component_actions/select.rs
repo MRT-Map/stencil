@@ -1,11 +1,7 @@
-use std::sync::Arc;
-
-use itertools::Itertools;
-
 use crate::{App, map::MapWindow};
 
 impl MapWindow {
-    pub fn select_components(&mut self, app: &App, ui: &egui::Ui, response: &egui::Response) {
+    pub fn select_components(&mut self, _app: &App, ui: &egui::Ui, response: &egui::Response) {
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
         }

@@ -91,7 +91,7 @@ impl PlaNode {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FullId {
     pub namespace: String,
     pub id: String,

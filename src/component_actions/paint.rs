@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::borrow::Cow;
 
 use geo::{Contains, Distance};
 use tracing::error;
@@ -6,7 +6,6 @@ use tracing::error;
 use crate::{
     App,
     map::MapWindow,
-    mode::EditorMode,
     project::{
         pla3::{PlaComponent, PlaNodeScreen},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
@@ -55,7 +54,7 @@ impl MapWindow {
             );
             match result {
                 PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
-                    self.hovered_component = Some(component.full_id.to_owned());
+                    self.hovered_component = Some(component.full_id.clone());
                     hovered_shapes.extend(Self::hover_dash(&path));
                 }
                 PaintResult::Selected(path) => {

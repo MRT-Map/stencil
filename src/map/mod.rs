@@ -13,7 +13,7 @@ use crate::{
     mode::EditorMode,
     project::{
         SkinStatus,
-        pla3::{FullId, PlaComponent, PlaNode},
+        pla3::{FullId, PlaNode},
         skin::SkinType,
     },
     shortcut::ShortcutAction,

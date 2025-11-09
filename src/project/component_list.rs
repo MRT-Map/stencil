@@ -121,7 +121,7 @@ impl ComponentList {
                 #[expect(clippy::float_cmp)]
                 if !Arc::ptr_eq(&old_component_type, &value.ty) || old_layer != value.layer {
                     *order = skin.order[value.ty.name()];
-                    reorders.push(value.full_id.to_owned());
+                    reorders.push(value.full_id.clone());
                 }
 
                 out
