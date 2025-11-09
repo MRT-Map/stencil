@@ -17,7 +17,11 @@ use crate::{
     EXECUTOR, URL_REPLACER,
     file::cache_dir,
     map::basemap::Basemap,
-    project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
+    project::{
+        component_list::ComponentList,
+        pla3::{FullId, PlaComponent},
+        skin::Skin,
+    },
 };
 
 #[derive(Debug, Default)]
@@ -197,8 +201,7 @@ impl Project {
             };
             match PlaComponent::load_from_string(
                 &string,
-                namespace.to_owned(),
-                id.to_string_lossy().into_owned(),
+                FullId::new(namespace.to_owned(), id.to_string_lossy().into_owned()),
                 self,
             ) {
                 Ok((component, unknown_type_error)) => {
@@ -234,7 +237,7 @@ impl Project {
 
         errors
     }
-    pub fn save_components<C: Iterator<Item = P>, P: AsRef<PlaComponent>>(
+    pub fn save_components<'a, C: Iterator<Item = &'a PlaComponent>>(
         &self,
         components: C,
     ) -> Vec<Report> {
@@ -244,9 +247,10 @@ impl Project {
         let mut errors = Vec::new();
 
         for component in components {
-            if let Err(e) = component.as_ref().save_to_string().and_then(|s| {
-                std::fs::write(component.as_ref().path(path), s).map_err(Report::from)
-            }) {
+            if let Err(e) = component
+                .save_to_string()
+                .and_then(|s| std::fs::write(component.path(path), s).map_err(Report::from))
+            {
                 errors.push(e);
             }
         }
@@ -258,7 +262,7 @@ impl Project {
             return Ok(self
                 .components
                 .iter()
-                .filter(|a| a.namespace == namespace)
+                .filter(|a| a.full_id.namespace == namespace)
                 .count());
         }
         let Some(path) = &self.path else {

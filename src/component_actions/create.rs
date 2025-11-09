@@ -1,16 +1,12 @@
 use std::{collections::HashMap, sync::Arc};
 
-use duplicate::duplicate_item;
 use itertools::Either;
 use tracing::info;
 
 use crate::{
     App,
     map::MapWindow,
-    project::{
-        pla3::{PlaComponent, PlaNode, PlaNodeBase},
-        skin::SkinType,
-    },
+    project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };
 
 impl MapWindow {
@@ -48,17 +44,27 @@ impl MapWindow {
             response.rect.center(),
             geo::coord! { x: world_coord.x as f32, y: world_coord.y as f32 },
         );
-        Self::paint_point(ui, response, painter, false, screen_coord, ty.name(), style);
+        Self::paint_point(
+            ui,
+            response,
+            painter,
+            false,
+            false,
+            screen_coord,
+            ty.name(),
+            style,
+        );
 
         if !response.clicked_by(egui::PointerButton::Primary) {
             return;
         }
         let component = PlaComponent {
-            namespace: app.project.new_component_ns.clone(),
-            id: app
-                .project
-                .components
-                .get_new_id(&app.project.new_component_ns),
+            full_id: FullId::new(
+                app.project.new_component_ns.clone(),
+                app.project
+                    .components
+                    .get_new_id(&app.project.new_component_ns),
+            ),
             ty: Arc::clone(ty),
             display_name: String::new(),
             layer: 0.0,
@@ -158,10 +164,10 @@ impl MapWindow {
             .collect::<Vec<_>>();
         match style {
             Either::Left(style) => {
-                Self::paint_line(ui, response, painter, false, &screen_nodes, style);
+                Self::paint_line(response, painter, false, false, &screen_nodes, style);
             }
             Either::Right(style) => {
-                Self::paint_area(ui, response, painter, false, &screen_nodes, style);
+                Self::paint_area(response, painter, false, false, &screen_nodes, style);
             }
         }
 
@@ -214,6 +220,7 @@ impl MapWindow {
 
         if response.clicked_by(egui::PointerButton::Secondary) {
             let last_node = self.created_nodes.last_mut().unwrap();
+            info!(?last_node, "Undoing last control point / node");
             match *last_node {
                 PlaNode::Line { .. } => {
                     self.created_nodes.pop();
@@ -255,6 +262,7 @@ impl MapWindow {
                     }
                     PlaNode::CubicBezier { .. } => {}
                 }
+                info!(?last_node, "Adding control point");
             } else if self
                 .created_nodes
                 .last_chunk::<2>()
@@ -264,6 +272,7 @@ impl MapWindow {
                     coord: world_coord,
                     label: None,
                 });
+                info!(?world_coord, "Adding node");
             }
         }
         if response.double_clicked_by(egui::PointerButton::Primary)
@@ -281,11 +290,12 @@ impl MapWindow {
                     });
                 }
                 let component = PlaComponent {
-                    namespace: app.project.new_component_ns.clone(),
-                    id: app
-                        .project
-                        .components
-                        .get_new_id(&app.project.new_component_ns),
+                    full_id: FullId::new(
+                        app.project.new_component_ns.clone(),
+                        app.project
+                            .components
+                            .get_new_id(&app.project.new_component_ns),
+                    ),
                     ty: Arc::clone(ty.into_inner()),
                     display_name: String::new(),
                     layer: 0.0,
@@ -297,6 +307,10 @@ impl MapWindow {
                 app.project.components.insert(skin, component);
             } else {
                 self.created_nodes.clear();
+                info!(
+                    "No new {} created due to too few points",
+                    if IS_LINE { "line" } else { "area" }
+                );
             }
         }
     }

@@ -241,7 +241,7 @@ impl Event for ProjectEv {
                     .project
                     .components
                     .iter()
-                    .filter(|a| a.namespace == namespace);
+                    .filter(|a| a.full_id.namespace == namespace);
                 let errors = app.project.save_components(components);
                 if !errors.is_empty() {
                     app.ui.notifs.push_errors(
@@ -279,7 +279,7 @@ impl Event for ProjectEv {
                     .project
                     .components
                     .iter()
-                    .any(|a| a.namespace == namespace)
+                    .any(|a| a.full_id.namespace == namespace)
                 {
                     app.ui.notifs.push(
                         format!("Attempted to delete non-empty namespace `{namespace}`"),

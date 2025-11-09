@@ -24,6 +24,12 @@ macro_rules! hovering {
         }
     };
 }
+pub enum PaintResult {
+    None,
+    Hovered(Vec<egui::Pos2>),
+    Selected(Vec<egui::Pos2>),
+    HoveredAndSelected(Vec<egui::Pos2>),
+}
 
 impl MapWindow {
     pub fn paint_components(
@@ -33,30 +39,32 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        let mut hovered_shape = [EditorMode::Select, EditorMode::Nodes]
-            .contains(&app.mode)
-            .then_some(None);
+        let mut hovered_shapes = Vec::new();
         self.hovered_component = None;
         for component in app.project.components.iter() {
-            let shape = self.paint_component(
+            let result = self.paint_component(
                 app,
                 ui,
                 response,
                 painter,
-                hovered_shape.as_ref().is_none_or(Option::is_none),
+                self.hovered_component.is_none(),
+                self.selected_components
+                    .iter()
+                    .any(|a| a == &component.full_id),
                 component,
             );
-            if shape.is_some()
-                && let Some(hovered_shape) = &mut hovered_shape
-            {
-                self.hovered_component = Some(Arc::clone(component));
-                *hovered_shape = shape;
+            match result {
+                PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
+                    self.hovered_component = Some(component.full_id.to_owned());
+                    hovered_shapes.extend(Self::hover_dash(&path));
+                }
+                PaintResult::Selected(path) => {
+                    hovered_shapes.extend(Self::select_dash(&path));
+                }
+                PaintResult::None => {}
             }
         }
-        if let Some(Some(hovered_shape)) = hovered_shape {
-            painter.add(hovered_shape);
-            ui.ctx().request_repaint_after_secs(0.5);
-        }
+        painter.add(hovered_shapes);
     }
     pub fn paint_component(
         &self,
@@ -65,8 +73,9 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
+        is_selected: bool,
         component: &PlaComponent,
-    ) -> Option<Vec<egui::Shape>> {
+    ) -> PaintResult {
         let bounding_rect = component.bounding_rect();
         let world_boundaries = self.map_world_boundaries(app, response.rect);
         if world_boundaries.max().x < bounding_rect.min().x
@@ -74,7 +83,7 @@ impl MapWindow {
             || world_boundaries.max().y < bounding_rect.min().y
             || bounding_rect.max().y < world_boundaries.min().y
         {
-            return None;
+            return PaintResult::None;
         }
 
         let zl = self.zoom_level(app);
@@ -88,7 +97,9 @@ impl MapWindow {
                 name: style_name,
                 ..
             } => {
-                let style = SkinType::style_in_zoom_level(styles, zl)?;
+                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
+                    return PaintResult::None;
+                };
                 let PlaNodeScreen::Line { coord, .. } = screen_coords.next().unwrap() else {
                     unreachable!();
                 };
@@ -97,29 +108,34 @@ impl MapWindow {
                     response,
                     painter,
                     detect_hovered,
+                    is_selected,
                     coord,
                     style_name,
                     style,
                 )
             }
             SkinType::Line { styles, .. } => {
-                let style = SkinType::style_in_zoom_level(styles, zl)?;
+                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
+                    return PaintResult::None;
+                };
                 Self::paint_line(
-                    ui,
                     response,
                     painter,
                     detect_hovered,
+                    is_selected,
                     &screen_coords.collect::<Vec<_>>(),
                     style,
                 )
             }
             SkinType::Area { styles, .. } => {
-                let style = SkinType::style_in_zoom_level(styles, zl)?;
+                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
+                    return PaintResult::None;
+                };
                 Self::paint_area(
-                    ui,
                     response,
                     painter,
                     detect_hovered,
+                    is_selected,
                     &screen_coords.collect::<Vec<_>>(),
                     style,
                 )
@@ -127,22 +143,23 @@ impl MapWindow {
         }
     }
 
-    fn hover_dash(ui: &egui::Ui, path: &[egui::Pos2]) -> Vec<egui::Shape> {
-        let mut dashes = egui::Shape::dashed_line_with_offset(
+    fn dash(path: &[egui::Pos2], colour: egui::Color32) -> Vec<egui::Shape> {
+        let mut dashes =
+            egui::Shape::dashed_line(path, egui::Stroke::new(6.0, egui::Color32::BLACK), 8.0, 8.0);
+        dashes.extend(egui::Shape::dashed_line(
             path,
-            egui::Stroke::new(6.0, egui::Color32::BLACK),
-            &[8.0],
-            &[8.0],
-            ui.ctx().input(|a| a.time * 4.0 % 16.0) as f32,
-        );
-        dashes.extend(egui::Shape::dashed_line_with_offset(
-            path,
-            egui::Stroke::new(2.0, egui::Color32::WHITE),
-            &[8.0],
-            &[8.0],
-            ui.ctx().input(|a| a.time * 4.0 % 16.0) as f32,
+            egui::Stroke::new(2.0, colour),
+            8.0,
+            8.0,
         ));
         dashes
+    }
+    fn hover_dash(path: &[egui::Pos2]) -> Vec<egui::Shape> {
+        Self::dash(path, egui::Color32::WHITE)
+    }
+
+    fn select_dash(path: &[egui::Pos2]) -> Vec<egui::Shape> {
+        Self::dash(path, egui::Color32::YELLOW)
     }
     fn image_shape_from_bytes(
         ui: &egui::Ui,
@@ -172,17 +189,17 @@ impl MapWindow {
     }
 
     pub fn paint_area(
-        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
+        is_selected: bool,
         nodes: &[PlaNodeScreen],
         style: &[AreaStyle],
-    ) -> Option<Vec<egui::Shape>> {
+    ) -> PaintResult {
         let mut is_hovered = !detect_hovered;
 
         let mut hover_coords = Vec::new();
-        let mut hover_coords_is_filled = !detect_hovered;
+        let mut hover_coords_is_filled = false;
 
         for style in style {
             let AreaStyle::Fill {
@@ -316,16 +333,24 @@ impl MapWindow {
             painter.add(shapes);
         }
 
-        (detect_hovered && is_hovered).then(|| Self::hover_dash(ui, &hover_coords))
+        if is_selected && detect_hovered && is_hovered {
+            PaintResult::HoveredAndSelected(hover_coords)
+        } else if is_selected {
+            PaintResult::Selected(hover_coords)
+        } else if detect_hovered && is_hovered {
+            PaintResult::Hovered(hover_coords)
+        } else {
+            PaintResult::None
+        }
     }
     pub fn paint_line(
-        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
+        is_selected: bool,
         nodes: &[PlaNodeScreen],
         style: &[LineStyle],
-    ) -> Option<Vec<egui::Shape>> {
+    ) -> PaintResult {
         let mut is_hovered = !detect_hovered;
 
         let mut hover_coords = Vec::new();
@@ -448,17 +473,26 @@ impl MapWindow {
             }
         }
 
-        (detect_hovered && is_hovered).then(|| Self::hover_dash(ui, &hover_coords))
+        if is_selected && detect_hovered && is_hovered {
+            PaintResult::HoveredAndSelected(hover_coords)
+        } else if is_selected {
+            PaintResult::Selected(hover_coords)
+        } else if detect_hovered && is_hovered {
+            PaintResult::Hovered(hover_coords)
+        } else {
+            PaintResult::None
+        }
     }
     pub fn paint_point(
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
+        is_selected: bool,
         coord: egui::Pos2,
         style_name: &str,
         styles: &[PointStyle],
-    ) -> Option<Vec<egui::Shape>> {
+    ) -> PaintResult {
         let mut is_hovered = !detect_hovered;
 
         for style in styles {
@@ -516,7 +550,7 @@ impl MapWindow {
             }
         }
 
-        (detect_hovered && is_hovered).then(|| {
+        let hover_coords = || {
             let dimensions = styles
                 .iter()
                 .filter_map(|a| match a {
@@ -526,16 +560,21 @@ impl MapWindow {
                 })
                 .reduce(egui::Vec2::max)
                 .unwrap_or_else(|| egui::Vec2::splat(8.0));
-
-            Self::hover_dash(
-                ui,
-                &[
-                    coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
-                    coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
-                    coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
-                    coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
-                ],
-            )
-        })
+            vec![
+                coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
+                coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
+                coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
+                coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
+            ]
+        };
+        if is_selected && detect_hovered && is_hovered {
+            PaintResult::HoveredAndSelected(hover_coords())
+        } else if is_selected {
+            PaintResult::Selected(hover_coords())
+        } else if detect_hovered && is_hovered {
+            PaintResult::Hovered(hover_coords())
+        } else {
+            PaintResult::None
+        }
     }
 }

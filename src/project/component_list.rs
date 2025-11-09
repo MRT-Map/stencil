@@ -3,19 +3,22 @@ use std::{cmp::Ordering, sync::Arc};
 use itertools::Itertools;
 use rand::distr::{Alphanumeric, SampleString};
 
-use crate::project::{pla3::PlaComponent, skin::Skin};
+use crate::project::{
+    pla3::{FullId, PlaComponent},
+    skin::Skin,
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct ComponentList(Vec<ComponentListItem>);
 #[derive(Debug, Clone)]
 struct ComponentListItem {
-    pub value: Arc<PlaComponent>,
+    pub value: PlaComponent,
     pub order: usize,
 }
 
 impl PartialEq for ComponentListItem {
     fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.value, &other.value)
+        self.value == other.value
     }
 }
 impl Eq for ComponentListItem {}
@@ -31,8 +34,13 @@ impl Ord for ComponentListItem {
             .layer
             .total_cmp(&other.value.layer)
             .then_with(|| self.order.cmp(&other.order))
-            .then_with(|| self.value.namespace.cmp(&other.value.namespace))
-            .then_with(|| self.value.id.cmp(&other.value.id))
+            .then_with(|| {
+                self.value
+                    .full_id
+                    .namespace
+                    .cmp(&other.value.full_id.namespace)
+            })
+            .then_with(|| self.value.full_id.id.cmp(&other.value.full_id.id))
     }
 }
 
@@ -40,7 +48,7 @@ impl ComponentListItem {
     fn from_component(item: PlaComponent, skin: &Skin) -> Self {
         Self {
             order: skin.order[item.ty.name()],
-            value: Arc::new(item),
+            value: item,
         }
     }
 }
@@ -77,17 +85,17 @@ impl ComponentList {
         let item = ComponentListItem::from_component(item, skin);
         self.0.insert(self.insert_position(&item), item);
     }
-    pub fn iter(&self) -> impl Iterator<Item = &Arc<PlaComponent>> {
+    pub fn iter(&self) -> impl Iterator<Item = &PlaComponent> {
         self.0.iter().map(|a| &a.value)
     }
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Arc<PlaComponent>> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut PlaComponent> {
         self.0.iter_mut().map(|a| &mut a.value)
     }
-    pub fn reorder(&mut self, item: Arc<PlaComponent>) {
+    pub fn reorder(&mut self, item: &FullId) {
         let (i_old, item) = self
             .0
             .iter()
-            .find_position(|a| Arc::ptr_eq(&a.value, &item))
+            .find_position(|a| &a.value.full_id == item)
             .unwrap();
         let i_new = self.insert_position(item);
         match i_old.cmp(&i_new) {
@@ -96,7 +104,7 @@ impl ComponentList {
             Ordering::Equal => {}
         }
     }
-    pub fn for_each<T, F: FnMut(&mut Arc<PlaComponent>) -> T>(
+    pub fn for_each<T, F: FnMut(&mut PlaComponent) -> T>(
         &mut self,
         skin: &Skin,
         mut f: F,
@@ -113,27 +121,27 @@ impl ComponentList {
                 #[expect(clippy::float_cmp)]
                 if !Arc::ptr_eq(&old_component_type, &value.ty) || old_layer != value.layer {
                     *order = skin.order[value.ty.name()];
-                    reorders.push(Arc::clone(value));
+                    reorders.push(value.full_id.to_owned());
                 }
 
                 out
             })
             .collect();
         for component in reorders {
-            self.reorder(component);
+            self.reorder(&component);
         }
 
         out
     }
     pub fn remove_namespace(&mut self, namespace: &str) {
-        self.0.retain(|a| a.value.namespace != namespace);
+        self.0.retain(|a| a.value.full_id.namespace != namespace);
     }
     pub fn get_new_id(&self, namespace: &str) -> String {
         let id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         if self
             .0
             .iter()
-            .any(|a| a.value.namespace == namespace && a.value.id == id)
+            .any(|a| a.value.full_id.namespace == namespace && a.value.full_id.id == id)
         {
             return self.get_new_id(namespace);
         }

@@ -13,7 +13,7 @@ use crate::{
     mode::EditorMode,
     project::{
         SkinStatus,
-        pla3::{PlaComponent, PlaNode},
+        pla3::{FullId, PlaComponent, PlaNode},
         skin::SkinType,
     },
     shortcut::ShortcutAction,
@@ -41,7 +41,9 @@ pub struct MapWindow {
     pub created_area_type: Option<Arc<SkinType>>,
 
     #[serde(skip)]
-    pub hovered_component: Option<Arc<PlaComponent>>,
+    pub hovered_component: Option<FullId>,
+    #[serde(skip)]
+    pub selected_components: Vec<FullId>,
 }
 
 impl Default for MapWindow {
@@ -55,6 +57,7 @@ impl Default for MapWindow {
             created_line_type: None,
             created_area_type: None,
             hovered_component: None,
+            selected_components: Vec::new(),
         }
     }
 }
@@ -67,6 +70,7 @@ impl MapWindow {
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
     }
 }
+
 impl DockLayout {
     pub fn map_window_mut(&mut self) -> &mut MapWindow {
         let Some((_, DockWindows::MapWindow(map_window))) =
@@ -346,6 +350,7 @@ impl MapWindow {
         painter: &egui::Painter,
     ) {
         self.paint_components(app, ui, response, painter);
+        self.select_components(app, ui, response);
 
         match app.mode {
             EditorMode::CreatePoint => self.create_point(app, ui, response, painter),

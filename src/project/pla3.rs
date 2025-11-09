@@ -92,9 +92,25 @@ impl PlaNode {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct PlaComponent {
+pub struct FullId {
     pub namespace: String,
     pub id: String,
+}
+impl Display for FullId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}-{}", self.namespace, self.id)?;
+        Ok(())
+    }
+}
+impl FullId {
+    pub const fn new(namespace: String, id: String) -> Self {
+        Self { namespace, id }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlaComponent {
+    pub full_id: FullId,
     pub ty: Arc<SkinType>,
     pub display_name: String,
     pub layer: f32,
@@ -104,7 +120,7 @@ pub struct PlaComponent {
 
 impl Display for PlaComponent {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}-{}", self.namespace, self.id)?;
+        write!(f, "{}", self.full_id)?;
         if !self.display_name.is_empty() {
             write!(f, " ({})", self.display_name)?;
         }
@@ -114,12 +130,12 @@ impl Display for PlaComponent {
 
 impl PlaComponent {
     pub fn path(&self, root: &Path) -> PathBuf {
-        root.join(&self.namespace).join(format!("{}.pla3", self.id))
+        root.join(&self.full_id.namespace)
+            .join(format!("{}.pla3", self.full_id.id))
     }
     pub fn load_from_string(
         s: &str,
-        namespace: String,
-        id: String,
+        full_id: FullId,
         project: &Project,
     ) -> Result<(Self, Option<Report>)> {
         fn get_coord(split: &[&str], i: usize) -> Result<geo::Coord<i32>> {
@@ -204,9 +220,8 @@ impl PlaComponent {
                     {
                         skin_component = Arc::clone(s);
                     } else {
-                        unknown_type_error = Some(eyre!(
-                            "Unknown skin type for component {namespace}-{id}: {v}"
-                        ));
+                        unknown_type_error =
+                            Some(eyre!("Unknown skin type for component {full_id}: {v}"));
                     }
                 }
                 _ => {
@@ -217,8 +232,7 @@ impl PlaComponent {
 
         Ok((
             Self {
-                namespace,
-                id,
+                full_id,
                 ty: skin_component,
                 display_name,
                 layer,
