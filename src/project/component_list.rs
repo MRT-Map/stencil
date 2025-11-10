@@ -136,6 +136,30 @@ impl ComponentList {
     pub fn remove_namespace(&mut self, namespace: &str) {
         self.0.retain(|a| a.value.full_id.namespace != namespace);
     }
+    pub fn remove(&mut self, component: &PlaComponent) -> bool {
+        let Some(pos) = self.iter().position(|a| a == component) else {
+            return false;
+        };
+        self.0.remove(pos);
+        true
+    }
+    pub fn remove_multiple(&mut self, components: &[PlaComponent]) -> bool {
+        let positions = self
+            .iter()
+            .positions(|a| components.contains(a))
+            .collect::<Vec<_>>();
+        if positions.len() < components.len() {
+            return false;
+        }
+        self.0 = self
+            .0
+            .drain(..)
+            .enumerate()
+            .filter(|(i, _)| !positions.contains(i))
+            .map(|(_, a)| a)
+            .collect();
+        true
+    }
     pub fn get_new_id(&self, namespace: &str) -> String {
         let id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         if self

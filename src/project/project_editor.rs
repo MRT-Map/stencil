@@ -148,8 +148,10 @@ impl DockWindow for ProjectEditorWindow {
                             )
                             .clicked()
                         {
-                            app.run_event(ProjectEv::Create(self.new_namespace.clone()), ui.ctx());
-                            self.new_namespace.clear();
+                            app.run_event(
+                                ProjectEv::Create(std::mem::take(&mut self.new_namespace)),
+                                ui.ctx(),
+                            );
                         }
                     });
                 });

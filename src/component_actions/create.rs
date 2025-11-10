@@ -5,6 +5,7 @@ use tracing::info;
 
 use crate::{
     App,
+    component_actions::ComponentEv,
     map::MapWindow,
     project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };
@@ -75,8 +76,7 @@ impl MapWindow {
             misc: HashMap::default(),
         };
         info!(?world_coord, %component, "Created new point");
-
-        app.project.components.insert(skin, component);
+        app.add_event(ComponentEv::Create(vec![component]));
     }
     #[inline]
     pub fn create_line(
@@ -303,8 +303,7 @@ impl MapWindow {
                     misc: HashMap::default(),
                 };
                 info!(?component.nodes, %component, "Created new {}", if IS_LINE {"line"} else {"area"});
-
-                app.project.components.insert(skin, component);
+                app.add_event(ComponentEv::Create(vec![component]));
             } else {
                 self.created_nodes.clear();
                 info!(

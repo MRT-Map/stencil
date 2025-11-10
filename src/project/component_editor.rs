@@ -5,7 +5,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    project::{pla3::PlaNode, skin::SkinType},
+    component_actions::ComponentEv,
+    project::{
+        pla3::{PlaComponent, PlaNode},
+        skin::SkinType,
+    },
     ui::dock::DockWindow,
 };
 
@@ -32,6 +36,24 @@ impl DockWindow for ComponentEditorWindow {
             ui.heading("Select components...");
             return;
         }
+
+        let mut events_to_add = Vec::new();
+        let mut old_selected_components = selected_components
+            .iter()
+            .map(|a| (**a).clone())
+            .collect::<Vec<_>>();
+        let mut add_event = |label: &'static str, selected_components: &[&mut PlaComponent]| {
+            let new_components = selected_components
+                .iter()
+                .map(|a| (**a).clone())
+                .collect::<Vec<_>>();
+            events_to_add.push(ComponentEv::ChangeField {
+                before: std::mem::take(&mut old_selected_components),
+                after: new_components.clone(),
+                label,
+            });
+            old_selected_components = new_components;
+        };
 
         ui.heading("Edit component data");
         ui.end_row();
@@ -65,16 +87,22 @@ impl DockWindow for ComponentEditorWindow {
                             for component in &mut selected_components {
                                 ns.clone_into(&mut component.full_id.namespace);
                             }
+                            add_event("namespace", &selected_components);
                         }
                     }
                 });
 
             if let Ok(component) = selected_components.iter_mut().exactly_one() {
-                ui.add(
-                    egui::TextEdit::singleline(&mut component.full_id.id)
-                        .hint_text("id")
-                        .desired_width(f32::INFINITY),
-                );
+                if ui
+                    .add(
+                        egui::TextEdit::singleline(&mut component.full_id.id)
+                            .hint_text("id")
+                            .desired_width(f32::INFINITY),
+                    )
+                    .changed()
+                {
+                    add_event("id", &selected_components);
+                }
             } else {
                 ui.label(egui::RichText::new("mixed ids").italics());
             }
@@ -104,6 +132,7 @@ impl DockWindow for ComponentEditorWindow {
             for component in &mut selected_components {
                 new_display_name.clone_into(&mut component.display_name);
             }
+            add_event("display_name", &selected_components);
         }
         ui.end_row();
 
@@ -167,6 +196,7 @@ impl DockWindow for ComponentEditorWindow {
                             for component in &mut selected_components {
                                 component.ty = Arc::clone(ty);
                             }
+                            add_event("ty", &selected_components);
                         }
                     });
             });
@@ -193,6 +223,7 @@ impl DockWindow for ComponentEditorWindow {
             for component in &mut selected_components {
                 component.layer = new_layer;
             }
+            add_event("layer", &selected_components);
         }
 
         ui.end_row();
@@ -203,6 +234,7 @@ impl DockWindow for ComponentEditorWindow {
                 for _component in &mut selected_components {
                     // TODO reverse
                 }
+                add_event("reverse", &selected_components);
             }
             ui.end_row();
             ui.separator();
@@ -282,5 +314,9 @@ impl DockWindow for ComponentEditorWindow {
                     }
                 }
             });
+
+        for ev in events_to_add {
+            app.add_event(ev);
+        }
     }
 }
