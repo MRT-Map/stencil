@@ -4,14 +4,17 @@ use tracing::info;
 
 use crate::{
     App,
-    info_windows::InfoWindowEv,
+    info_windows::{
+        changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
+        quit::QuitPopup,
+    },
     project::{
         component_editor::ComponentEditorWindow,
         project_editor::{ProjectEditorWindow, ProjectEv},
     },
     settings::SettingsWindow,
     shortcut::ShortcutAction,
-    ui::{dock::ResetLayoutEv, notif::NotifLogWindow},
+    ui::notif::NotifLogWindow,
 };
 
 impl App {
@@ -19,16 +22,16 @@ impl App {
         egui::TopBottomPanel::top("menu").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
-                    ($ui:ident, event $label:literal, $event:expr) => {
+                    ($ui:ident, fn $label:literal, $f:block) => {
                         if $ui.button($label).clicked() {
                             info!(label = $label, "Clicked menu item");
-                            self.push_event($event);
+                            $f
                         }
                     };
-                    ($ui:ident, event $label:literal, $event:expr, $action:expr) => {
+                    ($ui:ident, fn $label:literal, $f:block, $action:expr) => {
                         if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
                             info!(label = $label, "Clicked menu item");
-                            self.push_event($event);
+                            $f
                         }
                     };
                     ($ui:ident, window $label:literal, $window:expr) => {
@@ -46,19 +49,31 @@ impl App {
                 }
 
                 ui.menu_button(format!("Stencil v{}", env!("CARGO_PKG_VERSION")), |ui| {
-                    button!(ui, event "Info", InfoWindowEv::Info);
-                    button!(ui, event "Changelog", InfoWindowEv::Changelog);
-                    button!(ui, event "Manual", InfoWindowEv::Manual);
-                    button!(ui, event "Licenses", InfoWindowEv::Licenses);
+                    button!(ui, fn "Info", {
+                        self.add_popup(InfoPopup);
+                    });
+                    button!(ui, fn "Changelog", {
+                        self.add_popup(ChangelogPopup);
+                    });
+                    button!(ui, fn "Manual", {
+                        self.add_popup(ManualPopup);
+                    });
+                    button!(ui, fn "Licenses", {
+                        self.add_popup(LicensesPopup::default());
+                    });
                     ui.separator();
                     button!(ui, window "Settings", SettingsWindow::default(), ShortcutAction::SettingsWindow);
                     ui.separator();
-                    button!(ui, event "Quit", InfoWindowEv::Quit { confirm: false }, ShortcutAction::Quit);
+                    button!(ui, fn "Quit", {
+                        self.add_popup(QuitPopup);
+                    }, ShortcutAction::Quit);
                 });
                 ui.menu_button("File", |ui| {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
                     // button!(ui, commands, "Reload", ProjectEv::Reload);
-                    button!(ui, event "Save", ProjectEv::Save, ShortcutAction::SaveProject);
+                    button!(ui, fn "Save", {
+                        self.project.save_notif(&mut self.ui.notifs);
+                    }, ShortcutAction::SaveProject);
                 });
                 ui.menu_button("Edit", |_ui| {
                     // button!(ui, commands, "Undo", HistoryEv::Undo);
@@ -71,7 +86,9 @@ impl App {
                     // button!(ui, commands, "History", OpenHistoryViewerEv);
                     button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();
-                    button!(ui, event "Reset Layout", ResetLayoutEv);
+                    button!(ui, fn "Reset Layout", {
+                        self.ui.dock_layout.reset();
+                    });
                 });
                 #[cfg(debug_assertions)]
                 {

@@ -4,11 +4,12 @@ use tracing::info;
 
 use crate::{
     App,
-    event::Event,
     file::data_path,
     impl_load_save,
     map::MapWindow,
-    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
+    project::{
+        component_editor::ComponentEditorWindow, event::Event, project_editor::ProjectEditorWindow,
+    },
     settings::SettingsWindow,
     ui::notif::NotifLogWindow,
 };
@@ -65,6 +66,11 @@ impl Default for DockLayout {
         Self(state)
     }
 }
+impl DockLayout {
+    pub fn reset(&mut self) {
+        *self = DockLayout::default();
+    }
+}
 
 impl egui_dock::TabViewer for App {
     type Tab = DockWindows;
@@ -110,15 +116,5 @@ impl App {
             info!("Creating new window {}", window.title());
             self.ui.dock_layout.0.add_window(vec![window]);
         }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct ResetLayoutEv;
-
-impl Event for ResetLayoutEv {
-    fn react(self, _ctx: &egui::Context, app: &mut App) {
-        app.ui.dock_layout = DockLayout::default();
-        app.reset_map_window();
     }
 }

@@ -1,16 +1,14 @@
-use egui::TextBuffer;
 use egui_notify::ToastLevel;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    event::Event,
     file::safe_delete,
-    project::{Project, SkinStatus},
+    project::{Project, SkinStatus, event::Event},
     settings::settings_ui_field,
     shortcut::ShortcutAction,
-    ui::dock::DockWindow,
+    ui::{dock::DockWindow, notif::NotifState},
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
@@ -62,7 +60,7 @@ impl DockWindow for ProjectEditorWindow {
                 )
                 .clicked()
             {
-                app.push_event(ProjectEv::Save);
+                app.project.save_notif(&mut app.ui.notifs);
             }
         });
         ui.separator();
@@ -95,25 +93,24 @@ impl DockWindow for ProjectEditorWindow {
                 });
             })
             .body(|mut body| {
-                for (ns, vis) in &app.project.namespaces {
+                for (ns, mut vis) in app.project.namespaces.clone() {
                     body.row(20.0, |mut row| {
                         row.col(|ui| {
                             if app.project.path.is_none() {
                                 return;
                             }
-                            let mut new_vis = *vis;
-                            if ui.checkbox(&mut new_vis, "").changed() {
-                                if new_vis {
-                                    app.events.push_back(ProjectEv::Load(ns.clone()).into());
+                            if ui.checkbox(&mut vis, "").changed() {
+                                if vis {
+                                    app.run_event(ProjectEv::Load(ns.clone()), ui.ctx());
                                 } else {
-                                    app.events.push_back(ProjectEv::Hide(ns.clone()).into());
+                                    app.run_event(ProjectEv::Hide(ns.clone()), ui.ctx());
                                 }
                             }
                         });
                         row.col(|ui| {
-                            ui.label(egui::RichText::new(ns).code());
+                            ui.label(egui::RichText::new(&ns).code());
                         });
-                        let num_components = app.project.namespace_component_count(ns);
+                        let num_components = app.project.namespace_component_count(&ns);
                         row.col(|ui| {
                             ui.label(
                                 num_components
@@ -129,8 +126,7 @@ impl DockWindow for ProjectEditorWindow {
                                 )
                                 .clicked()
                             {
-                                app.events
-                                    .push_back(ProjectEv::Delete(ns.to_owned()).into());
+                                app.run_event(ProjectEv::Delete(ns), ui.ctx());
                             }
                         });
                     });
@@ -152,8 +148,8 @@ impl DockWindow for ProjectEditorWindow {
                             )
                             .clicked()
                         {
-                            app.events
-                                .push_back(ProjectEv::Create(self.new_namespace.take()).into());
+                            app.run_event(ProjectEv::Create(self.new_namespace.clone()), ui.ctx());
+                            self.new_namespace.clear();
                         }
                     });
                 });
@@ -208,13 +204,12 @@ pub enum ProjectEv {
     Hide(String),
     Create(String),
     Delete(String),
-    Save,
 }
 
 impl Event for ProjectEv {
-    fn react(self, _ctx: &egui::Context, app: &mut App) {
+    fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
         match self {
-            Self::Load(namespace) => match app.project.load_namespace(&namespace) {
+            Self::Load(namespace) => match app.project.load_namespace(namespace) {
                 Ok(errors) => {
                     if !errors.is_empty() {
                         app.ui.notifs.push(
@@ -229,19 +224,23 @@ impl Event for ProjectEv {
                         format!("Loaded namespace `{namespace}`"),
                         ToastLevel::Success,
                     );
-                    app.project.namespaces.insert(namespace, true);
+                    app.project.namespaces.insert(namespace.clone(), true);
+                    true
                 }
-                Err(e) => app.ui.notifs.push(
-                    format!("Error while loading `{namespace}`: {e}"),
-                    ToastLevel::Error,
-                ),
+                Err(e) => {
+                    app.ui.notifs.push(
+                        format!("Error while loading `{namespace}`: {e}"),
+                        ToastLevel::Error,
+                    );
+                    false
+                }
             },
             Self::Hide(namespace) => {
                 let components = app
                     .project
                     .components
                     .iter()
-                    .filter(|a| a.full_id.namespace == namespace);
+                    .filter(|a| a.full_id.namespace == *namespace);
                 let errors = app.project.save_components(components);
                 if !errors.is_empty() {
                     app.ui.notifs.push_errors(
@@ -249,17 +248,18 @@ impl Event for ProjectEv {
                         &errors,
                         ToastLevel::Warning,
                     );
-                    return;
+                    return false;
                 }
-                app.project.components.remove_namespace(&namespace);
+                app.project.components.remove_namespace(namespace);
                 app.ui
                     .notifs
                     .push(format!("Hid namespace `{namespace}`"), ToastLevel::Success);
-                app.project.namespaces.insert(namespace, false);
+                app.project.namespaces.insert(namespace.clone(), false);
+                true
             }
             Self::Create(namespace) => {
                 if let Some(path) = &app.project.path
-                    && let Err(e) = std::fs::create_dir_all(path.join(&namespace))
+                    && let Err(e) = std::fs::create_dir_all(path.join(namespace))
                 {
                     app.ui.notifs.push_error(
                         format!("Error while creating `{namespace}`"),
@@ -272,44 +272,42 @@ impl Event for ProjectEv {
                     ToastLevel::Success,
                 );
                 app.project.namespaces.insert(namespace.clone(), true);
-                app.project.new_component_ns = namespace;
+                app.project.new_component_ns.clone_from(namespace);
+                true
             }
             Self::Delete(namespace) => {
                 if app
                     .project
                     .components
                     .iter()
-                    .any(|a| a.full_id.namespace == namespace)
+                    .any(|a| a.full_id.namespace == *namespace)
                 {
                     app.ui.notifs.push(
                         format!("Attempted to delete non-empty namespace `{namespace}`"),
                         ToastLevel::Error,
                     );
-                    return;
+                    return false;
                 }
                 if let Some(path) = &app.project.path {
-                    let _ = safe_delete(path.join(&namespace), &mut app.ui.notifs);
+                    let _ = safe_delete(path.join(namespace), &mut app.ui.notifs);
                 }
-                app.project.components.remove_namespace(&namespace);
-                app.project.namespaces.remove(&namespace);
+                app.project.components.remove_namespace(namespace);
+                app.project.namespaces.remove(namespace);
                 app.ui.notifs.push(
                     format!("Deleted namespace `{namespace}`"),
                     ToastLevel::Success,
                 );
-            }
-            Self::Save => {
-                if app.project.path.is_none() {
-                    return;
-                }
-                let errors = app.project.save();
-                if !errors.is_empty() {
-                    app.ui
-                        .notifs
-                        .push_errors("Errors while saving", &errors, ToastLevel::Warning);
-                    return;
-                }
-                app.ui.notifs.push("Saved project", ToastLevel::Success);
+                true
             }
         }
+    }
+    fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool {
+        match self {
+            Self::Load(ns) => Self::Hide(ns.clone()),
+            Self::Hide(ns) => Self::Load(ns.clone()),
+            Self::Create(ns) => Self::Delete(ns.clone()),
+            Self::Delete(ns) => Self::Create(ns.clone()),
+        }
+        .run(ctx, app)
     }
 }

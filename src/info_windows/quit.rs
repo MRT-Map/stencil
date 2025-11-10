@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{App, event::Events, info_windows::InfoWindowEv, ui::popup::Popup};
+use crate::{App, project::event::Events, ui::popup::Popup};
 
 #[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct QuitPopup;
@@ -19,8 +19,10 @@ impl Popup for QuitPopup {
             app,
             ui,
             "You may have unsaved changes",
-            Some(InfoWindowEv::Quit { confirm: true }),
-            Option::<Events>::None,
+            Some(|ctx: &egui::Context, _app: &mut App| {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }),
+            Option::<fn(&_, &mut _)>::None,
         )
     }
 }

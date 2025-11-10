@@ -4,11 +4,11 @@ use tracing::info;
 
 use crate::{
     App,
-    event::Events,
     info_windows::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
+    project::event::Events,
 };
 
 #[enum_dispatch]
@@ -31,14 +31,14 @@ pub trait Popup {
         app: &mut App,
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
-        close_event: Option<impl Into<Events>>,
+        close_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
     ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label(text);
         });
         if ui.button("Close").clicked() {
-            if let Some(close_event) = close_event {
-                app.push_event(close_event.into());
+            if let Some(close_fn) = close_fn {
+                close_fn(ui.ctx(), app)
             }
             false
         } else {
@@ -50,10 +50,10 @@ pub trait Popup {
         app: &mut App,
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
-        yes_event: Option<impl Into<Events>>,
-        no_event: Option<impl Into<Events>>,
+        yes_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
+        no_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
     ) -> bool {
-        self.choice_ui(app, ui, text, "Yes", yes_event, "No", no_event)
+        self.choice_ui(app, ui, text, "Yes", yes_fn, "No", no_fn)
     }
     fn choice_ui<'a>(
         &mut self,
@@ -61,22 +61,22 @@ pub trait Popup {
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
         text1: impl egui::IntoAtoms<'a>,
-        event1: Option<impl Into<Events>>,
+        fn1: Option<impl FnOnce(&egui::Context, &mut App)>,
         text2: impl egui::IntoAtoms<'a>,
-        event2: Option<impl Into<Events>>,
+        fn2: Option<impl FnOnce(&egui::Context, &mut App)>,
     ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label(text);
         });
         ui.horizontal(|ui| {
             if ui.button(text1).clicked() {
-                if let Some(event1) = event1 {
-                    app.push_event(event1.into());
+                if let Some(fn1) = fn1 {
+                    fn1(ui.ctx(), app)
                 }
                 false
             } else if ui.button(text2).clicked() {
-                if let Some(event2) = event2 {
-                    app.push_event(event2.into());
+                if let Some(fn2) = fn2 {
+                    fn2(ui.ctx(), app)
                 }
                 false
             } else {

@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App,
-    info_windows::InfoWindowEv,
+    App, info_windows,
+    info_windows::quit::QuitPopup,
     mode::EditorMode,
     project::{
         component_editor::ComponentEditorWindow,
@@ -81,9 +81,9 @@ impl App {
                 "Handling shortcut"
             );
             match action {
-                ShortcutAction::Quit => self.push_event(InfoWindowEv::Quit {
-                    confirm: cfg!(debug_assertions),
-                }),
+                ShortcutAction::Quit => {
+                    self.add_popup(QuitPopup);
+                }
                 ShortcutAction::SettingsWindow => {
                     self.open_dock_window(SettingsWindow::default());
                 }
@@ -97,7 +97,7 @@ impl App {
                     self.open_dock_window(ProjectEditorWindow::default());
                 }
                 ShortcutAction::SaveProject => {
-                    self.push_event(ProjectEv::Save);
+                    self.project.save_notif(&mut self.ui.notifs);
                 }
                 ShortcutAction::EditorModeSelect => {
                     self.mode = EditorMode::Select;

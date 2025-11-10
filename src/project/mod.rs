@@ -1,5 +1,6 @@
 pub mod component_editor;
 pub mod component_list;
+pub mod event;
 pub mod pla3;
 pub mod project_editor;
 pub mod skin;
@@ -8,6 +9,8 @@ use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 
 use async_executor::Task;
 use egui::ahash::HashMap;
+use egui_notify::ToastLevel;
+use event::UndoTree;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use serde::{Deserialize, Serialize};
@@ -22,6 +25,7 @@ use crate::{
         pla3::{FullId, PlaComponent},
         skin::Skin,
     },
+    ui::notif::NotifState,
 };
 
 #[derive(Debug, Default)]
@@ -33,7 +37,6 @@ pub enum SkinStatus {
     Loaded(&'static Skin),
 }
 
-#[derive(Debug)]
 pub struct Project {
     pub basemap: Basemap,
     pub skin_status: SkinStatus,
@@ -42,6 +45,7 @@ pub struct Project {
     pub namespaces: HashMap<String, bool>,
     pub new_component_ns: String,
     pub path: Option<PathBuf>,
+    pub undo_tree: UndoTree,
 }
 
 impl Default for Project {
@@ -54,6 +58,7 @@ impl Default for Project {
             namespaces: HashMap::from_iter([("default".into(), true)]),
             new_component_ns: String::new(),
             path: None,
+            undo_tree: UndoTree::default(),
         }
     }
 }
@@ -215,6 +220,17 @@ impl Project {
         }
 
         Ok(errors)
+    }
+    pub fn save_notif(&self, notifs: &mut NotifState) {
+        if self.path.is_none() {
+            return;
+        }
+        let errors = self.save();
+        if !errors.is_empty() {
+            notifs.push_errors("Errors while saving", &errors, ToastLevel::Warning);
+            return;
+        }
+        notifs.push("Saved project", ToastLevel::Success);
     }
     pub fn save(&self) -> Vec<Report> {
         let Some(path) = &self.path else {

@@ -1,5 +1,4 @@
 mod component_actions;
-mod event;
 mod file;
 mod info_windows;
 mod load_save;
@@ -16,10 +15,10 @@ use std::{collections::VecDeque, sync::LazyLock, time::Instant};
 use async_executor::StaticExecutor;
 use eframe::egui;
 use lazy_regex::{Regex, lazy_regex};
+use project::event::{Event, Events};
 use tracing::info;
 
 use crate::{
-    event::{Event, Events},
     file::DATA_DIR,
     load_save::LoadSave,
     logging::init_logger,
@@ -69,8 +68,6 @@ struct App {
 
     mode: EditorMode,
     project: Project,
-
-    events: VecDeque<Events>,
 }
 
 impl App {
@@ -118,10 +115,6 @@ impl eframe::App for App {
         self.notifs(ctx);
 
         self.shortcuts(ctx);
-
-        while let Some(event) = self.events.pop_front() {
-            event.log_react(ctx, self);
-        }
 
         let end = Instant::now();
         self.ui
