@@ -67,7 +67,7 @@ impl DockWindow for ComponentEditorWindow {
                 .exactly_one()
                 .cloned()
                 .ok();
-            egui::ComboBox::from_label("ns.")
+            egui::ComboBox::from_id_salt("component namespace")
                 .selected_text(
                     namespace
                         .as_ref()

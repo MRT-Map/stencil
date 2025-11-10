@@ -34,6 +34,7 @@ impl Default for ShortcutSettings {
         shortcut!(HistoryViewerWindow => COMMAND | ALT + H);
         shortcut!(NotifLogWindow => COMMAND | ALT + N);
         shortcut!(ProjectEditorWindow => COMMAND | ALT + P);
+        shortcut!(ResetMapView => COMMAND + Backtick);
         shortcut!(PanMapUp -> ArrowUp);
         shortcut!(PanMapDown -> ArrowDown);
         shortcut!(PanMapLeft -> ArrowLeft);

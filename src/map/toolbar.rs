@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use tracing::info;
-
 use crate::{
     App,
     map::MapWindow,
     mode::EditorMode,
     project::{project_editor::ProjectEditorWindow, skin::SkinType},
+    shortcut::{ShortcutAction, UiButtonWithShortcutExt},
 };
 
 impl MapWindow {
@@ -30,7 +29,7 @@ impl MapWindow {
                 button!("Area", EditorMode::CreateArea);
 
                 let mut in_namespace = |app: &mut App| {
-                    ui.label("in namespace");
+                    ui.label("in ns.");
                     if !app.project.new_component_ns.is_empty()
                         && app
                             .project
@@ -158,8 +157,14 @@ impl MapWindow {
                 }
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
-                    if ui.button("Reset View").clicked() {
-                        info!("Resetting view");
+                    if ui
+                        .button_with_shortcut(
+                            "Reset View",
+                            ShortcutAction::ResetMapView,
+                            &mut app.shortcut_settings,
+                        )
+                        .clicked()
+                    {
                         self.reset(app);
                     }
                     if let Some(prev_cursor_world_pos) = self.cursor_world_pos {

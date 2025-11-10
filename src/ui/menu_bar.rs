@@ -84,13 +84,17 @@ impl App {
                     }, ShortcutAction::Redo);
                 });
                 ui.menu_button("View", |ui| {
+                    ui.label("Windows");
                     // button!(ui, commands, "Component List", OpenComponentListEv);
                     button!(ui, window "Component", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
                     button!(ui, window "Project", ProjectEditorWindow::default(), ShortcutAction::ProjectEditorWindow);
                     button!(ui, window "History", HistoryViewerWindow, ShortcutAction::HistoryViewerWindow);
                     button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();
-                    button!(ui, fn "Reset Layout", {
+                    button!(ui, fn "Reset Map View", {
+                        self.reset_map_window();
+                    }, ShortcutAction::ResetMapView);
+                    button!(ui, fn "Reset Window Layout", {
                         self.ui.dock_layout.reset();
                         self.reset_map_window();
                     });

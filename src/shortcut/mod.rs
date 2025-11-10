@@ -42,6 +42,7 @@ pub enum ShortcutAction {
     PanMapRight,
     ZoomMapIn,
     ZoomMapOut,
+    ResetMapView,
     OpenProject,
     ReloadProject,
     SaveProject,
@@ -100,6 +101,9 @@ impl App {
                 }
                 ShortcutAction::ProjectEditorWindow => {
                     self.open_dock_window(ProjectEditorWindow::default());
+                }
+                ShortcutAction::ResetMapView => {
+                    self.reset_map_window();
                 }
                 ShortcutAction::SaveProject => {
                     self.project.save_notif(&mut self.ui.notifs);

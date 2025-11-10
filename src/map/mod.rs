@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use tracing::error;
+use tracing::{error, info};
 
 use crate::{
     App,
@@ -66,6 +66,7 @@ impl MapWindow {
         self.reset2(&app.map_settings, &app.project.basemap);
     }
     pub fn reset2(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
+        info!("Resetting map view");
         self.centre_coord = geo::Coord::zero();
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
     }
