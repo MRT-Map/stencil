@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
-use itertools::Either;
+use geo::Vector2DOps;
+use itertools::{Either, Itertools};
 use tracing::info;
 
 use crate::{
@@ -9,6 +10,29 @@ use crate::{
     map::MapWindow,
     project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };
+
+const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
+    geo::Coord::<f32> { x: 4.0, y: 0.0 },
+    geo::Coord::<f32> { x: 4.0, y: 1.0 },
+    geo::Coord::<f32> { x: 3.0, y: 1.0 },
+    geo::Coord::<f32> { x: 2.0, y: 1.0 },
+    geo::Coord::<f32> { x: 1.5, y: 1.0 },
+    geo::Coord::<f32> { x: 1.0, y: 1.0 },
+    geo::Coord::<f32> { x: 1.0, y: 1.5 },
+    geo::Coord::<f32> { x: 1.0, y: 2.0 },
+    geo::Coord::<f32> { x: 1.0, y: 3.0 },
+    geo::Coord::<f32> { x: 1.0, y: 4.0 },
+    geo::Coord::<f32> { x: 0.0, y: 4.0 },
+    geo::Coord::<f32> { x: -1.0, y: 4.0 },
+    geo::Coord::<f32> { x: -1.0, y: 3.0 },
+    geo::Coord::<f32> { x: -1.0, y: 2.0 },
+    geo::Coord::<f32> { x: -1.0, y: 1.5 },
+    geo::Coord::<f32> { x: -1.0, y: 1.0 },
+    geo::Coord::<f32> { x: -1.5, y: 1.0 },
+    geo::Coord::<f32> { x: -2.0, y: 1.0 },
+    geo::Coord::<f32> { x: -3.0, y: 1.0 },
+    geo::Coord::<f32> { x: -4.0, y: 1.0 },
+];
 
 impl MapWindow {
     pub fn create_point(
@@ -140,10 +164,52 @@ impl MapWindow {
             (Either::Right(ty), Either::Right(style))
         };
 
-        let world_coord = geo::coord! {
+        let mut world_coord = geo::coord! {
             x: cursor_world_pos.x.round() as i32,
             y: cursor_world_pos.y.round() as i32,
         };
+
+        if ui.ctx().input(|a| a.modifiers.alt)
+            && let Some(prev_coord) = match self.created_nodes.last() {
+                Some(PlaNode::Line { .. }) => self
+                    .created_nodes
+                    .get(self.created_nodes.len() - 2)
+                    .map(|a| a.coord()),
+                Some(PlaNode::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
+                Some(PlaNodeBase::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
+                None => None,
+            }
+            && world_coord != prev_coord
+        {
+            let angle_vec = {
+                let c = world_coord - prev_coord;
+                geo::coord! {
+                    x: c.x as f32,
+                    y: c.y as f32
+                }
+            };
+            let (closest_angle_vec, _) = ANGLE_VECTORS
+                .into_iter()
+                .chain(ANGLE_VECTORS.into_iter().map(|a| -a))
+                .map(|v| {
+                    (
+                        v,
+                        v.try_normalize()
+                            .unwrap()
+                            .dot_product(angle_vec.try_normalize().unwrap()),
+                    )
+                })
+                .sorted_by(|(_, k1), (_, k2)| k1.total_cmp(k2))
+                .next()
+                .unwrap();
+            // adapted from https://docs.rs/glam/latest/src/glam/f32/vec2.rs.html#618-622
+            let world_coord_f32 = closest_angle_vec * angle_vec.dot_product(closest_angle_vec)
+                / closest_angle_vec.dot_product(closest_angle_vec);
+            world_coord = geo::coord! {
+                x: world_coord_f32.x.round() as i32,
+                y: world_coord_f32.y.round() as i32,
+            } + prev_coord;
+        }
 
         match self.created_nodes.last_mut() {
             None => self.created_nodes.push(PlaNode::Line {
