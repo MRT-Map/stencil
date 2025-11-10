@@ -12,13 +12,10 @@ pub enum EditorMode {
 }
 
 impl EditorMode {
-    // #[must_use]
-    // pub const fn component_type(self) -> Option<ComponentType> {
-    //     match self {
-    //         Self::CreatingArea => Some(ComponentType::Area),
-    //         Self::CreatingLine => Some(ComponentType::Line),
-    //         Self::CreatingPoint => Some(ComponentType::Point),
-    //         _ => None,
-    //     }
-    // }
+    pub const fn is_editing(self) -> bool {
+        matches!(
+            self,
+            Self::CreatePoint | Self::CreateLine | Self::CreateArea
+        )
+    }
 }

@@ -52,15 +52,18 @@ impl MapWindow {
                     .any(|a| a == &component.full_id),
                 component,
             );
-            match result {
-                PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
-                    self.hovered_component = Some(component.full_id.clone());
-                    hovered_shapes.extend(Self::hover_dash(&path));
+
+            if !app.mode.is_editing() {
+                match result {
+                    PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
+                        self.hovered_component = Some(component.full_id.clone());
+                        hovered_shapes.extend(Self::hover_dash(&path));
+                    }
+                    PaintResult::Selected(path) => {
+                        hovered_shapes.extend(Self::select_dash(&path));
+                    }
+                    PaintResult::None => {}
                 }
-                PaintResult::Selected(path) => {
-                    hovered_shapes.extend(Self::select_dash(&path));
-                }
-                PaintResult::None => {}
             }
         }
         painter.add(hovered_shapes);
@@ -564,6 +567,7 @@ impl MapWindow {
                 coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
                 coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
                 coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
+                coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
             ]
         };
         if is_selected && detect_hovered && is_hovered {
