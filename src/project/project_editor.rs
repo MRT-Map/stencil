@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 use egui_notify::ToastLevel;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -7,7 +9,7 @@ use crate::{
     file::safe_delete,
     project::{Project, SkinStatus, event::Event},
     settings::settings_ui_field,
-    shortcut::ShortcutAction,
+    shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::{dock::DockWindow, notif::NotifState},
 };
 
@@ -23,40 +25,30 @@ impl DockWindow for ProjectEditorWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             if ui
-                .add(
-                    egui::Button::new("Open").shortcut_text(
-                        ui.ctx().format_shortcut(
-                            &app.shortcut_settings
-                                .action_to_keyboard(ShortcutAction::OpenProject),
-                        ),
-                    ),
+                .button_with_shortcut(
+                    "Open",
+                    ShortcutAction::OpenProject,
+                    &mut app.shortcut_settings,
                 )
                 .clicked()
             {
                 // commands.trigger(ProjectEv::Open);
             }
             if ui
-                .add(
-                    egui::Button::new("Reload").shortcut_text(
-                        ui.ctx().format_shortcut(
-                            &app.shortcut_settings
-                                .action_to_keyboard(ShortcutAction::ReloadProject),
-                        ),
-                    ),
+                .button_with_shortcut(
+                    "Reload",
+                    ShortcutAction::ReloadProject,
+                    &mut app.shortcut_settings,
                 )
                 .clicked()
             {
                 // commands.trigger(ProjectEv::Reload);
             }
             if ui
-                .add_enabled(
-                    app.project.path.is_some(),
-                    egui::Button::new("Save").shortcut_text(
-                        ui.ctx().format_shortcut(
-                            &app.shortcut_settings
-                                .action_to_keyboard(ShortcutAction::SaveProject),
-                        ),
-                    ),
+                .button_with_shortcut(
+                    "Save",
+                    ShortcutAction::SaveProject,
+                    &mut app.shortcut_settings,
                 )
                 .clicked()
             {
@@ -311,5 +303,16 @@ impl Event for ProjectEv {
             Self::Delete(ns) => Self::Create(ns.clone()),
         }
         .run(ctx, app)
+    }
+}
+
+impl Display for ProjectEv {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Load(ns) => write!(f, "Load namespace {ns}"),
+            Self::Hide(ns) => write!(f, "Hide namespace {ns}"),
+            Self::Create(ns) => write!(f, "Create namespace {ns}"),
+            Self::Delete(ns) => write!(f, "Delete namespace {ns}"),
+        }
     }
 }

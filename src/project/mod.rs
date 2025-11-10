@@ -1,6 +1,7 @@
 pub mod component_editor;
 pub mod component_list;
 pub mod event;
+pub mod history_viewer;
 pub mod pla3;
 pub mod project_editor;
 pub mod skin;

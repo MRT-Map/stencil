@@ -8,7 +8,8 @@ use crate::{
     impl_load_save,
     map::MapWindow,
     project::{
-        component_editor::ComponentEditorWindow, event::Event, project_editor::ProjectEditorWindow,
+        component_editor::ComponentEditorWindow, event::Event, history_viewer::HistoryViewer,
+        project_editor::ProjectEditorWindow,
     },
     settings::SettingsWindow,
     ui::notif::NotifLogWindow,
@@ -37,7 +38,7 @@ pub enum DockWindows {
     SettingsWindow,
     NotifLogWindow,
     // ComponentList,
-    // HistoryViewer,
+    HistoryViewer,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -60,7 +61,7 @@ impl Default for DockLayout {
             vec![
                 ProjectEditorWindow::default().into(),
                 // ComponentList.into(),
-                // HistoryViewer.into(),
+                HistoryViewer.into(),
             ],
         );
         Self(state)
@@ -68,7 +69,7 @@ impl Default for DockLayout {
 }
 impl DockLayout {
     pub fn reset(&mut self) {
-        *self = DockLayout::default();
+        *self = Self::default();
     }
 }
 

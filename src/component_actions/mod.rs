@@ -1,5 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    fmt::{Display, Formatter},
+    sync::Arc,
+};
 
+use itertools::Itertools;
 use tracing::info;
 
 use crate::{
@@ -64,5 +69,33 @@ impl Event for ComponentEv {
             },
         }
         .run(ctx, app)
+    }
+}
+
+impl Display for ComponentEv {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ComponentEv::Create(components) => write!(
+                f,
+                "Create components {}",
+                components
+                    .iter()
+                    .map(|a| format!("{}", a.full_id))
+                    .join(", ")
+            ),
+            ComponentEv::Delete(components) => write!(
+                f,
+                "Create components {}",
+                components
+                    .iter()
+                    .map(|a| format!("{}", a.full_id))
+                    .join(", ")
+            ),
+            ComponentEv::ChangeField { after, label, .. } => write!(
+                f,
+                "Change component data ({label}) of {}",
+                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+            ),
+        }
     }
 }

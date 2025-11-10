@@ -10,6 +10,7 @@ use crate::{
         project_editor::{ProjectEditorWindow, ProjectEv},
     },
     settings::SettingsWindow,
+    shortcut::settings::ShortcutSettings,
     ui::notif::NotifLogWindow,
 };
 
@@ -68,7 +69,7 @@ impl ShortcutAction {
 impl App {
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
         for shortcut in self.shortcut_settings.shortcuts_ordered() {
-            let action = self.shortcut_settings.keyboard_to_action(shortcut).unwrap();
+            let action = self.shortcut_settings.shortcut_to_action(shortcut).unwrap();
             if action.eventless() {
                 continue;
             }
@@ -114,8 +115,37 @@ impl App {
                 ShortcutAction::EditorModeCreateArea => {
                     self.mode = EditorMode::CreateArea;
                 }
+                ShortcutAction::Undo => {
+                    self.undo(ctx);
+                }
+                ShortcutAction::Redo => {
+                    self.redo(ctx);
+                }
                 _ => {}
             }
         }
+    }
+}
+
+pub trait UiButtonWithShortcutExt {
+    fn button_with_shortcut<'a>(
+        &mut self,
+        atoms: impl egui::IntoAtoms<'a>,
+        shortcut: ShortcutAction,
+        shortcut_settings: &mut ShortcutSettings,
+    ) -> egui::Response;
+}
+
+impl UiButtonWithShortcutExt for egui::Ui {
+    fn button_with_shortcut<'a>(
+        &mut self,
+        atoms: impl egui::IntoAtoms<'a>,
+        shortcut: ShortcutAction,
+        shortcut_settings: &mut ShortcutSettings,
+    ) -> egui::Response {
+        self.add(
+            egui::Button::new(atoms)
+                .shortcut_text(shortcut_settings.format_action(shortcut, self.ctx())),
+        )
     }
 }

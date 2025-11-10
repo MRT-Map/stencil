@@ -13,7 +13,7 @@ use crate::{
         project_editor::{ProjectEditorWindow, ProjectEv},
     },
     settings::SettingsWindow,
-    shortcut::ShortcutAction,
+    shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::notif::NotifLogWindow,
 };
 
@@ -29,7 +29,7 @@ impl App {
                         }
                     };
                     ($ui:ident, fn $label:literal, $f:block, $action:expr) => {
-                        if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
+                        if $ui.button_with_shortcut($label, $action, &mut self.shortcut_settings).clicked() {
                             info!(label = $label, "Clicked menu item");
                             $f
                         }
@@ -41,7 +41,7 @@ impl App {
                         }
                     };
                     ($ui:ident, window $label:literal, $window:expr, $action:expr) => {
-                        if $ui.add(egui::Button::new($label).shortcut_text($ui.ctx().format_shortcut(&self.shortcut_settings.action_to_keyboard($action)))).clicked() {
+                        if $ui.button_with_shortcut($label, $action, &mut self.shortcut_settings).clicked() {
                             info!(label = $label, "Clicked menu item");
                             self.open_dock_window($window)
                         }
@@ -75,9 +75,13 @@ impl App {
                         self.project.save_notif(&mut self.ui.notifs);
                     }, ShortcutAction::SaveProject);
                 });
-                ui.menu_button("Edit", |_ui| {
-                    // button!(ui, commands, "Undo", HistoryEv::Undo);
-                    // button!(ui, commands, "Redo", HistoryEv::Redo);
+                ui.menu_button("Edit", |ui| {
+                    button!(ui, fn "Undo", {
+                        self.undo(ui.ctx());
+                    }, ShortcutAction::Undo);
+                    button!(ui, fn "Redo", {
+                        self.undo(ui.ctx());
+                    }, ShortcutAction::Redo);
                 });
                 ui.menu_button("View", |ui| {
                     // button!(ui, commands, "Component List", OpenComponentListEv);
@@ -88,6 +92,7 @@ impl App {
                     ui.separator();
                     button!(ui, fn "Reset Layout", {
                         self.ui.dock_layout.reset();
+                        self.reset_map_window();
                     });
                 });
                 #[cfg(debug_assertions)]

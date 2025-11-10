@@ -76,7 +76,7 @@ impl MapWindow {
             misc: HashMap::default(),
         };
         info!(?world_coord, %component, "Created new point");
-        app.add_event(ComponentEv::Create(vec![component]));
+        app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
     }
     #[inline]
     pub fn create_line(
@@ -303,7 +303,7 @@ impl MapWindow {
                     misc: HashMap::default(),
                 };
                 info!(?component.nodes, %component, "Created new {}", if IS_LINE {"line"} else {"area"});
-                app.add_event(ComponentEv::Create(vec![component]));
+                app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
             } else {
                 self.created_nodes.clear();
                 info!(

@@ -1,4 +1,7 @@
-use std::{collections::VecDeque, fmt::Debug};
+use std::{
+    collections::VecDeque,
+    fmt::{Debug, Display, Formatter},
+};
 
 use enum_dispatch::enum_dispatch;
 use tracing::debug;
@@ -6,7 +9,7 @@ use tracing::debug;
 use crate::{App, component_actions::ComponentEv, project::project_editor::ProjectEv};
 
 #[enum_dispatch]
-pub trait Event: Debug + Sized {
+pub trait Event: Debug + Sized + Display {
     fn run(&self, ctx: &egui::Context, app: &mut App) -> bool;
     fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool;
 }
@@ -16,6 +19,58 @@ pub trait Event: Debug + Sized {
 pub enum Events {
     ProjectEv,
     ComponentEv,
+}
+
+impl Display for Events {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Self::ProjectEv(e) => write!(f, "{e}"),
+            Self::ComponentEv(e) => write!(f, "{e}"),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct UndoTree {
+    pub undo_stack: VecDeque<Events>,
+    pub redo_stack: VecDeque<Events>,
+}
+
+impl UndoTree {
+    pub fn add_event<E: Into<Events>>(&mut self, event: E) {
+        let event = event.into();
+        if let Events::ComponentEv(ComponentEv::ChangeField {
+            before: before2,
+            after: after2,
+            label: label2,
+        }) = &event
+        {
+            if before2 == after2 {
+                return;
+            }
+            if !label2.is_empty()
+                && let Some(Events::ComponentEv(ComponentEv::ChangeField {
+                    before: before1,
+                    after: after1,
+                    label: label1,
+                })) = self.undo_stack.back_mut()
+                && label2 == label1
+                && after1 == before2
+            {
+                if before1 == after2 {
+                    self.undo_stack.pop_back();
+                } else {
+                    after1.clone_from(after2);
+                }
+            } else {
+                self.undo_stack.push_back(event);
+                self.redo_stack.clear();
+            }
+        } else {
+            self.undo_stack.push_back(event);
+            self.redo_stack.clear();
+        }
+    }
 }
 
 impl App {
@@ -29,61 +84,26 @@ impl App {
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
         self.project.undo_tree.add_event(event);
     }
-}
-
-#[derive(Default, Debug)]
-pub struct UndoTree {
-    undo_stack: VecDeque<Events>,
-    redo_stack: VecDeque<Events>,
-}
-
-impl UndoTree {
-    pub fn add_event<E: Into<Events>>(&mut self, event: E) {
-        let event = event.into();
-        if let Events::ComponentEv(ComponentEv::ChangeField {
-            before: before2,
-            after: after2,
-            label: label2,
-        }) = &event
-            && !label2.is_empty()
-            && let Some(Events::ComponentEv(ComponentEv::ChangeField {
-                before: before1,
-                after: after1,
-                label: label1,
-            })) = self.undo_stack.back_mut()
-            && label2 == label1
-            && after1 == before2
-        {
-            if before1 == after2 {
-                self.undo_stack.pop_back();
-            } else {
-                after1.clone_from(after2);
-            }
-        } else {
-            self.undo_stack.push_back(event);
-            self.redo_stack.clear();
-        }
-    }
-    pub fn undo(&mut self, ctx: &egui::Context, app: &mut App) {
-        let Some(event) = self.undo_stack.pop_back() else {
+    pub fn undo(&mut self, ctx: &egui::Context) {
+        let Some(event) = self.project.undo_tree.undo_stack.pop_back() else {
             return;
         };
         debug!(?event, "Undoing event");
-        if event.undo(ctx, app) {
-            self.redo_stack.push_front(event);
+        if event.undo(ctx, self) {
+            self.project.undo_tree.redo_stack.push_front(event);
         } else {
-            self.undo_stack.push_back(event);
+            self.project.undo_tree.undo_stack.push_back(event);
         }
     }
-    pub fn redo(&mut self, ctx: &egui::Context, app: &mut App) {
-        let Some(event) = self.redo_stack.pop_front() else {
+    pub fn redo(&mut self, ctx: &egui::Context) {
+        let Some(event) = self.project.undo_tree.redo_stack.pop_front() else {
             return;
         };
         debug!(?event, "Redoing event");
-        if event.run(ctx, app) {
-            self.undo_stack.push_back(event);
+        if event.run(ctx, self) {
+            self.project.undo_tree.undo_stack.push_back(event);
         } else {
-            self.redo_stack.push_front(event);
+            self.project.undo_tree.redo_stack.push_front(event);
         }
     }
 }

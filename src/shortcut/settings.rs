@@ -54,7 +54,7 @@ impl Default for ShortcutSettings {
 }
 
 impl ShortcutSettings {
-    pub fn action_to_keyboard(&mut self, action: ShortcutAction) -> egui::KeyboardShortcut {
+    pub fn action_to_shortcut(&mut self, action: ShortcutAction) -> egui::KeyboardShortcut {
         if let Some(shortcut) = self.0.get_by_left(&action) {
             return *shortcut;
         }
@@ -63,21 +63,24 @@ impl ShortcutSettings {
         self.insert(action, shortcut);
         shortcut
     }
-    pub fn keyboard_to_action(&self, keyboard: egui::KeyboardShortcut) -> Option<ShortcutAction> {
-        self.0.get_by_right(&keyboard).copied()
+    pub fn format_action(&mut self, action: ShortcutAction, ctx: &egui::Context) -> String {
+        ctx.format_shortcut(&self.action_to_shortcut(action))
+    }
+    pub fn shortcut_to_action(&self, shortcut: egui::KeyboardShortcut) -> Option<ShortcutAction> {
+        self.0.get_by_right(&shortcut).copied()
     }
     pub fn insert(
         &mut self,
         action: ShortcutAction,
-        mut keyboard: egui::KeyboardShortcut,
+        mut shortcut: egui::KeyboardShortcut,
     ) -> bimap::Overwritten<ShortcutAction, egui::KeyboardShortcut> {
         #[cfg(not(target_os = "macos"))]
-        if keyboard.modifiers.ctrl {
-            keyboard.modifiers.command = true;
-            keyboard.modifiers.ctrl = false;
+        if shortcut.modifiers.ctrl {
+            shortcut.modifiers.command = true;
+            shortcut.modifiers.ctrl = false;
         }
 
-        self.0.insert(action, keyboard)
+        self.0.insert(action, shortcut)
     }
     pub fn shortcuts_ordered(&self) -> Vec<egui::KeyboardShortcut> {
         self.0
@@ -139,12 +142,12 @@ impl Settings for ShortcutSettings {
                 let mut default = Self::default();
                 body.rows(10.0, ShortcutAction::COUNT, |mut row| {
                     let action = ShortcutAction::VARIANTS[row.index()];
-                    let default_keyboard = default.action_to_keyboard(action);
+                    let default_keyboard = default.action_to_shortcut(action);
 
                     row.col(|ui| {
                         if ui
                             .add_enabled(
-                                self.action_to_keyboard(action) != default_keyboard,
+                                self.action_to_shortcut(action) != default_keyboard,
                                 egui::Button::new("⟲"),
                             )
                             .on_hover_text(format!(
@@ -161,7 +164,7 @@ impl Settings for ShortcutSettings {
                         ui.label(format!("{action}"));
                     });
                     row.col(|ui| {
-                        ui.label(ui.ctx().format_shortcut(&self.action_to_keyboard(action)));
+                        ui.label(self.format_action(action, ui.ctx()));
 
                         if tab_state.changed_shortcut() != Some(action) {
                             return;
@@ -205,7 +208,7 @@ impl Settings for ShortcutSettings {
 
         assert!(ui.ctx().input_mut(|i| i.consume_shortcut(&new_shortcut)));
 
-        if let Some(taken_by) = self.keyboard_to_action(new_shortcut)
+        if let Some(taken_by) = self.shortcut_to_action(new_shortcut)
             && taken_by != action
         {
             info!(changing=?action, ?taken_by, new_shortcut=ui.ctx().format_shortcut(&new_shortcut), "Shortcut already taken");

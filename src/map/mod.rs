@@ -296,7 +296,7 @@ impl MapWindow {
             (ShortcutAction::ZoomMapIn, 1.0),
         ] {
             self.zoom += if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(&app.shortcut_settings.action_to_keyboard(action))
+                a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
             }) {
                 app.map_settings.shortcut_zoom_amount * sign
             } else {
@@ -325,7 +325,7 @@ impl MapWindow {
             } else {
                 &mut translation.y
             }) += if ui.ctx().input_mut(|a| {
-                a.consume_shortcut(&app.shortcut_settings.action_to_keyboard(action))
+                a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
             }) {
                 app.map_settings.shortcut_pan_amount * sign * world_screen_ratio
             } else {
