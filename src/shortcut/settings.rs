@@ -31,6 +31,7 @@ impl Default for ShortcutSettings {
         shortcut!(Quit -> Escape);
         shortcut!(SettingsWindow => COMMAND + Comma);
         shortcut!(ComponentEditorWindow => COMMAND | ALT + C);
+        shortcut!(HistoryViewerWindow => COMMAND | ALT + H);
         shortcut!(NotifLogWindow => COMMAND | ALT + N);
         shortcut!(ProjectEditorWindow => COMMAND | ALT + P);
         shortcut!(PanMapUp -> ArrowUp);

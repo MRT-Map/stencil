@@ -8,7 +8,10 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
-    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
+    project::{
+        component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
+        project_editor::ProjectEditorWindow,
+    },
     settings::SettingsWindow,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::notif::NotifLogWindow,
@@ -82,9 +85,9 @@ impl App {
                 });
                 ui.menu_button("View", |ui| {
                     // button!(ui, commands, "Component List", OpenComponentListEv);
-                    button!(ui, window "Component Editor", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
-                    button!(ui, window "Project Editor", ProjectEditorWindow::default(), ShortcutAction::ProjectEditorWindow);
-                    // button!(ui, commands, "History", OpenHistoryViewerEv);
+                    button!(ui, window "Component", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
+                    button!(ui, window "Project", ProjectEditorWindow::default(), ShortcutAction::ProjectEditorWindow);
+                    button!(ui, window "History", HistoryViewerWindow, ShortcutAction::HistoryViewerWindow);
                     button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();
                     button!(ui, fn "Reset Layout", {

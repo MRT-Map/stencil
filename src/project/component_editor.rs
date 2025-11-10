@@ -18,7 +18,7 @@ pub struct ComponentEditorWindow;
 
 impl DockWindow for ComponentEditorWindow {
     fn title(&self) -> String {
-        "Component Editor".into()
+        "Component".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         let Some(skin) = app.project.skin() else {

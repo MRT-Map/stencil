@@ -57,7 +57,7 @@ impl Event for ComponentEv {
             } => Self::ChangeField {
                 before: after.clone(),
                 after: before.clone(),
-                label: label,
+                label,
             },
         }
         .run(ctx, app)

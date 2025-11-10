@@ -5,7 +5,10 @@ use crate::{
     App,
     info_windows::quit::QuitPopup,
     mode::EditorMode,
-    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
+    project::{
+        component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
+        project_editor::ProjectEditorWindow,
+    },
     settings::SettingsWindow,
     shortcut::settings::ShortcutSettings,
     ui::notif::NotifLogWindow,
@@ -30,6 +33,7 @@ pub enum ShortcutAction {
     Quit,
     SettingsWindow,
     ComponentEditorWindow,
+    HistoryViewerWindow,
     NotifLogWindow,
     ProjectEditorWindow,
     PanMapUp,
@@ -87,6 +91,9 @@ impl App {
                 }
                 ShortcutAction::ComponentEditorWindow => {
                     self.open_dock_window(ComponentEditorWindow);
+                }
+                ShortcutAction::HistoryViewerWindow => {
+                    self.open_dock_window(HistoryViewerWindow);
                 }
                 ShortcutAction::NotifLogWindow => {
                     self.open_dock_window(NotifLogWindow);

@@ -11,7 +11,7 @@ use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 use async_executor::Task;
 use egui::ahash::HashMap;
 use egui_notify::ToastLevel;
-use event::UndoTree;
+use event::History;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use serde::{Deserialize, Serialize};
@@ -46,7 +46,7 @@ pub struct Project {
     pub namespaces: HashMap<String, bool>,
     pub new_component_ns: String,
     pub path: Option<PathBuf>,
-    pub undo_tree: UndoTree,
+    pub history: History,
 }
 
 impl Default for Project {
@@ -59,7 +59,7 @@ impl Default for Project {
             namespaces: HashMap::from_iter([("default".into(), true)]),
             new_component_ns: String::new(),
             path: None,
-            undo_tree: UndoTree::default(),
+            history: History::default(),
         }
     }
 }
@@ -127,6 +127,23 @@ impl Project {
             },
             _ => {}
         }
+    }
+    pub fn namespace_component_count(&self, namespace: &str) -> Result<usize> {
+        if self.namespaces.get(namespace).is_some_and(|a| *a) {
+            return Ok(self
+                .components
+                .iter()
+                .filter(|a| a.full_id.namespace == namespace)
+                .count());
+        }
+        let Some(path) = &self.path else {
+            return Err(eyre!("scratchpad contains unloaded namespace"));
+        };
+        Ok(std::fs::read_dir(path.join(namespace))?
+            .filter_map(Result::ok)
+            .filter(|a| a.file_type().is_ok_and(|a| !a.is_dir()))
+            .filter(|a| a.path().extension() == Some("pla3".as_ref()))
+            .count())
     }
 }
 
@@ -273,22 +290,5 @@ impl Project {
         }
 
         errors
-    }
-    pub fn namespace_component_count(&self, namespace: &str) -> Result<usize> {
-        if self.namespaces.get(namespace).is_some_and(|a| *a) {
-            return Ok(self
-                .components
-                .iter()
-                .filter(|a| a.full_id.namespace == namespace)
-                .count());
-        }
-        let Some(path) = &self.path else {
-            return Err(eyre!("scratchpad contains unloaded namespace"));
-        };
-        Ok(std::fs::read_dir(path.join(namespace))?
-            .filter_map(Result::ok)
-            .filter(|a| a.file_type().is_ok_and(|a| !a.is_dir()))
-            .filter(|a| a.path().extension() == Some("pla3".as_ref()))
-            .count())
     }
 }

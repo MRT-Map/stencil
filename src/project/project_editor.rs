@@ -20,7 +20,7 @@ pub struct ProjectEditorWindow {
 
 impl DockWindow for ProjectEditorWindow {
     fn title(&self) -> String {
-        "Project Editor".into()
+        "Project".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {

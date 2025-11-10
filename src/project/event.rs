@@ -31,12 +31,12 @@ impl Display for Events {
 }
 
 #[derive(Default, Debug)]
-pub struct UndoTree {
+pub struct History {
     pub undo_stack: VecDeque<Events>,
     pub redo_stack: VecDeque<Events>,
 }
 
-impl UndoTree {
+impl History {
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
         let event = event.into();
         if let Events::ComponentEv(ComponentEv::ChangeField {
@@ -78,32 +78,32 @@ impl App {
         let event = event.into();
         debug!(?event, "Running event");
         if event.run(ctx, self) {
-            self.project.undo_tree.add_event(event);
+            self.project.history.add_event(event);
         }
     }
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
-        self.project.undo_tree.add_event(event);
+        self.project.history.add_event(event);
     }
     pub fn undo(&mut self, ctx: &egui::Context) {
-        let Some(event) = self.project.undo_tree.undo_stack.pop_back() else {
+        let Some(event) = self.project.history.undo_stack.pop_back() else {
             return;
         };
         debug!(?event, "Undoing event");
         if event.undo(ctx, self) {
-            self.project.undo_tree.redo_stack.push_front(event);
+            self.project.history.redo_stack.push_front(event);
         } else {
-            self.project.undo_tree.undo_stack.push_back(event);
+            self.project.history.undo_stack.push_back(event);
         }
     }
     pub fn redo(&mut self, ctx: &egui::Context) {
-        let Some(event) = self.project.undo_tree.redo_stack.pop_front() else {
+        let Some(event) = self.project.history.redo_stack.pop_front() else {
             return;
         };
         debug!(?event, "Redoing event");
         if event.run(ctx, self) {
-            self.project.undo_tree.undo_stack.push_back(event);
+            self.project.history.undo_stack.push_back(event);
         } else {
-            self.project.undo_tree.redo_stack.push_front(event);
+            self.project.history.redo_stack.push_front(event);
         }
     }
 }
