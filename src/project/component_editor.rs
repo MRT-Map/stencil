@@ -93,16 +93,7 @@ impl DockWindow for ComponentEditorWindow {
                 });
 
             if let Ok(component) = selected_components.iter_mut().exactly_one() {
-                if ui
-                    .add(
-                        egui::TextEdit::singleline(&mut component.full_id.id)
-                            .hint_text("id")
-                            .desired_width(f32::INFINITY),
-                    )
-                    .changed()
-                {
-                    add_event("id", &selected_components);
-                }
+                ui.code(&component.full_id.id);
             } else {
                 ui.label(egui::RichText::new("mixed ids").italics());
             }

@@ -27,6 +27,7 @@ pub trait DockWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
 }
 
+#[expect(clippy::enum_variant_names)]
 #[enum_dispatch(DockWindow)]
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]
