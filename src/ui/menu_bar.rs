@@ -8,10 +8,7 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
-    project::{
-        component_editor::ComponentEditorWindow,
-        project_editor::{ProjectEditorWindow, ProjectEv},
-    },
+    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
     settings::SettingsWindow,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::notif::NotifLogWindow,

@@ -10,7 +10,7 @@ use crate::{
     project::{Project, SkinStatus, event::Event},
     settings::settings_ui_field,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
-    ui::{dock::DockWindow, notif::NotifState},
+    ui::dock::DockWindow,
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]

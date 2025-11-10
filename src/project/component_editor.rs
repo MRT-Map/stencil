@@ -85,7 +85,7 @@ impl DockWindow for ComponentEditorWindow {
                             .clicked()
                         {
                             for component in &mut selected_components {
-                                ns.clone_into(&mut component.full_id.namespace);
+                                component.full_id.namespace.clone_from(ns);
                             }
                             add_event("namespace", &selected_components);
                         }
@@ -130,7 +130,7 @@ impl DockWindow for ComponentEditorWindow {
             .changed()
         {
             for component in &mut selected_components {
-                new_display_name.clone_into(&mut component.display_name);
+                component.display_name.clone_from(&new_display_name);
             }
             add_event("display_name", &selected_components);
         }

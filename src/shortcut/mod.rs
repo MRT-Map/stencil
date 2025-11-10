@@ -2,13 +2,10 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, info_windows,
+    App,
     info_windows::quit::QuitPopup,
     mode::EditorMode,
-    project::{
-        component_editor::ComponentEditorWindow,
-        project_editor::{ProjectEditorWindow, ProjectEv},
-    },
+    project::{component_editor::ComponentEditorWindow, project_editor::ProjectEditorWindow},
     settings::SettingsWindow,
     shortcut::settings::ShortcutSettings,
     ui::notif::NotifLogWindow,

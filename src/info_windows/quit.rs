@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{App, project::event::Events, ui::popup::Popup};
+use crate::{App, ui::popup::Popup};
 
 #[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct QuitPopup;

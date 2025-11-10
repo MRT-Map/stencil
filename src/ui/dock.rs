@@ -8,7 +8,7 @@ use crate::{
     impl_load_save,
     map::MapWindow,
     project::{
-        component_editor::ComponentEditorWindow, event::Event, history_viewer::HistoryViewer,
+        component_editor::ComponentEditorWindow, history_viewer::HistoryViewer,
         project_editor::ProjectEditorWindow,
     },
     settings::SettingsWindow,
@@ -27,7 +27,6 @@ pub trait DockWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
 }
 
-#[expect(clippy::enum_variant_names)]
 #[enum_dispatch(DockWindow)]
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]

@@ -10,12 +10,11 @@ mod settings;
 mod shortcut;
 mod ui;
 
-use std::{collections::VecDeque, sync::LazyLock, time::Instant};
+use std::{sync::LazyLock, time::Instant};
 
 use async_executor::StaticExecutor;
 use eframe::egui;
 use lazy_regex::{Regex, lazy_regex};
-use project::event::{Event, Events};
 use tracing::info;
 
 use crate::{

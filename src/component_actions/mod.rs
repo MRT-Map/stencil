@@ -1,18 +1,10 @@
-use std::{
-    collections::HashMap,
-    fmt::{Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{Display, Formatter};
 
 use itertools::Itertools;
-use tracing::info;
 
 use crate::{
     App,
-    project::{
-        event::Event,
-        pla3::{FullId, PlaComponent},
-    },
+    project::{event::Event, pla3::PlaComponent},
 };
 
 pub mod create;
@@ -65,7 +57,7 @@ impl Event for ComponentEv {
             } => Self::ChangeField {
                 before: after.clone(),
                 after: before.clone(),
-                label: *label,
+                label: label,
             },
         }
         .run(ctx, app)
@@ -75,7 +67,7 @@ impl Event for ComponentEv {
 impl Display for ComponentEv {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ComponentEv::Create(components) => write!(
+            Self::Create(components) => write!(
                 f,
                 "Create components {}",
                 components
@@ -83,7 +75,7 @@ impl Display for ComponentEv {
                     .map(|a| format!("{}", a.full_id))
                     .join(", ")
             ),
-            ComponentEv::Delete(components) => write!(
+            Self::Delete(components) => write!(
                 f,
                 "Create components {}",
                 components
@@ -91,7 +83,7 @@ impl Display for ComponentEv {
                     .map(|a| format!("{}", a.full_id))
                     .join(", ")
             ),
-            ComponentEv::ChangeField { after, label, .. } => write!(
+            Self::ChangeField { after, label, .. } => write!(
                 f,
                 "Change component data ({label}) of {}",
                 after.iter().map(|a| format!("{}", a.full_id)).join(", ")
