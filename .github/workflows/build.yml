@@ -218,12 +218,12 @@ jobs:
           default_author: github_actions
           message: update sha256 for v${{ needs.version-changelog.outputs.version }}
 
-      - uses: peter-evans/repository-dispatch@v3
+      - uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4.0.0
         with:
           token: ${{ secrets.PAT }}
           repository: mrt-map/homebrew-mrt-map
           event-type: update_stencil2
-      - uses: peter-evans/repository-dispatch@v3
+      - uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4.0.0
         with:
           token: ${{ secrets.PAT }}
           repository: mrt-map/arch-mrt-map
