@@ -25,7 +25,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
 
     - run: cargo bundle --release
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: macos-aarch64
         path: target/release/bundle/osx/stencil2.app
@@ -46,7 +46,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - run: cargo build --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: macos-x86_64
           path: target/release/stencil2
@@ -71,7 +71,7 @@ jobs:
           ln -s "/Applications" "app/"
           hdiutil create stencil2.dmg -fs HFS+ -volname stencil2 -srcfolder "app/" -ov
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: macos
           path: stencil2.dmg
@@ -100,7 +100,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
 
     - run: cargo bundle --release --format deb
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: linux
         path: target/release/bundle/deb/stencil2*.deb
@@ -125,7 +125,7 @@ jobs:
 
     - run: cargo build --release
     - run: cargo wix -I "./build/windows/main.wxs" -v
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: windows
         path: target/wix/stencil2-*-x86_64.msi
