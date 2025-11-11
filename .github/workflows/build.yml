@@ -213,7 +213,7 @@ jobs:
           
           cat build/windows/scoop.json | sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop2.json
           mv build/windows/scoop2.json build/windows/scoop.json
-      - uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           default_author: github_actions
           message: update sha256 for v${{ needs.version-changelog.outputs.version }}
