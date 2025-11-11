@@ -18,7 +18,7 @@ jobs:
         mkdir .cargo
         mv .github/actions_config.toml .cargo/config.toml
     - run: brew install openssl@3
-    - uses: baptiste0928/cargo-install@v3
+    - uses: baptiste0928/cargo-install@b687c656bda5733207e629b50a22bf68974a0305 # v3.3.2
       with:
         crate: cargo-bundle
         locked: false
@@ -89,7 +89,7 @@ jobs:
     - run: |
         mkdir .cargo
         mv .github/actions_config.toml .cargo/config.toml
-    - uses: baptiste0928/cargo-install@v3
+    - uses: baptiste0928/cargo-install@b687c656bda5733207e629b50a22bf68974a0305 # v3.3.2
       with:
         crate: cargo-bundle
         locked: false
@@ -117,7 +117,7 @@ jobs:
     - run: |
         mkdir .cargo
         mv .github/actions_config.toml .cargo/config.toml
-    - uses: baptiste0928/cargo-install@v3
+    - uses: baptiste0928/cargo-install@b687c656bda5733207e629b50a22bf68974a0305 # v3.3.2
       with:
         crate: cargo-wix
         locked: false
