@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
       with:
         toolchain: nightly
@@ -25,7 +25,7 @@ jobs:
     - uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
 
     - run: cargo bundle --release
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: macos-aarch64
         path: target/release/bundle/osx/stencil2.app
@@ -34,7 +34,7 @@ jobs:
     runs-on: macos-15
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: nightly
@@ -46,7 +46,7 @@ jobs:
       - uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
 
       - run: cargo build --release
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: macos-x86_64
           path: target/release/stencil2
@@ -56,11 +56,11 @@ jobs:
     needs: [build-macos-aarch64, build-macos-x86_64]
 
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: macos-aarch64
           path: app/stencil2.app
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: macos-x86_64
 
@@ -71,7 +71,7 @@ jobs:
           ln -s "/Applications" "app/"
           hdiutil create stencil2.dmg -fs HFS+ -volname stencil2 -srcfolder "app/" -ov
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: macos
           path: stencil2.dmg
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     - uses: rui314/setup-mold@v1
     - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
       with:
@@ -93,14 +93,14 @@ jobs:
       with:
         crate: cargo-bundle
         locked: false
-    - uses: awalsh128/cache-apt-pkgs-action@latest
+    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
       with:
         packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
         version: 1.0
     - uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
 
     - run: cargo bundle --release --format deb
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: linux
         path: target/release/bundle/deb/stencil2*.deb
@@ -109,7 +109,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
       with:
         toolchain: nightly
@@ -125,7 +125,7 @@ jobs:
 
     - run: cargo build --release
     - run: cargo wix -I "./build/windows/main.wxs" -v
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: windows
         path: target/wix/stencil2-*-x86_64.msi
@@ -137,7 +137,7 @@ jobs:
       changelog: ${{ steps.changelog.outputs.changelog }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     - run: cargo update
     - id: version
       run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
@@ -167,19 +167,19 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/download-artifact@v6
+    - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:
         name: macos
         path: dist
-    - uses: actions/download-artifact@v6
+    - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:
         name: linux
         path: dist
-    - uses: actions/download-artifact@v6
+    - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:
         name: windows
         path: dist
-    - uses: actions/attest-build-provenance@v3
+    - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
       with:
         subject-path: dist/*
     - uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
@@ -197,7 +197,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
         run: |
@@ -218,12 +218,12 @@ jobs:
           default_author: github_actions
           message: update sha256 for v${{ needs.version-changelog.outputs.version }}
 
-      - uses: peter-evans/repository-dispatch@v4
+      - uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4
         with:
           token: ${{ secrets.PAT }}
           repository: mrt-map/homebrew-mrt-map
           event-type: update_stencil2
-      - uses: peter-evans/repository-dispatch@v4
+      - uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4
         with:
           token: ${{ secrets.PAT }}
           repository: mrt-map/arch-mrt-map
