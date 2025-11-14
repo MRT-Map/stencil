@@ -16,11 +16,11 @@ rust-version = "1.91"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-egui = { version = "=0.33.0", features = ["serde"] }
-eframe = { version = "=0.33.0", features = ["persistence"] }
+egui = { version = "=0.33.2", features = ["serde"] }
+eframe = { version = "=0.33.2", features = ["persistence"] }
 egui_commonmark = "=0.22.0"
-egui_extras = { version = "=0.33.0", features = ["http", "all_loaders"] }
-egui_dock = { git = "https://github.com/Avarel/egui_dock", branch = "egui_0.33", features = ["serde"] }
+egui_extras = { version = "=0.33.2", features = ["http", "all_loaders"] }
+egui_dock = "=0.18.0" 
 egui-file-dialog = "=0.12.0"
 egui-notify = "=0.21.0"
 
@@ -64,10 +64,10 @@ enum_dispatch = "=0.3.13"
 eyre = "=0.6.12"
 duplicate = "=2.0.1"
 
-license-retriever = "=1.1.1"
+license-retriever = "=1.1.2"
 
 [build-dependencies]
-license-retriever = "=1.1.1"
+license-retriever = "=1.1.2"
 #color-eyre = "0.6.3"
 eyre = "=0.6.12"
 zip = "=6.0.0"
