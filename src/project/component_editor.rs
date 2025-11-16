@@ -25,13 +25,11 @@ impl DockWindow for ComponentEditorWindow {
             ui.heading("Waiting for skin...");
             return;
         };
-        let selected_components_ids = &app.ui.dock_layout.map_window_mut().selected_components;
         let mut selected_components = app
-            .project
-            .components
-            .iter_mut()
-            .filter(|a| selected_components_ids.contains(&a.full_id))
-            .collect::<Vec<_>>();
+            .ui
+            .dock_layout
+            .map_window()
+            .selected_components_mut(&mut app.project.components);
         if selected_components.is_empty() {
             ui.heading("Select components...");
             return;

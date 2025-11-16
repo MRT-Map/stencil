@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub mod create;
+pub mod r#move;
 pub mod paint;
 pub mod select;
 

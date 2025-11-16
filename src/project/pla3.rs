@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     fmt::{Debug, Display, Formatter, Write},
+    ops::{Add, AddAssign},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -88,6 +89,38 @@ impl PlaNode {
                 label,
             },
         }
+    }
+}
+
+impl Add<geo::Coord<i32>> for PlaNode {
+    type Output = Self;
+
+    fn add(mut self, rhs: geo::Coord<i32>) -> Self::Output {
+        match &mut self {
+            Self::Line { coord, .. } => {
+                *coord = *coord + rhs;
+            }
+            Self::QuadraticBezier { ctrl, coord, .. } => {
+                *ctrl = *ctrl + rhs;
+                *coord = *coord + rhs;
+            }
+            Self::CubicBezier {
+                ctrl1,
+                ctrl2,
+                coord,
+                ..
+            } => {
+                *ctrl1 = *ctrl1 + rhs;
+                *ctrl2 = *ctrl2 + rhs;
+                *coord = *coord + rhs;
+            }
+        }
+        self
+    }
+}
+impl AddAssign<geo::Coord<i32>> for PlaNode {
+    fn add_assign(&mut self, rhs: geo::Coord<i32>) {
+        *self = *self + rhs;
     }
 }
 

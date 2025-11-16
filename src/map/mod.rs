@@ -13,7 +13,8 @@ use crate::{
     mode::EditorMode,
     project::{
         SkinStatus,
-        pla3::{FullId, PlaNode},
+        component_list::ComponentList,
+        pla3::{FullId, PlaComponent, PlaNode},
         skin::SkinType,
     },
     shortcut::ShortcutAction,
@@ -44,6 +45,9 @@ pub struct MapWindow {
     pub hovered_component: Option<FullId>,
     #[serde(skip)]
     pub selected_components: Vec<FullId>,
+
+    #[serde(skip)]
+    pub move_delta: Option<geo::Coord<i32>>,
 }
 
 impl Default for MapWindow {
@@ -58,6 +62,7 @@ impl Default for MapWindow {
             created_area_type: None,
             hovered_component: None,
             selected_components: Vec::new(),
+            move_delta: None,
         }
     }
 }
@@ -70,9 +75,42 @@ impl MapWindow {
         self.centre_coord = geo::Coord::zero();
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
     }
+
+    pub fn selected_components<'a>(
+        &self,
+        component_list: &'a ComponentList,
+    ) -> Vec<&'a PlaComponent> {
+        if self.selected_components.is_empty() {
+            return Vec::new();
+        }
+        component_list
+            .iter()
+            .filter(|a| self.selected_components.contains(&a.full_id))
+            .collect::<Vec<_>>()
+    }
+    pub fn selected_components_mut<'a>(
+        &self,
+        component_list: &'a mut ComponentList,
+    ) -> Vec<&'a mut PlaComponent> {
+        if self.selected_components.is_empty() {
+            return Vec::new();
+        }
+        component_list
+            .iter_mut()
+            .filter(|a| self.selected_components.contains(&a.full_id))
+            .collect::<Vec<_>>()
+    }
 }
 
 impl DockLayout {
+    pub fn map_window(&self) -> &MapWindow {
+        let Some((_, DockWindows::MapWindow(map_window))) =
+            self.0.iter_all_tabs().find(|(_, a)| a.title() == "Map")
+        else {
+            unreachable!("Cannot find map window");
+        };
+        map_window
+    }
     pub fn map_window_mut(&mut self) -> &mut MapWindow {
         let Some((_, DockWindows::MapWindow(map_window))) =
             self.0.iter_all_tabs_mut().find(|(_, a)| a.title() == "Map")
@@ -352,6 +390,7 @@ impl MapWindow {
     ) {
         self.paint_components(app, ui, response, painter);
         self.select_components(app, ui, response);
+        self.move_components(app, response);
 
         match app.mode {
             EditorMode::CreatePoint => self.create_point(app, ui, response, painter),
