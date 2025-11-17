@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub mod create;
+mod delete;
 pub mod r#move;
 pub mod paint;
 pub mod select;
@@ -70,7 +71,7 @@ impl Display for ComponentEv {
         match self {
             Self::Create(components) => write!(
                 f,
-                "Create components {}",
+                "Create {}",
                 components
                     .iter()
                     .map(|a| format!("{}", a.full_id))
@@ -78,11 +79,29 @@ impl Display for ComponentEv {
             ),
             Self::Delete(components) => write!(
                 f,
-                "Create components {}",
+                "Delete {}",
                 components
                     .iter()
                     .map(|a| format!("{}", a.full_id))
                     .join(", ")
+            ),
+            Self::ChangeField {
+                after,
+                label: "move",
+                ..
+            } => write!(
+                f,
+                "Move {}",
+                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+            ),
+            Self::ChangeField {
+                after,
+                label: "nodes",
+                ..
+            } => write!(
+                f,
+                "Edit nodes of {}",
+                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
             ),
             Self::ChangeField { after, label, .. } => write!(
                 f,

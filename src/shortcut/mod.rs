@@ -3,6 +3,7 @@ use tracing::info;
 
 use crate::{
     App,
+    component_actions::ComponentEv,
     info_windows::quit::QuitPopup,
     mode::EditorMode,
     project::{
@@ -48,6 +49,7 @@ pub enum ShortcutAction {
     SaveProject,
     Undo,
     Redo,
+    Delete,
     EditorModeSelect,
     EditorModeNodes,
     EditorModeCreatePoint,
@@ -129,6 +131,7 @@ impl App {
                 ShortcutAction::Redo => {
                     self.redo(ctx);
                 }
+                ShortcutAction::Delete => self.delete_selected_components(ctx),
                 _ => {}
             }
         }

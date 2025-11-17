@@ -82,6 +82,9 @@ impl App {
                     button!(ui, fn "Redo", {
                         self.undo(ui.ctx());
                     }, ShortcutAction::Redo);
+                    button!(ui, fn "Delete", {
+                        self.delete_selected_components(ctx);
+                    }, ShortcutAction::Delete);
                 });
                 ui.menu_button("View", |ui| {
                     ui.label("Windows");

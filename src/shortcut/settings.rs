@@ -46,6 +46,7 @@ impl Default for ShortcutSettings {
         shortcut!(SaveProject => COMMAND + S);
         shortcut!(Undo => COMMAND + Z);
         shortcut!(Redo => COMMAND | SHIFT + Z);
+        shortcut!(Delete -> Delete);
         shortcut!(EditorModeSelect => COMMAND + Num1);
         shortcut!(EditorModeNodes => COMMAND + Num2);
         shortcut!(EditorModeCreatePoint => COMMAND + Num3);

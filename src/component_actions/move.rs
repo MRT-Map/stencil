@@ -1,7 +1,7 @@
 use crate::{App, component_actions::ComponentEv, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
-    fn move_components_by(&self, app: &mut App, delta: geo::Coord<i32>) {
+    fn move_selected_components_by(&self, delta: geo::Coord<i32>, app: &mut App) {
         if delta == geo::Coord::zero() {
             return;
         }
@@ -14,7 +14,7 @@ impl MapWindow {
     pub fn move_components(&mut self, app: &mut App, response: &egui::Response) {
         if app.mode != EditorMode::Nodes {
             if let Some(move_delta) = self.move_delta.take() {
-                self.move_components_by(app, -move_delta);
+                self.move_selected_components_by(-move_delta, app);
             }
             return;
         }
@@ -39,7 +39,7 @@ impl MapWindow {
             app.add_event(ComponentEv::ChangeField {
                 before,
                 after,
-                label: "nodes",
+                label: "move",
             });
             return;
         }
@@ -60,6 +60,6 @@ impl MapWindow {
 
         let this_frame_delta = new_move_delta - self.move_delta.unwrap_or_default();
         self.move_delta = Some(new_move_delta);
-        self.move_components_by(app, this_frame_delta);
+        self.move_selected_components_by(this_frame_delta, app);
     }
 }
