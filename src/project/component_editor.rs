@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
-use itertools::Itertools;
+use egui::Widget;
+use itertools::{Either, Itertools};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -8,6 +9,7 @@ use crate::{
     component_actions::ComponentEv,
     project::{
         pla3::{PlaComponent, PlaNode},
+        project_editor::ProjectEv,
         skin::SkinType,
     },
     ui::dock::DockWindow,
@@ -229,12 +231,196 @@ impl DockWindow for ComponentEditorWindow {
             ui.separator();
         }
 
-        let Ok(component) = selected_components.iter().exactly_one() else {
+        let Ok(component) = selected_components.iter_mut().exactly_one() else {
             return;
         };
+        ui.heading("Other Attributes");
+
+        #[expect(clippy::items_after_statements)]
+        fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) {
+            ui.horizontal(|ui| {
+                egui::ComboBox::from_id_salt(format!("{path} type"))
+                    .selected_text(match v {
+                        toml::Value::String(_) => "String",
+                        toml::Value::Integer(_) => "Integer",
+                        toml::Value::Float(_) => "Float",
+                        toml::Value::Boolean(_) => "Boolean",
+                        toml::Value::Datetime(_) => "Datetime",
+                        toml::Value::Array(_) => "Array",
+                        toml::Value::Table(_) => "Table",
+                    })
+                    .show_ui(ui, |ui| {
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::String(_)), "String")
+                            .clicked()
+                        {
+                            *v = toml::Value::String(String::new());
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::Integer(_)), "Integer")
+                            .clicked()
+                        {
+                            *v = toml::Value::Integer(0);
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::Float(_)), "Float")
+                            .clicked()
+                        {
+                            *v = toml::Value::Float(0.0);
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::Boolean(_)), "Boolean")
+                            .clicked()
+                        {
+                            *v = toml::Value::Boolean(false);
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::Datetime(_)), "Datetime")
+                            .clicked()
+                        {
+                            *v = toml::Value::Datetime(toml::value::Datetime {
+                                date: None,
+                                time: None,
+                                offset: None,
+                            });
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::Array(_)), "Array")
+                            .clicked()
+                        {
+                            *v = toml::Value::Array(Vec::new());
+                        }
+                        if ui
+                            .selectable_label(matches!(v, toml::Value::String(_)), "Table")
+                            .clicked()
+                        {
+                            *v = toml::Value::Table(toml::Table::new());
+                        }
+                    });
+
+                match v {
+                    toml::Value::String(v) => {
+                        ui.text_edit_multiline(v);
+                    }
+                    toml::Value::Integer(v) => {
+                        ui.add(egui::DragValue::new(v));
+                    }
+                    toml::Value::Float(v) => {
+                        ui.add(egui::DragValue::new(v));
+                    }
+                    toml::Value::Boolean(v) => {
+                        ui.checkbox(v, "");
+                    }
+                    toml::Value::Datetime(_v) => {
+                        ui.label("todo");
+                    }
+                    toml::Value::Array(_) | toml::Value::Table(_) => {}
+                }
+            });
+
+            match v {
+                toml::Value::Array(v) => array_editor(ui, v, &format!("{path}/")),
+                toml::Value::Table(v) => table_editor(ui, Either::Right(v), &format!("{path}/")),
+                _ => {}
+            }
+        }
+
+        #[expect(clippy::items_after_statements)]
+        fn array_editor(ui: &mut egui::Ui, array: &mut [toml::Value], path: &str) {
+            for (i, v) in array.iter_mut().enumerate() {
+                field_editor(ui, v, &format!("{path}/{i}/"));
+            }
+        }
+
+        #[expect(clippy::items_after_statements)]
+        fn table_editor(
+            ui: &mut egui::Ui,
+            mut table: Either<&mut HashMap<String, toml::Value>, &mut toml::Table>,
+            path: &str,
+        ) {
+            egui_extras::TableBuilder::new(ui)
+                .id_salt(format!("{path} table"))
+                .striped(true)
+                .column(egui_extras::Column::auto())
+                .column(egui_extras::Column::remainder())
+                .body(|mut body| {
+                    let mut to_remove = None;
+
+                    let iter: Box<dyn Iterator<Item = (&String, &mut toml::Value)>> =
+                        match &mut table {
+                            Either::Left(v) => Box::new(v.iter_mut()),
+                            Either::Right(v) => Box::new(v.iter_mut()),
+                        };
+                    for (k, v) in iter {
+                        body.row(20.0, |mut row| {
+                            row.col(|ui| {
+                                if ui
+                                    .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                    .clicked()
+                                {
+                                    to_remove = Some(k.to_owned());
+                                }
+                                ui.label(k);
+                            });
+                            row.col(|ui| {
+                                field_editor(ui, v, &format!("{path}{k}"));
+                            });
+                        });
+                    }
+
+                    body.row(20.0, |mut row| {
+                        let mut temp = String::new();
+                        row.col(|ui| {
+                            ui.text_edit_singleline(&mut temp);
+                        });
+                        row.col(|ui| {
+                            if ui
+                                .add_enabled(
+                                    !temp.is_empty()
+                                        && match &table {
+                                            Either::Left(v) => !v.contains_key(&temp),
+                                            Either::Right(v) => !v.contains_key(&temp),
+                                        },
+                                    egui::Button::new("➕"),
+                                )
+                                .clicked()
+                            {
+                                match &mut table {
+                                    Either::Left(v) => {
+                                        v.insert(
+                                            std::mem::take(&mut temp),
+                                            toml::Value::String(String::new()),
+                                        );
+                                    }
+                                    Either::Right(v) => {
+                                        v.insert(
+                                            std::mem::take(&mut temp),
+                                            toml::Value::String(String::new()),
+                                        );
+                                    }
+                                }
+                            }
+                        });
+                    });
+
+                    if let Some(to_remove) = to_remove {
+                        match table {
+                            Either::Left(v) => {
+                                v.remove(&to_remove);
+                            }
+                            Either::Right(v) => {
+                                v.remove(&to_remove);
+                            }
+                        }
+                    }
+                });
+        }
+        table_editor(ui, Either::Left(&mut component.misc), "component ");
+
         ui.heading("Position data");
         let is_line = matches!(&*component.ty, SkinType::Line { .. });
         egui_extras::TableBuilder::new(ui)
+            .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)
             .cell_layout(egui::Layout::default().with_cross_align(egui::Align::RIGHT))
             .header(10.0, |mut header| {
