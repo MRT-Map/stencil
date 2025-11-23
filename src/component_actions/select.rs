@@ -1,3 +1,5 @@
+use tracing::info;
+
 use crate::{App, map::MapWindow};
 
 impl MapWindow {
@@ -11,6 +13,7 @@ impl MapWindow {
         }
 
         let Some(hovered_component) = &self.hovered_component else {
+            info!(ids=?self.selected_components, "Deselected all");
             self.selected_components.clear();
             return;
         };
@@ -21,11 +24,14 @@ impl MapWindow {
                 .iter()
                 .position(|a| a == hovered_component)
             {
+                info!(id=%hovered_component, "Deselected");
                 self.selected_components.remove(pos);
             } else {
+                info!(id=%hovered_component, "Selected");
                 self.selected_components.push(hovered_component.to_owned());
             }
         } else {
+            info!(id=%hovered_component, "Deselected all and selected one");
             self.selected_components.clear();
             self.selected_components.push(hovered_component.to_owned());
         }

@@ -8,7 +8,7 @@ use std::{
 };
 
 use chrono::{DateTime, Utc};
-use egui_notify::{Toast, ToastLevel, Toasts};
+use egui_notify::{Anchor, Toast, ToastLevel, Toasts};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info, warn};
@@ -18,11 +18,20 @@ use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
 pub static NOTIF_DURATION: LazyLock<AtomicU64> =
     LazyLock::new(|| AtomicU64::new(MiscSettings::default().notif_duration));
 
-#[derive(Default)]
 pub struct NotifState {
     pub notifs: Vec<Notif>,
     pub toasts: Toasts,
 }
+
+impl Default for NotifState {
+    fn default() -> Self {
+        Self {
+            notifs: Vec::default(),
+            toasts: Toasts::default().with_anchor(Anchor::BottomRight),
+        }
+    }
+}
+
 impl NotifState {
     fn push_base(&mut self, message: egui::RichText, level: ToastLevel) {
         let notif_duration = NOTIF_DURATION.load(Ordering::Relaxed);

@@ -49,6 +49,7 @@ impl History {
                 return;
             }
             if !label2.is_empty()
+                && !["move", "nodes"].contains(label2)
                 && let Some(Events::ComponentEv(ComponentEv::ChangeField {
                     before: before1,
                     after: after1,

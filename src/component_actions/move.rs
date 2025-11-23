@@ -1,3 +1,5 @@
+use tracing::info;
+
 use crate::{App, component_actions::ComponentEv, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
@@ -14,6 +16,7 @@ impl MapWindow {
     pub fn move_components(&mut self, app: &mut App, response: &egui::Response) {
         if app.mode != EditorMode::Nodes {
             if let Some(move_delta) = self.move_delta.take() {
+                info!(?move_delta, "Move cancelled");
                 self.move_selected_components_by(-move_delta, app);
             }
             return;
@@ -36,6 +39,8 @@ impl MapWindow {
                     component
                 })
                 .collect();
+
+            info!(?move_delta, "Move finished");
             app.add_event(ComponentEv::ChangeField {
                 before,
                 after,
@@ -48,9 +53,13 @@ impl MapWindow {
                 && self
                     .hovered_component
                     .as_ref()
-                    .is_none_or(|a| self.selected_components.contains(a)))
+                    .is_none_or(|a| !self.selected_components.contains(a)))
         {
             return;
+        }
+
+        if response.drag_started_by(egui::PointerButton::Primary) {
+            info!("Move started");
         }
 
         let new_move_delta = response.total_drag_delta().unwrap_or_default()
