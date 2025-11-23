@@ -103,6 +103,15 @@ impl Display for ComponentEv {
                 "Edit nodes of {}",
                 after.iter().map(|a| format!("{}", a.full_id)).join(", ")
             ),
+            Self::ChangeField {
+                after,
+                label: "reverse",
+                ..
+            } => write!(
+                f,
+                "Reversed {}",
+                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+            ),
             Self::ChangeField { after, label, .. } => write!(
                 f,
                 "Change component data ({label}) of {}",

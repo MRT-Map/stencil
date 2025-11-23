@@ -7,6 +7,7 @@ use std::{
 };
 
 use eyre::{ContextCompat, Report, Result, eyre};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
@@ -50,6 +51,34 @@ impl PlaNode {
             | Self::QuadraticBezier { coord, .. }
             | Self::CubicBezier { coord, .. } => coord,
         }
+    }
+    pub fn rev(s: impl DoubleEndedIterator<Item = Self>) -> Vec<Self> {
+        let mut s = s.rev().peekable();
+        let Some(last) = s.peek() else {
+            return Vec::new();
+        };
+        std::iter::once(Self::Line {
+            coord: last.coord(),
+            label: last.label(),
+        })
+        .chain(s.tuple_windows().map(|(b, f)| match b {
+            Self::Line { .. } => Self::Line {
+                coord: f.coord(),
+                label: f.label(),
+            },
+            Self::QuadraticBezier { ctrl, .. } => Self::QuadraticBezier {
+                ctrl,
+                coord: f.coord(),
+                label: f.label(),
+            },
+            Self::CubicBezier { ctrl1, ctrl2, .. } => Self::CubicBezier {
+                ctrl1: ctrl2,
+                ctrl2: ctrl1,
+                coord: f.coord(),
+                label: f.label(),
+            },
+        }))
+        .collect()
     }
     pub fn to_screen(
         self,

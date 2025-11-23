@@ -220,8 +220,8 @@ impl DockWindow for ComponentEditorWindow {
 
         if component_ty == Some("line") {
             if ui.button("Reverse direction").clicked() {
-                for _component in &mut selected_components {
-                    // TODO reverse
+                for component in &mut selected_components {
+                    component.nodes = PlaNode::rev(component.nodes.iter().copied());
                 }
                 add_event("reverse", &selected_components);
             }
