@@ -1,4 +1,8 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    cmp::min,
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
+};
 
 use egui::Widget;
 use itertools::{Either, Itertools};
@@ -311,33 +315,205 @@ impl DockWindow for ComponentEditorWindow {
                     toml::Value::Boolean(v) => {
                         ui.checkbox(v, "");
                     }
-                    toml::Value::Datetime(_v) => {
-                        ui.label("todo");
-                    }
-                    toml::Value::Array(_) | toml::Value::Table(_) => {}
+                    toml::Value::Datetime(_) | toml::Value::Array(_) | toml::Value::Table(_) => {}
                 }
             });
 
             match v {
                 toml::Value::Array(v) => array_editor(ui, v, &format!("{path}/")),
                 toml::Value::Table(v) => table_editor(ui, Either::Right(v), &format!("{path}/")),
+                toml::Value::Datetime(v) => {
+                    let mut reset_date = false;
+                    let mut reset_time = false;
+                    let mut reset_offset = false;
+                    if let Some(date) = &mut v.date {
+                        ui.horizontal(|ui| {
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                reset_date = true;
+                            }
+                            ui.add(
+                                egui::DragValue::new(&mut date.year)
+                                    .custom_formatter(|a, _| format!("{a:04}")),
+                            );
+                            ui.label("-");
+                            ui.add(
+                                egui::DragValue::new(&mut date.month)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(1..=12),
+                            );
+                            ui.label("-");
+                            ui.add(
+                                egui::DragValue::new(&mut date.day)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(1..=31),
+                            );
+                        });
+                    } else if ui
+                        .add(egui::Button::new("➕").right_text("Add date"))
+                        .clicked()
+                    {
+                        v.date = Some(toml::value::Date {
+                            year: 1970,
+                            month: 1,
+                            day: 1,
+                        });
+                    }
+
+                    if let Some(time) = &mut v.time {
+                        ui.horizontal(|ui| {
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                reset_time = true;
+                            }
+                            ui.add(
+                                egui::DragValue::new(&mut time.hour)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(0..=23),
+                            );
+                            ui.label(":");
+                            ui.add(
+                                egui::DragValue::new(&mut time.minute)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(0..=59),
+                            );
+                            ui.label(":");
+                            ui.add(
+                                egui::DragValue::new(&mut time.second)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(0..=59),
+                            );
+                            ui.label(".");
+                            ui.add(
+                                egui::DragValue::new(&mut time.nanosecond)
+                                    .custom_formatter(|a, _| format!("{a:09}"))
+                                    .range(0..=999_999_999),
+                            );
+                        });
+                    } else if ui
+                        .add(egui::Button::new("➕").right_text("Add time"))
+                        .clicked()
+                    {
+                        v.time = Some(toml::value::Time {
+                            hour: 0,
+                            minute: 0,
+                            second: 0,
+                            nanosecond: 0,
+                        });
+                    }
+
+                    if let Some(offset) = &mut v.offset {
+                        ui.horizontal(|ui| {
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                reset_offset = true;
+                            }
+
+                            let (mut hours, mut minutes) = match offset {
+                                toml::value::Offset::Z => (0, 0),
+                                toml::value::Offset::Custom { minutes } => {
+                                    (*minutes / 60, *minutes % 60)
+                                }
+                            };
+                            ui.add(
+                                egui::DragValue::new(&mut hours)
+                                    .custom_formatter(|a, _| format!("{a:+03}")),
+                            );
+                            ui.label(":");
+                            ui.add(
+                                egui::DragValue::new(&mut minutes)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(0..=59),
+                            );
+
+                            let total_minutes = hours * 60 + minutes;
+                            if total_minutes == 0 {
+                                *offset = toml::value::Offset::Z;
+                            } else {
+                                *offset = toml::value::Offset::Custom {
+                                    minutes: total_minutes,
+                                };
+                            }
+                        });
+                    } else if ui
+                        .add(egui::Button::new("➕").right_text("Add offset"))
+                        .clicked()
+                    {
+                        v.offset = Some(toml::value::Offset::Z);
+                    }
+
+                    if reset_date {
+                        v.date = None;
+                    }
+                    if reset_time {
+                        v.time = None;
+                    }
+                    if reset_offset {
+                        v.offset = None;
+                    }
+                }
                 _ => {}
             }
         }
 
         #[expect(clippy::items_after_statements)]
-        fn array_editor(ui: &mut egui::Ui, array: &mut [toml::Value], path: &str) {
+        fn array_editor(ui: &mut egui::Ui, array: &mut Vec<toml::Value>, path: &str) {
+            let mut to_remove = None;
+            let mut to_swap = None;
+            let array_len = array.len();
             for (i, v) in array.iter_mut().enumerate() {
-                field_editor(ui, v, &format!("{path}/{i}/"));
+                ui.horizontal(|ui| {
+                    if ui
+                        .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                        .clicked()
+                    {
+                        to_remove = Some(i);
+                    }
+                    if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
+                        to_swap = Some((i, i - 1));
+                    }
+                    if ui
+                        .add_enabled(i != array_len - 1, egui::Button::new("⬇"))
+                        .clicked()
+                    {
+                        to_swap = Some((i, i + 1));
+                    }
+                    field_editor(ui, v, &format!("{path}/{i}/"));
+                });
+            }
+            if ui
+                .add(egui::Button::new("➕").right_text("Add to array"))
+                .clicked()
+            {
+                array.push(toml::Value::String(String::new()));
+            }
+
+            if let Some(to_remove) = to_remove {
+                array.remove(to_remove);
+            }
+            if let Some((a, b)) = to_swap {
+                array.swap(a, b);
             }
         }
 
         #[expect(clippy::items_after_statements)]
         fn table_editor(
             ui: &mut egui::Ui,
-            mut table: Either<&mut HashMap<String, toml::Value>, &mut toml::Table>,
+            mut table: Either<&mut BTreeMap<String, toml::Value>, &mut toml::Table>,
             path: &str,
         ) {
+            let mut new_key = ui.memory_mut(|m| {
+                m.data
+                    .get_persisted::<String>(format!("{path} new key").into())
+                    .unwrap_or_default()
+            });
+
             egui_extras::TableBuilder::new(ui)
                 .id_salt(format!("{path} table"))
                 .striped(true)
@@ -354,13 +530,15 @@ impl DockWindow for ComponentEditorWindow {
                     for (k, v) in iter {
                         body.row(20.0, |mut row| {
                             row.col(|ui| {
-                                if ui
-                                    .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                    .clicked()
-                                {
-                                    to_remove = Some(k.to_owned());
-                                }
-                                ui.label(k);
+                                ui.horizontal(|ui| {
+                                    if ui
+                                        .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                        .clicked()
+                                    {
+                                        to_remove = Some(k.to_owned());
+                                    }
+                                    ui.label(k);
+                                });
                             });
                             row.col(|ui| {
                                 field_editor(ui, v, &format!("{path}{k}"));
@@ -369,17 +547,18 @@ impl DockWindow for ComponentEditorWindow {
                     }
 
                     body.row(20.0, |mut row| {
-                        let mut temp = String::new();
                         row.col(|ui| {
-                            ui.text_edit_singleline(&mut temp);
+                            ui.add(
+                                egui::TextEdit::singleline(&mut new_key).hint_text("Add to table"),
+                            );
                         });
                         row.col(|ui| {
                             if ui
                                 .add_enabled(
-                                    !temp.is_empty()
+                                    !new_key.is_empty()
                                         && match &table {
-                                            Either::Left(v) => !v.contains_key(&temp),
-                                            Either::Right(v) => !v.contains_key(&temp),
+                                            Either::Left(v) => !v.contains_key(&new_key),
+                                            Either::Right(v) => !v.contains_key(&new_key),
                                         },
                                     egui::Button::new("➕"),
                                 )
@@ -388,13 +567,13 @@ impl DockWindow for ComponentEditorWindow {
                                 match &mut table {
                                     Either::Left(v) => {
                                         v.insert(
-                                            std::mem::take(&mut temp),
+                                            std::mem::take(&mut new_key),
                                             toml::Value::String(String::new()),
                                         );
                                     }
                                     Either::Right(v) => {
                                         v.insert(
-                                            std::mem::take(&mut temp),
+                                            std::mem::take(&mut new_key),
                                             toml::Value::String(String::new()),
                                         );
                                     }
@@ -414,7 +593,13 @@ impl DockWindow for ComponentEditorWindow {
                         }
                     }
                 });
+
+            ui.memory_mut(|m| {
+                m.data
+                    .insert_persisted(format!("{path} new key").into(), new_key)
+            });
         }
+
         table_editor(ui, Either::Left(&mut component.misc), "component ");
 
         ui.heading("Position data");

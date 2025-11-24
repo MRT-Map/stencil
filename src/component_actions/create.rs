@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
+};
 
 use geo::Vector2DOps;
 use itertools::{Either, Itertools};
@@ -97,7 +100,7 @@ impl MapWindow {
                 coord: world_coord,
                 label: None,
             }],
-            misc: HashMap::default(),
+            misc: BTreeMap::default(),
         };
         info!(?world_coord, %component, "Created new point");
         app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
@@ -366,7 +369,7 @@ impl MapWindow {
                     display_name: String::new(),
                     layer: 0.0,
                     nodes: self.created_nodes.drain(..).collect(),
-                    misc: HashMap::default(),
+                    misc: BTreeMap::default(),
                 };
                 info!(?component.nodes, %component, "Created new {}", if IS_LINE {"line"} else {"area"});
                 app.run_event(ComponentEv::Create(vec![component]), ui.ctx());

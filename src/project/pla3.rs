@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     fmt::{Debug, Display, Formatter, Write},
     ops::{Add, AddAssign},
     path::{Path, PathBuf},
@@ -177,7 +177,7 @@ pub struct PlaComponent {
     pub display_name: String,
     pub layer: f32,
     pub nodes: Vec<PlaNode>,
-    pub misc: HashMap<String, toml::Value>,
+    pub misc: BTreeMap<String, toml::Value>,
 }
 
 impl Display for PlaComponent {
@@ -259,7 +259,7 @@ impl PlaComponent {
         } else {
             project.skin().unwrap().get_type("simpleLine").unwrap()
         });
-        let mut misc = HashMap::<String, toml::Value>::new();
+        let mut misc = BTreeMap::<String, toml::Value>::new();
         for (k, v) in toml::from_str::<toml::Table>(attrs_str)? {
             match &*k {
                 "display_name" => {
