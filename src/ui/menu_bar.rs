@@ -90,7 +90,7 @@ impl App {
                     ui.label("Windows");
                     // button!(ui, commands, "Component List", OpenComponentListEv);
                     button!(ui, window "Component", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
-                    button!(ui, window "Project", ProjectEditorWindow::default(), ShortcutAction::ProjectEditorWindow);
+                    button!(ui, window "Project", ProjectEditorWindow, ShortcutAction::ProjectEditorWindow);
                     button!(ui, window "History", HistoryViewerWindow, ShortcutAction::HistoryViewerWindow);
                     button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
                     ui.separator();

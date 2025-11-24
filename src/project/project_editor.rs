@@ -14,9 +14,7 @@ use crate::{
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
-pub struct ProjectEditorWindow {
-    new_namespace: String,
-}
+pub struct ProjectEditorWindow;
 
 impl DockWindow for ProjectEditorWindow {
     fn title(&self) -> String {
@@ -64,6 +62,11 @@ impl DockWindow for ProjectEditorWindow {
                 .as_ref()
                 .map_or_else(|| "SCRATCHPAD".into(), |a| a.to_string_lossy())
         ));
+
+        let id = "new_namespace".into();
+        let mut new_namespace =
+            ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
+
         egui_extras::TableBuilder::new(ui)
             .striped(true)
             .column(egui_extras::Column::auto().at_least(0.05))
@@ -127,27 +130,31 @@ impl DockWindow for ProjectEditorWindow {
                 body.row(20.0, |mut row| {
                     row.col(|_| ());
                     row.col(|ui| {
-                        egui::TextEdit::singleline(&mut self.new_namespace)
+                        egui::TextEdit::singleline(&mut new_namespace)
                             .hint_text("New namespace")
                             .show(ui);
                     });
                     row.col(|ui| {
                         if ui
                             .add_enabled(
-                                !self.new_namespace.is_empty()
-                                    && !app.project.namespaces.contains_key(&self.new_namespace),
+                                !new_namespace.is_empty()
+                                    && !app.project.namespaces.contains_key(&new_namespace),
                                 egui::Button::new("➕"),
                             )
                             .clicked()
                         {
                             app.run_event(
-                                ProjectEv::Create(std::mem::take(&mut self.new_namespace)),
+                                ProjectEv::Create(std::mem::take(&mut new_namespace)),
                                 ui.ctx(),
                             );
                         }
                     });
                 });
             });
+
+        ui.memory_mut(|m| {
+            m.data.insert_persisted(id, new_namespace);
+        });
 
         ui.separator();
 

@@ -65,7 +65,7 @@ impl MapWindow {
                                 ui.horizontal(|ui| {
                                     ui.label("Create or load namespaces in the");
                                     if ui.small_button("Project Editor").clicked() {
-                                        app.open_dock_window(ProjectEditorWindow::default());
+                                        app.open_dock_window(ProjectEditorWindow);
                                     }
                                 });
                             }

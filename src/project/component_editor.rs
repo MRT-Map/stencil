@@ -41,7 +41,7 @@ impl DockWindow for ComponentEditorWindow {
             .iter()
             .map(|a| (**a).clone())
             .collect::<Vec<_>>();
-        let mut add_event = |label: &'static str, selected_components: &[&mut PlaComponent]| {
+        let mut add_event = |label: &str, selected_components: &[&mut PlaComponent]| {
             let new_components = selected_components
                 .iter()
                 .map(|a| (**a).clone())
@@ -49,7 +49,7 @@ impl DockWindow for ComponentEditorWindow {
             events_to_add.push(ComponentEv::ChangeField {
                 before: std::mem::take(&mut old_selected_components),
                 after: new_components.clone(),
-                label,
+                label: label.into(),
             });
             old_selected_components = new_components;
         };
@@ -236,7 +236,8 @@ impl DockWindow for ComponentEditorWindow {
         ui.heading("Other Attributes");
 
         #[expect(clippy::items_after_statements)]
-        fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) {
+        fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) -> Vec<String> {
+            let mut changed = Vec::<String>::new();
             ui.horizontal(|ui| {
                 egui::ComboBox::from_id_salt(format!("{path} type"))
                     .selected_text(match v {
@@ -254,24 +255,28 @@ impl DockWindow for ComponentEditorWindow {
                             .clicked()
                         {
                             *v = toml::Value::String(String::new());
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::Integer(_)), "Integer")
                             .clicked()
                         {
                             *v = toml::Value::Integer(0);
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::Float(_)), "Float")
                             .clicked()
                         {
                             *v = toml::Value::Float(0.0);
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::Boolean(_)), "Boolean")
                             .clicked()
                         {
                             *v = toml::Value::Boolean(false);
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::Datetime(_)), "Datetime")
@@ -282,42 +287,56 @@ impl DockWindow for ComponentEditorWindow {
                                 time: None,
                                 offset: None,
                             });
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::Array(_)), "Array")
                             .clicked()
                         {
                             *v = toml::Value::Array(Vec::new());
+                            changed.push(path.into());
                         }
                         if ui
                             .selectable_label(matches!(v, toml::Value::String(_)), "Table")
                             .clicked()
                         {
                             *v = toml::Value::Table(toml::Table::new());
+                            changed.push(path.into());
                         }
                     });
 
                 match v {
                     toml::Value::String(v) => {
-                        ui.text_edit_multiline(v);
+                        if ui.text_edit_multiline(v).changed() {
+                            changed.push(path.into());
+                        }
                     }
                     toml::Value::Integer(v) => {
-                        ui.add(egui::DragValue::new(v));
+                        if ui.add(egui::DragValue::new(v)).changed() {
+                            changed.push(path.into());
+                        }
                     }
                     toml::Value::Float(v) => {
-                        ui.add(egui::DragValue::new(v));
+                        if ui.add(egui::DragValue::new(v)).changed() {
+                            changed.push(path.into());
+                        }
                     }
                     toml::Value::Boolean(v) => {
-                        ui.checkbox(v, "");
+                        if ui.checkbox(v, "").changed() {
+                            changed.push(path.into());
+                        }
                     }
                     toml::Value::Datetime(_) | toml::Value::Array(_) | toml::Value::Table(_) => {}
                 }
             });
 
             match v {
-                toml::Value::Array(v) => array_editor(ui, v, &format!("{path}/")),
-                toml::Value::Table(v) => table_editor(ui, Either::Right(v), &format!("{path}/")),
+                toml::Value::Array(v) => changed.extend(array_editor(ui, v, &format!("{path}/"))),
+                toml::Value::Table(v) => {
+                    changed.extend(table_editor(ui, Either::Right(v), &format!("{path}/")))
+                }
                 toml::Value::Datetime(v) => {
+                    let v_old = v.to_owned();
                     let mut reset_date = false;
                     let mut reset_time = false;
                     let mut reset_offset = false;
@@ -452,15 +471,26 @@ impl DockWindow for ComponentEditorWindow {
                     if reset_offset {
                         v.offset = None;
                     }
+                    if v_old != *v {
+                        changed.push(path.into());
+                    }
                 }
                 _ => {}
             }
+
+            changed
         }
 
         #[expect(clippy::items_after_statements)]
-        fn array_editor(ui: &mut egui::Ui, array: &mut Vec<toml::Value>, path: &str) {
+        fn array_editor(
+            ui: &mut egui::Ui,
+            array: &mut Vec<toml::Value>,
+            path: &str,
+        ) -> Vec<String> {
+            let mut changed = Vec::<String>::new();
             let mut to_remove = None;
             let mut to_swap = None;
+
             let array_len = array.len();
             for (i, v) in array.iter_mut().enumerate() {
                 ui.horizontal(|ui| {
@@ -479,7 +509,7 @@ impl DockWindow for ComponentEditorWindow {
                     {
                         to_swap = Some((i, i + 1));
                     }
-                    field_editor(ui, v, &format!("{path}/{i}/"));
+                    changed.extend(field_editor(ui, v, &format!("{path}{i}/")));
                 });
             }
             if ui
@@ -487,14 +517,19 @@ impl DockWindow for ComponentEditorWindow {
                 .clicked()
             {
                 array.push(toml::Value::String(String::new()));
+                changed.push(format!("{path}{array_len}"));
             }
 
             if let Some(to_remove) = to_remove {
                 array.remove(to_remove);
+                changed.push(format!("{path}{to_remove}"));
             }
             if let Some((a, b)) = to_swap {
                 array.swap(a, b);
+                changed.push(format!("{path}{a}&{b}"));
             }
+
+            changed
         }
 
         #[expect(clippy::items_after_statements)]
@@ -502,12 +537,12 @@ impl DockWindow for ComponentEditorWindow {
             ui: &mut egui::Ui,
             mut table: Either<&mut BTreeMap<String, toml::Value>, &mut toml::Table>,
             path: &str,
-        ) {
-            let mut new_key = ui.memory_mut(|m| {
-                m.data
-                    .get_persisted::<String>(format!("{path} new key").into())
-                    .unwrap_or_default()
-            });
+        ) -> Vec<String> {
+            let mut changed = Vec::<String>::new();
+
+            let id = format!("{path} new key").into();
+            let mut new_key =
+                ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
 
             egui_extras::TableBuilder::new(ui)
                 .id_salt(format!("{path} table"))
@@ -536,7 +571,7 @@ impl DockWindow for ComponentEditorWindow {
                                 });
                             });
                             row.col(|ui| {
-                                field_editor(ui, v, &format!("{path}{k}"));
+                                changed.extend(field_editor(ui, v, &format!("{path}{k}")));
                             });
                         });
                     }
@@ -559,6 +594,7 @@ impl DockWindow for ComponentEditorWindow {
                                 )
                                 .clicked()
                             {
+                                changed.push(format!("{path}{new_key}"));
                                 match &mut table {
                                     Either::Left(v) => {
                                         v.insert(
@@ -586,16 +622,31 @@ impl DockWindow for ComponentEditorWindow {
                                 v.remove(&to_remove);
                             }
                         }
+                        changed.push(format!("{path}{to_remove}"));
                     }
                 });
 
             ui.memory_mut(|m| {
-                m.data
-                    .insert_persisted(format!("{path} new key").into(), new_key);
+                m.data.insert_persisted(id, new_key);
             });
+
+            changed
         }
 
-        table_editor(ui, Either::Left(&mut component.misc), "component ");
+        let changes = table_editor(ui, Either::Left(&mut component.misc), "component ");
+        if !changes.is_empty() {
+            add_event(
+                &changes
+                    .iter()
+                    .map(|a| {
+                        a.strip_prefix("component ")
+                            .and_then(|a| a.strip_suffix('/'))
+                            .unwrap_or(a)
+                    })
+                    .join(" + "),
+                &[component],
+            );
+        }
 
         ui.heading("Position data");
         let is_line = matches!(&*component.ty, SkinType::Line { .. });

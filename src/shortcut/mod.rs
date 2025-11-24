@@ -101,7 +101,7 @@ impl App {
                     self.open_dock_window(NotifLogWindow);
                 }
                 ShortcutAction::ProjectEditorWindow => {
-                    self.open_dock_window(ProjectEditorWindow::default());
+                    self.open_dock_window(ProjectEditorWindow);
                 }
                 ShortcutAction::ResetMapView => {
                     self.reset_map_window();

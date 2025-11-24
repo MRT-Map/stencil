@@ -20,7 +20,7 @@ pub enum ComponentEv {
     ChangeField {
         before: Vec<PlaComponent>,
         after: Vec<PlaComponent>,
-        label: &'static str,
+        label: String,
     },
 }
 
@@ -59,7 +59,7 @@ impl Event for ComponentEv {
             } => Self::ChangeField {
                 before: after.clone(),
                 after: before.clone(),
-                label,
+                label: label.clone(),
             },
         }
         .run(ctx, app)
@@ -85,38 +85,28 @@ impl Display for ComponentEv {
                     .map(|a| format!("{}", a.full_id))
                     .join(", ")
             ),
-            Self::ChangeField {
-                after,
-                label: "move",
-                ..
-            } => write!(
-                f,
-                "Move {}",
-                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
-            ),
-            Self::ChangeField {
-                after,
-                label: "nodes",
-                ..
-            } => write!(
-                f,
-                "Edit nodes of {}",
-                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
-            ),
-            Self::ChangeField {
-                after,
-                label: "reverse",
-                ..
-            } => write!(
-                f,
-                "Reversed {}",
-                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
-            ),
-            Self::ChangeField { after, label, .. } => write!(
-                f,
-                "Change component data ({label}) of {}",
-                after.iter().map(|a| format!("{}", a.full_id)).join(", ")
-            ),
+            Self::ChangeField { after, label, .. } => match &**label {
+                "move" => write!(
+                    f,
+                    "Move {}",
+                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                ),
+                "nodes" => write!(
+                    f,
+                    "Edit nodes of {}",
+                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                ),
+                "reverse" => write!(
+                    f,
+                    "Reversed {}",
+                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                ),
+                _ => write!(
+                    f,
+                    "Change component data ({label}) of {}",
+                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                ),
+            },
         }
     }
 }

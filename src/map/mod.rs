@@ -45,9 +45,6 @@ pub struct MapWindow {
     pub hovered_component: Option<FullId>,
     #[serde(skip)]
     pub selected_components: Vec<FullId>,
-
-    #[serde(skip)]
-    pub move_delta: Option<geo::Coord<i32>>,
 }
 
 impl Default for MapWindow {
@@ -62,7 +59,6 @@ impl Default for MapWindow {
             created_area_type: None,
             hovered_component: None,
             selected_components: Vec::new(),
-            move_delta: None,
         }
     }
 }

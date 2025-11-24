@@ -59,7 +59,7 @@ impl Default for DockLayout {
             egui_dock::NodeIndex::root(),
             0.8,
             vec![
-                ProjectEditorWindow::default().into(),
+                ProjectEditorWindow.into(),
                 // ComponentList.into(),
                 HistoryViewerWindow.into(),
             ],
