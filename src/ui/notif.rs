@@ -119,14 +119,26 @@ impl DockWindow for NotifLogWindow {
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         for entry in app.ui.notifs.notifs.iter().rev() {
-            ui.colored_label(
-                egui::Color32::WHITE,
-                format!(
-                    "{}",
-                    DateTime::<Utc>::from(entry.timestamp).format("%d/%m/%Y %T")
-                ),
-            );
-            ui.colored_label(egui::Color32::YELLOW, entry.message.clone());
+            let (colour, notif_type) = match &entry.level {
+                ToastLevel::Info => (egui::Color32::WHITE, "Info"),
+                ToastLevel::Warning => (egui::Color32::ORANGE, "Warning"),
+                ToastLevel::Error => (egui::Color32::RED, "Error"),
+                ToastLevel::Success => (egui::Color32::GREEN, "Success"),
+                ToastLevel::None => (egui::Color32::GRAY, "None"),
+                ToastLevel::Custom(notif_type, colour) => (*colour, &**notif_type),
+            };
+            ui.horizontal(|ui| {
+                ui.colored_label(colour, notif_type);
+                ui.separator();
+                ui.colored_label(
+                    egui::Color32::LIGHT_GRAY,
+                    format!(
+                        "{}",
+                        DateTime::<Utc>::from(entry.timestamp).format("%d/%m/%Y %T")
+                    ),
+                );
+            });
+            ui.colored_label(colour, entry.message.clone());
             ui.separator();
         }
         if app.ui.notifs.notifs.is_empty() {

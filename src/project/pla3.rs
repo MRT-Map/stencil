@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::BTreeMap,
     fmt::{Debug, Display, Formatter, Write},
     ops::{Add, AddAssign},
     path::{Path, PathBuf},
@@ -52,7 +52,7 @@ impl PlaNode {
             | Self::CubicBezier { coord, .. } => coord,
         }
     }
-    pub fn rev(s: impl DoubleEndedIterator<Item = Self>) -> Vec<Self> {
+    pub fn rev<I: DoubleEndedIterator<Item = Self>>(s: I) -> Vec<Self> {
         let mut s = s.rev().peekable();
         let Some(last) = s.peek() else {
             return Vec::new();

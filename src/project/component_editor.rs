@@ -1,8 +1,4 @@
-use std::{
-    cmp::min,
-    collections::{BTreeMap, HashMap},
-    sync::Arc,
-};
+use std::{collections::BTreeMap, sync::Arc};
 
 use egui::Widget;
 use itertools::{Either, Itertools};
@@ -13,7 +9,6 @@ use crate::{
     component_actions::ComponentEv,
     project::{
         pla3::{PlaComponent, PlaNode},
-        project_editor::ProjectEv,
         skin::SkinType,
     },
     ui::dock::DockWindow,
@@ -596,7 +591,7 @@ impl DockWindow for ComponentEditorWindow {
 
             ui.memory_mut(|m| {
                 m.data
-                    .insert_persisted(format!("{path} new key").into(), new_key)
+                    .insert_persisted(format!("{path} new key").into(), new_key);
             });
         }
 

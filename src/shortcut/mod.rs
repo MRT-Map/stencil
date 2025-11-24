@@ -3,7 +3,6 @@ use tracing::info;
 
 use crate::{
     App,
-    component_actions::ComponentEv,
     info_windows::quit::QuitPopup,
     mode::EditorMode,
     project::{

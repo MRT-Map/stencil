@@ -1,4 +1,4 @@
-use crate::{App, component_actions::ComponentEv, map::MapWindow};
+use crate::{App, component_actions::ComponentEv};
 
 impl App {
     pub fn delete_selected_components(&mut self, ctx: &egui::Context) {
