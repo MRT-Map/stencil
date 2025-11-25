@@ -1,6 +1,5 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use egui::Widget;
 use itertools::{Either, Itertools};
 use serde::{Deserialize, Serialize};
 
@@ -297,7 +296,7 @@ impl DockWindow for ComponentEditorWindow {
                             changed.push(path.into());
                         }
                         if ui
-                            .selectable_label(matches!(v, toml::Value::String(_)), "Table")
+                            .selectable_label(matches!(v, toml::Value::Table(_)), "Table")
                             .clicked()
                         {
                             *v = toml::Value::Table(toml::Table::new());
@@ -333,7 +332,7 @@ impl DockWindow for ComponentEditorWindow {
             match v {
                 toml::Value::Array(v) => changed.extend(array_editor(ui, v, &format!("{path}/"))),
                 toml::Value::Table(v) => {
-                    changed.extend(table_editor(ui, Either::Right(v), &format!("{path}/")))
+                    changed.extend(table_editor(ui, Either::Right(v), &format!("{path}/")));
                 }
                 toml::Value::Datetime(v) => {
                     let v_old = v.to_owned();
