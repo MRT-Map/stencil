@@ -14,100 +14,115 @@ use crate::{
     },
     settings::SettingsWindow,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
-    ui::notif::NotifLogWindow,
+    ui::{dock::DockWindows, notif::NotifLogWindow},
 };
+
+impl App {
+    pub fn menu_button_fn<'a>(
+        &mut self,
+        location: &str,
+        ui: &mut egui::Ui,
+        label: &str,
+        action: Option<ShortcutAction>,
+    ) -> bool {
+        let button = if let Some(action) = action {
+            ui.button_with_shortcut(label, action, &mut self.shortcut_settings)
+        } else {
+            ui.button(label)
+        };
+        if button.clicked() {
+            info!(label, "Clicked {location} item");
+            return true;
+        }
+        false
+    }
+    pub fn menu_button_window<'a>(
+        &mut self,
+        location: &str,
+        ui: &mut egui::Ui,
+        label: &str,
+        action: Option<ShortcutAction>,
+        window: impl Into<DockWindows>,
+    ) {
+        if self.menu_button_fn(location, ui, label, action) {
+            self.open_dock_window(window);
+        }
+    }
+}
 
 impl App {
     pub fn menu_bar(&mut self, ctx: &egui::Context) {
         egui::TopBottomPanel::top("menu").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
-                    ($ui:ident, fn $label:literal, $f:block) => {
-                        if $ui.button($label).clicked() {
-                            info!(label = $label, "Clicked menu item");
-                            $f
-                        }
+                    ($ui:ident, $label:literal, $action:expr, $f:block) => {
+                        if self.menu_button_fn("menu bar", $ui, $label, $action) {$f}
                     };
-                    ($ui:ident, fn $label:literal, $f:block, $action:expr) => {
-                        if $ui.button_with_shortcut($label, $action, &mut self.shortcut_settings).clicked() {
-                            info!(label = $label, "Clicked menu item");
-                            $f
-                        }
-                    };
-                    ($ui:ident, window $label:literal, $window:expr) => {
-                        if $ui.button($label).clicked() {
-                            info!(label = $label, "Clicked menu item");
-                            self.open_dock_window($window)
-                        }
-                    };
-                    ($ui:ident, window $label:literal, $window:expr, $action:expr) => {
-                        if $ui.button_with_shortcut($label, $action, &mut self.shortcut_settings).clicked() {
-                            info!(label = $label, "Clicked menu item");
-                            self.open_dock_window($window)
-                        }
+                    ($ui:ident, $label:literal, $action:expr, window $w:expr) => {
+                        self.menu_button_window("menu bar", $ui, $label, $action, $w);
                     };
                 }
-
                 ui.menu_button(format!("Stencil v{}", env!("CARGO_PKG_VERSION")), |ui| {
-                    button!(ui, fn "Info", {
+                    button!(ui, "Info", None, {
                         self.add_popup(InfoPopup);
                     });
-                    button!(ui, fn "Changelog", {
+                    button!(ui, "Changelog", None, {
                         self.add_popup(ChangelogPopup);
                     });
-                    button!(ui, fn "Manual", {
+                    button!(ui, "Manual", None, {
                         self.add_popup(ManualPopup);
                     });
-                    button!(ui, fn "Licenses", {
+                    button!(ui, "Licenses", None, {
                         self.add_popup(LicensesPopup::default());
                     });
                     ui.separator();
-                    button!(ui, window "Settings", SettingsWindow::default(), ShortcutAction::SettingsWindow);
+                    button!(ui, "Settings", Some(ShortcutAction::SettingsWindow), window SettingsWindow::default());
                     ui.separator();
-                    button!(ui, fn "Quit", {
+                    button!(ui, "Quit", Some(ShortcutAction::Quit), {
                         self.add_popup(QuitPopup);
-                    }, ShortcutAction::Quit);
+                    });
                 });
                 ui.menu_button("File", |ui| {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
                     // button!(ui, commands, "Reload", ProjectEv::Reload);
-                    button!(ui, fn "Save", {
+                    button!(ui, "Save", Some(ShortcutAction::SaveProject), {
                         self.project.save_notif(&mut self.ui.notifs);
-                    }, ShortcutAction::SaveProject);
+                    });
                 });
                 ui.menu_button("Edit", |ui| {
-                    button!(ui, fn "Undo", {
+                    button!(ui, "Undo", Some(ShortcutAction::Undo), {
                         self.undo(ui.ctx());
-                    }, ShortcutAction::Undo);
-                    button!(ui, fn "Redo", {
-                        self.undo(ui.ctx());
-                    }, ShortcutAction::Redo);
+                    });
+                    button!(ui, "Redo", Some(ShortcutAction::Redo), {
+                        self.redo(ui.ctx());
+                    });
                     ui.separator();
-                    button!(ui, fn "Copy", {
+                    button!(ui, "Copy", Some(ShortcutAction::Copy), {
                         self.copy_selected_components();
-                    }, ShortcutAction::Copy);
-                    button!(ui, fn "Cut", {
+                    });
+                    button!(ui, "Cut", Some(ShortcutAction::Cut), {
                         self.cut_selected_components(ctx);
-                    }, ShortcutAction::Cut);
-                    button!(ui, fn "Paste", {
-                        self.paste_clipboard_components(ctx);
-                    }, ShortcutAction::Paste);
-                    button!(ui, fn "Delete", {
+                    });
+                    button!(ui, "Delete", Some(ShortcutAction::Delete), {
                         self.delete_selected_components(ctx);
-                    }, ShortcutAction::Delete);
+                    });
+                    ui.separator();
+                    button!(ui, "Paste", Some(ShortcutAction::Paste), {
+                        self.paste_clipboard_components(ctx);
+                    });
                 });
                 ui.menu_button("View", |ui| {
                     ui.label("Windows");
                     // button!(ui, commands, "Component List", OpenComponentListEv);
-                    button!(ui, window "Component", ComponentEditorWindow, ShortcutAction::ComponentEditorWindow);
-                    button!(ui, window "Project", ProjectEditorWindow, ShortcutAction::ProjectEditorWindow);
-                    button!(ui, window "History", HistoryViewerWindow, ShortcutAction::HistoryViewerWindow);
-                    button!(ui, window "Notification Log", NotifLogWindow, ShortcutAction::NotifLogWindow);
+                    button!(ui, "Component", Some(ShortcutAction::ComponentEditorWindow), window ComponentEditorWindow);
+                    button!(ui, "Project", Some(ShortcutAction::ProjectEditorWindow), window ProjectEditorWindow);
+                    button!(ui, "History", Some(ShortcutAction::HistoryViewerWindow), window HistoryViewerWindow);
+                    button!(ui, "Notification Log", Some(ShortcutAction::NotifLogWindow), window NotifLogWindow);
                     ui.separator();
-                    button!(ui, fn "Reset Map View", {
+                    button!(ui, "Reset Map View", Some(ShortcutAction::ResetMapView), {
                         self.reset_map_window();
-                    }, ShortcutAction::ResetMapView);
-                    button!(ui, fn "Reset Window Layout", {
+                    });
+                    button!(ui, "Reset Window Layout", None, {
                         self.ui.dock_layout.reset();
                         self.reset_map_window();
                     });

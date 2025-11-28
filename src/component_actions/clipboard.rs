@@ -2,6 +2,21 @@ use tracing::info;
 
 use crate::{App, component_actions::event::ComponentEv, map::MapWindow, project::pla3::PlaNode};
 
+impl MapWindow {
+    pub fn copy_selected_components(&mut self, app: &App) {
+        self.clipboard = self
+            .selected_components(&app.project.components)
+            .into_iter()
+            .cloned()
+            .collect();
+        if self.clipboard.is_empty() {
+            info!("Nothing to copy");
+        } else {
+            info!(ids=?self.clipboard.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Copied components");
+        }
+    }
+}
+
 impl App {
     pub fn copy_selected_components(&mut self) {
         let map_window = self.ui.dock_layout.map_window_mut();
@@ -28,7 +43,10 @@ impl App {
             info!("Nothing to paste");
             return;
         };
-        let delta = map_window.cursor_world_pos.map_or_else(|| geo::coord! { x: map_window.centre_coord.x.round() as i32, y: map_window.centre_coord.y.round() as i32 }, |a| geo::coord! { x: a.x.round() as i32, y: a.y.round() as i32 }) - centre;
+        let delta = map_window.cursor_world_pos.map_or_else(
+            || geo::coord! { x: map_window.centre_coord.x.round() as i32, y: map_window.centre_coord.y.round() as i32 },
+            |a| geo::coord! { x: a.x.round() as i32, y: a.y.round() as i32 }
+        ) - centre;
         let components_to_add = map_window
             .clipboard
             .iter()

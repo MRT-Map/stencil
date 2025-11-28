@@ -45,12 +45,17 @@ impl DockWindow for ComponentEditorWindow {
             .map_window()
             .selected_components_mut(&mut app.project.components);
         if selected_components.is_empty() {
-            if let Some(hovered_component) = &app.ui.dock_layout.map_window().hovered_component {
+            let map_window = app.ui.dock_layout.map_window();
+            if let Some(hovered_component) = &map_window.hovered_component {
                 ui.heading("Hovering over component:");
                 ui.label(egui::RichText::new(hovered_component.to_string()).code());
             } else {
                 ui.heading("Select components...");
             }
+            ui.label(format!(
+                "{} components in clipboard",
+                map_window.clipboard.len()
+            ));
             return;
         }
 
