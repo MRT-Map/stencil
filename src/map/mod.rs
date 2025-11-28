@@ -45,6 +45,8 @@ pub struct MapWindow {
     pub hovered_component: Option<FullId>,
     #[serde(skip)]
     pub selected_components: Vec<FullId>,
+    #[serde(skip)]
+    pub clipboard: Vec<PlaComponent>,
 }
 
 impl Default for MapWindow {
@@ -59,6 +61,7 @@ impl Default for MapWindow {
             created_area_type: None,
             hovered_component: None,
             selected_components: Vec::new(),
+            clipboard: Vec::new(),
         }
     }
 }

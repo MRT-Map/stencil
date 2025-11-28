@@ -82,6 +82,16 @@ impl App {
                     button!(ui, fn "Redo", {
                         self.undo(ui.ctx());
                     }, ShortcutAction::Redo);
+                    ui.separator();
+                    button!(ui, fn "Copy", {
+                        self.copy_selected_components();
+                    }, ShortcutAction::Copy);
+                    button!(ui, fn "Cut", {
+                        self.cut_selected_components(ctx);
+                    }, ShortcutAction::Cut);
+                    button!(ui, fn "Paste", {
+                        self.paste_clipboard_components(ctx);
+                    }, ShortcutAction::Paste);
                     button!(ui, fn "Delete", {
                         self.delete_selected_components(ctx);
                     }, ShortcutAction::Delete);

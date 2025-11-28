@@ -7,7 +7,7 @@ use std::{
 };
 
 use eyre::{ContextCompat, Report, Result, eyre};
-use itertools::Itertools;
+use itertools::{Itertools, MinMaxResult};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
@@ -79,6 +79,35 @@ impl PlaNode {
             },
         }))
         .collect()
+    }
+    pub fn centre<I: Iterator<Item = Self>>(s: I) -> Option<geo::Coord<i32>> {
+        let coords = s
+            .flat_map(|n| match n {
+                Self::Line { coord, .. } => vec![coord],
+                Self::QuadraticBezier { ctrl, coord, .. } => vec![ctrl, coord],
+                Self::CubicBezier {
+                    ctrl1,
+                    ctrl2,
+                    coord,
+                    ..
+                } => vec![ctrl1, ctrl2, coord],
+            })
+            .collect::<Vec<_>>();
+        let x = match coords.iter().minmax_by(|a, b| a.x.cmp(&b.x)) {
+            MinMaxResult::MinMax(min_x, max_x) => min_x.x / 2 + max_x.x / 2,
+            MinMaxResult::OneElement(x) => x.x,
+            MinMaxResult::NoElements => {
+                return None;
+            }
+        };
+        let y = match coords.iter().minmax_by(|a, b| a.y.cmp(&b.y)) {
+            MinMaxResult::MinMax(min_y, max_y) => min_y.y / 2 + max_y.y / 2,
+            MinMaxResult::OneElement(y) => y.y,
+            MinMaxResult::NoElements => {
+                return None;
+            }
+        };
+        Some(geo::coord! {x: x, y: y})
     }
     pub fn to_screen(
         self,

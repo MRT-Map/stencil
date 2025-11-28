@@ -54,6 +54,9 @@ pub enum ShortcutAction {
     EditorModeCreatePoint,
     EditorModeCreateLine,
     EditorModeCreateArea,
+    Copy,
+    Cut,
+    Paste,
 }
 impl ShortcutAction {
     pub const fn eventless(self) -> bool {
@@ -71,14 +74,46 @@ impl ShortcutAction {
 
 impl App {
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
+        let mut eframe_workaround_used = false;
         for shortcut in self.shortcut_settings.shortcuts_ordered() {
             let action = self.shortcut_settings.shortcut_to_action(shortcut).unwrap();
             if action.eventless() {
                 continue;
             }
             if !ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                continue;
+                if ctx.input_mut(|i| match shortcut {
+                    egui::KeyboardShortcut {
+                        modifiers,
+                        logical_key: egui::Key::C,
+                    } => {
+                        !eframe_workaround_used
+                            && i.modifiers.matches_logically(modifiers)
+                            && i.events.iter().any(|e| matches!(e, egui::Event::Copy))
+                    }
+                    egui::KeyboardShortcut {
+                        modifiers,
+                        logical_key: egui::Key::X,
+                    } => {
+                        !eframe_workaround_used
+                            && i.modifiers.matches_logically(modifiers)
+                            && i.events.iter().any(|e| matches!(e, egui::Event::Cut))
+                    }
+                    egui::KeyboardShortcut {
+                        modifiers,
+                        logical_key: egui::Key::V,
+                    } => {
+                        !eframe_workaround_used
+                            && i.modifiers.matches_logically(modifiers)
+                            && i.events.iter().any(|e| matches!(e, egui::Event::Paste(_)))
+                    }
+                    _ => false,
+                }) {
+                    eframe_workaround_used = true;
+                } else {
+                    continue;
+                }
             }
+
             info!(
                 ?action,
                 shortcut = ctx.format_shortcut(&shortcut),
@@ -131,6 +166,9 @@ impl App {
                     self.redo(ctx);
                 }
                 ShortcutAction::Delete => self.delete_selected_components(ctx),
+                ShortcutAction::Copy => self.copy_selected_components(),
+                ShortcutAction::Cut => self.cut_selected_components(ctx),
+                ShortcutAction::Paste => self.paste_clipboard_components(ctx),
                 _ => {}
             }
         }

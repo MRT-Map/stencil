@@ -1,3 +1,5 @@
+use tracing::info;
+
 use crate::{App, component_actions::event::ComponentEv};
 
 impl App {
@@ -13,6 +15,7 @@ impl App {
         if components.is_empty() {
             return;
         }
+        info!(ids=?components.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Deleted components");
         self.run_event(ComponentEv::Delete(components), ctx);
         self.ui
             .dock_layout

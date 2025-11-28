@@ -52,6 +52,9 @@ impl Default for ShortcutSettings {
         shortcut!(EditorModeCreatePoint => COMMAND + Num3);
         shortcut!(EditorModeCreateLine => COMMAND + Num4);
         shortcut!(EditorModeCreateArea => COMMAND + Num5);
+        shortcut!(Copy => COMMAND + C);
+        shortcut!(Cut => COMMAND + X);
+        shortcut!(Paste => COMMAND + V);
         Self(map)
     }
 }
