@@ -26,17 +26,17 @@ impl DockWindow for ComponentEditorWindow {
             ui.heading("Waiting for skin...");
             return;
         };
-        if [
-            EditorMode::CreatePoint,
-            EditorMode::CreateLine,
-            EditorMode::CreateArea,
-        ]
-        .contains(&app.mode)
-        {
-            ui.heading("Position data");
-            let created_nodes = &app.ui.dock_layout.map_window().created_nodes;
+        if [EditorMode::CreateLine, EditorMode::CreateArea].contains(&app.mode) {
             let is_line = app.mode == EditorMode::CreateLine;
+            ui.heading(format!(
+                "Creating {}",
+                if is_line { "line" } else { "area" }
+            ));
+            let created_nodes = &app.ui.dock_layout.map_window().created_nodes;
             Self::show_position_data(ui, is_line, created_nodes);
+            return;
+        } else if app.mode == EditorMode::CreatePoint {
+            ui.heading("Creating point");
             return;
         }
         let mut selected_components = app

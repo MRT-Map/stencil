@@ -12,6 +12,8 @@ use crate::{
     },
 };
 
+pub const TOLERANCE: Option<f32> = Some(0.1);
+
 macro_rules! hovering {
     ($is_hovered:expr, $response:expr, $width:expr, $line:expr) => {
         if !$is_hovered
@@ -28,6 +30,24 @@ pub enum PaintResult {
     Hovered(Vec<egui::Pos2>),
     Selected(Vec<egui::Pos2>),
     HoveredAndSelected(Vec<egui::Pos2>),
+}
+impl PaintResult {
+    pub fn from_conditions(
+        is_selected: bool,
+        detect_hovered: bool,
+        is_hovered: bool,
+        hover_coords: Vec<egui::Pos2>,
+    ) -> Self {
+        if is_selected && detect_hovered && is_hovered {
+            Self::HoveredAndSelected(hover_coords)
+        } else if is_selected {
+            Self::Selected(hover_coords)
+        } else if detect_hovered && is_hovered {
+            Self::Hovered(hover_coords)
+        } else {
+            Self::None
+        }
+    }
 }
 
 impl MapWindow {
@@ -240,12 +260,7 @@ impl MapWindow {
                         );
 
                         if !hover_coords_is_filled {
-                            hover_coords.extend(
-                                shape
-                                    .flatten(Some(0.1))
-                                    .iter()
-                                    .map(|a| egui::pos2(a.x, a.y)),
-                            );
+                            hover_coords.extend(shape.flatten(TOLERANCE));
                         }
                         shapes.push(shape.into());
                         coord
@@ -264,12 +279,7 @@ impl MapWindow {
                         );
 
                         if !hover_coords_is_filled {
-                            hover_coords.extend(
-                                shape
-                                    .flatten(Some(0.1))
-                                    .iter()
-                                    .map(|a| egui::pos2(a.x, a.y)),
-                            );
+                            hover_coords.extend(shape.flatten(TOLERANCE));
                         }
                         shapes.push(shape.into());
                         coord
@@ -294,12 +304,12 @@ impl MapWindow {
                             geo::coord! { x: points[1].x, y: points[1].y },
                         ],
                         egui::Shape::QuadraticBezier(shape) => shape
-                            .flatten(Some(0.1))
+                            .flatten(TOLERANCE)
                             .into_iter()
                             .map(|a| geo::coord! { x: a.x, y: a.y })
                             .collect(),
                         egui::Shape::CubicBezier(shape) => shape
-                            .flatten(Some(0.1))
+                            .flatten(TOLERANCE)
                             .into_iter()
                             .map(|a| geo::coord! { x: a.x, y: a.y })
                             .collect(),
@@ -335,15 +345,7 @@ impl MapWindow {
             painter.add(shapes);
         }
 
-        if is_selected && detect_hovered && is_hovered {
-            PaintResult::HoveredAndSelected(hover_coords)
-        } else if is_selected {
-            PaintResult::Selected(hover_coords)
-        } else if detect_hovered && is_hovered {
-            PaintResult::Hovered(hover_coords)
-        } else {
-            PaintResult::None
-        }
+        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, hover_coords)
     }
     pub fn paint_line(
         response: &egui::Response,
@@ -407,7 +409,7 @@ impl MapWindow {
                                 );
 
                                 let approx = shape
-                                    .flatten(Some(0.1))
+                                    .flatten(TOLERANCE)
                                     .into_iter()
                                     .map(|a| geo::coord! { x: a.x, y: a.y })
                                     .collect::<Vec<_>>();
@@ -439,7 +441,7 @@ impl MapWindow {
                                 );
 
                                 let approx = shape
-                                    .flatten(Some(0.1))
+                                    .flatten(TOLERANCE)
                                     .into_iter()
                                     .map(|a| geo::coord! { x: a.x, y: a.y })
                                     .collect::<Vec<_>>();
@@ -475,15 +477,7 @@ impl MapWindow {
             }
         }
 
-        if is_selected && detect_hovered && is_hovered {
-            PaintResult::HoveredAndSelected(hover_coords)
-        } else if is_selected {
-            PaintResult::Selected(hover_coords)
-        } else if detect_hovered && is_hovered {
-            PaintResult::Hovered(hover_coords)
-        } else {
-            PaintResult::None
-        }
+        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, hover_coords)
     }
     pub fn paint_point(
         ui: &egui::Ui,
