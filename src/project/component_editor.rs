@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     App,
     component_actions::event::ComponentEv,
+    mode::EditorMode,
     project::{
         pla3::{PlaComponent, PlaNode},
         skin::SkinType,
@@ -25,13 +26,31 @@ impl DockWindow for ComponentEditorWindow {
             ui.heading("Waiting for skin...");
             return;
         };
+        if [
+            EditorMode::CreatePoint,
+            EditorMode::CreateLine,
+            EditorMode::CreateArea,
+        ]
+        .contains(&app.mode)
+        {
+            ui.heading("Position data");
+            let created_nodes = &app.ui.dock_layout.map_window().created_nodes;
+            let is_line = app.mode == EditorMode::CreateLine;
+            Self::show_position_data(ui, is_line, created_nodes);
+            return;
+        }
         let mut selected_components = app
             .ui
             .dock_layout
             .map_window()
             .selected_components_mut(&mut app.project.components);
         if selected_components.is_empty() {
-            ui.heading("Select components...");
+            if let Some(hovered_component) = &app.ui.dock_layout.map_window().hovered_component {
+                ui.heading("Hovering over component:");
+                ui.label(egui::RichText::new(hovered_component.to_string()).code());
+            } else {
+                ui.heading("Select components...");
+            }
             return;
         }
 
@@ -237,407 +256,9 @@ impl DockWindow for ComponentEditorWindow {
         let Ok(component) = Itertools::exactly_one(selected_components.iter_mut()) else {
             return;
         };
+
         ui.heading("Other Attributes");
-
-        #[expect(clippy::items_after_statements)]
-        fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) -> Vec<String> {
-            let mut changed = Vec::<String>::new();
-            ui.horizontal(|ui| {
-                egui::ComboBox::from_id_salt(format!("{path} type"))
-                    .selected_text(match v {
-                        toml::Value::String(_) => "String",
-                        toml::Value::Integer(_) => "Integer",
-                        toml::Value::Float(_) => "Float",
-                        toml::Value::Boolean(_) => "Boolean",
-                        toml::Value::Datetime(_) => "Datetime",
-                        toml::Value::Array(_) => "Array",
-                        toml::Value::Table(_) => "Table",
-                    })
-                    .show_ui(ui, |ui| {
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::String(_)), "String")
-                            .clicked()
-                        {
-                            *v = toml::Value::String(String::new());
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Integer(_)), "Integer")
-                            .clicked()
-                        {
-                            *v = toml::Value::Integer(0);
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Float(_)), "Float")
-                            .clicked()
-                        {
-                            *v = toml::Value::Float(0.0);
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Boolean(_)), "Boolean")
-                            .clicked()
-                        {
-                            *v = toml::Value::Boolean(false);
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Datetime(_)), "Datetime")
-                            .clicked()
-                        {
-                            *v = toml::Value::Datetime(toml::value::Datetime {
-                                date: None,
-                                time: None,
-                                offset: None,
-                            });
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Array(_)), "Array")
-                            .clicked()
-                        {
-                            *v = toml::Value::Array(Vec::new());
-                            changed.push(path.into());
-                        }
-                        if ui
-                            .selectable_label(matches!(v, toml::Value::Table(_)), "Table")
-                            .clicked()
-                        {
-                            *v = toml::Value::Table(toml::Table::new());
-                            changed.push(path.into());
-                        }
-                    });
-
-                match v {
-                    toml::Value::String(v) => {
-                        if ui.text_edit_multiline(v).changed() {
-                            changed.push(path.into());
-                        }
-                    }
-                    toml::Value::Integer(v) => {
-                        if ui.add(egui::DragValue::new(v)).changed() {
-                            changed.push(path.into());
-                        }
-                    }
-                    toml::Value::Float(v) => {
-                        if ui.add(egui::DragValue::new(v)).changed() {
-                            changed.push(path.into());
-                        }
-                    }
-                    toml::Value::Boolean(v) => {
-                        if ui.checkbox(v, "").changed() {
-                            changed.push(path.into());
-                        }
-                    }
-                    toml::Value::Datetime(_) | toml::Value::Array(_) | toml::Value::Table(_) => {}
-                }
-            });
-
-            match v {
-                toml::Value::Array(v) => changed.extend(array_editor(ui, v, &format!("{path}/"))),
-                toml::Value::Table(v) => {
-                    changed.extend(table_editor(ui, Either::Right(v), &format!("{path}/")));
-                }
-                toml::Value::Datetime(v) => {
-                    let v_old = v.to_owned();
-                    let mut reset_date = false;
-                    let mut reset_time = false;
-                    let mut reset_offset = false;
-                    if let Some(date) = &mut v.date {
-                        ui.horizontal(|ui| {
-                            if ui
-                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                .clicked()
-                            {
-                                reset_date = true;
-                            }
-                            ui.add(
-                                egui::DragValue::new(&mut date.year)
-                                    .custom_formatter(|a, _| format!("{a:04}")),
-                            );
-                            ui.label("-");
-                            ui.add(
-                                egui::DragValue::new(&mut date.month)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(1..=12),
-                            );
-                            ui.label("-");
-                            ui.add(
-                                egui::DragValue::new(&mut date.day)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(1..=31),
-                            );
-                        });
-                    } else if ui
-                        .add(egui::Button::new("➕").right_text("Add date"))
-                        .clicked()
-                    {
-                        v.date = Some(toml::value::Date {
-                            year: 1970,
-                            month: 1,
-                            day: 1,
-                        });
-                    }
-
-                    if let Some(time) = &mut v.time {
-                        ui.horizontal(|ui| {
-                            if ui
-                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                .clicked()
-                            {
-                                reset_time = true;
-                            }
-                            ui.add(
-                                egui::DragValue::new(&mut time.hour)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(0..=23),
-                            );
-                            ui.label(":");
-                            ui.add(
-                                egui::DragValue::new(&mut time.minute)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(0..=59),
-                            );
-                            ui.label(":");
-                            ui.add(
-                                egui::DragValue::new(&mut time.second)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(0..=59),
-                            );
-                            ui.label(".");
-                            ui.add(
-                                egui::DragValue::new(&mut time.nanosecond)
-                                    .custom_formatter(|a, _| format!("{a:09}"))
-                                    .range(0..=999_999_999),
-                            );
-                        });
-                    } else if ui
-                        .add(egui::Button::new("➕").right_text("Add time"))
-                        .clicked()
-                    {
-                        v.time = Some(toml::value::Time {
-                            hour: 0,
-                            minute: 0,
-                            second: 0,
-                            nanosecond: 0,
-                        });
-                    }
-
-                    if let Some(offset) = &mut v.offset {
-                        ui.horizontal(|ui| {
-                            if ui
-                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                .clicked()
-                            {
-                                reset_offset = true;
-                            }
-
-                            let (mut hours, mut minutes) = match offset {
-                                toml::value::Offset::Z => (0, 0),
-                                toml::value::Offset::Custom { minutes } => {
-                                    (*minutes / 60, *minutes % 60)
-                                }
-                            };
-                            ui.add(
-                                egui::DragValue::new(&mut hours)
-                                    .custom_formatter(|a, _| format!("{a:+03}")),
-                            );
-                            ui.label(":");
-                            ui.add(
-                                egui::DragValue::new(&mut minutes)
-                                    .custom_formatter(|a, _| format!("{a:02}"))
-                                    .range(0..=59),
-                            );
-
-                            let total_minutes = hours * 60 + minutes;
-                            if total_minutes == 0 {
-                                *offset = toml::value::Offset::Z;
-                            } else {
-                                *offset = toml::value::Offset::Custom {
-                                    minutes: total_minutes,
-                                };
-                            }
-                        });
-                    } else if ui
-                        .add(egui::Button::new("➕").right_text("Add offset"))
-                        .clicked()
-                    {
-                        v.offset = Some(toml::value::Offset::Z);
-                    }
-
-                    if reset_date {
-                        v.date = None;
-                    }
-                    if reset_time {
-                        v.time = None;
-                    }
-                    if reset_offset {
-                        v.offset = None;
-                    }
-                    if v_old != *v {
-                        changed.push(path.into());
-                    }
-                }
-                _ => {}
-            }
-
-            changed
-        }
-
-        #[expect(clippy::items_after_statements)]
-        fn array_editor(
-            ui: &mut egui::Ui,
-            array: &mut Vec<toml::Value>,
-            path: &str,
-        ) -> Vec<String> {
-            let mut changed = Vec::<String>::new();
-            let mut to_remove = None;
-            let mut to_swap = None;
-
-            let array_len = array.len();
-            for (i, v) in array.iter_mut().enumerate() {
-                ui.horizontal(|ui| {
-                    if ui
-                        .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                        .clicked()
-                    {
-                        to_remove = Some(i);
-                    }
-                    if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
-                        to_swap = Some((i, i - 1));
-                    }
-                    if ui
-                        .add_enabled(i != array_len - 1, egui::Button::new("⬇"))
-                        .clicked()
-                    {
-                        to_swap = Some((i, i + 1));
-                    }
-                    changed.extend(field_editor(ui, v, &format!("{path}{i}/")));
-                });
-            }
-            if ui
-                .add(egui::Button::new("➕").right_text("Add to array"))
-                .clicked()
-            {
-                array.push(toml::Value::String(String::new()));
-                changed.push(format!("{path}{array_len}"));
-            }
-
-            if let Some(to_remove) = to_remove {
-                array.remove(to_remove);
-                changed.push(format!("{path}{to_remove}"));
-            }
-            if let Some((a, b)) = to_swap {
-                array.swap(a, b);
-                changed.push(format!("{path}{a}&{b}"));
-            }
-
-            changed
-        }
-
-        #[expect(clippy::items_after_statements)]
-        fn table_editor(
-            ui: &mut egui::Ui,
-            mut table: Either<&mut BTreeMap<String, toml::Value>, &mut toml::Table>,
-            path: &str,
-        ) -> Vec<String> {
-            let mut changed = Vec::<String>::new();
-
-            let id = format!("{path} new key").into();
-            let mut new_key =
-                ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
-
-            egui_extras::TableBuilder::new(ui)
-                .id_salt(format!("{path} table"))
-                .striped(true)
-                .column(egui_extras::Column::auto())
-                .column(egui_extras::Column::remainder())
-                .body(|mut body| {
-                    let mut to_remove = None;
-
-                    let iter: Box<dyn Iterator<Item = (&String, &mut toml::Value)>> =
-                        match &mut table {
-                            Either::Left(v) => Box::new(v.iter_mut()),
-                            Either::Right(v) => Box::new(v.iter_mut()),
-                        };
-                    for (k, v) in iter {
-                        body.row(20.0, |mut row| {
-                            row.col(|ui| {
-                                ui.horizontal(|ui| {
-                                    if ui
-                                        .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                        .clicked()
-                                    {
-                                        to_remove = Some(k.to_owned());
-                                    }
-                                    ui.label(k);
-                                });
-                            });
-                            row.col(|ui| {
-                                changed.extend(field_editor(ui, v, &format!("{path}{k}")));
-                            });
-                        });
-                    }
-
-                    body.row(20.0, |mut row| {
-                        row.col(|ui| {
-                            ui.add(
-                                egui::TextEdit::singleline(&mut new_key).hint_text("Add to table"),
-                            );
-                        });
-                        row.col(|ui| {
-                            if ui
-                                .add_enabled(
-                                    !new_key.is_empty()
-                                        && match &table {
-                                            Either::Left(v) => !v.contains_key(&new_key),
-                                            Either::Right(v) => !v.contains_key(&new_key),
-                                        },
-                                    egui::Button::new("➕"),
-                                )
-                                .clicked()
-                            {
-                                changed.push(format!("{path}{new_key}"));
-                                match &mut table {
-                                    Either::Left(v) => {
-                                        v.insert(
-                                            std::mem::take(&mut new_key),
-                                            toml::Value::String(String::new()),
-                                        );
-                                    }
-                                    Either::Right(v) => {
-                                        v.insert(
-                                            std::mem::take(&mut new_key),
-                                            toml::Value::String(String::new()),
-                                        );
-                                    }
-                                }
-                            }
-                        });
-                    });
-
-                    if let Some(to_remove) = to_remove {
-                        match table {
-                            Either::Left(v) => {
-                                v.remove(&to_remove);
-                            }
-                            Either::Right(v) => {
-                                v.remove(&to_remove);
-                            }
-                        }
-                        changed.push(format!("{path}{to_remove}"));
-                    }
-                });
-
-            ui.memory_mut(|m| {
-                m.data.insert_persisted(id, new_key);
-            });
-
-            changed
-        }
-
-        let changes = table_editor(ui, Either::Left(&mut component.misc), "component ");
+        let changes = Self::table_editor(ui, Either::Left(&mut component.misc), "component ");
         if !changes.is_empty() {
             add_event(
                 &changes
@@ -654,6 +275,406 @@ impl DockWindow for ComponentEditorWindow {
 
         ui.heading("Position data");
         let is_line = matches!(&*component.ty, SkinType::Line { .. });
+        Self::show_position_data(ui, is_line, &component.nodes);
+
+        for ev in events_to_add {
+            app.add_event(ev);
+        }
+    }
+}
+
+impl ComponentEditorWindow {
+    fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) -> Vec<String> {
+        let mut changed = Vec::<String>::new();
+        ui.horizontal(|ui| {
+            egui::ComboBox::from_id_salt(format!("{path} type"))
+                .selected_text(match v {
+                    toml::Value::String(_) => "String",
+                    toml::Value::Integer(_) => "Integer",
+                    toml::Value::Float(_) => "Float",
+                    toml::Value::Boolean(_) => "Boolean",
+                    toml::Value::Datetime(_) => "Datetime",
+                    toml::Value::Array(_) => "Array",
+                    toml::Value::Table(_) => "Table",
+                })
+                .show_ui(ui, |ui| {
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::String(_)), "String")
+                        .clicked()
+                    {
+                        *v = toml::Value::String(String::new());
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Integer(_)), "Integer")
+                        .clicked()
+                    {
+                        *v = toml::Value::Integer(0);
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Float(_)), "Float")
+                        .clicked()
+                    {
+                        *v = toml::Value::Float(0.0);
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Boolean(_)), "Boolean")
+                        .clicked()
+                    {
+                        *v = toml::Value::Boolean(false);
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Datetime(_)), "Datetime")
+                        .clicked()
+                    {
+                        *v = toml::Value::Datetime(toml::value::Datetime {
+                            date: None,
+                            time: None,
+                            offset: None,
+                        });
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Array(_)), "Array")
+                        .clicked()
+                    {
+                        *v = toml::Value::Array(Vec::new());
+                        changed.push(path.into());
+                    }
+                    if ui
+                        .selectable_label(matches!(v, toml::Value::Table(_)), "Table")
+                        .clicked()
+                    {
+                        *v = toml::Value::Table(toml::Table::new());
+                        changed.push(path.into());
+                    }
+                });
+
+            match v {
+                toml::Value::String(v) => {
+                    if ui.text_edit_multiline(v).changed() {
+                        changed.push(path.into());
+                    }
+                }
+                toml::Value::Integer(v) => {
+                    if ui.add(egui::DragValue::new(v)).changed() {
+                        changed.push(path.into());
+                    }
+                }
+                toml::Value::Float(v) => {
+                    if ui.add(egui::DragValue::new(v)).changed() {
+                        changed.push(path.into());
+                    }
+                }
+                toml::Value::Boolean(v) => {
+                    if ui.checkbox(v, "").changed() {
+                        changed.push(path.into());
+                    }
+                }
+                toml::Value::Datetime(_) | toml::Value::Array(_) | toml::Value::Table(_) => {}
+            }
+        });
+
+        match v {
+            toml::Value::Array(v) => changed.extend(Self::array_editor(ui, v, &format!("{path}/"))),
+            toml::Value::Table(v) => {
+                changed.extend(Self::table_editor(
+                    ui,
+                    Either::Right(v),
+                    &format!("{path}/"),
+                ));
+            }
+            toml::Value::Datetime(v) => {
+                let v_old = v.to_owned();
+                let mut reset_date = false;
+                let mut reset_time = false;
+                let mut reset_offset = false;
+                if let Some(date) = &mut v.date {
+                    ui.horizontal(|ui| {
+                        if ui
+                            .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                            .clicked()
+                        {
+                            reset_date = true;
+                        }
+                        ui.add(
+                            egui::DragValue::new(&mut date.year)
+                                .custom_formatter(|a, _| format!("{a:04}")),
+                        );
+                        ui.label("-");
+                        ui.add(
+                            egui::DragValue::new(&mut date.month)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(1..=12),
+                        );
+                        ui.label("-");
+                        ui.add(
+                            egui::DragValue::new(&mut date.day)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(1..=31),
+                        );
+                    });
+                } else if ui
+                    .add(egui::Button::new("➕").right_text("Add date"))
+                    .clicked()
+                {
+                    v.date = Some(toml::value::Date {
+                        year: 1970,
+                        month: 1,
+                        day: 1,
+                    });
+                }
+
+                if let Some(time) = &mut v.time {
+                    ui.horizontal(|ui| {
+                        if ui
+                            .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                            .clicked()
+                        {
+                            reset_time = true;
+                        }
+                        ui.add(
+                            egui::DragValue::new(&mut time.hour)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(0..=23),
+                        );
+                        ui.label(":");
+                        ui.add(
+                            egui::DragValue::new(&mut time.minute)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(0..=59),
+                        );
+                        ui.label(":");
+                        ui.add(
+                            egui::DragValue::new(&mut time.second)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(0..=59),
+                        );
+                        ui.label(".");
+                        ui.add(
+                            egui::DragValue::new(&mut time.nanosecond)
+                                .custom_formatter(|a, _| format!("{a:09}"))
+                                .range(0..=999_999_999),
+                        );
+                    });
+                } else if ui
+                    .add(egui::Button::new("➕").right_text("Add time"))
+                    .clicked()
+                {
+                    v.time = Some(toml::value::Time {
+                        hour: 0,
+                        minute: 0,
+                        second: 0,
+                        nanosecond: 0,
+                    });
+                }
+
+                if let Some(offset) = &mut v.offset {
+                    ui.horizontal(|ui| {
+                        if ui
+                            .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                            .clicked()
+                        {
+                            reset_offset = true;
+                        }
+
+                        let (mut hours, mut minutes) = match offset {
+                            toml::value::Offset::Z => (0, 0),
+                            toml::value::Offset::Custom { minutes } => {
+                                (*minutes / 60, *minutes % 60)
+                            }
+                        };
+                        ui.add(
+                            egui::DragValue::new(&mut hours)
+                                .custom_formatter(|a, _| format!("{a:+03}")),
+                        );
+                        ui.label(":");
+                        ui.add(
+                            egui::DragValue::new(&mut minutes)
+                                .custom_formatter(|a, _| format!("{a:02}"))
+                                .range(0..=59),
+                        );
+
+                        let total_minutes = hours * 60 + minutes;
+                        if total_minutes == 0 {
+                            *offset = toml::value::Offset::Z;
+                        } else {
+                            *offset = toml::value::Offset::Custom {
+                                minutes: total_minutes,
+                            };
+                        }
+                    });
+                } else if ui
+                    .add(egui::Button::new("➕").right_text("Add offset"))
+                    .clicked()
+                {
+                    v.offset = Some(toml::value::Offset::Z);
+                }
+
+                if reset_date {
+                    v.date = None;
+                }
+                if reset_time {
+                    v.time = None;
+                }
+                if reset_offset {
+                    v.offset = None;
+                }
+                if v_old != *v {
+                    changed.push(path.into());
+                }
+            }
+            _ => {}
+        }
+
+        changed
+    }
+
+    fn array_editor(ui: &mut egui::Ui, array: &mut Vec<toml::Value>, path: &str) -> Vec<String> {
+        let mut changed = Vec::<String>::new();
+        let mut to_remove = None;
+        let mut to_swap = None;
+
+        let array_len = array.len();
+        for (i, v) in array.iter_mut().enumerate() {
+            ui.horizontal(|ui| {
+                if ui
+                    .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                    .clicked()
+                {
+                    to_remove = Some(i);
+                }
+                if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
+                    to_swap = Some((i, i - 1));
+                }
+                if ui
+                    .add_enabled(i != array_len - 1, egui::Button::new("⬇"))
+                    .clicked()
+                {
+                    to_swap = Some((i, i + 1));
+                }
+                changed.extend(Self::field_editor(ui, v, &format!("{path}{i}/")));
+            });
+        }
+        if ui
+            .add(egui::Button::new("➕").right_text("Add to array"))
+            .clicked()
+        {
+            array.push(toml::Value::String(String::new()));
+            changed.push(format!("{path}{array_len}"));
+        }
+
+        if let Some(to_remove) = to_remove {
+            array.remove(to_remove);
+            changed.push(format!("{path}{to_remove}"));
+        }
+        if let Some((a, b)) = to_swap {
+            array.swap(a, b);
+            changed.push(format!("{path}{a}&{b}"));
+        }
+
+        changed
+    }
+
+    fn table_editor(
+        ui: &mut egui::Ui,
+        mut table: Either<&mut BTreeMap<String, toml::Value>, &mut toml::Table>,
+        path: &str,
+    ) -> Vec<String> {
+        let mut changed = Vec::<String>::new();
+
+        let id = format!("{path} new key").into();
+        let mut new_key = ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
+
+        egui_extras::TableBuilder::new(ui)
+            .id_salt(format!("{path} table"))
+            .striped(true)
+            .column(egui_extras::Column::auto())
+            .column(egui_extras::Column::remainder())
+            .body(|mut body| {
+                let mut to_remove = None;
+
+                let iter: Box<dyn Iterator<Item = (&String, &mut toml::Value)>> = match &mut table {
+                    Either::Left(v) => Box::new(v.iter_mut()),
+                    Either::Right(v) => Box::new(v.iter_mut()),
+                };
+                for (k, v) in iter {
+                    body.row(20.0, |mut row| {
+                        row.col(|ui| {
+                            ui.horizontal(|ui| {
+                                if ui
+                                    .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                    .clicked()
+                                {
+                                    to_remove = Some(k.to_owned());
+                                }
+                                ui.label(k);
+                            });
+                        });
+                        row.col(|ui| {
+                            changed.extend(Self::field_editor(ui, v, &format!("{path}{k}")));
+                        });
+                    });
+                }
+
+                body.row(20.0, |mut row| {
+                    row.col(|ui| {
+                        ui.add(egui::TextEdit::singleline(&mut new_key).hint_text("Add to table"));
+                    });
+                    row.col(|ui| {
+                        if ui
+                            .add_enabled(
+                                !new_key.is_empty()
+                                    && match &table {
+                                        Either::Left(v) => !v.contains_key(&new_key),
+                                        Either::Right(v) => !v.contains_key(&new_key),
+                                    },
+                                egui::Button::new("➕"),
+                            )
+                            .clicked()
+                        {
+                            changed.push(format!("{path}{new_key}"));
+                            match &mut table {
+                                Either::Left(v) => {
+                                    v.insert(
+                                        std::mem::take(&mut new_key),
+                                        toml::Value::String(String::new()),
+                                    );
+                                }
+                                Either::Right(v) => {
+                                    v.insert(
+                                        std::mem::take(&mut new_key),
+                                        toml::Value::String(String::new()),
+                                    );
+                                }
+                            }
+                        }
+                    });
+                });
+
+                if let Some(to_remove) = to_remove {
+                    match table {
+                        Either::Left(v) => {
+                            v.remove(&to_remove);
+                        }
+                        Either::Right(v) => {
+                            v.remove(&to_remove);
+                        }
+                    }
+                    changed.push(format!("{path}{to_remove}"));
+                }
+            });
+
+        ui.memory_mut(|m| {
+            m.data.insert_persisted(id, new_key);
+        });
+
+        changed
+    }
+    fn show_position_data(ui: &mut egui::Ui, is_line: bool, nodes: &[PlaNode]) {
         egui_extras::TableBuilder::new(ui)
             .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)
@@ -695,10 +716,10 @@ impl DockWindow for ComponentEditorWindow {
                             }
                         });
                     };
-                for (i, node) in component.nodes.iter().enumerate() {
+                for (i, node) in nodes.iter().enumerate() {
                     let colour = if i == 0 && is_line {
                         egui::Color32::GREEN
-                    } else if i == component.nodes.len() - 1 && is_line {
+                    } else if i == nodes.len() - 1 && is_line {
                         egui::Color32::RED
                     } else {
                         egui::Color32::WHITE
@@ -724,9 +745,5 @@ impl DockWindow for ComponentEditorWindow {
                     }
                 }
             });
-
-        for ev in events_to_add {
-            app.add_event(ev);
-        }
     }
 }
