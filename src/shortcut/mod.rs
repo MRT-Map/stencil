@@ -166,7 +166,7 @@ impl App {
                     self.redo(ctx);
                 }
                 ShortcutAction::Delete => self.delete_selected_components(ctx),
-                ShortcutAction::Copy => self.copy_selected_components(),
+                ShortcutAction::Copy => self.copy_selected_components(ctx),
                 ShortcutAction::Cut => self.cut_selected_components(ctx),
                 ShortcutAction::Paste => self.paste_clipboard_components(ctx),
                 _ => {}

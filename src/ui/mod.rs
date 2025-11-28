@@ -2,16 +2,17 @@ use std::collections::HashMap;
 
 use crate::{
     map::state::MapState,
-    ui::{dock::DockLayout, notif::NotifState, popup::Popups},
+    ui::{dock::DockLayout, notif::NotifState, popup::Popups, status::Status},
 };
 
 pub mod dock;
 pub mod menu_bar;
 pub mod notif;
 pub mod popup;
+pub mod status;
 
 pub struct UiState {
-    pub status: egui::RichText,
+    pub status: Status,
     pub dock_layout: DockLayout,
     pub popups: HashMap<String, Popups>,
     pub notifs: NotifState,
@@ -22,7 +23,7 @@ pub struct UiState {
 impl Default for UiState {
     fn default() -> Self {
         Self {
-            status: egui::RichText::default(),
+            status: Status::default(),
             dock_layout: DockLayout::default(),
             popups: HashMap::default(),
             notifs: NotifState::default(),

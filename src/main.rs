@@ -109,6 +109,7 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let start = Instant::now();
         self.project.load_skin(ctx);
+        self.status_init(ctx);
 
         self.menu_bar(ctx);
         self.dock(ctx);

@@ -6,28 +6,26 @@ use crate::{
 };
 
 impl App {
-    pub fn copy_selected_components(&mut self) {
+    pub fn copy_selected_components(&mut self, ctx: &egui::Context) {
         self.ui.map.clipboard = self
             .map_selected_components()
             .into_iter()
             .cloned()
             .collect();
-        if self.ui.map.clipboard.is_empty() {
-            info!("Nothing to copy");
-        } else {
-            info!(ids=?self.ui.map.clipboard.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Copied components");
-        }
+
+        self.status_on_copy(ctx);
     }
     pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
-        info!("Cutting components");
-        self.copy_selected_components();
+        self.copy_selected_components(ctx);
         self.delete_selected_components(ctx);
+
+        self.status_on_cut(ctx);
     }
     pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
         let Some(centre) =
             PlaNode::centre(self.ui.map.clipboard.iter().flat_map(|a| a.nodes.clone()))
         else {
-            info!("Nothing to paste");
+            self.status_on_paste(&[], ctx);
             return;
         };
         let delta = self.ui.map.cursor_world_pos.map_or_else(
@@ -59,8 +57,9 @@ impl App {
             .iter()
             .map(|a| a.full_id.clone())
             .collect::<Vec<_>>();
-        info!(?ids, "Pasted and selected components");
         self.run_event(ComponentEv::Create(components_to_add), ctx);
+
+        self.status_on_paste(&ids, ctx);
         self.ui.map.selected_components = ids;
     }
 }

@@ -22,7 +22,7 @@ impl MapWindow {
                 }
                 if !app.ui.map.selected_components.is_empty() {
                     button!(ui, "Copy", Some(ShortcutAction::Copy), {
-                        app.copy_selected_components();
+                        app.copy_selected_components(&response.ctx);
                     });
                     button!(ui, "Cut", Some(ShortcutAction::Cut), {
                         app.cut_selected_components(&response.ctx);

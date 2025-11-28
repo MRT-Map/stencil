@@ -98,7 +98,7 @@ impl App {
                     });
                     ui.separator();
                     button!(ui, "Copy", Some(ShortcutAction::Copy), {
-                        self.copy_selected_components();
+                        self.copy_selected_components(ctx);
                     });
                     button!(ui, "Cut", Some(ShortcutAction::Cut), {
                         self.cut_selected_components(ctx);
@@ -153,7 +153,7 @@ impl App {
                             .max_width(ui.available_width())
                             .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
                             .show(ui, |ui| {
-                                ui.label(self.ui.status.clone());
+                                ui.label(self.ui.status.show());
                             });
                     });
                 });

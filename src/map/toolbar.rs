@@ -191,13 +191,7 @@ impl MapWindow {
 
         if old_mode != app.mode {
             app.ui.map.created_nodes.clear();
-            app.ui.status = match app.mode {
-                EditorMode::Select => "Select: L-Click to select component. Scroll to pan. Shift and scroll to pan horizontally. Ctrl and scroll to zoom.",
-                EditorMode::Nodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",
-                EditorMode::CreatePoint => "Creating points: L-click to create point.",
-                EditorMode::CreateLine => "Creating lines: L-click to start and continue line, L-click previous node to undo it. R-click to end. Alt to snap to angle.",
-                EditorMode::CreateArea => "Creating areas: L-click to start and continue line, L-click previous node to undo it. L-click first node or R-click to end. Alt to snap to angle.",
-            }.into();
+            app.status_on_new_mode(ui.ctx());
         }
     }
 }
