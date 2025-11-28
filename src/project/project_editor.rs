@@ -44,7 +44,7 @@ impl DockWindow for ProjectEditorWindow {
                 .map_or_else(|| "SCRATCHPAD".into(), |a| a.to_string_lossy())
         ));
 
-        let id = "new_namespace".into();
+        let id = "new namespace".into();
         let mut new_namespace = ui.data_mut(|d| d.get_persisted::<String>(id).unwrap_or_default());
 
         egui_extras::TableBuilder::new(ui)

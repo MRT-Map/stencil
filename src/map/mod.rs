@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub mod basemap;
-mod context_menu;
+pub mod context_menu;
 pub mod settings;
 pub mod state;
 pub mod tile_coord;
@@ -199,14 +199,18 @@ impl MapWindow {
         }
     }
     fn interaction(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
-        let Some(hover_pos) = ui.ctx().pointer_hover_pos() else {
+        let Some(hover_pos) = response.hover_pos().or_else(|| {
+            response
+                .ctx
+                .data_mut(|a| {
+                    *a.get_temp_mut_or_default::<bool>(Self::HOVERED_OVER_CTX_MENU.into())
+                })
+                .then(|| ui.ctx().pointer_latest_pos())
+                .flatten()
+        }) else {
             app.ui.map.cursor_world_pos = None;
             return;
         };
-        if !response.interact_rect.contains(hover_pos) {
-            app.ui.map.cursor_world_pos = None;
-            return;
-        }
         let mut cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
 
         let old_zoom = app.ui.map.zoom;
