@@ -1,24 +1,13 @@
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
-use tracing::{error, info};
+use tracing::error;
 
 use crate::{
     App,
-    map::{
-        basemap::Basemap,
-        settings::MapSettings,
-        tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
-    },
+    map::tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     mode::EditorMode,
-    project::{
-        SkinStatus,
-        component_list::ComponentList,
-        pla3::{FullId, PlaComponent, PlaNode},
-        skin::SkinType,
-    },
+    project::SkinStatus,
     shortcut::ShortcutAction,
-    ui::dock::{DockLayout, DockWindow, DockWindows},
+    ui::dock::DockWindow,
 };
 
 pub mod basemap;
@@ -32,28 +21,28 @@ pub mod toolbar;
 pub struct MapWindow;
 
 impl DockWindow for MapWindow {
-    fn title(&self) -> String {
+    fn title(self) -> String {
         "Map".into()
     }
-    fn allowed_in_windows(&self) -> bool {
+    fn allowed_in_windows(self) -> bool {
         false
     }
-    fn is_closeable(&self) -> bool {
+    fn is_closeable(self) -> bool {
         false
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
-        self.toolbar(app, ui);
+        Self::toolbar(app, ui);
 
         let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::all());
 
-        self.tiles(app, ui, &response, &painter);
-        self.interaction(app, ui, &response);
-        self.components(app, ui, &response, &painter);
-        self.cursor(app, ui, &response, &painter);
+        Self::tiles(app, ui, &response, &painter);
+        Self::interaction(app, ui, &response);
+        Self::components(app, ui, &response, &painter);
+        Self::cursor(app, ui, &response, &painter);
     }
 }
 impl MapWindow {
-    fn tiles(&self, app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+    fn tiles(app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
         let world_boundaries = app.map_world_boundaries(response.rect);
         let tile_zoom = app.project.basemap.tile_zoom(app.ui.map.zoom);
         let tile_screen_size = app
@@ -122,7 +111,7 @@ impl MapWindow {
             tile_screen_top_left.y = min_tile_screen_top_left.y;
         }
     }
-    fn cursor(&self, app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+    fn cursor(app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
         if response.hover_pos().is_none() {
             return;
         }
@@ -209,7 +198,7 @@ impl MapWindow {
             }
         }
     }
-    fn interaction(&mut self, app: &mut App, ui: &egui::Ui, response: &egui::Response) {
+    fn interaction(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
         let Some(hover_pos) = ui.ctx().pointer_hover_pos() else {
             app.ui.map.cursor_world_pos = None;
             return;
@@ -287,21 +276,20 @@ impl MapWindow {
         app.ui.map.cursor_world_pos = Some(cursor_world_pos);
     }
     fn components(
-        &mut self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        self.paint_components(app, ui, response, painter);
-        self.select_components(app, ui, response);
-        self.component_context_menu(app, response);
-        self.move_components(app, response);
+        Self::paint_components(app, ui, response, painter);
+        Self::select_components(app, ui, response);
+        Self::component_context_menu(app, response);
+        Self::move_components(app, response);
 
         match app.mode {
-            EditorMode::CreatePoint => self.create_point(app, ui, response, painter),
-            EditorMode::CreateLine => self.create_line(app, ui, response, painter),
-            EditorMode::CreateArea => self.create_area(app, ui, response, painter),
+            EditorMode::CreatePoint => Self::create_point(app, ui, response, painter),
+            EditorMode::CreateLine => Self::create_line(app, ui, response, painter),
+            EditorMode::CreateArea => Self::create_area(app, ui, response, painter),
             _ => {}
         }
     }

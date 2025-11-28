@@ -9,7 +9,7 @@ use crate::{
 };
 
 impl MapWindow {
-    pub fn toolbar(&mut self, app: &mut App, ui: &mut egui::Ui) {
+    pub fn toolbar(app: &mut App, ui: &mut egui::Ui) {
         let old_mode = app.mode;
         egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {

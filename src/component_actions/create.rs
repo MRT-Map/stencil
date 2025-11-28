@@ -36,7 +36,6 @@ const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
 
 impl MapWindow {
     pub fn create_point(
-        &self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
@@ -106,26 +105,23 @@ impl MapWindow {
     }
     #[inline]
     pub fn create_line(
-        &mut self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        self.create_line_or_area::<true>(app, ui, response, painter);
+        Self::create_line_or_area::<true>(app, ui, response, painter);
     }
     #[inline]
     pub fn create_area(
-        &mut self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        self.create_line_or_area::<false>(app, ui, response, painter);
+        Self::create_line_or_area::<false>(app, ui, response, painter);
     }
     pub fn create_line_or_area<const IS_LINE: bool>(
-        &mut self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,

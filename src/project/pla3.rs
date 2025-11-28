@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     App,
-    map::MapWindow,
     project::{Project, skin::SkinType},
 };
 

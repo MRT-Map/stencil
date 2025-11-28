@@ -1,6 +1,6 @@
 use tracing::info;
 
-use crate::{App, component_actions::event::ComponentEv, map::state::MapState};
+use crate::{App, component_actions::event::ComponentEv};
 
 impl App {
     pub fn delete_selected_components(&mut self, ctx: &egui::Context) {

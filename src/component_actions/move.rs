@@ -3,7 +3,7 @@ use tracing::info;
 use crate::{App, component_actions::event::ComponentEv, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
-    fn move_selected_components_by(&self, delta: geo::Coord<i32>, app: &mut App) {
+    fn move_selected_components_by(delta: geo::Coord<i32>, app: &mut App) {
         if delta == geo::Coord::zero() {
             return;
         }
@@ -13,7 +13,7 @@ impl MapWindow {
             }
         }
     }
-    pub fn move_components(&self, app: &mut App, response: &egui::Response) {
+    pub fn move_components(app: &mut App, response: &egui::Response) {
         let id = "move delta".into();
         let mut move_delta = response
             .ctx
@@ -31,7 +31,7 @@ impl MapWindow {
         if app.mode != EditorMode::Nodes {
             if let Some(move_delta) = move_delta.take() {
                 info!(?move_delta, "Move cancelled");
-                self.move_selected_components_by(-move_delta, app);
+                Self::move_selected_components_by(-move_delta, app);
             }
             set_move_delta(move_delta);
             return;
@@ -88,6 +88,6 @@ impl MapWindow {
 
         let this_frame_delta = new_move_delta - move_delta.unwrap_or_default();
         set_move_delta(Some(new_move_delta));
-        self.move_selected_components_by(this_frame_delta, app);
+        Self::move_selected_components_by(this_frame_delta, app);
     }
 }

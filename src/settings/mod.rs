@@ -76,7 +76,7 @@ pub struct SettingsWindow {
 }
 
 impl DockWindow for SettingsWindow {
-    fn title(&self) -> String {
+    fn title(self) -> String {
         "Settings".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {

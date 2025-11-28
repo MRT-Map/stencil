@@ -5,7 +5,7 @@ use tracing::info;
 
 use crate::{
     App,
-    map::{MapWindow, basemap::Basemap, settings::MapSettings},
+    map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
         pla3::{FullId, PlaComponent, PlaNode},

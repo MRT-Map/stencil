@@ -1,7 +1,7 @@
 use crate::{App, map::MapWindow, shortcut::ShortcutAction};
 
 impl MapWindow {
-    pub fn component_context_menu(&mut self, app: &mut App, response: &egui::Response) {
+    pub fn component_context_menu(app: &mut App, response: &egui::Response) {
         if app.mode.is_editing() {
             return;
         }

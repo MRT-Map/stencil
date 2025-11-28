@@ -12,7 +12,7 @@ use crate::{
 pub struct ProjectEditorWindow;
 
 impl DockWindow for ProjectEditorWindow {
-    fn title(&self) -> String {
+    fn title(self) -> String {
         "Project".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {

@@ -3,7 +3,7 @@ use tracing::info;
 use crate::{App, map::MapWindow};
 
 impl MapWindow {
-    pub fn select_components(&mut self, app: &mut App, ui: &egui::Ui, response: &egui::Response) {
+    pub fn select_components(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
         if app.mode.is_editing() {
             app.ui.map.selected_components.clear();
             return;

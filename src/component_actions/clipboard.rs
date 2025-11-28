@@ -1,11 +1,6 @@
 use tracing::info;
 
-use crate::{
-    App,
-    component_actions::event::ComponentEv,
-    map::{MapWindow, state::MapState},
-    project::pla3::PlaNode,
-};
+use crate::{App, component_actions::event::ComponentEv, project::pla3::PlaNode};
 
 impl App {
     pub fn copy_selected_components(&mut self) {

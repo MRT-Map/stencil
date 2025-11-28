@@ -16,12 +16,12 @@ use crate::{
 };
 
 #[enum_dispatch]
-pub trait DockWindow {
-    fn title(&self) -> String;
-    fn allowed_in_windows(&self) -> bool {
+pub trait DockWindow: Copy {
+    fn title(self) -> String;
+    fn allowed_in_windows(self) -> bool {
         true
     }
-    fn is_closeable(&self) -> bool {
+    fn is_closeable(self) -> bool {
         true
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);

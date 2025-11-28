@@ -52,7 +52,6 @@ impl PaintResult {
 
 impl MapWindow {
     pub fn paint_components(
-        &mut self,
         app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
@@ -61,7 +60,7 @@ impl MapWindow {
         let mut hovered_shapes = Vec::new();
         app.ui.map.hovered_component = None;
         for component in app.project.components.iter() {
-            let result = self.paint_component(
+            let result = Self::paint_component(
                 app,
                 ui,
                 response,
@@ -91,7 +90,6 @@ impl MapWindow {
         painter.add(hovered_shapes);
     }
     pub fn paint_component(
-        &self,
         app: &App,
         ui: &egui::Ui,
         response: &egui::Response,

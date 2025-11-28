@@ -10,7 +10,7 @@ use crate::{
 pub struct HistoryViewerWindow;
 
 impl DockWindow for HistoryViewerWindow {
-    fn title(&self) -> String {
+    fn title(self) -> String {
         "History".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
