@@ -592,7 +592,7 @@ impl ComponentEditorWindow {
         let mut changed = Vec::<String>::new();
 
         let id = format!("{path} new key").into();
-        let mut new_key = ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
+        let mut new_key = ui.data_mut(|d| d.get_persisted::<String>(id).unwrap_or_default());
 
         egui_extras::TableBuilder::new(ui)
             .id_salt(format!("{path} table"))

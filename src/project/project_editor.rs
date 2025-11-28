@@ -59,8 +59,7 @@ impl DockWindow for ProjectEditorWindow {
         ));
 
         let id = "new_namespace".into();
-        let mut new_namespace =
-            ui.memory_mut(|m| m.data.get_persisted::<String>(id).unwrap_or_default());
+        let mut new_namespace = ui.data_mut(|d| d.get_persisted::<String>(id).unwrap_or_default());
 
         egui_extras::TableBuilder::new(ui)
             .striped(true)
