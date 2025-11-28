@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::{
     App,
-    component_actions::ComponentEv,
+    component_actions::event::ComponentEv,
     map::MapWindow,
     project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };

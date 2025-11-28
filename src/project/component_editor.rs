@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    component_actions::ComponentEv,
+    component_actions::event::ComponentEv,
     project::{
         pla3::{PlaComponent, PlaNode},
         skin::SkinType,
@@ -57,14 +57,15 @@ impl DockWindow for ComponentEditorWindow {
         ui.end_row();
 
         ui.horizontal(|ui| {
-            let namespace = selected_components
-                .iter()
-                .map(|c| &c.full_id.namespace)
-                .sorted()
-                .dedup()
-                .exactly_one()
-                .cloned()
-                .ok();
+            let namespace = Itertools::exactly_one(
+                selected_components
+                    .iter()
+                    .map(|c| &c.full_id.namespace)
+                    .sorted()
+                    .dedup(),
+            )
+            .cloned()
+            .ok();
             egui::ComboBox::from_id_salt("component namespace")
                 .selected_text(
                     namespace
@@ -90,7 +91,7 @@ impl DockWindow for ComponentEditorWindow {
                     }
                 });
 
-            if let Ok(component) = selected_components.iter_mut().exactly_one() {
+            if let Ok(component) = Itertools::exactly_one(selected_components.iter_mut()) {
                 ui.code(&component.full_id.id);
             } else {
                 ui.label(egui::RichText::new("mixed ids").italics());
@@ -98,13 +99,14 @@ impl DockWindow for ComponentEditorWindow {
         });
         ui.end_row();
 
-        let display_name = selected_components
-            .iter()
-            .map(|c| &c.display_name)
-            .sorted()
-            .dedup()
-            .exactly_one()
-            .ok();
+        let display_name = Itertools::exactly_one(
+            selected_components
+                .iter()
+                .map(|c| &c.display_name)
+                .sorted()
+                .dedup(),
+        )
+        .ok();
         let mut new_display_name = display_name.cloned().unwrap_or_default();
         if ui
             .add(
@@ -127,25 +129,27 @@ impl DockWindow for ComponentEditorWindow {
 
         ui.separator();
 
-        let skin_ty = selected_components
-            .iter()
-            .map(|c| &c.ty)
-            .sorted_by_key(|a| a.name())
-            .dedup()
-            .exactly_one()
-            .map(Arc::clone)
-            .ok();
-        let component_ty = selected_components
-            .iter()
-            .map(|c| &c.ty)
-            .map(|a| match &**a {
-                SkinType::Point { .. } => "point",
-                SkinType::Line { .. } => "line",
-                SkinType::Area { .. } => "area",
-            })
-            .dedup()
-            .exactly_one()
-            .ok();
+        let skin_ty = Itertools::exactly_one(
+            selected_components
+                .iter()
+                .map(|c| &c.ty)
+                .sorted_by_key(|a| a.name())
+                .dedup(),
+        )
+        .map(Arc::clone)
+        .ok();
+        let component_ty = Itertools::exactly_one(
+            selected_components
+                .iter()
+                .map(|c| &c.ty)
+                .map(|a| match &**a {
+                    SkinType::Point { .. } => "point",
+                    SkinType::Line { .. } => "line",
+                    SkinType::Area { .. } => "area",
+                })
+                .dedup(),
+        )
+        .ok();
         egui::ComboBox::from_label("Component type")
             .selected_text(skin_ty.as_ref().map_or_else(
                 || {
@@ -191,13 +195,14 @@ impl DockWindow for ComponentEditorWindow {
             });
         ui.end_row();
 
-        let layer = selected_components
-            .iter()
-            .map(|c| c.layer)
-            .sorted_by(f32::total_cmp)
-            .dedup()
-            .exactly_one()
-            .ok();
+        let layer = Itertools::exactly_one(
+            selected_components
+                .iter()
+                .map(|c| c.layer)
+                .sorted_by(f32::total_cmp)
+                .dedup(),
+        )
+        .ok();
         let mut new_layer = layer.unwrap_or_default();
         if ui
             .add(
@@ -229,7 +234,7 @@ impl DockWindow for ComponentEditorWindow {
             ui.separator();
         }
 
-        let Ok(component) = selected_components.iter_mut().exactly_one() else {
+        let Ok(component) = Itertools::exactly_one(selected_components.iter_mut()) else {
             return;
         };
         ui.heading("Other Attributes");

@@ -1,6 +1,7 @@
 pub mod component_editor;
 pub mod component_list;
 pub mod event;
+pub mod history;
 pub mod history_viewer;
 pub mod pla3;
 pub mod project_editor;
@@ -11,9 +12,9 @@ use std::{borrow::Cow, collections::HashSet, path::PathBuf};
 use async_executor::Task;
 use egui::ahash::HashMap;
 use egui_notify::ToastLevel;
-use event::History;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
+use history::History;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 

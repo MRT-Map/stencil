@@ -1,6 +1,6 @@
 use tracing::info;
 
-use crate::{App, component_actions::ComponentEv, map::MapWindow, mode::EditorMode};
+use crate::{App, component_actions::event::ComponentEv, map::MapWindow, mode::EditorMode};
 
 impl MapWindow {
     fn move_selected_components_by(&self, delta: geo::Coord<i32>, app: &mut App) {
