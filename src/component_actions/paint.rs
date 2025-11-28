@@ -53,21 +53,23 @@ impl PaintResult {
 impl MapWindow {
     pub fn paint_components(
         &mut self,
-        app: &App,
+        app: &mut App,
         ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
         let mut hovered_shapes = Vec::new();
-        self.hovered_component = None;
+        app.ui.map.hovered_component = None;
         for component in app.project.components.iter() {
             let result = self.paint_component(
                 app,
                 ui,
                 response,
                 painter,
-                self.hovered_component.is_none(),
-                self.selected_components
+                app.ui.map.hovered_component.is_none(),
+                app.ui
+                    .map
+                    .selected_components
                     .iter()
                     .any(|a| a == &component.full_id),
                 component,
@@ -76,7 +78,7 @@ impl MapWindow {
             if !app.mode.is_editing() {
                 match result {
                     PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
-                        self.hovered_component = Some(component.full_id.clone());
+                        app.ui.map.hovered_component = Some(component.full_id.clone());
                         hovered_shapes.extend(Self::hover_dash(&path));
                     }
                     PaintResult::Selected(path) => {
@@ -99,7 +101,7 @@ impl MapWindow {
         component: &PlaComponent,
     ) -> PaintResult {
         let bounding_rect = component.bounding_rect();
-        let world_boundaries = self.map_world_boundaries(app, response.rect);
+        let world_boundaries = app.map_world_boundaries(response.rect);
         if world_boundaries.max().x < bounding_rect.min().x
             || bounding_rect.max().x < world_boundaries.min().x
             || world_boundaries.max().y < bounding_rect.min().y
@@ -108,11 +110,11 @@ impl MapWindow {
             return PaintResult::None;
         }
 
-        let zl = self.zoom_level(app);
+        let zl = app.map_zoom_level();
         let mut screen_coords = component
             .nodes
             .iter()
-            .map(|a| a.to_screen(app, self, response.rect.center()));
+            .map(|a| a.to_screen(app, response.rect.center()));
         match &*component.ty {
             SkinType::Point {
                 styles,

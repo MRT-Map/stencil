@@ -74,7 +74,7 @@ impl App {
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
         let mut app = Self::load_state();
-        app.reset_map_window();
+        app.map_reset_view();
         if app.map_settings.clear_cache_on_startup {
             app.project.basemap.clear_cache_path(&mut app.ui.notifs);
         }

@@ -78,7 +78,9 @@ impl MapWindow {
                             ui.label("with type");
                             egui::ComboBox::from_id_salt("toolbar_type")
                                 .selected_text(
-                                    self.created_point_type
+                                    app.ui
+                                        .map
+                                        .created_point_type
                                         .as_ref()
                                         .unwrap_or_else(|| skin.get_type("simplePoint").unwrap())
                                         .widget_text(ui, &egui::TextStyle::Button),
@@ -89,7 +91,7 @@ impl MapWindow {
                                             continue;
                                         }
                                         ui.selectable_value(
-                                            &mut self.created_point_type,
+                                            &mut app.ui.map.created_point_type,
                                             Some(Arc::clone(ty)),
                                             ty.widget_text(ui, &egui::TextStyle::Button),
                                         );
@@ -101,7 +103,9 @@ impl MapWindow {
                             ui.label("with type");
                             egui::ComboBox::from_id_salt("toolbar_type")
                                 .selected_text(
-                                    self.created_line_type
+                                    app.ui
+                                        .map
+                                        .created_line_type
                                         .as_ref()
                                         .unwrap_or_else(|| skin.get_type("simpleLine").unwrap())
                                         .widget_text(ui, &egui::TextStyle::Button),
@@ -112,7 +116,7 @@ impl MapWindow {
                                             continue;
                                         }
                                         ui.selectable_value(
-                                            &mut self.created_line_type,
+                                            &mut app.ui.map.created_line_type,
                                             Some(Arc::clone(ty)),
                                             ty.widget_text(ui, &egui::TextStyle::Button),
                                         );
@@ -124,7 +128,9 @@ impl MapWindow {
                             ui.label("with type");
                             egui::ComboBox::from_id_salt("toolbar_type")
                                 .selected_text(
-                                    self.created_area_type
+                                    app.ui
+                                        .map
+                                        .created_area_type
                                         .as_ref()
                                         .unwrap_or_else(|| skin.get_type("simpleArea").unwrap())
                                         .widget_text(ui, &egui::TextStyle::Button),
@@ -135,7 +141,7 @@ impl MapWindow {
                                             continue;
                                         }
                                         ui.selectable_value(
-                                            &mut self.created_area_type,
+                                            &mut app.ui.map.created_area_type,
                                             Some(Arc::clone(ty)),
                                             ty.widget_text(ui, &egui::TextStyle::Button),
                                         );
@@ -165,17 +171,17 @@ impl MapWindow {
                         )
                         .clicked()
                     {
-                        self.reset(app);
+                        app.map_reset_view();
                     }
-                    if let Some(prev_cursor_world_pos) = self.cursor_world_pos {
+                    if let Some(prev_cursor_world_pos) = app.ui.map.cursor_world_pos {
                         ui.label(format!(
                             "x: {} z: {} \u{1f50d}: {:.2}",
                             prev_cursor_world_pos.x.round() as i32,
                             prev_cursor_world_pos.y.round() as i32,
-                            self.zoom
+                            app.ui.map.zoom
                         ));
                     } else {
-                        ui.label(format!("\u{1f50d}: {:.2}", self.zoom));
+                        ui.label(format!("\u{1f50d}: {:.2}", app.ui.map.zoom));
                     }
 
                     ui.separator();
@@ -184,7 +190,7 @@ impl MapWindow {
         });
 
         if old_mode != app.mode {
-            self.created_nodes.clear();
+            app.ui.map.created_nodes.clear();
             app.ui.status = match app.mode {
                 EditorMode::Select => "Select: L-Click to select component. Scroll to pan. Shift and scroll to pan horizontally. Ctrl and scroll to zoom.",
                 EditorMode::Nodes => "Editing nodes: R-click and drag circles to create node. R-click large circle without dragging to delete node.",

@@ -109,15 +109,9 @@ impl PlaNode {
         };
         Some(geo::coord! {x: x, y: y})
     }
-    pub fn to_screen(
-        self,
-        app: &App,
-        map_window: &MapWindow,
-        map_centre: egui::Pos2,
-    ) -> PlaNodeScreen {
+    pub fn to_screen(self, app: &App, map_centre: egui::Pos2) -> PlaNodeScreen {
         let world_to_screen = |coord: geo::Coord<i32>| {
-            map_window.world_to_screen(
-                app,
+            app.map_world_to_screen(
                 map_centre,
                 geo::coord! {
                     x: coord.x as f32,

@@ -1,34 +1,23 @@
 use tracing::info;
 
-use crate::{App, component_actions::event::ComponentEv, map::MapWindow, project::pla3::PlaNode};
-
-impl MapWindow {
-    pub fn copy_selected_components(&mut self, app: &App) {
-        self.clipboard = self
-            .selected_components(&app.project.components)
-            .into_iter()
-            .cloned()
-            .collect();
-        if self.clipboard.is_empty() {
-            info!("Nothing to copy");
-        } else {
-            info!(ids=?self.clipboard.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Copied components");
-        }
-    }
-}
+use crate::{
+    App,
+    component_actions::event::ComponentEv,
+    map::{MapWindow, state::MapState},
+    project::pla3::PlaNode,
+};
 
 impl App {
     pub fn copy_selected_components(&mut self) {
-        let map_window = self.ui.dock_layout.map_window_mut();
-        map_window.clipboard = map_window
-            .selected_components(&self.project.components)
+        self.ui.map.clipboard = self
+            .map_selected_components()
             .into_iter()
             .cloned()
             .collect();
-        if map_window.clipboard.is_empty() {
+        if self.ui.map.clipboard.is_empty() {
             info!("Nothing to copy");
         } else {
-            info!(ids=?map_window.clipboard.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Copied components");
+            info!(ids=?self.ui.map.clipboard.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Copied components");
         }
     }
     pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
@@ -36,18 +25,19 @@ impl App {
         self.delete_selected_components(ctx);
     }
     pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
-        let map_window = self.ui.dock_layout.map_window();
         let Some(centre) =
-            PlaNode::centre(map_window.clipboard.iter().flat_map(|a| a.nodes.clone()))
+            PlaNode::centre(self.ui.map.clipboard.iter().flat_map(|a| a.nodes.clone()))
         else {
             info!("Nothing to paste");
             return;
         };
-        let delta = map_window.cursor_world_pos.map_or_else(
-            || geo::coord! { x: map_window.centre_coord.x.round() as i32, y: map_window.centre_coord.y.round() as i32 },
+        let delta = self.ui.map.cursor_world_pos.map_or_else(
+            || geo::coord! { x: self.ui.map.centre_coord.x.round() as i32, y: self.ui.map.centre_coord.y.round() as i32 },
             |a| geo::coord! { x: a.x.round() as i32, y: a.y.round() as i32 }
         ) - centre;
-        let components_to_add = map_window
+        let components_to_add = self
+            .ui
+            .map
             .clipboard
             .iter()
             .cloned()
@@ -72,6 +62,6 @@ impl App {
             .collect::<Vec<_>>();
         info!(?ids, "Pasted and selected components");
         self.run_event(ComponentEv::Create(components_to_add), ctx);
-        self.ui.dock_layout.map_window_mut().selected_components = ids;
+        self.ui.map.selected_components = ids;
     }
 }

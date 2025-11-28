@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::ui::{dock::DockLayout, notif::NotifState, popup::Popups};
+use crate::{
+    map::state::MapState,
+    ui::{dock::DockLayout, notif::NotifState, popup::Popups},
+};
 
 pub mod dock;
 pub mod menu_bar;
@@ -13,6 +16,7 @@ pub struct UiState {
     pub popups: HashMap<String, Popups>,
     pub notifs: NotifState,
     pub mspf: egui::util::History<f32>,
+    pub map: MapState,
 }
 
 impl Default for UiState {
@@ -23,6 +27,7 @@ impl Default for UiState {
             popups: HashMap::default(),
             notifs: NotifState::default(),
             mspf: egui::util::History::new(1..usize::MAX, 1.0),
+            map: MapState::default(),
         }
     }
 }

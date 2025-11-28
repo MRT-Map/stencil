@@ -6,7 +6,7 @@ use crate::{
     ui::dock::DockWindow,
 };
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 pub struct HistoryViewerWindow;
 
 impl DockWindow for HistoryViewerWindow {

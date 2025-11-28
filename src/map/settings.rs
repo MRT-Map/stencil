@@ -234,8 +234,8 @@ impl MapSettings {
     }
 }
 impl App {
-    pub fn world_screen_ratio_with_current_basemap_at_zoom(&self, zoom: f32) -> f32 {
+    pub fn world_screen_ratio_with_current_basemap_at_current_zoom(&self) -> f32 {
         self.map_settings
-            .world_screen_ratio_at_zoom(self.project.basemap.max_tile_zoom, zoom)
+            .world_screen_ratio_at_zoom(self.project.basemap.max_tile_zoom, self.ui.map.zoom)
     }
 }

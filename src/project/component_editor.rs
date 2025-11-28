@@ -32,8 +32,7 @@ impl DockWindow for ComponentEditorWindow {
                 "Creating {}",
                 if is_line { "line" } else { "area" }
             ));
-            let created_nodes = &app.ui.dock_layout.map_window().created_nodes;
-            Self::show_position_data(ui, is_line, created_nodes);
+            Self::show_position_data(ui, is_line, &app.ui.map.created_nodes);
             return;
         } else if app.mode == EditorMode::CreatePoint {
             ui.heading("Creating point");
@@ -41,12 +40,10 @@ impl DockWindow for ComponentEditorWindow {
         }
         let mut selected_components = app
             .ui
-            .dock_layout
-            .map_window()
+            .map
             .selected_components_mut(&mut app.project.components);
         if selected_components.is_empty() {
-            let map_window = app.ui.dock_layout.map_window();
-            if let Some(hovered_component) = &map_window.hovered_component {
+            if let Some(hovered_component) = &app.ui.map.hovered_component {
                 ui.heading("Hovering over component:");
                 ui.label(egui::RichText::new(hovered_component.to_string()).code());
             } else {
@@ -54,7 +51,7 @@ impl DockWindow for ComponentEditorWindow {
             }
             ui.label(format!(
                 "{} components in clipboard",
-                map_window.clipboard.len()
+                app.ui.map.clipboard.len()
             ));
             return;
         }

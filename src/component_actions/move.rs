@@ -7,7 +7,7 @@ impl MapWindow {
         if delta == geo::Coord::zero() {
             return;
         }
-        for component in self.selected_components_mut(&mut app.project.components) {
+        for component in app.map_selected_components_mut() {
             for node in &mut component.nodes {
                 *node += delta;
             }
@@ -39,8 +39,8 @@ impl MapWindow {
         if response.drag_stopped_by(egui::PointerButton::Primary)
             && let Some(move_delta) = move_delta.take()
         {
-            let after = self
-                .selected_components(&app.project.components)
+            let after = app
+                .map_selected_components()
                 .into_iter()
                 .cloned()
                 .collect::<Vec<_>>();
@@ -66,10 +66,12 @@ impl MapWindow {
         }
         if !response.dragged_by(egui::PointerButton::Primary)
             || (response.drag_started_by(egui::PointerButton::Primary)
-                && self
+                && app
+                    .ui
+                    .map
                     .hovered_component
                     .as_ref()
-                    .is_none_or(|a| !self.selected_components.contains(a)))
+                    .is_none_or(|a| !app.ui.map.selected_components.contains(a)))
         {
             set_move_delta(move_delta);
             return;
@@ -80,7 +82,7 @@ impl MapWindow {
         }
 
         let new_move_delta = response.total_drag_delta().unwrap_or_default()
-            * app.world_screen_ratio_with_current_basemap_at_zoom(self.zoom);
+            * app.world_screen_ratio_with_current_basemap_at_current_zoom();
         let new_move_delta =
             geo::coord! { x: new_move_delta.x.round() as i32, y: new_move_delta.y.round() as i32 };
 

@@ -139,7 +139,7 @@ impl App {
                     self.open_dock_window(ProjectEditorWindow);
                 }
                 ShortcutAction::ResetMapView => {
-                    self.reset_map_window();
+                    self.map_reset_view();
                 }
                 ShortcutAction::SaveProject => {
                     self.project.save_notif(&mut self.ui.notifs);

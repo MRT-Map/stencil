@@ -1,14 +1,11 @@
 use tracing::info;
 
-use crate::{App, component_actions::event::ComponentEv};
+use crate::{App, component_actions::event::ComponentEv, map::state::MapState};
 
 impl App {
     pub fn delete_selected_components(&mut self, ctx: &egui::Context) {
         let components = self
-            .ui
-            .dock_layout
-            .map_window()
-            .selected_components(&self.project.components)
+            .map_selected_components()
             .into_iter()
             .cloned()
             .collect::<Vec<_>>();
@@ -17,10 +14,6 @@ impl App {
         }
         info!(ids=?components.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Deleted components");
         self.run_event(ComponentEv::Delete(components), ctx);
-        self.ui
-            .dock_layout
-            .map_window_mut()
-            .selected_components
-            .clear();
+        self.ui.map.selected_components.clear();
     }
 }

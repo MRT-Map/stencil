@@ -8,7 +8,7 @@ use crate::{
     ui::dock::DockWindow,
 };
 
-#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug, Default)]
 pub struct ProjectEditorWindow;
 
 impl DockWindow for ProjectEditorWindow {

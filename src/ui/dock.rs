@@ -29,7 +29,7 @@ pub trait DockWindow {
 
 #[expect(clippy::enum_variant_names)]
 #[enum_dispatch(DockWindow)]
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 #[serde(tag = "ty")]
 pub enum DockWindows {
     MapWindow,
@@ -48,7 +48,7 @@ impl_load_save!(mpk DockLayout, data_path("dock.mpk"));
 
 impl Default for DockLayout {
     fn default() -> Self {
-        let mut state = egui_dock::DockState::new(vec![MapWindow::default().into()]);
+        let mut state = egui_dock::DockState::new(vec![MapWindow.into()]);
         let tree = state.main_surface_mut();
         let [_, _] = tree.split_left(
             egui_dock::NodeIndex::root(),

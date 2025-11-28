@@ -120,11 +120,11 @@ impl App {
                     button!(ui, "Notification Log", Some(ShortcutAction::NotifLogWindow), window NotifLogWindow);
                     ui.separator();
                     button!(ui, "Reset Map View", Some(ShortcutAction::ResetMapView), {
-                        self.reset_map_window();
+                        self.map_reset_view();
                     });
                     button!(ui, "Reset Window Layout", None, {
                         self.ui.dock_layout.reset();
-                        self.reset_map_window();
+                        self.map_reset_view();
                     });
                 });
                 #[cfg(debug_assertions)]

@@ -45,18 +45,21 @@ impl MapWindow {
         if app.project.new_component_ns.is_empty() {
             return;
         }
-        let (Some(cursor_world_pos), Some(skin)) = (self.cursor_world_pos, app.project.skin())
+        let (Some(cursor_world_pos), Some(skin)) =
+            (app.ui.map.cursor_world_pos, app.project.skin())
         else {
             return;
         };
-        let Some(ty) = self
+        let Some(ty) = app
+            .ui
+            .map
             .created_point_type
             .as_ref()
             .or_else(|| skin.get_type("simplePoint"))
         else {
             return;
         };
-        let Some(style) = ty.point_style_in_zoom_level(self.zoom_level(app)) else {
+        let Some(style) = ty.point_style_in_zoom_level(app.map_zoom_level()) else {
             return;
         };
 
@@ -64,8 +67,7 @@ impl MapWindow {
             x: cursor_world_pos.x.round() as i32,
             y: cursor_world_pos.y.round() as i32,
         };
-        let screen_coord = self.world_to_screen(
-            app,
+        let screen_coord = app.map_world_to_screen(
             response.rect.center(),
             geo::coord! { x: world_coord.x as f32, y: world_coord.y as f32 },
         );
@@ -132,12 +134,15 @@ impl MapWindow {
         if app.project.new_component_ns.is_empty() {
             return;
         }
-        let (Some(cursor_world_pos), Some(skin)) = (self.cursor_world_pos, app.project.skin())
+        let (Some(cursor_world_pos), Some(skin)) =
+            (app.ui.map.cursor_world_pos, app.project.skin())
         else {
             return;
         };
         let (ty, style) = if IS_LINE {
-            let Some(ty) = self
+            let Some(ty) = app
+                .ui
+                .map
                 .created_line_type
                 .as_ref()
                 .or_else(|| skin.get_type("simpleLine"))
@@ -145,12 +150,14 @@ impl MapWindow {
                 return;
             };
 
-            let Some(style) = ty.line_style_in_zoom_level(self.zoom_level(app)) else {
+            let Some(style) = ty.line_style_in_zoom_level(app.map_zoom_level()) else {
                 return;
             };
             (Either::Left(ty), Either::Left(style))
         } else {
-            let Some(ty) = self
+            let Some(ty) = app
+                .ui
+                .map
                 .created_area_type
                 .as_ref()
                 .or_else(|| skin.get_type("simpleArea"))
@@ -158,7 +165,7 @@ impl MapWindow {
                 return;
             };
 
-            let Some(style) = ty.area_style_in_zoom_level(self.zoom_level(app)) else {
+            let Some(style) = ty.area_style_in_zoom_level(app.map_zoom_level()) else {
                 return;
             };
             (Either::Right(ty), Either::Right(style))
@@ -170,10 +177,12 @@ impl MapWindow {
         };
 
         if ui.ctx().input(|a| a.modifiers.alt)
-            && let Some(prev_coord) = match self.created_nodes.last() {
-                Some(PlaNode::Line { .. }) => self
+            && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
+                Some(PlaNode::Line { .. }) => app
+                    .ui
+                    .map
                     .created_nodes
-                    .get(self.created_nodes.len() - 2)
+                    .get(app.ui.map.created_nodes.len() - 2)
                     .map(|a| a.coord()),
                 Some(PlaNode::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
                 Some(PlaNodeBase::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
@@ -211,8 +220,8 @@ impl MapWindow {
             } + prev_coord;
         }
 
-        match self.created_nodes.last_mut() {
-            None => self.created_nodes.push(PlaNode::Line {
+        match app.ui.map.created_nodes.last_mut() {
+            None => app.ui.map.created_nodes.push(PlaNode::Line {
                 coord: world_coord,
                 label: None,
             }),
@@ -223,10 +232,12 @@ impl MapWindow {
             ) => *coord = world_coord,
         }
 
-        let screen_nodes = self
+        let screen_nodes = app
+            .ui
+            .map
             .created_nodes
             .iter()
-            .map(|a| a.to_screen(app, self, response.rect.center()))
+            .map(|a| a.to_screen(app, response.rect.center()))
             .collect::<Vec<_>>();
         match style {
             Either::Left(style) => {
@@ -237,7 +248,7 @@ impl MapWindow {
             }
         }
 
-        if let Some(curve_vec) = match self.created_nodes.last_chunk::<2>() {
+        if let Some(curve_vec) = match app.ui.map.created_nodes.last_chunk::<2>() {
             Some([second_last, PlaNode::QuadraticBezier { ctrl, coord, .. }]) => {
                 Some(vec![second_last.coord(), *ctrl, *coord])
             }
@@ -257,14 +268,15 @@ impl MapWindow {
                     PlaNode::Line { coord: coord1, .. },
                     PlaNode::Line { coord: coord2, .. },
                 ],
-            ) => (!IS_LINE && self.created_nodes.len() == 2).then_some(vec![*coord1, *coord2]),
+            ) => {
+                (!IS_LINE && app.ui.map.created_nodes.len() == 2).then_some(vec![*coord1, *coord2])
+            }
             _ => None,
         } {
             let curve_vec = curve_vec
                 .iter()
                 .map(|a| {
-                    self.world_to_screen(
-                        app,
+                    app.map_world_to_screen(
                         response.rect.center(),
                         geo::coord! { x: a.x as f32, y: a.y as f32},
                     )
@@ -285,11 +297,11 @@ impl MapWindow {
         }
 
         if response.clicked_by(egui::PointerButton::Secondary) {
-            let last_node = self.created_nodes.last_mut().unwrap();
+            let last_node = app.ui.map.created_nodes.last_mut().unwrap();
             info!(?last_node, "Undoing last control point / node");
             match *last_node {
                 PlaNode::Line { .. } => {
-                    self.created_nodes.pop();
+                    app.ui.map.created_nodes.pop();
                 }
                 PlaNode::QuadraticBezier { coord, label, .. } => {
                     *last_node = PlaNodeBase::Line { coord, label }
@@ -308,8 +320,8 @@ impl MapWindow {
                 }
             }
         } else if response.clicked_by(egui::PointerButton::Primary) {
-            if ui.ctx().input(|a| a.modifiers.shift) && self.created_nodes.len() > 1 {
-                let last_node = self.created_nodes.last_mut().unwrap();
+            if ui.ctx().input(|a| a.modifiers.shift) && app.ui.map.created_nodes.len() > 1 {
+                let last_node = app.ui.map.created_nodes.last_mut().unwrap();
                 match *last_node {
                     PlaNode::Line { coord, label } => {
                         *last_node = PlaNode::QuadraticBezier {
@@ -329,12 +341,14 @@ impl MapWindow {
                     PlaNode::CubicBezier { .. } => {}
                 }
                 info!(?last_node, "Adding control point");
-            } else if self
+            } else if app
+                .ui
+                .map
                 .created_nodes
                 .last_chunk::<2>()
                 .is_none_or(|[sl, l]| sl.coord() != l.coord())
             {
-                self.created_nodes.push(PlaNode::Line {
+                app.ui.map.created_nodes.push(PlaNode::Line {
                     coord: world_coord,
                     label: None,
                 });
@@ -344,14 +358,14 @@ impl MapWindow {
         if response.double_clicked_by(egui::PointerButton::Primary)
             || response.double_clicked_by(egui::PointerButton::Middle)
         {
-            self.created_nodes.pop();
-            if self.created_nodes.len() >= (if IS_LINE { 2 } else { 3 }) {
+            app.ui.map.created_nodes.pop();
+            if app.ui.map.created_nodes.len() >= (if IS_LINE { 2 } else { 3 }) {
                 if !IS_LINE
-                    && self.created_nodes.first().unwrap().coord()
-                        != self.created_nodes.last().unwrap().coord()
+                    && app.ui.map.created_nodes.first().unwrap().coord()
+                        != app.ui.map.created_nodes.last().unwrap().coord()
                 {
-                    self.created_nodes.push(PlaNode::Line {
-                        coord: self.created_nodes.first().unwrap().coord(),
+                    app.ui.map.created_nodes.push(PlaNode::Line {
+                        coord: app.ui.map.created_nodes.first().unwrap().coord(),
                         label: None,
                     });
                 }
@@ -365,13 +379,13 @@ impl MapWindow {
                     ty: Arc::clone(ty.into_inner()),
                     display_name: String::new(),
                     layer: 0.0,
-                    nodes: self.created_nodes.drain(..).collect(),
+                    nodes: app.ui.map.created_nodes.drain(..).collect(),
                     misc: BTreeMap::default(),
                 };
                 info!(?component.nodes, %component, "Created new {}", if IS_LINE {"line"} else {"area"});
                 app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
             } else {
-                self.created_nodes.clear();
+                app.ui.map.created_nodes.clear();
                 info!(
                     "No new {} created due to too few points",
                     if IS_LINE { "line" } else { "area" }
