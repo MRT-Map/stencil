@@ -49,7 +49,8 @@ fn main() {
         "Stencil2",
         eframe::NativeOptions {
             viewport: egui::ViewportBuilder::default().with_icon(
-                eframe::icon_data::from_png_bytes(include_bytes!("../icons/icon.png")).unwrap(),
+                eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/icon.png"))
+                    .unwrap(),
             ),
             persistence_path: Some(DATA_DIR.join("eframe_data")),
             ..Default::default()

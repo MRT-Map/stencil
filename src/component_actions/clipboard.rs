@@ -19,6 +19,7 @@ impl App {
         }
     }
     pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
+        info!("Cutting components");
         self.copy_selected_components();
         self.delete_selected_components(ctx);
     }

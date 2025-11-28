@@ -1,3 +1,8 @@
+# /// script
+# dependencies = [
+#   "Pillow>=12.0.0",
+# ]
+# ///
 from PIL import Image
 
 img = Image.open("icons/icon.png")
