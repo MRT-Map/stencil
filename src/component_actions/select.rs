@@ -8,8 +8,8 @@ impl MapWindow {
             self.selected_components.clear();
             return;
         }
-        if (!response.clicked_by(egui::PointerButton::Primary)
-            && !response.clicked_by(egui::PointerButton::Secondary))
+        if !response.clicked_by(egui::PointerButton::Primary)
+            && !response.clicked_by(egui::PointerButton::Secondary)
         {
             return;
         }

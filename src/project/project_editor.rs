@@ -1,10 +1,8 @@
-use std::fmt::Display;
-
 use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    project::{Project, SkinStatus, event::ProjectEv, history::Event},
+    project::{Project, SkinStatus, event::ProjectEv},
     settings::settings_ui_field,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::dock::DockWindow,

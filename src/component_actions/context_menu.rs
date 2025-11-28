@@ -1,5 +1,3 @@
-use tracing::info;
-
 use crate::{App, map::MapWindow, shortcut::ShortcutAction};
 
 impl MapWindow {

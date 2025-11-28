@@ -18,7 +18,7 @@ use crate::{
 };
 
 impl App {
-    pub fn menu_button_fn<'a>(
+    pub fn menu_button_fn(
         &mut self,
         location: &str,
         ui: &mut egui::Ui,
@@ -36,13 +36,13 @@ impl App {
         }
         false
     }
-    pub fn menu_button_window<'a>(
+    pub fn menu_button_window<W: Into<DockWindows>>(
         &mut self,
         location: &str,
         ui: &mut egui::Ui,
         label: &str,
         action: Option<ShortcutAction>,
-        window: impl Into<DockWindows>,
+        window: W,
     ) {
         if self.menu_button_fn(location, ui, label, action) {
             self.open_dock_window(window);
