@@ -1,6 +1,9 @@
 use tracing::info;
 
-use crate::{App, component_actions::event::ComponentEv, project::pla3::PlaNode};
+use crate::{
+    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
+    project::pla3::PlaNode,
+};
 
 impl App {
     pub fn copy_selected_components(&mut self) {
@@ -27,8 +30,8 @@ impl App {
             return;
         };
         let delta = self.ui.map.cursor_world_pos.map_or_else(
-            || geo::coord! { x: self.ui.map.centre_coord.x.round() as i32, y: self.ui.map.centre_coord.y.round() as i32 },
-            |a| geo::coord! { x: a.x.round() as i32, y: a.y.round() as i32 }
+            || self.ui.map.centre_coord.to_geo_coord_i32(),
+            CoordConversionExt::to_geo_coord_i32,
         ) - centre;
         let components_to_add = self
             .ui

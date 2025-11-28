@@ -242,7 +242,7 @@ impl MapWindow {
         let invert = app.map_settings.invert_scroll;
         let mut translation = ui.ctx().input(egui::InputState::translation_delta)
             * world_screen_ratio
-            * egui::Vec2::new(
+            * egui::vec2(
                 if invert.x { -1.0 } else { 1.0 },
                 if invert.y { -1.0 } else { 1.0 },
             );

@@ -1,6 +1,9 @@
 use tracing::info;
 
-use crate::{App, component_actions::event::ComponentEv, map::MapWindow, mode::EditorMode};
+use crate::{
+    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
+    map::MapWindow, mode::EditorMode,
+};
 
 impl MapWindow {
     fn move_selected_components_by(delta: geo::Coord<i32>, app: &mut App) {
@@ -83,8 +86,7 @@ impl MapWindow {
 
         let new_move_delta = response.total_drag_delta().unwrap_or_default()
             * app.world_screen_ratio_with_current_basemap_at_current_zoom();
-        let new_move_delta =
-            geo::coord! { x: new_move_delta.x.round() as i32, y: new_move_delta.y.round() as i32 };
+        let new_move_delta = new_move_delta.to_geo_coord_i32();
 
         let this_frame_delta = new_move_delta - move_delta.unwrap_or_default();
         set_move_delta(Some(new_move_delta));

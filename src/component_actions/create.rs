@@ -7,6 +7,7 @@ use tracing::info;
 use crate::{
     App,
     component_actions::event::ComponentEv,
+    coord_conversion::CoordConversionExt,
     map::MapWindow,
     project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };
@@ -62,14 +63,9 @@ impl MapWindow {
             return;
         };
 
-        let world_coord = geo::coord! {
-            x: cursor_world_pos.x.round() as i32,
-            y: cursor_world_pos.y.round() as i32,
-        };
-        let screen_coord = app.map_world_to_screen(
-            response.rect.center(),
-            geo::coord! { x: world_coord.x as f32, y: world_coord.y as f32 },
-        );
+        let world_coord = cursor_world_pos.to_geo_coord_i32();
+        let screen_coord =
+            app.map_world_to_screen(response.rect.center(), world_coord.to_geo_coord_f32());
         Self::paint_point(
             ui,
             response,
@@ -167,10 +163,7 @@ impl MapWindow {
             (Either::Right(ty), Either::Right(style))
         };
 
-        let mut world_coord = geo::coord! {
-            x: cursor_world_pos.x.round() as i32,
-            y: cursor_world_pos.y.round() as i32,
-        };
+        let mut world_coord = cursor_world_pos.to_geo_coord_i32();
 
         if ui.ctx().input(|a| a.modifiers.alt)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
@@ -186,13 +179,7 @@ impl MapWindow {
             }
             && world_coord != prev_coord
         {
-            let angle_vec = {
-                let c = world_coord - prev_coord;
-                geo::coord! {
-                    x: c.x as f32,
-                    y: c.y as f32
-                }
-            };
+            let angle_vec = (world_coord - prev_coord).to_geo_coord_f32();
             let (closest_angle_vec, _) = ANGLE_VECTORS
                 .into_iter()
                 .chain(ANGLE_VECTORS.into_iter().map(|a| -a))
@@ -210,10 +197,7 @@ impl MapWindow {
             // adapted from https://docs.rs/glam/latest/src/glam/f32/vec2.rs.html#618-622
             let world_coord_f32 = closest_angle_vec * angle_vec.dot_product(closest_angle_vec)
                 / closest_angle_vec.dot_product(closest_angle_vec);
-            world_coord = geo::coord! {
-                x: world_coord_f32.x.round() as i32,
-                y: world_coord_f32.y.round() as i32,
-            } + prev_coord;
+            world_coord = world_coord_f32.to_geo_coord_i32() + prev_coord;
         }
 
         match app.ui.map.created_nodes.last_mut() {
@@ -271,12 +255,7 @@ impl MapWindow {
         } {
             let curve_vec = curve_vec
                 .iter()
-                .map(|a| {
-                    app.map_world_to_screen(
-                        response.rect.center(),
-                        geo::coord! { x: a.x as f32, y: a.y as f32},
-                    )
-                })
+                .map(|a| app.map_world_to_screen(response.rect.center(), a.to_geo_coord_f32()))
                 .collect::<Vec<_>>();
             painter.add(egui::Shape::dashed_line(
                 &curve_vec,

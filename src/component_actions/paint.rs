@@ -5,6 +5,7 @@ use tracing::error;
 
 use crate::{
     App,
+    coord_conversion::CoordConversionExt,
     map::MapWindow,
     project::{
         pla3::{PlaComponent, PlaNodeScreen},
@@ -299,19 +300,18 @@ impl MapWindow {
                 shapes
                     .iter()
                     .flat_map(|a| match a {
-                        egui::Shape::LineSegment { points, .. } => vec![
-                            geo::coord! { x: points[0].x, y: points[0].y },
-                            geo::coord! { x: points[1].x, y: points[1].y },
-                        ],
+                        egui::Shape::LineSegment { points, .. } => {
+                            vec![points[0].to_geo_coord_f32(), points[1].to_geo_coord_f32()]
+                        }
                         egui::Shape::QuadraticBezier(shape) => shape
                             .flatten(TOLERANCE)
                             .into_iter()
-                            .map(|a| geo::coord! { x: a.x, y: a.y })
+                            .map(CoordConversionExt::to_geo_coord_f32)
                             .collect(),
                         egui::Shape::CubicBezier(shape) => shape
                             .flatten(TOLERANCE)
                             .into_iter()
-                            .map(|a| geo::coord! { x: a.x, y: a.y })
+                            .map(CoordConversionExt::to_geo_coord_f32)
                             .collect(),
                         egui::Shape::Circle(_) => Vec::new(),
                         _ => unreachable!(),
@@ -332,7 +332,7 @@ impl MapWindow {
             let coords = polygon
                 .exterior()
                 .coords()
-                .map(|a| egui::pos2(a.x, a.y))
+                .map(|a| a.to_egui_pos2())
                 .collect::<Vec<_>>();
             painter.add(egui::Shape::convex_polygon(
                 coords,
@@ -385,8 +385,8 @@ impl MapWindow {
                                         response,
                                         width,
                                         geo::Line::new(
-                                            geo::coord! { x: previous_coord.x, y: previous_coord.y },
-                                            geo::coord! { x: coord.x, y: coord.y },
+                                            previous_coord.to_geo_coord_f32(),
+                                            coord.to_geo_coord_f32(),
                                         )
                                     );
 
@@ -411,11 +411,10 @@ impl MapWindow {
                                 let approx = shape
                                     .flatten(TOLERANCE)
                                     .into_iter()
-                                    .map(|a| geo::coord! { x: a.x, y: a.y })
+                                    .map(CoordConversionExt::to_geo_coord_f32)
                                     .collect::<Vec<_>>();
                                 if !hover_coords_is_filled {
-                                    hover_coords
-                                        .extend(approx.iter().map(|a| egui::pos2(a.x, a.y)));
+                                    hover_coords.extend(approx.iter().map(|a| a.to_egui_pos2()));
                                 }
                                 hovering!(
                                     is_hovered,
@@ -443,11 +442,10 @@ impl MapWindow {
                                 let approx = shape
                                     .flatten(TOLERANCE)
                                     .into_iter()
-                                    .map(|a| geo::coord! { x: a.x, y: a.y })
+                                    .map(CoordConversionExt::to_geo_coord_f32)
                                     .collect::<Vec<_>>();
                                 if !hover_coords_is_filled {
-                                    hover_coords
-                                        .extend(approx.iter().map(|a| egui::pos2(a.x, a.y)));
+                                    hover_coords.extend(approx.iter().map(|a| a.to_egui_pos2()));
                                 }
                                 hovering!(
                                     is_hovered,

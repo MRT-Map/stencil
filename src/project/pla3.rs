@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     App,
+    coord_conversion::CoordConversionExt,
     project::{Project, skin::SkinType},
 };
 
@@ -109,15 +110,8 @@ impl PlaNode {
         Some(geo::coord! {x: x, y: y})
     }
     pub fn to_screen(self, app: &App, map_centre: egui::Pos2) -> PlaNodeScreen {
-        let world_to_screen = |coord: geo::Coord<i32>| {
-            app.map_world_to_screen(
-                map_centre,
-                geo::coord! {
-                    x: coord.x as f32,
-                    y: coord.y as f32,
-                },
-            )
-        };
+        let world_to_screen =
+            |coord: geo::Coord<i32>| app.map_world_to_screen(map_centre, coord.to_geo_coord_f32());
         match self {
             Self::Line { coord, label } => PlaNodeScreen::Line {
                 coord: world_to_screen(coord),

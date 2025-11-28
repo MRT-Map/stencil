@@ -5,6 +5,7 @@ use tracing::info;
 
 use crate::{
     App,
+    coord_conversion::CoordConversionExt,
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
@@ -58,6 +59,16 @@ impl App {
             .map
             .reset_view(&self.map_settings, &self.project.basemap);
     }
+
+    pub fn map_selected_components(&self) -> Vec<&PlaComponent> {
+        self.ui.map.selected_components(&self.project.components)
+    }
+    pub fn map_selected_components_mut(&mut self) -> Vec<&mut PlaComponent> {
+        self.ui
+            .map
+            .selected_components_mut(&mut self.project.components)
+    }
+
     pub fn map_world_to_screen(
         &self,
         map_centre: egui::Pos2,
@@ -83,14 +94,6 @@ impl App {
         self.ui
             .map
             .map_world_boundaries(&self.map_settings, &self.project.basemap, map_rect)
-    }
-    pub fn map_selected_components(&self) -> Vec<&PlaComponent> {
-        self.ui.map.selected_components(&self.project.components)
-    }
-    pub fn map_selected_components_mut(&mut self) -> Vec<&mut PlaComponent> {
-        self.ui
-            .map
-            .selected_components_mut(&mut self.project.components)
     }
     pub fn map_zoom_level(&self) -> u8 {
         self.ui.map.zoom_level(&self.project.basemap)
@@ -149,7 +152,7 @@ impl MapState {
         let screen_delta = screen - map_centre;
         let world_delta = screen_delta
             * map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
-        self.centre_coord + geo::coord! { x: world_delta.x, y: world_delta.y }
+        self.centre_coord + world_delta.to_geo_coord_f32()
     }
 
     pub fn map_world_boundaries(
