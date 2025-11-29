@@ -61,7 +61,7 @@
 
     <Product
         Id='*'
-        Name='stencil2'
+        Name='stencil3'
         UpgradeCode='DC44382A-A82F-40C3-807D-013605BFB7D3'
         Manufacturer='7d'
         Language='1033'
@@ -84,11 +84,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='stencil2 Installation'/>
+        <Property Id='DiskPrompt' Value='stencil3 Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='stencil2'>
+                <Directory Id='APPLICATIONFOLDER' Name='stencil3'>
                     <!--
                       Disabling the license sidecar file in the installer is a two step process:
 
@@ -118,9 +118,9 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='stencil2.exe'
+                                Name='stencil3.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\stencil2.exe'
+                                Source='$(var.CargoTargetBinDir)\stencil3.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>

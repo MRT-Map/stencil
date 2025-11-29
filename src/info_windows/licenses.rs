@@ -37,7 +37,7 @@ impl Default for LicensesPopup {
     fn default() -> Self {
         Self {
             selected: SelectedPackage {
-                name: "stencil2".to_owned(),
+                name: env!("CARGO_PKG_NAME").to_owned(),
                 version: env!("CARGO_PKG_VERSION").to_owned(),
             },
         }

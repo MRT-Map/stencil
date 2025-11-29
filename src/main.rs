@@ -46,7 +46,7 @@ fn main() {
     });
 
     eframe::run_native(
-        "Stencil2",
+        "Stencil3",
         eframe::NativeOptions {
             viewport: egui::ViewportBuilder::default().with_icon(
                 eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/icon.png"))

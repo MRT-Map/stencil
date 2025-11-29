@@ -1,6 +1,6 @@
 [package]
-name = "stencil2"
-version = "2.2.12"
+name = "stencil3"
+version = "3.0.0"
 edition = "2024"
 description = "Map editor for MRT Map data"
 authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
@@ -9,7 +9,7 @@ homepage = "https://mrt-map.github.io/stencil2"
 repository = "https://github.com/mrt-map/stencil2"
 documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
-keywords = ["stencil", "stencil2", "mrt", "mrt-map", "mrt-mapping-services"]
+keywords = ["stencil", "stencil3", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
 rust-version = "1.91"
 
@@ -85,8 +85,8 @@ lto = true
 codegen-units = 1
 
 [package.metadata.bundle]
-name = "stencil2"
-identifier = "io.github.mrt-map.stencil2"
+name = "stencil3"
+identifier = "io.github.mrt-map.stencil3"
 icon = ["icons/icon_*.png"]
 
 [lints.rust]

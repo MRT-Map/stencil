@@ -1,6 +1,6 @@
 # Maintainer: 7d <i.third.7d@protonmail.com>
-pkgname=stencil2
-pkgver=2.2.12
+pkgname=stencil3
+pkgver=3.0.0
 pkgrel=1
 depends=('curl')
 makedepends=('dpkg')
@@ -8,13 +8,13 @@ arch=('x86_64' 'aarch64' 'armv7')
 pkgdesc="Map editor for MRT Map data"
 license=('GPL3')
 url="https://github.com/mrt-map/stencil2"
-source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/stencil2_${pkgver}_amd64.deb")
+source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/stencil3_${pkgver}_amd64.deb")
 sha256sums=('c11cff52737048d34ec357f36ee9a1262344a673376fade66c1b35b802a8c45d')
 
 if [[ -f PKGBUILD ]]; then
-    cp PKGBUILD stencil2.install
+    cp PKGBUILD stencil3.install
 fi
-install=stencil2.install
+install=stencil3.install
 
 package() {
     dpkg -x "$pkgname-$pkgver.deb" "$pkgdir/"
@@ -25,7 +25,7 @@ post_install() {
 }
 
 post_remove() {
-    rm -r "~/.local/share/stencil2" || true
-    rm -r "~/.cache/stencil2" || true
+    rm -r "~/.local/share/stencil3" || true
+    rm -r "~/.cache/stencil3" || true
 }
 
