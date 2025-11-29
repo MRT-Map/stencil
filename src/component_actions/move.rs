@@ -36,10 +36,11 @@ impl MapWindow {
                 info!(?move_delta, "Move cancelled");
                 Self::move_selected_components_by(-move_delta, app);
             }
-            set_move_delta(move_delta);
+            set_move_delta(None);
             return;
         }
         if response.drag_stopped_by(egui::PointerButton::Primary)
+            && !app.ui.map.selected_components.is_empty()
             && let Some(move_delta) = move_delta.take()
         {
             let after = app
@@ -59,6 +60,7 @@ impl MapWindow {
                 .collect();
 
             info!(?move_delta, "Move finished");
+            app.status_on_move_finish(move_delta, &response.ctx);
             app.add_event(ComponentEv::ChangeField {
                 before,
                 after,
@@ -76,20 +78,24 @@ impl MapWindow {
                     .as_ref()
                     .is_none_or(|a| !app.ui.map.selected_components.contains(a)))
         {
-            set_move_delta(move_delta);
+            set_move_delta(None);
             return;
         }
 
         if response.drag_started_by(egui::PointerButton::Primary) {
             info!("Move started");
+            move_delta = Some(geo::Coord::zero());
         }
 
-        let new_move_delta = response.total_drag_delta().unwrap_or_default()
-            * app.world_screen_ratio_with_current_basemap_at_current_zoom();
-        let new_move_delta = new_move_delta.to_geo_coord_i32();
+        if let Some(move_delta) = move_delta {
+            let new_move_delta = response.total_drag_delta().unwrap_or_default()
+                * app.world_screen_ratio_with_current_basemap_at_current_zoom();
+            let new_move_delta = new_move_delta.to_geo_coord_i32();
+            app.status_on_move(new_move_delta, &response.ctx);
 
-        let this_frame_delta = new_move_delta - move_delta.unwrap_or_default();
-        set_move_delta(Some(new_move_delta));
-        Self::move_selected_components_by(this_frame_delta, app);
+            let this_frame_delta = new_move_delta - move_delta;
+            set_move_delta(Some(new_move_delta));
+            Self::move_selected_components_by(this_frame_delta, app);
+        }
     }
 }

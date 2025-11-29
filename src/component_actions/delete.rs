@@ -10,9 +10,10 @@ impl App {
             .cloned()
             .collect::<Vec<_>>();
         if components.is_empty() {
+            self.status_on_delete([], ctx);
             return;
         }
-        info!(ids=?components.iter().map(|a| &a.full_id).collect::<Vec<_>>(), "Deleted components");
+        self.status_on_delete(components.iter().map(|a| &a.full_id), ctx);
         self.run_event(ComponentEv::Delete(components), ctx);
         self.ui.map.selected_components.clear();
     }

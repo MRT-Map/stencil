@@ -96,7 +96,7 @@ impl MapWindow {
             }],
             misc: BTreeMap::default(),
         };
-        info!(?world_coord, %component, "Created new point");
+        app.status_on_create("point", &component, ui.ctx());
         app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
     }
     #[inline]
@@ -357,7 +357,7 @@ impl MapWindow {
                     nodes: app.ui.map.created_nodes.drain(..).collect(),
                     misc: BTreeMap::default(),
                 };
-                info!(?component.nodes, %component, "Created new {}", if IS_LINE {"line"} else {"area"});
+                app.status_on_create(if IS_LINE { "line" } else { "area" }, &component, ui.ctx());
                 app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
             } else {
                 app.ui.map.created_nodes.clear();

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use indexmap::IndexMap;
 use itertools::Itertools;
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::{
     App,
@@ -27,7 +27,7 @@ impl Section<'_> {
         ctx: &egui::Context,
     ) -> egui::text::LayoutJob {
         let action_default_format = egui::TextFormat {
-            background: egui::Color32::DARK_GRAY,
+            background: egui::Color32::BLACK,
             expand_bg: 2.0,
             color: egui::Color32::WHITE,
             ..egui::TextFormat::default()
@@ -118,20 +118,9 @@ macro_rules! s {
     };
 }
 
-#[derive(Default)]
-pub struct Status(pub IndexMap<Option<&'static str>, egui::WidgetText>);
-
-impl Status {
-    pub fn insert_main(&mut self, item: egui::WidgetText) {
-        self.0.insert(None, item);
-    }
-    pub fn show(&self) -> egui::WidgetText {
-        self.0.last().map(|(_, a)| a.clone()).unwrap_or_default()
-    }
-}
 impl App {
     pub fn status_init(&mut self, ctx: &egui::Context) {
-        if self.ui.status.0.is_empty() {
+        if self.ui.status.is_empty() {
             self.status_on_new_mode(ctx);
         }
     }
@@ -141,9 +130,7 @@ impl App {
     pub fn status_on_copy(&mut self, ctx: &egui::Context) {
         if self.ui.map.clipboard.is_empty() {
             info!("Nothing to copy");
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Nothing to copy")));
+            self.ui.status = s!(self, ctx, s!(tx "Nothing to copy"));
         } else {
             let ids = self
                 .ui
@@ -158,17 +145,13 @@ impl App {
             } else {
                 s!(cd & ids.join(" "))
             };
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Copied "), to_show));
+            self.ui.status = s!(self, ctx, s!(tx "Copied "), to_show);
         }
     }
     pub fn status_on_cut(&mut self, ctx: &egui::Context) {
         if self.ui.map.clipboard.is_empty() {
             info!("Nothing to cut");
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Nothing to cut")));
+            self.ui.status = s!(self, ctx, s!(tx "Nothing to cut"));
         } else {
             let ids = self
                 .ui
@@ -183,34 +166,85 @@ impl App {
             } else {
                 s!(cd & ids.join(" "))
             };
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Cut "), to_show));
+            self.ui.status = s!(self, ctx, s!(tx "Cut "), to_show);
         }
     }
-    pub fn status_on_paste(&mut self, ids: &[FullId], ctx: &egui::Context) {
-        if ids.is_empty() {
+    pub fn status_on_paste<'a, I: IntoIterator<Item = &'a FullId>>(
+        &mut self,
+        ids: I,
+        ctx: &egui::Context,
+    ) {
+        let mut ids = ids.into_iter().peekable();
+        if ids.peek().is_none() {
             info!("Nothing to paste");
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Nothing to paste")));
+            self.ui.status = s!(self, ctx, s!(tx "Nothing to paste"));
         } else {
-            let ids = ids.iter().map(ToString::to_string).collect::<Vec<_>>();
+            let ids = ids.map(ToString::to_string).collect::<Vec<_>>();
             info!(?ids, "Pasted and selected components");
             let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
                 s!(em & format!("{} components", ids.len()))
             } else {
                 s!(cd & ids.join(" "))
             };
-            self.ui
-                .status
-                .insert_main(s!(self, ctx, s!(tx "Pasted "), to_show));
+            self.ui.status = s!(self, ctx, s!(tx "Pasted "), to_show);
         }
+    }
+    pub fn status_on_delete<'a, I: IntoIterator<Item = &'a FullId>>(
+        &mut self,
+        ids: I,
+        ctx: &egui::Context,
+    ) {
+        let mut ids = ids.into_iter().peekable();
+        if ids.peek().is_none() {
+            info!("Nothing to delete");
+            self.ui.status = s!(self, ctx, s!(tx "Nothing to delete"));
+        } else {
+            let ids = ids.map(ToString::to_string).collect::<Vec<_>>();
+            info!(?ids, "Deleted components");
+            let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
+                s!(em & format!("{} components", ids.len()))
+            } else {
+                s!(cd & ids.join(" "))
+            };
+            self.ui.status = s!(self, ctx, s!(tx "Deleted "), to_show);
+        }
+    }
+
+    pub fn status_on_create(&mut self, ty: &str, component: &PlaComponent, ctx: &egui::Context) {
+        info!(%component, "Created new {ty}");
+        debug!(?component);
+        self.ui.status = s!(
+            self,
+            ctx,
+            s!(tx & format!("Created new {ty}")),
+            s!(cd & component.full_id.to_string())
+        );
+    }
+
+    pub fn status_on_move(&mut self, delta: geo::Coord<i32>, ctx: &egui::Context) {
+        self.ui.status = s!(
+            self,
+            ctx,
+            s!(tx "Moving selected components by "),
+            s!(cd & delta.x.to_string()),
+            s!(tx ", "),
+            s!(cd & delta.y.to_string())
+        );
+    }
+    pub fn status_on_move_finish(&mut self, delta: geo::Coord<i32>, ctx: &egui::Context) {
+        self.ui.status = s!(
+            self,
+            ctx,
+            s!(tx "Finished moving selected components by "),
+            s!(cd & delta.x.to_string()),
+            s!(tx ", "),
+            s!(cd & delta.y.to_string())
+        );
     }
 
     pub fn status_on_new_mode(&mut self, ctx: &egui::Context) {
         info!(mode=?self.mode, "Mode changed");
-        self.ui.status.insert_main(match self.mode {
+        self.ui.status = match self.mode {
             EditorMode::Select => s!(
                 self,
                 ctx,
@@ -248,12 +282,12 @@ impl App {
                 s!(tx " to start and continue line "),
                 s!(r - click),
                 s!(tx " to undo. "),
-                s!(shift),
-                s!(tx " to create bézier curves. "),
                 s!(l - click2),
                 s!(tx " to end at pointer, "),
                 s!(m - click2),
                 s!(tx " to end at last node."),
+                s!(shift),
+                s!(tx " to create bézier curves. "),
                 s!(alt),
                 s!(tx " to snap to angle.")
             ),
@@ -265,15 +299,15 @@ impl App {
                 s!(tx " to start and continue line "),
                 s!(r - click),
                 s!(tx " to undo. "),
-                s!(shift),
-                s!(tx " to create bézier curves. "),
                 s!(l - click2),
                 s!(tx " to end at pointer, "),
                 s!(m - click2),
                 s!(tx " to end at last node."),
+                s!(shift),
+                s!(tx " to create bézier curves. "),
                 s!(alt),
                 s!(tx " to snap to angle.")
             ),
-        });
+        };
     }
 }

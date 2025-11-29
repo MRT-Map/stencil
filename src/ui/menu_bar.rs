@@ -153,7 +153,7 @@ impl App {
                             .max_width(ui.available_width())
                             .scroll_bar_visibility(ScrollBarVisibility::AlwaysHidden)
                             .show(ui, |ui| {
-                                ui.label(self.ui.status.show());
+                                ui.label(self.ui.status.clone());
                             });
                     });
                 });
