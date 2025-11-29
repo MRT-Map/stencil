@@ -1,9 +1,9 @@
 use tracing::info;
 
-use crate::{App, map::MapWindow};
+use crate::{App, map::MapWindow, project::pla3::FullId};
 
 impl MapWindow {
-    pub fn select_components(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
+    pub fn select_hovered_component(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
         if app.mode.is_editing() {
             app.ui.map.selected_components.clear();
             return;
@@ -20,32 +20,30 @@ impl MapWindow {
             app.status_default(ui.ctx());
             return;
         };
-
+        app.select_component(ui, hovered_component.to_owned());
+    }
+}
+impl App {
+    pub fn select_component(&mut self, ui: &egui::Ui, id: FullId) {
         if ui.ctx().input(|a| a.modifiers.shift) {
-            if let Some(pos) = app
+            if let Some(pos) = self
                 .ui
                 .map
                 .selected_components
                 .iter()
-                .position(|a| a == hovered_component)
+                .position(|a| *a == id)
             {
-                info!(id=%hovered_component, "Deselected");
-                app.ui.map.selected_components.remove(pos);
+                info!(%id, "Deselected");
+                self.ui.map.selected_components.remove(pos);
             } else {
-                info!(id=%hovered_component, "Selected");
-                app.ui
-                    .map
-                    .selected_components
-                    .push(hovered_component.to_owned());
+                info!(%id, "Selected");
+                self.ui.map.selected_components.push(id);
             }
         } else {
-            info!(id=%hovered_component, "Deselected all and selected one");
-            app.ui.map.selected_components.clear();
-            app.ui
-                .map
-                .selected_components
-                .push(hovered_component.to_owned());
+            info!(%id, "Deselected all and selected one");
+            self.ui.map.selected_components.clear();
+            self.ui.map.selected_components.push(id);
         }
-        app.status_select(ui.ctx());
+        self.status_select(ui.ctx());
     }
 }

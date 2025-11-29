@@ -1,8 +1,11 @@
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    project::{Project, SkinStatus, event::ProjectEv},
+    component_actions::event::ComponentEv,
+    coord_conversion::CoordConversionExt,
+    project::{Project, SkinStatus, event::ProjectEv, pla3::PlaNode},
     settings::settings_ui_field,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
     ui::dock::DockWindow,
@@ -83,7 +86,9 @@ impl DockWindow for ProjectEditorWindow {
                             }
                         });
                         row.col(|ui| {
-                            ui.label(egui::RichText::new(&ns).code());
+                            ui.collapsing(egui::RichText::new(&ns).code(), |ui| {
+                                Self::component_list(app, ui, &ns);
+                            });
                         });
                         let num_components = app.project.namespace_component_count(&ns);
                         row.col(|ui| {
@@ -165,7 +170,6 @@ impl DockWindow for ProjectEditorWindow {
                 Option::<&str>::None,
                 |ui, value| {
                     ui.add(egui::TextEdit::singleline(value).desired_width(200.0));
-                    // ui.text_edit_singleline(value);
                     ui.label("Skin URL");
                     if ui.button("Reload").clicked() {
                         app.project.skin_status = SkinStatus::Unloaded;
@@ -176,5 +180,93 @@ impl DockWindow for ProjectEditorWindow {
         ui.collapsing("Basemap", |ui| {
             app.project.basemap.config_ui(ui);
         });
+    }
+}
+
+impl ProjectEditorWindow {
+    pub fn component_list(app: &mut App, ui: &mut egui::Ui, ns: &str) {
+        let pos = ui.ctx().pointer_interact_pos();
+        let is_clicked = ui.input(|i| i.pointer.button_clicked(egui::PointerButton::Primary));
+        let mut component_to_delete = None;
+        let mut component_to_select = None;
+        let mut is_hovering = false;
+        egui_extras::TableBuilder::new(ui)
+            .column(egui_extras::Column::remainder())
+            .column(egui_extras::Column::auto())
+            .columns(egui_extras::Column::auto(), 3)
+            .header(20.0, |mut header| {
+                header.col(|ui| {
+                    ui.label("id");
+                });
+                header.col(|ui| {
+                    ui.label("type");
+                });
+            })
+            .body(|mut body| {
+                for component in app
+                    .project
+                    .components
+                    .iter()
+                    .filter(|a| a.full_id.namespace == ns)
+                    .sorted_by_key(|a| &a.full_id.id)
+                {
+                    body.row(20.0, |mut row| {
+                        if app.ui.map.selected_components.contains(&component.full_id) {
+                            row.set_selected(true);
+                        }
+                        row.col(|ui| {
+                            ui.label(
+                                egui::RichText::new(component.to_string())
+                                    .code()
+                                    .text_style(egui::TextStyle::Small),
+                            );
+                        });
+                        row.col(|ui| {
+                            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                            ui.label(component.ty.widget_text(ui, &egui::TextStyle::Body));
+                        });
+                        row.col(|ui| {
+                            let Some(centre) = PlaNode::centre(component.nodes.iter().copied())
+                            else {
+                                return;
+                            };
+                            if ui.small_button("➡").clicked() {
+                                app.ui.map.centre_coord = centre.to_geo_coord_f32();
+                            }
+                        });
+                        row.col(|ui| {
+                            if ui
+                                .add(
+                                    egui::Button::new("❌")
+                                        .small()
+                                        .fill(egui::Color32::DARK_RED),
+                                )
+                                .clicked()
+                            {
+                                component_to_delete = Some(component.to_owned());
+                            }
+                        });
+                        if let Some(pos) = pos
+                            && row.response().interact_rect.contains(pos)
+                        {
+                            is_hovering = true;
+                            if is_clicked {
+                                component_to_select = Some(component.full_id.clone());
+                            }
+                        }
+                    });
+                }
+            });
+        if let Some(component_to_delete) = component_to_delete {
+            let component_to_delete = vec![component_to_delete];
+            app.status_on_delete(&component_to_delete, ui.ctx());
+            app.run_event(ComponentEv::Delete(component_to_delete), ui.ctx());
+        }
+        if let Some(component_to_select) = component_to_select {
+            app.select_component(ui, component_to_select);
+        }
+        if is_hovering {
+            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+        }
     }
 }
