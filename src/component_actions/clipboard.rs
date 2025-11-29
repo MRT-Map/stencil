@@ -1,5 +1,3 @@
-use tracing::info;
-
 use crate::{
     App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
     project::pla3::PlaNode,

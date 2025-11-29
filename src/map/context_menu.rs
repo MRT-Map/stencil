@@ -48,7 +48,7 @@ impl MapWindow {
             a.insert_temp(
                 Self::HOVERED_OVER_CTX_MENU.into(),
                 ctx_menu_response.contains_pointer(),
-            )
+            );
         });
     }
 }

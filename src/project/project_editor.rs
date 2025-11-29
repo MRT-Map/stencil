@@ -7,7 +7,7 @@ use crate::{
     coord_conversion::CoordConversionExt,
     project::{Project, SkinStatus, event::ProjectEv, pla3::PlaNode},
     settings::settings_ui_field,
-    shortcut::{ShortcutAction, UiButtonWithShortcutExt},
+    shortcut::ShortcutAction,
     ui::dock::DockWindow,
 };
 

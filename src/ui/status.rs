@@ -1,16 +1,10 @@
-use std::collections::HashMap;
-
-use indexmap::IndexMap;
 use itertools::Itertools;
 use tracing::{debug, info};
 
 use crate::{
     App,
     mode::EditorMode,
-    project::{
-        history::Events,
-        pla3::{FullId, PlaComponent},
-    },
+    project::{history::Events, pla3::PlaComponent},
     shortcut::{ShortcutAction, settings::ShortcutSettings},
 };
 
@@ -176,7 +170,7 @@ impl App {
             self.ui.status = s!(self, ctx, s!(tx "Pasted "), c);
         }
     }
-    pub fn status_on_delete<'a>(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
+    pub fn status_on_delete(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
         if components.is_empty() {
             info!("Nothing to delete");
             self.ui.status = s!(self, ctx, s!(tx "Nothing to delete"));

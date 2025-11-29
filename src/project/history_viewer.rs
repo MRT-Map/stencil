@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    App,
-    shortcut::{ShortcutAction, UiButtonWithShortcutExt},
-    ui::dock::DockWindow,
-};
+use crate::{App, shortcut::ShortcutAction, ui::dock::DockWindow};
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 pub struct HistoryViewerWindow;
