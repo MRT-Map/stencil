@@ -25,7 +25,7 @@ impl App {
         let Some(centre) =
             PlaNode::centre(self.ui.map.clipboard.iter().flat_map(|a| a.nodes.clone()))
         else {
-            self.status_on_paste([], ctx);
+            self.status_on_paste(&[], ctx);
             return;
         };
         let delta = self.ui.map.cursor_world_pos.map_or_else(
@@ -53,13 +53,13 @@ impl App {
                 component
             })
             .collect::<Vec<_>>();
+
         let ids = components_to_add
             .iter()
             .map(|a| a.full_id.clone())
             .collect::<Vec<_>>();
+        self.status_on_paste(&components_to_add, ctx);
         self.run_event(ComponentEv::Create(components_to_add), ctx);
-
-        self.status_on_paste(&ids, ctx);
         self.ui.map.selected_components = ids;
     }
 }

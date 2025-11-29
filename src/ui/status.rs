@@ -7,7 +7,10 @@ use tracing::{debug, info};
 use crate::{
     App,
     mode::EditorMode,
-    project::pla3::{FullId, PlaComponent},
+    project::{
+        history::Events,
+        pla3::{FullId, PlaComponent},
+    },
     shortcut::{ShortcutAction, settings::ShortcutSettings},
 };
 
@@ -113,6 +116,14 @@ macro_rules! s {
     (tx $text:expr) => {
         Section::Text($text)
     };
+    (cm $components:expr) => {{
+        const COMPONENT_THRESHOLD: usize = 5;
+        if $components.len() > COMPONENT_THRESHOLD {
+            s!(em &format!("{} components", $components.len()))
+        } else {
+            s!(cd &$components.iter().map(ToString::to_string).join(" "))
+        }
+    }};
     ($app:ident, $ctx:ident, $($section:expr),+) => {
         Section::format([$($section),+], &mut $app.shortcut_settings, $ctx).into()
     };
@@ -121,31 +132,22 @@ macro_rules! s {
 impl App {
     pub fn status_init(&mut self, ctx: &egui::Context) {
         if self.ui.status.is_empty() {
-            self.status_on_new_mode(ctx);
+            self.status_default(ctx);
         }
     }
-
-    const TO_SHOW_THRESHOLD: usize = 5;
 
     pub fn status_on_copy(&mut self, ctx: &egui::Context) {
         if self.ui.map.clipboard.is_empty() {
             info!("Nothing to copy");
             self.ui.status = s!(self, ctx, s!(tx "Nothing to copy"));
         } else {
-            let ids = self
-                .ui
-                .map
-                .clipboard
+            let components = &self.ui.map.clipboard;
+            info!(ids=?components
                 .iter()
-                .map(|a| a.full_id.to_string())
-                .collect::<Vec<_>>();
-            info!(?ids, "Copied components");
-            let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
-                s!(em & format!("{} components", ids.len()))
-            } else {
-                s!(cd & ids.join(" "))
-            };
-            self.ui.status = s!(self, ctx, s!(tx "Copied "), to_show);
+                .map(|a| &a.full_id)
+                .collect::<Vec<_>>(), "Copied components");
+            let c = s!(cm components);
+            self.ui.status = s!(self, ctx, s!(tx "Copied "), c);
         }
     }
     pub fn status_on_cut(&mut self, ctx: &egui::Context) {
@@ -153,60 +155,38 @@ impl App {
             info!("Nothing to cut");
             self.ui.status = s!(self, ctx, s!(tx "Nothing to cut"));
         } else {
-            let ids = self
-                .ui
-                .map
-                .clipboard
+            let components = &self.ui.map.clipboard;
+            info!(ids=?components
                 .iter()
-                .map(|a| a.full_id.to_string())
-                .collect::<Vec<_>>();
-            info!(?ids, "Cut components");
-            let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
-                s!(em & format!("{} components", ids.len()))
-            } else {
-                s!(cd & ids.join(" "))
-            };
-            self.ui.status = s!(self, ctx, s!(tx "Cut "), to_show);
+                .map(|a| &a.full_id)
+                .collect::<Vec<_>>(), "Cut components");
+            let c = s!(cm components);
+            self.ui.status = s!(self, ctx, s!(tx "Cut "), c);
         }
     }
-    pub fn status_on_paste<'a, I: IntoIterator<Item = &'a FullId>>(
-        &mut self,
-        ids: I,
-        ctx: &egui::Context,
-    ) {
-        let mut ids = ids.into_iter().peekable();
-        if ids.peek().is_none() {
+    pub fn status_on_paste(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
+        if components.is_empty() {
             info!("Nothing to paste");
             self.ui.status = s!(self, ctx, s!(tx "Nothing to paste"));
         } else {
-            let ids = ids.map(ToString::to_string).collect::<Vec<_>>();
-            info!(?ids, "Pasted and selected components");
-            let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
-                s!(em & format!("{} components", ids.len()))
-            } else {
-                s!(cd & ids.join(" "))
-            };
-            self.ui.status = s!(self, ctx, s!(tx "Pasted "), to_show);
+            info!(ids=?components.iter()
+                .map(|a| &a.full_id)
+                .collect::<Vec<_>>(), "Pasted and selected components");
+            let c = s!(cm components);
+            self.ui.status = s!(self, ctx, s!(tx "Pasted "), c);
         }
     }
-    pub fn status_on_delete<'a, I: IntoIterator<Item = &'a FullId>>(
-        &mut self,
-        ids: I,
-        ctx: &egui::Context,
-    ) {
-        let mut ids = ids.into_iter().peekable();
-        if ids.peek().is_none() {
+    pub fn status_on_delete<'a>(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
+        if components.is_empty() {
             info!("Nothing to delete");
             self.ui.status = s!(self, ctx, s!(tx "Nothing to delete"));
         } else {
-            let ids = ids.map(ToString::to_string).collect::<Vec<_>>();
-            info!(?ids, "Deleted components");
-            let to_show = if ids.len() > Self::TO_SHOW_THRESHOLD {
-                s!(em & format!("{} components", ids.len()))
-            } else {
-                s!(cd & ids.join(" "))
-            };
-            self.ui.status = s!(self, ctx, s!(tx "Deleted "), to_show);
+            info!(ids=?components
+                .iter()
+                .map(|a| &a.full_id)
+                .collect::<Vec<_>>(), "Deleted components");
+            let c = s!(cm components);
+            self.ui.status = s!(self, ctx, s!(tx "Deleted "), c);
         }
     }
 
@@ -242,17 +222,35 @@ impl App {
         );
     }
 
-    pub fn status_on_new_mode(&mut self, ctx: &egui::Context) {
-        info!(mode=?self.mode, "Mode changed");
+    pub fn status_undo(&mut self, event: &Events, ctx: &egui::Context) {
+        self.ui.status = s!(self, ctx, s!(tx "Undid "), s!(em & event.to_string()));
+    }
+
+    pub fn status_redo(&mut self, event: &Events, ctx: &egui::Context) {
+        self.ui.status = s!(self, ctx, s!(tx "Redid "), s!(em & event.to_string()));
+    }
+
+    pub fn status_select(&mut self, ctx: &egui::Context) {
+        if self.ui.map.selected_components.is_empty() {
+            self.status_default(ctx);
+            return;
+        }
+        let c = s!(cm & self.map_selected_components());
+        self.ui.status = s!(self, ctx, s!(tx "Selecting "), c);
+    }
+
+    pub fn status_default(&mut self, ctx: &egui::Context) {
         self.ui.status = match self.mode {
             EditorMode::Select => s!(
                 self,
                 ctx,
                 s!(em "Select: "),
                 s!(l - click),
-                s!(tx " to select component. "),
+                s!(tx " to select component ("),
+                s!(shift),
+                s!(tx " to select multiple). "),
                 s!(m - click),
-                s!(tx " and drag to pan. ("),
+                s!(tx " and drag, or ("),
                 s!(shift),
                 s!(tx " and) scroll to pan. "),
                 s!(cmd),
@@ -265,7 +263,9 @@ impl App {
                 s!(r - click),
                 s!(tx " and drag circle to create/move node. "),
                 s!(r - click),
-                s!(tx " large circle without dragging to delete node.")
+                s!(tx " large circle without dragging to delete node."),
+                s!(r - click),
+                s!(tx " anywhere else on a selected component to move it.")
             ),
             EditorMode::CreatePoint => s!(
                 self,

@@ -17,6 +17,7 @@ impl MapWindow {
         let Some(hovered_component) = &app.ui.map.hovered_component else {
             info!(ids=?app.ui.map.selected_components, "Deselected all");
             app.ui.map.selected_components.clear();
+            app.status_default(ui.ctx());
             return;
         };
 
@@ -45,5 +46,6 @@ impl MapWindow {
                 .selected_components
                 .push(hovered_component.to_owned());
         }
+        app.status_select(ui.ctx());
     }
 }

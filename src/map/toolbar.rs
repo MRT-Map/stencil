@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use tracing::info;
+
 use crate::{
     App,
     map::MapWindow,
@@ -191,7 +193,8 @@ impl MapWindow {
 
         if old_mode != app.mode {
             app.ui.map.created_nodes.clear();
-            app.status_on_new_mode(ui.ctx());
+            info!(mode=?app.mode, "Mode changed");
+            app.status_default(ui.ctx());
         }
     }
 }

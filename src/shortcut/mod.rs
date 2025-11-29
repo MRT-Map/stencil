@@ -160,10 +160,10 @@ impl App {
                     self.mode = EditorMode::CreateArea;
                 }
                 ShortcutAction::Undo => {
-                    self.undo(ctx);
+                    self.history_undo(ctx);
                 }
                 ShortcutAction::Redo => {
-                    self.redo(ctx);
+                    self.history_redo(ctx);
                 }
                 ShortcutAction::Delete => self.delete_selected_components(ctx),
                 ShortcutAction::Copy => self.copy_selected_components(ctx),

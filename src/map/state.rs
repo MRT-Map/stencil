@@ -60,6 +60,15 @@ impl App {
             .reset_view(&self.map_settings, &self.project.basemap);
     }
 
+    pub fn map_hovered_component(&self) -> Option<&PlaComponent> {
+        self.ui.map.hovered_component(&self.project.components)
+    }
+    pub fn map_hovered_component_mut(&mut self) -> Option<&mut PlaComponent> {
+        self.ui
+            .map
+            .hovered_component_mut(&mut self.project.components)
+    }
+
     pub fn map_selected_components(&self) -> Vec<&PlaComponent> {
         self.ui.map.selected_components(&self.project.components)
     }
@@ -104,6 +113,25 @@ impl MapState {
         info!("Resetting map view");
         self.centre_coord = geo::Coord::zero();
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
+    }
+
+    pub fn hovered_component<'a>(
+        &self,
+        component_list: &'a ComponentList,
+    ) -> Option<&'a PlaComponent> {
+        let hovered_component = self.hovered_component.as_ref()?;
+        component_list
+            .iter()
+            .find(|a| *hovered_component == a.full_id)
+    }
+    pub fn hovered_component_mut<'a>(
+        &self,
+        component_list: &'a mut ComponentList,
+    ) -> Option<&'a mut PlaComponent> {
+        let hovered_component = self.hovered_component.as_ref()?;
+        component_list
+            .iter_mut()
+            .find(|a| *hovered_component == a.full_id)
     }
 
     pub fn selected_components<'a>(

@@ -85,23 +85,25 @@ impl App {
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
         self.project.history.add_event(event);
     }
-    pub fn undo(&mut self, ctx: &egui::Context) {
+    pub fn history_undo(&mut self, ctx: &egui::Context) {
         let Some(event) = self.project.history.undo_stack.pop_back() else {
             return;
         };
         debug!(?event, "Undoing event");
         if event.undo(ctx, self) {
+            self.status_undo(&event, ctx);
             self.project.history.redo_stack.push_front(event);
         } else {
             self.project.history.undo_stack.push_back(event);
         }
     }
-    pub fn redo(&mut self, ctx: &egui::Context) {
+    pub fn history_redo(&mut self, ctx: &egui::Context) {
         let Some(event) = self.project.history.redo_stack.pop_front() else {
             return;
         };
         debug!(?event, "Redoing event");
         if event.run(ctx, self) {
+            self.status_redo(&event, ctx);
             self.project.history.undo_stack.push_back(event);
         } else {
             self.project.history.redo_stack.push_front(event);
