@@ -66,39 +66,33 @@ impl Display for ComponentEv {
             Self::Create(components) => write!(
                 f,
                 "Create {}",
-                components
-                    .iter()
-                    .map(|a| format!("{}", a.full_id))
-                    .join(", ")
+                components.iter().map(|a| a.full_id.to_string()).join(", ")
             ),
             Self::Delete(components) => write!(
                 f,
                 "Delete {}",
-                components
-                    .iter()
-                    .map(|a| format!("{}", a.full_id))
-                    .join(", ")
+                components.iter().map(|a| a.full_id.to_string()).join(", ")
             ),
             Self::ChangeField { after, label, .. } => match &**label {
                 "move" => write!(
                     f,
                     "Move {}",
-                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                    after.iter().map(|a| a.full_id.to_string()).join(", ")
                 ),
                 "nodes" => write!(
                     f,
                     "Edit nodes of {}",
-                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                    after.iter().map(|a| a.full_id.to_string()).join(", ")
                 ),
                 "reverse" => write!(
                     f,
                     "Reversed {}",
-                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                    after.iter().map(|a| a.full_id.to_string()).join(", ")
                 ),
                 _ => write!(
                     f,
                     "Change component data ({label}) of {}",
-                    after.iter().map(|a| format!("{}", a.full_id)).join(", ")
+                    after.iter().map(|a| a.full_id.to_string()).join(", ")
                 ),
             },
         }

@@ -59,7 +59,7 @@ impl Popup for LicensesPopup {
 
     fn ui(&mut self, _app: &mut App, ui: &mut egui::Ui) -> bool {
         egui::ComboBox::from_label("Library")
-            .selected_text(format!("{}", self.selected))
+            .selected_text(self.selected.to_string())
             .show_ui(ui, |ui| {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 LICENSES

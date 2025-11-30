@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use geo::{Contains, Distance};
+use itertools::Itertools;
 use tracing::error;
 
 use crate::{
@@ -79,10 +80,16 @@ impl MapWindow {
                 match result {
                     PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
                         app.ui.map.hovered_component = Some(component.full_id.clone());
-                        hovered_shapes.extend(Self::hover_dash(&path));
+                        hovered_shapes.extend(Self::hover_dash(
+                            &path,
+                            matches!(&*component.ty, SkinType::Line { .. }),
+                        ));
                     }
                     PaintResult::Selected(path) => {
-                        hovered_shapes.extend(Self::select_dash(&path));
+                        hovered_shapes.extend(Self::select_dash(
+                            &path,
+                            matches!(&*component.ty, SkinType::Line { .. }),
+                        ));
                     }
                     PaintResult::None => {}
                 }
@@ -166,23 +173,64 @@ impl MapWindow {
         }
     }
 
-    fn dash(path: &[egui::Pos2], colour: egui::Color32) -> Vec<egui::Shape> {
-        let mut dashes =
-            egui::Shape::dashed_line(path, egui::Stroke::new(6.0, egui::Color32::BLACK), 8.0, 8.0);
-        dashes.extend(egui::Shape::dashed_line(
-            path,
-            egui::Stroke::new(2.0, colour),
-            8.0,
-            8.0,
-        ));
-        dashes
+    // adapted from egui::Painter::arrow
+    fn arrow(
+        origin: egui::Pos2,
+        tip: egui::Pos2,
+        tip_length: f32,
+        stroke: egui::Stroke,
+    ) -> Vec<egui::Shape> {
+        let rot = egui::emath::Rot2::from_angle(std::f32::consts::TAU / 10.0);
+        let dir = (tip - origin).normalized();
+        vec![
+            egui::Shape::line_segment([origin, tip], stroke),
+            egui::Shape::line_segment([tip, tip - tip_length * (rot * dir)], stroke),
+            egui::Shape::line_segment([tip, tip - tip_length * (rot.inverse() * dir)], stroke),
+        ]
     }
-    fn hover_dash(path: &[egui::Pos2]) -> Vec<egui::Shape> {
-        Self::dash(path, egui::Color32::WHITE)
+    fn add_arrows(dashes: Vec<egui::Shape>) -> Vec<egui::Shape> {
+        dashes
+            .into_iter()
+            .circular_tuple_windows()
+            .map(|(shape1, shape2)| {
+                let egui::Shape::LineSegment { points, stroke } = shape1 else {
+                    unreachable!()
+                };
+                let egui::Shape::LineSegment {
+                    points: points2, ..
+                } = shape2
+                else {
+                    unreachable!()
+                };
+                if points[1] == points2[0] {
+                    return shape1;
+                }
+                egui::Shape::Vec(Self::arrow(points[0], points[1], 4.0, stroke))
+            })
+            .collect()
     }
 
-    fn select_dash(path: &[egui::Pos2]) -> Vec<egui::Shape> {
-        Self::dash(path, egui::Color32::YELLOW)
+    fn dash(path: &[egui::Pos2], colour: egui::Color32, arrows: bool) -> Vec<egui::Shape> {
+        let mut dashes =
+            egui::Shape::dashed_line(path, egui::Stroke::new(6.0, egui::Color32::BLACK), 8.0, 8.0);
+        if arrows {
+            dashes = Self::add_arrows(dashes);
+        }
+
+        let mut dashes2 = egui::Shape::dashed_line(path, egui::Stroke::new(2.0, colour), 8.0, 8.0);
+        if arrows {
+            dashes2 = Self::add_arrows(dashes2);
+        }
+
+        dashes.extend(dashes2);
+        dashes
+    }
+    fn hover_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
+        Self::dash(path, egui::Color32::WHITE, arrows)
+    }
+
+    fn select_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
+        Self::dash(path, egui::Color32::YELLOW, arrows)
     }
     fn image_shape_from_bytes(
         ui: &egui::Ui,
