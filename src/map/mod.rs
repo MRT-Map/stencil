@@ -286,7 +286,7 @@ impl MapWindow {
         painter: &egui::Painter,
     ) {
         Self::paint_components(app, ui, response, painter);
-        Self::select_hovered_component(app, ui, response);
+        Self::select_hovered_component(app, ui, response, painter);
         Self::component_context_menu(app, response);
         Self::move_components(app, response);
 

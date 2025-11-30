@@ -76,7 +76,7 @@ impl MapWindow {
                 match result {
                     PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
                         hovered_component = Some(component.full_id.clone());
-                        hovered_shapes.extend(Self::hover_dash(
+                        hovered_shapes.extend(Self::white_dash(
                             &path,
                             matches!(&*component.ty, SkinType::Line { .. }),
                         ));
@@ -233,7 +233,7 @@ impl MapWindow {
         dashes.extend(dashes2);
         dashes
     }
-    pub fn hover_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
+    pub fn white_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
         Self::dash(path, egui::Color32::WHITE, arrows)
     }
 

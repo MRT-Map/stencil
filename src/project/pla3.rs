@@ -80,34 +80,54 @@ impl PlaNode {
         }))
         .collect()
     }
-    pub fn centre<I: Iterator<Item = Self>>(s: I) -> Option<geo::Coord<i32>> {
-        let coords = s
-            .flat_map(|n| match n {
-                Self::Line { coord, .. } => vec![coord],
-                Self::QuadraticBezier { ctrl, coord, .. } => vec![ctrl, coord],
+    pub fn bounding_box<I: Iterator<Item = Self>>(s: I) -> Option<egui::Rect> {
+        let mut s = s.peekable();
+        let mut bb = egui::Rect::from_pos(s.peek()?.coord().to_egui_pos2());
+        if let Some(bb2) = s
+            .tuple_windows()
+            .map(|(n1, n2)| match n2 {
+                Self::Line { coord, .. } => {
+                    egui::Rect::from_two_pos(n1.coord().to_egui_pos2(), coord.to_egui_pos2())
+                }
+                Self::QuadraticBezier { ctrl, coord, .. } => {
+                    egui::epaint::QuadraticBezierShape::from_points_stroke(
+                        [
+                            n1.coord().to_egui_pos2(),
+                            ctrl.to_egui_pos2(),
+                            coord.to_egui_pos2(),
+                        ],
+                        false,
+                        egui::Color32::TRANSPARENT,
+                        egui::epaint::PathStroke::default(),
+                    )
+                    .logical_bounding_rect()
+                }
                 Self::CubicBezier {
                     ctrl1,
                     ctrl2,
                     coord,
                     ..
-                } => vec![ctrl1, ctrl2, coord],
+                } => egui::epaint::CubicBezierShape::from_points_stroke(
+                    [
+                        n1.coord().to_egui_pos2(),
+                        ctrl1.to_egui_pos2(),
+                        ctrl2.to_egui_pos2(),
+                        coord.to_egui_pos2(),
+                    ],
+                    false,
+                    egui::Color32::TRANSPARENT,
+                    egui::epaint::PathStroke::default(),
+                )
+                .logical_bounding_rect(),
             })
-            .collect::<Vec<_>>();
-        let x = match coords.iter().minmax_by(|a, b| a.x.cmp(&b.x)) {
-            MinMaxResult::MinMax(min_x, max_x) => min_x.x / 2 + max_x.x / 2,
-            MinMaxResult::OneElement(x) => x.x,
-            MinMaxResult::NoElements => {
-                return None;
-            }
-        };
-        let y = match coords.iter().minmax_by(|a, b| a.y.cmp(&b.y)) {
-            MinMaxResult::MinMax(min_y, max_y) => min_y.y / 2 + max_y.y / 2,
-            MinMaxResult::OneElement(y) => y.y,
-            MinMaxResult::NoElements => {
-                return None;
-            }
-        };
-        Some(geo::coord! {x: x, y: y})
+            .reduce(|n1, n2| n1 | n2)
+        {
+            bb |= bb2;
+        }
+        Some(bb)
+    }
+    pub fn centre<I: Iterator<Item = Self>>(s: I) -> Option<geo::Coord<i32>> {
+        Self::bounding_box(s).map(|a| a.center().to_geo_coord_i32())
     }
     pub fn to_screen(self, app: &App, map_centre: egui::Pos2) -> PlaNodeScreen {
         let world_to_screen =
