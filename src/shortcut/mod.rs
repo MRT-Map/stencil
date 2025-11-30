@@ -81,33 +81,33 @@ impl App {
                 continue;
             }
             if !ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
-                if ctx.input_mut(|i| match shortcut {
-                    egui::KeyboardShortcut {
-                        modifiers,
-                        logical_key: egui::Key::C,
-                    } => {
-                        !eframe_workaround_used
-                            && i.modifiers.matches_logically(modifiers)
-                            && i.events.iter().any(|e| matches!(e, egui::Event::Copy))
-                    }
-                    egui::KeyboardShortcut {
-                        modifiers,
-                        logical_key: egui::Key::X,
-                    } => {
-                        !eframe_workaround_used
-                            && i.modifiers.matches_logically(modifiers)
-                            && i.events.iter().any(|e| matches!(e, egui::Event::Cut))
-                    }
-                    egui::KeyboardShortcut {
-                        modifiers,
-                        logical_key: egui::Key::V,
-                    } => {
-                        !eframe_workaround_used
-                            && i.modifiers.matches_logically(modifiers)
-                            && i.events.iter().any(|e| matches!(e, egui::Event::Paste(_)))
-                    }
-                    _ => false,
-                }) {
+                if !eframe_workaround_used
+                    && ctx.input_mut(|i| match shortcut {
+                        egui::KeyboardShortcut {
+                            modifiers,
+                            logical_key: egui::Key::C,
+                        } => {
+                            i.modifiers.matches_logically(modifiers)
+                                && i.events.iter().any(|e| matches!(e, egui::Event::Copy))
+                        }
+                        egui::KeyboardShortcut {
+                            modifiers,
+                            logical_key: egui::Key::X,
+                        } => {
+                            i.modifiers.matches_logically(modifiers)
+                                && i.events.iter().any(|e| matches!(e, egui::Event::Cut))
+                        }
+                        egui::KeyboardShortcut {
+                            modifiers,
+                            logical_key: egui::Key::V,
+                        } => {
+                            i.modifiers.matches_logically(modifiers)
+                                && i.events.iter().any(|e| matches!(e, egui::Event::Paste(_)))
+                        }
+                        _ => false,
+                    })
+                    && !ctx.wants_keyboard_input()
+                {
                     eframe_workaround_used = true;
                 } else {
                     continue;
