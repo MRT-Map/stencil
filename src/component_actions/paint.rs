@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use geo::{Contains, Distance};
 use itertools::Itertools;
-use tracing::error;
+use tracing::{debug, error};
 
 use crate::{
     App,
@@ -34,18 +34,18 @@ pub enum PaintResult {
     HoveredAndSelected(Vec<egui::Pos2>),
 }
 impl PaintResult {
-    pub fn from_conditions(
+    pub fn from_conditions<F: FnOnce() -> Vec<egui::Pos2>>(
         is_selected: bool,
         detect_hovered: bool,
         is_hovered: bool,
-        hover_coords: Vec<egui::Pos2>,
+        hover_coords: F,
     ) -> Self {
         if is_selected && detect_hovered && is_hovered {
-            Self::HoveredAndSelected(hover_coords)
+            Self::HoveredAndSelected(hover_coords())
         } else if is_selected {
-            Self::Selected(hover_coords)
+            Self::Selected(hover_coords())
         } else if detect_hovered && is_hovered {
-            Self::Hovered(hover_coords)
+            Self::Hovered(hover_coords())
         } else {
             Self::None
         }
@@ -60,26 +60,22 @@ impl MapWindow {
         painter: &egui::Painter,
     ) {
         let mut hovered_shapes = Vec::new();
-        app.ui.map.hovered_component = None;
+        let mut hovered_component = None;
         for component in app.project.components.iter() {
             let result = Self::paint_component(
                 app,
                 ui,
                 response,
                 painter,
-                app.ui.map.hovered_component.is_none(),
-                app.ui
-                    .map
-                    .selected_components
-                    .iter()
-                    .any(|a| a == &component.full_id),
+                hovered_component.is_none(),
+                app.ui.map.selected_components.contains(&component.full_id),
                 component,
             );
 
             if !app.mode.is_editing() {
                 match result {
                     PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
-                        app.ui.map.hovered_component = Some(component.full_id.clone());
+                        hovered_component = Some(component.full_id.clone());
                         hovered_shapes.extend(Self::hover_dash(
                             &path,
                             matches!(&*component.ty, SkinType::Line { .. }),
@@ -95,6 +91,18 @@ impl MapWindow {
                 }
             }
         }
+
+        match (&app.ui.map.hovered_component, &hovered_component) {
+            (Some(id), None) => {
+                debug!(%id, "Mouse out");
+            }
+            (None, Some(id)) => {
+                debug!(%id, "Mouse over");
+            }
+            _ => {}
+        }
+        app.ui.map.hovered_component = hovered_component;
+
         painter.add(hovered_shapes);
     }
     pub fn paint_component(
@@ -225,11 +233,11 @@ impl MapWindow {
         dashes.extend(dashes2);
         dashes
     }
-    fn hover_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
+    pub fn hover_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
         Self::dash(path, egui::Color32::WHITE, arrows)
     }
 
-    fn select_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
+    pub fn select_dash(path: &[egui::Pos2], arrows: bool) -> Vec<egui::Shape> {
         Self::dash(path, egui::Color32::YELLOW, arrows)
     }
     fn image_shape_from_bytes(
@@ -270,7 +278,7 @@ impl MapWindow {
         let mut is_hovered = !detect_hovered;
 
         let mut hover_coords = Vec::new();
-        let mut hover_coords_is_filled = false;
+        let mut hover_coords_is_filled = !detect_hovered && !is_selected;
 
         for style in style {
             let AreaStyle::Fill {
@@ -393,7 +401,7 @@ impl MapWindow {
             painter.add(shapes);
         }
 
-        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, hover_coords)
+        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || hover_coords)
     }
     pub fn paint_line(
         response: &egui::Response,
@@ -406,7 +414,7 @@ impl MapWindow {
         let mut is_hovered = !detect_hovered;
 
         let mut hover_coords = Vec::new();
-        let mut hover_coords_is_filled = !detect_hovered;
+        let mut hover_coords_is_filled = !detect_hovered && !is_selected;
 
         for style in style {
             let mut previous_coord = Option::<egui::Pos2>::None;
@@ -523,7 +531,7 @@ impl MapWindow {
             }
         }
 
-        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, hover_coords)
+        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || hover_coords)
     }
     pub fn paint_point(
         ui: &egui::Ui,
@@ -592,7 +600,7 @@ impl MapWindow {
             }
         }
 
-        let hover_coords = || {
+        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || {
             let dimensions = styles
                 .iter()
                 .filter_map(|a| match a {
@@ -609,15 +617,6 @@ impl MapWindow {
                 coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
                 coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
             ]
-        };
-        if is_selected && detect_hovered && is_hovered {
-            PaintResult::HoveredAndSelected(hover_coords())
-        } else if is_selected {
-            PaintResult::Selected(hover_coords())
-        } else if detect_hovered && is_hovered {
-            PaintResult::Hovered(hover_coords())
-        } else {
-            PaintResult::None
-        }
+        })
     }
 }

@@ -257,18 +257,7 @@ impl MapWindow {
                 .iter()
                 .map(|a| app.map_world_to_screen(response.rect.center(), a.to_geo_coord_f32()))
                 .collect::<Vec<_>>();
-            painter.add(egui::Shape::dashed_line(
-                &curve_vec,
-                egui::Stroke::new(4.0, egui::Color32::BLACK),
-                8.0,
-                8.0,
-            ));
-            painter.add(egui::Shape::dashed_line(
-                &curve_vec,
-                egui::Stroke::new(2.0, egui::Color32::WHITE),
-                8.0,
-                8.0,
-            ));
+            painter.add(Self::hover_dash(&curve_vec, false));
         }
 
         if response.clicked_by(egui::PointerButton::Secondary) {
