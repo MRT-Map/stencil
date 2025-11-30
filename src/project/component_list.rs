@@ -1,12 +1,9 @@
-use std::{cmp::Ordering, sync::Arc};
+use std::cmp::Ordering;
 
 use itertools::Itertools;
 use rand::distr::{Alphanumeric, SampleString};
 
-use crate::project::{
-    pla3::{FullId, PlaComponent},
-    skin::Skin,
-};
+use crate::project::{pla3::PlaComponent, skin::Skin};
 
 #[derive(Debug, Clone, Default)]
 pub struct ComponentList(Vec<ComponentListItem>);
@@ -91,57 +88,8 @@ impl ComponentList {
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut PlaComponent> {
         self.0.iter_mut().map(|a| &mut a.value)
     }
-    pub fn reorder(&mut self, item: &FullId) {
-        let (i_old, item) = self
-            .0
-            .iter()
-            .find_position(|a| &a.value.full_id == item)
-            .unwrap();
-        let i_new = self.insert_position(item);
-        match i_old.cmp(&i_new) {
-            Ordering::Less => self.0[i_old..i_new].rotate_left(1),
-            Ordering::Greater => self.0[i_new..=i_old].rotate_right(1),
-            Ordering::Equal => {}
-        }
-    }
-    pub fn for_each<T, F: FnMut(&mut PlaComponent) -> T>(
-        &mut self,
-        skin: &Skin,
-        mut f: F,
-    ) -> Vec<T> {
-        let mut reorders = Vec::new();
-        let out = self
-            .0
-            .iter_mut()
-            .map(|ComponentListItem { value, order }| {
-                let old_component_type = Arc::clone(&value.ty);
-                let old_layer = value.layer;
-                let out = f(value);
-
-                #[expect(clippy::float_cmp)]
-                if !Arc::ptr_eq(&old_component_type, &value.ty) || old_layer != value.layer {
-                    *order = skin.order[value.ty.name()];
-                    reorders.push(value.full_id.clone());
-                }
-
-                out
-            })
-            .collect();
-        for component in reorders {
-            self.reorder(&component);
-        }
-
-        out
-    }
     pub fn remove_namespace(&mut self, namespace: &str) {
         self.0.retain(|a| a.value.full_id.namespace != namespace);
-    }
-    pub fn remove(&mut self, component: &PlaComponent) -> bool {
-        let Some(pos) = self.iter().position(|a| a == component) else {
-            return false;
-        };
-        self.0.remove(pos);
-        true
     }
     pub fn remove_multiple(&mut self, components: &[PlaComponent]) -> bool {
         let positions = self
