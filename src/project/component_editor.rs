@@ -27,12 +27,15 @@ impl DockWindow for ComponentEditorWindow {
             return;
         };
         if [EditorMode::CreateLine, EditorMode::CreateArea].contains(&app.mode) {
-            let is_line = app.mode == EditorMode::CreateLine;
             ui.heading(format!(
                 "Creating {}",
-                if is_line { "line" } else { "area" }
+                if app.mode == EditorMode::CreateLine {
+                    "line"
+                } else {
+                    "area"
+                }
             ));
-            Self::show_position_data(ui, is_line, &app.ui.map.created_nodes);
+            Self::show_position_data(ui, &app.ui.map.created_nodes);
             return;
         } else if app.mode == EditorMode::CreatePoint {
             ui.heading("Creating point");
@@ -276,8 +279,7 @@ impl DockWindow for ComponentEditorWindow {
         }
 
         ui.heading("Position data");
-        let is_line = matches!(&*component.ty, SkinType::Line { .. });
-        Self::show_position_data(ui, is_line, &component.nodes);
+        Self::show_position_data(ui, &component.nodes);
 
         for ev in events_to_add {
             app.add_event(ev);
@@ -676,7 +678,7 @@ impl ComponentEditorWindow {
 
         changed
     }
-    fn show_position_data(ui: &mut egui::Ui, is_line: bool, nodes: &[PlaNode]) {
+    fn show_position_data(ui: &mut egui::Ui, nodes: &[PlaNode]) {
         egui_extras::TableBuilder::new(ui)
             .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)
@@ -718,21 +720,14 @@ impl ComponentEditorWindow {
                             }
                         });
                     };
-                for (i, node) in nodes.iter().enumerate() {
-                    let colour = if i == 0 && is_line {
-                        egui::Color32::GREEN
-                    } else if i == nodes.len() - 1 && is_line {
-                        egui::Color32::RED
-                    } else {
-                        egui::Color32::WHITE
-                    };
+                for node in nodes {
                     match *node {
                         PlaNode::Line { coord, label } => {
-                            add_row("line", coord, colour, label);
+                            add_row("line", coord, egui::Color32::WHITE, label);
                         }
                         PlaNode::QuadraticBezier { ctrl, coord, label } => {
-                            add_row("ctrl", ctrl, egui::Color32::WHITE, None);
-                            add_row("quad", coord, colour, label);
+                            add_row("ctrl", ctrl, egui::Color32::DARK_GRAY, None);
+                            add_row("quad", coord, egui::Color32::WHITE, label);
                         }
                         PlaNode::CubicBezier {
                             ctrl1,
@@ -740,9 +735,9 @@ impl ComponentEditorWindow {
                             coord,
                             label,
                         } => {
-                            add_row("ctrl1", ctrl1, egui::Color32::WHITE, None);
-                            add_row("ctrl2", ctrl2, egui::Color32::WHITE, None);
-                            add_row("cubic", coord, colour, label);
+                            add_row("ctrl1", ctrl1, egui::Color32::DARK_GRAY, None);
+                            add_row("ctrl2", ctrl2, egui::Color32::DARK_GRAY, None);
+                            add_row("cubic", coord, egui::Color32::WHITE, label);
                         }
                     }
                 }
