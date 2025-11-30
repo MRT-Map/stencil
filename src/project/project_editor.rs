@@ -185,15 +185,13 @@ impl DockWindow for ProjectEditorWindow {
 
 impl ProjectEditorWindow {
     pub fn component_list(app: &mut App, ui: &mut egui::Ui, ns: &str) {
-        let pos = ui.ctx().pointer_interact_pos();
-        let is_clicked = ui.input(|i| i.pointer.button_clicked(egui::PointerButton::Primary));
         let mut component_to_delete = None;
         let mut component_to_select = None;
-        let mut is_hovering = false;
         egui_extras::TableBuilder::new(ui)
-            .column(egui_extras::Column::remainder())
             .column(egui_extras::Column::auto())
-            .columns(egui_extras::Column::auto(), 3)
+            .column(egui_extras::Column::auto())
+            .columns(egui_extras::Column::auto().at_least(0.05), 2)
+            .sense(egui::Sense::hover() | egui::Sense::click())
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.label("id");
@@ -215,22 +213,36 @@ impl ProjectEditorWindow {
                             row.set_selected(true);
                         }
                         row.col(|ui| {
-                            ui.label(
-                                egui::RichText::new(component.to_string())
-                                    .code()
-                                    .text_style(egui::TextStyle::Small),
+                            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                            ui.style_mut().override_text_valign = Some(egui::Align::Center);
+                            ui.add(
+                                egui::Label::new(
+                                    egui::RichText::new(component.to_string())
+                                        .code()
+                                        .text_style(egui::TextStyle::Small),
+                                )
+                                .selectable(false),
                             );
                         });
                         row.col(|ui| {
                             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-                            ui.label(component.ty.widget_text(ui, &egui::TextStyle::Body));
+                            ui.add(
+                                egui::Label::new(
+                                    component.ty.widget_text(ui, &egui::TextStyle::Body),
+                                )
+                                .selectable(false),
+                            );
                         });
                         row.col(|ui| {
                             let Some(centre) = PlaNode::centre(component.nodes.iter().copied())
                             else {
                                 return;
                             };
-                            if ui.small_button("➡").clicked() {
+                            let see_button = ui.small_button("➡");
+                            egui::Tooltip::for_enabled(&see_button).show(|ui| {
+                                ui.label("See");
+                            });
+                            if see_button.clicked() {
                                 app.ui.map.centre_coord = centre.to_geo_coord_f32();
                             }
                         });
@@ -246,13 +258,8 @@ impl ProjectEditorWindow {
                                 component_to_delete = Some(component.to_owned());
                             }
                         });
-                        if let Some(pos) = pos
-                            && row.response().interact_rect.contains(pos)
-                        {
-                            is_hovering = true;
-                            if is_clicked {
-                                component_to_select = Some(component.full_id.clone());
-                            }
+                        if row.response().clicked() {
+                            component_to_select = Some(component.full_id.clone());
                         }
                     });
                 }
@@ -264,9 +271,6 @@ impl ProjectEditorWindow {
         }
         if let Some(component_to_select) = component_to_select {
             app.select_component(ui, component_to_select);
-        }
-        if is_hovering {
-            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
     }
 }
