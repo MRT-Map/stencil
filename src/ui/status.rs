@@ -170,6 +170,10 @@ impl App {
             self.ui.status = s!(self, ctx, s!(tx "Pasted "), c);
         }
     }
+    pub fn status_on_clear_clipboard(&mut self, ctx: &egui::Context) {
+        info!("Cleared clipboard");
+        self.ui.status = s!(self, ctx, s!(tx "Cleared clipboard"));
+    }
     pub fn status_on_delete(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
         if components.is_empty() {
             info!("Nothing to delete");

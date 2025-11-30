@@ -110,6 +110,10 @@ impl App {
                     button!(ui, "Paste", Some(ShortcutAction::Paste), {
                         self.paste_clipboard_components(ctx);
                     });
+                    ui.separator();
+                    button!(ui, "Clear Clipboard", None, {
+                        self.map_clear_clipboard(ctx);
+                    });
                 });
                 ui.menu_button("View", |ui| {
                     ui.label("Windows");

@@ -60,4 +60,8 @@ impl App {
         self.run_event(ComponentEv::Create(components_to_add), ctx);
         self.ui.map.selected_components = ids;
     }
+    pub fn map_clear_clipboard(&mut self, ctx: &egui::Context) {
+        self.ui.map.clipboard.clear();
+        self.status_on_clear_clipboard(ctx);
+    }
 }

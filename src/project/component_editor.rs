@@ -50,7 +50,7 @@ impl DockWindow for ComponentEditorWindow {
                 ui.heading("Select components...");
             }
             ui.label(format!(
-                "{} components in clipboard",
+                "{} component(s) in clipboard",
                 app.ui.map.clipboard.len()
             ));
             return;
