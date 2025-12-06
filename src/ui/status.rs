@@ -286,7 +286,7 @@ impl App {
                 s!(tx " to end at last node."),
                 s!(shift),
                 s!(tx " to create bézier curves. "),
-                s!(alt),
+                s!(cmd),
                 s!(tx " to snap to angle.")
             ),
             EditorMode::CreateArea => s!(
@@ -303,7 +303,7 @@ impl App {
                 s!(tx " to end at last node."),
                 s!(shift),
                 s!(tx " to create bézier curves. "),
-                s!(alt),
+                s!(cmd),
                 s!(tx " to snap to angle.")
             ),
         };

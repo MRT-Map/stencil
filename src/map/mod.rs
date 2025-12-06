@@ -5,6 +5,7 @@ use crate::{
     App,
     map::tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     mode::EditorMode,
+    pointer::ResponsePointerExt,
     project::SkinStatus,
     shortcut::ShortcutAction,
     ui::dock::DockWindow,
@@ -115,7 +116,7 @@ impl MapWindow {
         if response.hover_pos().is_none() {
             return;
         }
-        if response.dragged_by(egui::PointerButton::Middle) {
+        if response.dragged_by2(egui::PointerButton::Middle) {
             ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
             return;
         }
@@ -269,7 +270,7 @@ impl MapWindow {
                 0.0
             };
         }
-        translation += if response.dragged_by(egui::PointerButton::Middle) {
+        translation += if response.dragged_by2(egui::PointerButton::Middle) {
             -response.drag_delta() * world_screen_ratio
         } else {
             egui::Vec2::ZERO

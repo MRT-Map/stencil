@@ -6,6 +6,7 @@ mod load_save;
 mod logging;
 mod map;
 mod mode;
+mod pointer;
 mod project;
 mod settings;
 mod shortcut;

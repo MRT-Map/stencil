@@ -2,7 +2,7 @@ use tracing::info;
 
 use crate::{
     App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
-    map::MapWindow, mode::EditorMode,
+    map::MapWindow, mode::EditorMode, pointer::ResponsePointerExt,
 };
 
 impl MapWindow {
@@ -39,7 +39,7 @@ impl MapWindow {
             set_move_delta(None);
             return;
         }
-        if response.drag_stopped_by(egui::PointerButton::Primary)
+        if response.drag_stopped_by2(egui::PointerButton::Primary)
             && !app.ui.map.selected_components.is_empty()
             && let Some(move_delta) = move_delta.take()
         {
@@ -69,8 +69,8 @@ impl MapWindow {
             set_move_delta(None);
             return;
         }
-        if !response.dragged_by(egui::PointerButton::Primary)
-            || (response.drag_started_by(egui::PointerButton::Primary)
+        if !response.dragged_by2(egui::PointerButton::Primary)
+            || (response.drag_started_by2(egui::PointerButton::Primary)
                 && app
                     .ui
                     .map
@@ -82,7 +82,7 @@ impl MapWindow {
             return;
         }
 
-        if response.drag_started_by(egui::PointerButton::Primary) {
+        if response.drag_started_by2(egui::PointerButton::Primary) {
             info!("Move started");
             move_delta = Some(geo::Coord::zero());
         }

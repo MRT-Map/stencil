@@ -4,6 +4,7 @@ use crate::{
     App,
     coord_conversion::CoordConversionExt,
     map::MapWindow,
+    pointer::ResponsePointerExt,
     project::pla3::{FullId, PlaNode},
 };
 
@@ -21,13 +22,13 @@ impl MapWindow {
 
         if let Some(cursor_world_pos) = app.ui.map.cursor_world_pos {
             let id = "marquee select".into();
-            if response.drag_started_by(egui::PointerButton::Primary) {
+            if response.drag_started_by2(egui::PointerButton::Primary) {
                 info!("Drag start");
                 ui.data_mut(|d| d.insert_temp(id, cursor_world_pos));
                 return;
             }
             if let Some(start_world_pos) = ui.data(|d| d.get_temp::<geo::Coord<f32>>(id)) {
-                if response.dragged_by(egui::PointerButton::Primary) {
+                if response.dragged_by2(egui::PointerButton::Primary) {
                     painter.add(Self::white_dash(
                         &[
                             start_world_pos,
@@ -41,7 +42,7 @@ impl MapWindow {
                     ));
                     return;
                 }
-                if response.drag_stopped_by(egui::PointerButton::Primary) {
+                if response.drag_stopped_by2(egui::PointerButton::Primary) {
                     info!("Drag end");
                     let bounding_box = egui::Rect::from_two_pos(
                         start_world_pos.to_egui_pos2(),
@@ -67,8 +68,8 @@ impl MapWindow {
             }
         }
 
-        if !response.clicked_by(egui::PointerButton::Primary)
-            && !response.clicked_by(egui::PointerButton::Secondary)
+        if !response.clicked_by2(egui::PointerButton::Primary)
+            && !response.clicked_by2(egui::PointerButton::Secondary)
         {
             return;
         }

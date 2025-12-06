@@ -9,6 +9,7 @@ use crate::{
     component_actions::event::ComponentEv,
     coord_conversion::CoordConversionExt,
     map::MapWindow,
+    pointer::ResponsePointerExt,
     project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
 };
 
@@ -77,7 +78,7 @@ impl MapWindow {
             style,
         );
 
-        if !response.clicked_by(egui::PointerButton::Primary) {
+        if !response.clicked_by2(egui::PointerButton::Primary) {
             return;
         }
         let component = PlaComponent {
@@ -165,7 +166,7 @@ impl MapWindow {
 
         let mut world_coord = cursor_world_pos.to_geo_coord_i32();
 
-        if ui.ctx().input(|a| a.modifiers.alt)
+        if ui.ctx().input(|a| a.modifiers.command)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
                 Some(PlaNode::Line { .. }) => app
                     .ui
@@ -260,7 +261,7 @@ impl MapWindow {
             painter.add(Self::white_dash(&curve_vec, false));
         }
 
-        if response.clicked_by(egui::PointerButton::Secondary) {
+        if response.clicked_by2(egui::PointerButton::Secondary) {
             let last_node = app.ui.map.created_nodes.last_mut().unwrap();
             info!(?last_node, "Undoing last control point / node");
             match *last_node {
@@ -283,7 +284,7 @@ impl MapWindow {
                     }
                 }
             }
-        } else if response.clicked_by(egui::PointerButton::Primary) {
+        } else if response.clicked_by2(egui::PointerButton::Primary) {
             if ui.ctx().input(|a| a.modifiers.shift) && app.ui.map.created_nodes.len() > 1 {
                 let last_node = app.ui.map.created_nodes.last_mut().unwrap();
                 match *last_node {
@@ -319,8 +320,8 @@ impl MapWindow {
                 info!(?world_coord, "Adding node");
             }
         }
-        if response.double_clicked_by(egui::PointerButton::Primary)
-            || response.double_clicked_by(egui::PointerButton::Middle)
+        if response.double_clicked_by2(egui::PointerButton::Primary)
+            || response.double_clicked_by2(egui::PointerButton::Middle)
         {
             app.ui.map.created_nodes.pop();
             if app.ui.map.created_nodes.len() >= (if IS_LINE { 2 } else { 3 }) {
