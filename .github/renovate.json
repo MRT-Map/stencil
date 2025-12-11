@@ -3,5 +3,14 @@
   "extends": [
     "github>mrt-map/renovate-config",
     ":pinAllExceptPeerDependencies"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "/^egui/",
+        "eframe"
+      ],
+      "groupName": "egui-group"
+    }
   ]
 }
