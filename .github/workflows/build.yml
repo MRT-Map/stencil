@@ -24,7 +24,7 @@ jobs:
         locked: false
     - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
-    - run: cargo bundle --release
+    - run: cargo --locked bundle --release
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: macos-aarch64
@@ -45,7 +45,7 @@ jobs:
       - run: brew install openssl@3
       - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
-      - run: cargo build --release
+      - run: cargo --locked  build --release
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: macos-x86_64
@@ -99,7 +99,7 @@ jobs:
         version: 1.0
     - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
-    - run: cargo bundle --release --format deb
+    - run: cargo --locked bundle --release --format deb
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: linux
@@ -123,7 +123,7 @@ jobs:
         locked: false
     - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
 
-    - run: cargo build --release
+    - run: cargo --locked build --release
     - run: cargo wix -I "./build/windows/main.wxs" -v
     - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
