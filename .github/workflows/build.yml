@@ -1,4 +1,6 @@
 on:
+  push:
+    branches: ["renovate/**"]
   workflow_dispatch:
 
 env:
@@ -161,6 +163,7 @@ jobs:
       - build-macos
       - build-windows
       - version-changelog
+    if: github.event_name != 'pull_request' && !startsWith(github.ref_name, 'renovate/')
     permissions:
       id-token: write
       attestations: write
@@ -193,6 +196,7 @@ jobs:
     needs:
       - github-release
       - version-changelog
+    if: github.event_name != 'pull_request' && !startsWith(github.ref_name, 'renovate/')
     permissions:
       contents: write
 
