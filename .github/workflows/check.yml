@@ -1,12 +1,12 @@
 on:
   push:
+    branches: [ "renovate/**" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     steps:
