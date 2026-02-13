@@ -82,7 +82,9 @@ impl MapWindow {
             return;
         }
 
-        if response.drag_started_by2(egui::PointerButton::Primary) {
+        if response.drag_started_by2(egui::PointerButton::Primary)
+            && response.ctx.input(|i| i.modifiers.command)
+        {
             info!("Move started");
             move_delta = Some(geo::Coord::zero());
         }
