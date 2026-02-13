@@ -85,10 +85,10 @@ lazy-regex = { git = "https://github.com/Rastler3D/lazy-regex", branch = "use-st
 enum_dispatch = "0.3.13"
 eyre = "0.6.12"
 
-license-retriever = "1.1.0"
+license-retriever = "=1.1.0"
 
 [build-dependencies]
-license-retriever = "1.1.0"
+license-retriever = "=1.1.0"
 #color-eyre = "0.6.3"
 eyre = "0.6.12"
 zip = "4.0.0"
