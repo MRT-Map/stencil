@@ -396,6 +396,8 @@ impl ComponentEditorWindow {
                 let mut reset_date = false;
                 let mut reset_time = false;
                 let mut reset_offset = false;
+                let mut reset_second = false;
+                let mut reset_nanosecond = false;
                 if let Some(date) = &mut v.date {
                     ui.horizontal(|ui| {
                         if ui
@@ -451,18 +453,45 @@ impl ComponentEditorWindow {
                                 .custom_formatter(|a, _| format!("{a:02}"))
                                 .range(0..=59),
                         );
-                        ui.label(":");
-                        ui.add(
-                            egui::DragValue::new(&mut time.second)
-                                .custom_formatter(|a, _| format!("{a:02}"))
-                                .range(0..=59),
-                        );
-                        ui.label(".");
-                        ui.add(
-                            egui::DragValue::new(&mut time.nanosecond)
-                                .custom_formatter(|a, _| format!("{a:09}"))
-                                .range(0..=999_999_999),
-                        );
+                        if let Some(second) = &mut time.second {
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                reset_second = true;
+                            }
+                            ui.label(":");
+                            ui.add(
+                                egui::DragValue::new(second)
+                                    .custom_formatter(|a, _| format!("{a:02}"))
+                                    .range(0..=59),
+                            );
+                        } else if ui
+                            .add(egui::Button::new("➕").right_text("Add second"))
+                            .clicked()
+                        {
+                            time.second = Some(0);
+                        }
+
+                        if let Some(nanosecond) = &mut time.nanosecond {
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                reset_nanosecond = true;
+                            }
+                            ui.label(".");
+                            ui.add(
+                                egui::DragValue::new(nanosecond)
+                                    .custom_formatter(|a, _| format!("{a:09}"))
+                                    .range(0..=999_999_999),
+                            );
+                        } else if ui
+                            .add(egui::Button::new("➕").right_text("Add nanosecond"))
+                            .clicked()
+                        {
+                            time.nanosecond = Some(0);
+                        }
                     });
                 } else if ui
                     .add(egui::Button::new("➕").right_text("Add time"))
@@ -471,8 +500,8 @@ impl ComponentEditorWindow {
                     v.time = Some(toml::value::Time {
                         hour: 0,
                         minute: 0,
-                        second: 0,
-                        nanosecond: 0,
+                        second: None,
+                        nanosecond: None,
                     });
                 }
 
@@ -523,6 +552,14 @@ impl ComponentEditorWindow {
                 }
                 if reset_time {
                     v.time = None;
+                }
+                if let Some(time) = &mut v.time {
+                    if reset_second {
+                        time.second = None;
+                    }
+                    if reset_nanosecond {
+                        time.nanosecond = None;
+                    }
                 }
                 if reset_offset {
                     v.offset = None;
