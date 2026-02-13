@@ -423,10 +423,7 @@ impl ComponentEditorWindow {
                                 .range(1..=31),
                         );
                     });
-                } else if ui
-                    .add(egui::Button::new("➕").right_text("Add date"))
-                    .clicked()
-                {
+                } else if ui.add(egui::Button::new("➕").right_text("Date")).clicked() {
                     v.date = Some(toml::value::Date {
                         year: 1970,
                         month: 1,
@@ -467,7 +464,7 @@ impl ComponentEditorWindow {
                                     .range(0..=59),
                             );
                         } else if ui
-                            .add(egui::Button::new("➕").right_text("Add second"))
+                            .add(egui::Button::new("➕").right_text("Second"))
                             .clicked()
                         {
                             time.second = Some(0);
@@ -487,16 +484,13 @@ impl ComponentEditorWindow {
                                     .range(0..=999_999_999),
                             );
                         } else if ui
-                            .add(egui::Button::new("➕").right_text("Add nanosecond"))
+                            .add(egui::Button::new("➕").right_text("Nanosecond"))
                             .clicked()
                         {
                             time.nanosecond = Some(0);
                         }
                     });
-                } else if ui
-                    .add(egui::Button::new("➕").right_text("Add time"))
-                    .clicked()
-                {
+                } else if ui.add(egui::Button::new("➕").right_text("Time")).clicked() {
                     v.time = Some(toml::value::Time {
                         hour: 0,
                         minute: 0,
@@ -541,7 +535,7 @@ impl ComponentEditorWindow {
                         }
                     });
                 } else if ui
-                    .add(egui::Button::new("➕").right_text("Add offset"))
+                    .add(egui::Button::new("➕").right_text("Offset"))
                     .clicked()
                 {
                     v.offset = Some(toml::value::Offset::Z);
@@ -601,7 +595,7 @@ impl ComponentEditorWindow {
             });
         }
         if ui
-            .add(egui::Button::new("➕").right_text("Add to array"))
+            .add(egui::Button::new("➕").right_text("Array Item"))
             .clicked()
         {
             array.push(toml::Value::String(String::new()));
@@ -663,7 +657,9 @@ impl ComponentEditorWindow {
 
                 body.row(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.add(egui::TextEdit::singleline(&mut new_key).hint_text("Add to table"));
+                        ui.add(
+                            egui::TextEdit::singleline(&mut new_key).hint_text("Table Entry Key"),
+                        );
                     });
                     row.col(|ui| {
                         if ui
