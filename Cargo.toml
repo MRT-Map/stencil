@@ -34,7 +34,7 @@ surf = "=2.3.2"
 async-fs = "=2.2.0"
 futures-lite = "=2.6.1"
 async-lock = "=3.4.2"
-async-executor = { version = "=1.13.3", features = ["static"] }
+async-executor = { version = "=1.14.0", features = ["static"] }
 
 backtrace = "=0.3.76"
 color-backtrace = "=0.7.2"
