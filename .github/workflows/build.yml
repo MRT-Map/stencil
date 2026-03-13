@@ -22,7 +22,7 @@ jobs:
       with:
         crate: cargo-bundle
         locked: false
-    - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+    - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
     - run: cargo --locked bundle --release
     - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -43,7 +43,7 @@ jobs:
           mkdir .cargo
           mv .github/actions_config.toml .cargo/config.toml
       - run: brew install openssl@3
-      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - run: cargo --locked  build --release
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -97,7 +97,7 @@ jobs:
       with:
         packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
         version: 1.0
-    - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+    - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
     - run: cargo --locked bundle --release --format deb
     - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -121,7 +121,7 @@ jobs:
       with:
         crate: cargo-wix
         locked: false
-    - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+    - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
     - run: cargo --locked build --release
     - run: cargo wix -I "./build/windows/main.wxs" -v
