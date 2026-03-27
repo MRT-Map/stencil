@@ -6,6 +6,7 @@ use std::{
 };
 
 use async_executor::Task;
+use eyre::{Report, Result};
 use futures_lite::future;
 use itertools::Either;
 use lru::LruCache;
@@ -66,7 +67,12 @@ impl TileCoord {
                 return TileCacheItem::Loaded(Ok(a));
             }
 
-            TileCacheItem::Pending(EXECUTOR.spawn(async move { surf::get(url).recv_bytes().await }))
+            TileCacheItem::Pending(EXECUTOR.spawn(async move {
+                Ok(ehttp::fetch_async(ehttp::Request::get(url))
+                    .await
+                    .map_err(Report::msg)?
+                    .bytes)
+            }))
         });
         let item_result = match item {
             TileCacheItem::Pending(task) => match future::block_on(future::poll_once(task)) {
@@ -110,8 +116,8 @@ impl TileCoord {
 }
 
 pub enum TileCacheItem {
-    Pending(Task<surf::Result<Vec<u8>>>),
-    Loaded(surf::Result<Vec<u8>>),
+    Pending(Task<Result<Vec<u8>>>),
+    Loaded(Result<Vec<u8>>),
 }
 pub enum TextureIdResult {
     Success(egui::TextureId),

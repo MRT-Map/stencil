@@ -34,8 +34,8 @@ use crate::{
 pub enum SkinStatus {
     #[default]
     Unloaded,
-    Loading(Task<surf::Result<Skin>>),
-    Failed(surf::Error),
+    Loading(Task<Result<Skin>>),
+    Failed(Report),
     Loaded(&'static Skin),
 }
 
@@ -94,10 +94,10 @@ impl Project {
                 let skin_url = self.skin_url.clone();
                 info!(skin_url, "Loading skin");
                 let task = EXECUTOR.spawn(async move {
-                    surf::get(skin_url)
-                        .middleware(surf::middleware::Redirect::default())
-                        .recv_json()
+                    Ok(ehttp::fetch_async(ehttp::Request::get(skin_url))
                         .await
+                        .map_err(Report::msg)?
+                        .json()?)
                 });
                 self.skin_status = SkinStatus::Loading(task);
             }

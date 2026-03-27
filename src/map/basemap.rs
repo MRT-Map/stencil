@@ -132,7 +132,7 @@ impl Basemap {
                 ui.label("Base URL");
             },
         );
-        if let Err(e) = surf::Url::parse(&self.url) {
+        if let Err(e) = self.url.parse::<url::Url>() {
             ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:?}"));
         }
 
