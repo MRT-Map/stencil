@@ -6,5 +6,3 @@ on:
 jobs:
   cargo-msrv:
     uses: iiiii7d/cargo-msrv-workflow/.github/workflows/workflow.yml@main
-    with:
-      checkout-ref: dev
