@@ -56,6 +56,17 @@ pub fn cache_path<T: AsRef<Path>>(next: T) -> PathBuf {
     CACHE_DIR.join(next)
 }
 
+pub static TRASH_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
+    #[cfg(debug_assertions)]
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("trash");
+    #[cfg(not(debug_assertions))]
+    let dir = std::env::temp_dir().join("stencil3");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+});
+
 pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
     path: P,
     contents: C,
@@ -69,11 +80,10 @@ pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<O
     if !path.exists() {
         return Ok(None);
     }
-    let trash_dir = cache_dir("trash");
     let timestamp = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)?
         .as_nanos();
-    let new_path = trash_dir.join(format!(
+    let new_path = TRASH_DIR.join(format!(
         "{timestamp}-{}",
         path.file_name().unwrap_or_default().display()
     ));
