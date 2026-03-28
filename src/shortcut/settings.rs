@@ -1,4 +1,4 @@
-use std::{any::Any, ops::Deref};
+use std::any::Any;
 
 use bimap::BiMap;
 use itertools::Itertools;

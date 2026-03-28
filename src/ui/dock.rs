@@ -93,7 +93,7 @@ impl egui_dock::TabViewer for App {
     }
 
     fn scroll_bars(&self, _tab: &Self::Tab) -> [bool; 2] {
-        return [false, false];
+        [false, false]
     }
 }
 

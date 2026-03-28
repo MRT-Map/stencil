@@ -7,7 +7,7 @@ use std::{
 };
 
 use eyre::{ContextCompat, Report, Result, eyre};
-use itertools::{Itertools, MinMaxResult};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
