@@ -1,4 +1,4 @@
-use std::any::Any;
+use std::{any::Any, ops::Deref};
 
 use bimap::BiMap;
 use itertools::Itertools;
@@ -146,10 +146,9 @@ impl Settings for ShortcutSettings {
             })
             .body(|body| {
                 let mut default = Self::default();
-                body.rows(10.0, ShortcutAction::COUNT, |mut row| {
+                body.rows(20.0, ShortcutAction::COUNT, |mut row| {
                     let action = ShortcutAction::VARIANTS[row.index()];
                     let default_keyboard = default.action_to_shortcut(action);
-
                     row.col(|ui| {
                         if ui
                             .add_enabled(

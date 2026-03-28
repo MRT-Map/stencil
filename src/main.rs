@@ -109,7 +109,6 @@ impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.project.load_skin(ctx);
         self.status_init(ctx);
-        self.shortcuts(ctx);
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let start = Instant::now();
@@ -118,6 +117,8 @@ impl eframe::App for App {
         self.dock(ui);
         self.popups(ui);
         self.notifs(ui);
+
+        self.shortcuts(ui);
 
         let end = Instant::now();
         self.ui
