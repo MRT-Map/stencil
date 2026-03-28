@@ -49,7 +49,7 @@ impl MapWindow {
         let tile_screen_size = app
             .project
             .basemap
-            .tile_screen_size(&app.map_settings, app.ui.map.zoom);
+            .tile_screen_size(&app.settings.map, app.ui.map.zoom);
         let min_tile_coord =
             TileCoord::at_world_coord(world_boundaries.min(), tile_zoom, &app.project.basemap);
         let max_tile_coord =
@@ -219,7 +219,7 @@ impl MapWindow {
 
         app.ui.map.zoom = app.ui.map.zoom.clamp(
             0.0,
-            f32::from(app.project.basemap.max_tile_zoom) + app.map_settings.additional_zoom,
+            f32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
         );
 
         if (old_zoom - app.ui.map.zoom).abs() > f32::EPSILON {
@@ -234,9 +234,9 @@ impl MapWindow {
             (ShortcutAction::ZoomMapIn, 1.0),
         ] {
             app.ui.map.zoom += if ctx.input_mut(|a| {
-                a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
+                a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
             }) {
-                app.map_settings.shortcut_zoom_amount * sign
+                app.settings.map.shortcut_zoom_amount * sign
             } else {
                 0.0
             }
@@ -244,7 +244,7 @@ impl MapWindow {
 
         let world_screen_ratio = app.world_screen_ratio_with_current_basemap_at_current_zoom();
 
-        let invert = app.map_settings.invert_scroll;
+        let invert = app.settings.map.invert_scroll;
         let mut translation = ctx.input(egui::InputState::translation_delta)
             * world_screen_ratio
             * egui::vec2(
@@ -263,9 +263,9 @@ impl MapWindow {
             } else {
                 &mut translation.y
             }) += if ctx.input_mut(|a| {
-                a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
+                a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
             }) {
-                app.map_settings.shortcut_pan_amount * sign * world_screen_ratio
+                app.settings.map.shortcut_pan_amount * sign * world_screen_ratio
             } else {
                 0.0
             };

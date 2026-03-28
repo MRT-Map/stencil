@@ -15,25 +15,19 @@ mod ui;
 use std::{sync::LazyLock, time::Instant};
 
 use async_executor::StaticExecutor;
+use eyre::Result;
 use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 
 use crate::{
-    file::DATA_DIR,
-    load_save::LoadSave,
-    logging::init_logger,
-    map::settings::MapSettings,
-    mode::EditorMode,
-    project::Project,
-    settings::{misc_settings::MiscSettings, window_settings::WindowSettings},
-    shortcut::settings::ShortcutSettings,
-    ui::{UiState, dock::DockLayout, notif::NotifState},
+    file::DATA_DIR, load_save::LoadSave, logging::init_logger, mode::EditorMode, project::Project,
+    settings::AppSettings, ui::UiState,
 };
 
 pub static EXECUTOR: StaticExecutor = StaticExecutor::new();
 pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
-fn main() {
+fn main() -> Result<()> {
     // std::panic::set_hook(Box::new(panic::panic));
 
     init_logger();
@@ -56,18 +50,14 @@ fn main() {
             ..Default::default()
         },
         Box::new(|cc| Ok(Box::new(App::new(cc)))),
-    )
-    .unwrap();
+    )?;
+    Ok(())
 }
 
 #[derive(Default)]
 struct App {
     ui: UiState,
-    misc_settings: MiscSettings,
-    shortcut_settings: ShortcutSettings,
-    map_settings: MapSettings,
-    window_settings: WindowSettings,
-
+    settings: AppSettings,
     mode: EditorMode,
     project: Project,
 }
@@ -78,43 +68,30 @@ impl App {
 
         let mut app = Self::load_state();
         app.map_reset_view();
-        if app.map_settings.clear_cache_on_startup {
+        if app.settings.map.clear_cache_on_startup {
             app.project.basemap.clear_cache_path(&mut app.ui.notifs);
         }
         cc.egui_ctx.set_style_of(
             egui::Theme::Dark,
-            app.window_settings.dark_mode_style.clone(),
+            app.settings.window.dark_mode_style.clone(),
         );
         cc.egui_ctx.set_style_of(
             egui::Theme::Light,
-            app.window_settings.light_mode_style.clone(),
+            app.settings.window.light_mode_style.clone(),
         );
         app
     }
     fn load_state() -> Self {
-        let mut notifs = NotifState::default();
+        let mut ui = UiState::load_state();
         Self {
-            ui: UiState {
-                dock_layout: DockLayout::load(&mut notifs),
-                ..UiState::default()
-            },
-            shortcut_settings: ShortcutSettings::load(&mut notifs),
-            map_settings: MapSettings::load(&mut notifs),
-            window_settings: WindowSettings::load(&mut notifs),
-            misc_settings: {
-                let s = MiscSettings::load(&mut notifs);
-                s.update_notif_duration();
-                s
-            },
+            settings: AppSettings::load_state(&mut ui.notifs),
+            ui,
             ..Self::default()
         }
     }
     fn save_state(&mut self) {
         self.ui.dock_layout.save(&mut self.ui.notifs);
-        self.misc_settings.save(&mut self.ui.notifs);
-        self.shortcut_settings.save(&mut self.ui.notifs);
-        self.map_settings.save(&mut self.ui.notifs);
-        self.window_settings.save(&mut self.ui.notifs);
+        self.settings.save_state(&mut self.ui.notifs);
     }
 }
 

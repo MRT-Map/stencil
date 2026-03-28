@@ -119,7 +119,7 @@ macro_rules! s {
         }
     }};
     ($app:ident, $ctx:ident, $($section:expr),+) => {
-        Section::format([$($section),+], &mut $app.shortcut_settings, $ctx).into()
+        Section::format([$($section),+], &mut $app.settings.shortcut, $ctx).into()
     };
 }
 

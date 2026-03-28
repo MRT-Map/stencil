@@ -94,7 +94,7 @@ impl Default for MapSettings {
     }
 }
 
-impl_load_save!(toml MapSettings, data_dir("settings").join("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#map_settingstoml");
+impl_load_save!(toml MapSettings, data_dir("settings").join("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.maptoml");
 
 impl Settings for MapSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
@@ -235,7 +235,8 @@ impl MapSettings {
 }
 impl App {
     pub fn world_screen_ratio_with_current_basemap_at_current_zoom(&self) -> f32 {
-        self.map_settings
+        self.settings
+            .map
             .world_screen_ratio_at_zoom(self.project.basemap.max_tile_zoom, self.ui.map.zoom)
     }
 }

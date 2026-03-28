@@ -1,6 +1,6 @@
 use std::any::Any;
 
-use egui::{Ui, reset_button};
+use egui::Ui;
 use serde::{Deserialize, Serialize};
 
 use crate::{file::data_dir, impl_load_save, settings::Settings, settings_field};
@@ -39,7 +39,7 @@ impl Default for WindowSettings {
     }
 }
 
-impl_load_save!(toml WindowSettings, data_dir("settings").join("window.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#window_settingstoml");
+impl_load_save!(toml WindowSettings, data_dir("settings").join("window.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.windowtoml");
 
 impl Settings for WindowSettings {
     fn ui_inner(&mut self, ui: &mut Ui, _tab_state: &mut dyn Any) {
@@ -60,7 +60,7 @@ impl Settings for WindowSettings {
                 style,
                 "(to light mode)",
                 Self::default().light_mode_style,
-            )
+            );
         });
         if (*style) != old_style {
             ui.set_style_of(ui.theme(), style.clone());

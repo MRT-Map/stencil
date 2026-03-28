@@ -7,8 +7,42 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
-    App, load_save::LoadSave, shortcut::settings::ShortcutsTabState, ui::dock::DockWindow,
+    App,
+    load_save::LoadSave,
+    map::settings::MapSettings,
+    settings::{misc_settings::MiscSettings, window_settings::WindowSettings},
+    shortcut::settings::{ShortcutSettings, ShortcutsTabState},
+    ui::{dock::DockWindow, notif::NotifState},
 };
+
+#[derive(Default)]
+pub struct AppSettings {
+    pub map: MapSettings,
+    pub window: WindowSettings,
+    pub shortcut: ShortcutSettings,
+    pub misc: MiscSettings,
+}
+
+impl AppSettings {
+    pub fn load_state(notifs: &mut NotifState) -> Self {
+        Self {
+            map: MapSettings::load(notifs),
+            window: WindowSettings::load(notifs),
+            shortcut: ShortcutSettings::load(notifs),
+            misc: {
+                let s = MiscSettings::load(notifs);
+                s.update_notif_duration();
+                s
+            },
+        }
+    }
+    pub fn save_state(&self, notifs: &mut NotifState) {
+        self.misc.save(notifs);
+        self.shortcut.save(notifs);
+        self.map.save(notifs);
+        self.window.save(notifs);
+    }
+}
 
 #[macro_export]
 macro_rules! settings_field {
@@ -114,14 +148,14 @@ impl DockWindow for SettingsWindow {
 
         egui::ScrollArea::vertical().show(ui, |ui| match &mut self.tab {
             SettingsTab::Map => {
-                app.map_settings.ui(ui, &mut ());
+                app.settings.map.ui(ui, &mut ());
             }
-            SettingsTab::Window => app.window_settings.ui(ui, &mut ()),
+            SettingsTab::Window => app.settings.window.ui(ui, &mut ()),
             SettingsTab::Shortcuts(state) => {
-                app.shortcut_settings.ui(ui, state);
+                app.settings.shortcut.ui(ui, state);
             }
             SettingsTab::Miscellaneous => {
-                app.misc_settings.ui(ui, &mut ());
+                app.settings.misc.ui(ui, &mut ());
             }
         });
     }

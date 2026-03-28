@@ -169,7 +169,7 @@ impl MapWindow {
                         .button_with_shortcut(
                             "Reset View",
                             ShortcutAction::ResetMapView,
-                            &mut app.shortcut_settings,
+                            &mut app.settings.shortcut,
                         )
                         .clicked()
                     {

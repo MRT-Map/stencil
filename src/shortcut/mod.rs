@@ -75,8 +75,8 @@ impl ShortcutAction {
 impl App {
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
         let mut eframe_workaround_used = false;
-        for shortcut in self.shortcut_settings.shortcuts_ordered() {
-            let action = self.shortcut_settings.shortcut_to_action(shortcut).unwrap();
+        for shortcut in self.settings.shortcut.shortcuts_ordered() {
+            let action = self.settings.shortcut.shortcut_to_action(shortcut).unwrap();
             if action.eventless() {
                 continue;
             }

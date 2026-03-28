@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    load_save::LoadSave,
     map::state::MapState,
     ui::{dock::DockLayout, notif::NotifState, popup::Popups},
 };
@@ -29,6 +30,17 @@ impl Default for UiState {
             notifs: NotifState::default(),
             mspf: egui::util::History::new(1..usize::MAX, 1.0),
             map: MapState::default(),
+        }
+    }
+}
+
+impl UiState {
+    pub fn load_state() -> Self {
+        let mut notifs = NotifState::default();
+        Self {
+            dock_layout: DockLayout::load(&mut notifs),
+            notifs,
+            ..Self::default()
         }
     }
 }

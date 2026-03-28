@@ -57,7 +57,7 @@ impl App {
     pub fn map_reset_view(&mut self) {
         self.ui
             .map
-            .reset_view(&self.map_settings, &self.project.basemap);
+            .reset_view(&self.settings.map, &self.project.basemap);
     }
 
     pub fn map_hovered_component(&self) -> Option<&PlaComponent> {
@@ -85,7 +85,7 @@ impl App {
     ) -> egui::Pos2 {
         self.ui
             .map
-            .world_to_screen(&self.map_settings, &self.project.basemap, map_centre, world)
+            .world_to_screen(&self.settings.map, &self.project.basemap, map_centre, world)
     }
     pub fn map_screen_to_world(
         &self,
@@ -93,7 +93,7 @@ impl App {
         screen: egui::Pos2,
     ) -> geo::Coord<f32> {
         self.ui.map.screen_to_world(
-            &self.map_settings,
+            &self.settings.map,
             &self.project.basemap,
             map_centre,
             screen,
@@ -102,7 +102,7 @@ impl App {
     pub fn map_world_boundaries(&self, map_rect: egui::Rect) -> geo::Rect<f32> {
         self.ui
             .map
-            .map_world_boundaries(&self.map_settings, &self.project.basemap, map_rect)
+            .map_world_boundaries(&self.settings.map, &self.project.basemap, map_rect)
     }
     pub fn map_zoom_level(&self) -> u8 {
         self.ui.map.zoom_level(&self.project.basemap)

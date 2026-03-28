@@ -26,7 +26,7 @@ impl App {
         action: Option<ShortcutAction>,
     ) -> bool {
         let button = if let Some(action) = action {
-            ui.button_with_shortcut(label, action, &mut self.shortcut_settings)
+            ui.button_with_shortcut(label, action, &mut self.settings.shortcut)
         } else {
             ui.button(label)
         };
