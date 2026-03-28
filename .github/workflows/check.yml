@@ -1,6 +1,5 @@
 on:
   push:
-    branches: [ "renovate/**" ]
 
 env:
   CARGO_TERM_COLOR: always
