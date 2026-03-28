@@ -91,10 +91,10 @@ impl App {
                 });
                 ui.menu_button("Edit", |ui| {
                     button!(ui, "Undo", Some(ShortcutAction::Undo), {
-                        self.history_undo(ui.ctx());
+                        self.history_undo(ui);
                     });
                     button!(ui, "Redo", Some(ShortcutAction::Redo), {
-                        self.history_redo(ui.ctx());
+                        self.history_redo(ui);
                     });
                     ui.separator();
                     button!(ui, "Copy", Some(ShortcutAction::Copy), {

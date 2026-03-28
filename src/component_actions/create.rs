@@ -39,7 +39,7 @@ const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
 impl MapWindow {
     pub fn create_point(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
@@ -68,7 +68,6 @@ impl MapWindow {
         let screen_coord =
             app.map_world_to_screen(response.rect.center(), world_coord.to_geo_coord_f32());
         Self::paint_point(
-            ui,
             response,
             painter,
             false,
@@ -97,30 +96,30 @@ impl MapWindow {
             }],
             misc: BTreeMap::default(),
         };
-        app.status_on_create("point", &component, ui.ctx());
-        app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
+        app.status_on_create("point", &component, ctx);
+        app.run_event(ComponentEv::Create(vec![component]), ctx);
     }
     #[inline]
     pub fn create_line(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        Self::create_line_or_area::<true>(app, ui, response, painter);
+        Self::create_line_or_area::<true>(app, ctx, response, painter);
     }
     #[inline]
     pub fn create_area(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        Self::create_line_or_area::<false>(app, ui, response, painter);
+        Self::create_line_or_area::<false>(app, ctx, response, painter);
     }
     pub fn create_line_or_area<const IS_LINE: bool>(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
@@ -166,7 +165,7 @@ impl MapWindow {
 
         let mut world_coord = cursor_world_pos.to_geo_coord_i32();
 
-        if ui.ctx().input(|a| a.modifiers.command)
+        if ctx.input(|a| a.modifiers.command)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
                 Some(PlaNode::Line { .. }) => app
                     .ui
@@ -285,7 +284,7 @@ impl MapWindow {
                 }
             }
         } else if response.clicked_by2(egui::PointerButton::Primary) {
-            if ui.ctx().input(|a| a.modifiers.shift) && app.ui.map.created_nodes.len() > 1 {
+            if ctx.input(|a| a.modifiers.shift) && app.ui.map.created_nodes.len() > 1 {
                 let last_node = app.ui.map.created_nodes.last_mut().unwrap();
                 match *last_node {
                     PlaNode::Line { coord, label } => {
@@ -347,8 +346,8 @@ impl MapWindow {
                     nodes: app.ui.map.created_nodes.drain(..).collect(),
                     misc: BTreeMap::default(),
                 };
-                app.status_on_create(if IS_LINE { "line" } else { "area" }, &component, ui.ctx());
-                app.run_event(ComponentEv::Create(vec![component]), ui.ctx());
+                app.status_on_create(if IS_LINE { "line" } else { "area" }, &component, ctx);
+                app.run_event(ComponentEv::Create(vec![component]), ctx);
             } else {
                 app.ui.map.created_nodes.clear();
                 info!(

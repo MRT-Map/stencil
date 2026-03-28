@@ -19,10 +19,10 @@ impl DockWindow for HistoryViewerWindow {
                 };
             }
             button!(ui, "Undo", Some(ShortcutAction::Undo), {
-                app.history_undo(ui.ctx());
+                app.history_undo(ui);
             });
             button!(ui, "Redo", Some(ShortcutAction::Redo), {
-                app.history_redo(ui.ctx());
+                app.history_redo(ui);
             });
         });
         ui.separator();

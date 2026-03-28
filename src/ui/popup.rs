@@ -37,7 +37,7 @@ pub trait Popup {
         });
         if ui.button("Close").clicked() {
             if let Some(close_fn) = close_fn {
-                close_fn(ui.ctx(), app);
+                close_fn(ui, app);
             }
             false
         } else {
@@ -70,12 +70,12 @@ pub trait Popup {
         ui.horizontal(|ui| {
             if ui.button(text1).clicked() {
                 if let Some(fn1) = fn1 {
-                    fn1(ui.ctx(), app);
+                    fn1(ui, app);
                 }
                 false
             } else if ui.button(text2).clicked() {
                 if let Some(fn2) = fn2 {
-                    fn2(ui.ctx(), app);
+                    fn2(ui, app);
                 }
                 false
             } else {

@@ -43,7 +43,7 @@ impl DockWindow for MapWindow {
     }
 }
 impl MapWindow {
-    fn tiles(app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+    fn tiles(app: &App, ctx: &egui::Context, response: &egui::Response, painter: &egui::Painter) {
         let world_boundaries = app.map_world_boundaries(response.rect);
         let tile_zoom = app.project.basemap.tile_zoom(app.ui.map.zoom);
         let tile_screen_size = app
@@ -67,7 +67,7 @@ impl MapWindow {
         for tx in min_tile_coord.x..=max_tile_coord.x {
             for ty in min_tile_coord.y..=max_tile_coord.y {
                 match TileCoord::new(tile_zoom, tx, ty).texture_id(
-                    ui.ctx(),
+                    ctx,
                     &app.project.basemap,
                     &mut tile_cache,
                 ) {
@@ -112,26 +112,26 @@ impl MapWindow {
             tile_screen_top_left.y = min_tile_screen_top_left.y;
         }
     }
-    fn cursor(app: &App, ui: &egui::Ui, response: &egui::Response, painter: &egui::Painter) {
+    fn cursor(app: &App, ctx: &egui::Context, response: &egui::Response, painter: &egui::Painter) {
         if response.hover_pos().is_none() {
             return;
         }
         if response.dragged_by2(egui::PointerButton::Middle) {
-            ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
+            ctx.set_cursor_icon(egui::CursorIcon::Grabbing);
             return;
         }
         match app.mode {
             EditorMode::Select | EditorMode::Nodes => {
                 if app.ui.map.hovered_component.is_some() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                    ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
                 } else {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
+                    ctx.set_cursor_icon(egui::CursorIcon::Grab);
                 }
             }
             EditorMode::CreateArea | EditorMode::CreateLine | EditorMode::CreatePoint => {
                 let tooltip = |text: &str| {
                     egui::Tooltip::always_open(
-                        ui.ctx().to_owned(),
+                        ctx.to_owned(),
                         response.layer_id,
                         response.id,
                         egui::PopupAnchor::Pointer,
@@ -139,22 +139,22 @@ impl MapWindow {
                     .show(|ui| ui.label(text));
                 };
                 if app.project.new_component_ns.is_empty() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                    ctx.set_cursor_icon(egui::CursorIcon::NotAllowed);
                     tooltip("Set a namespace in the toolbar first");
                     return;
                 }
                 if matches!(app.project.skin_status, SkinStatus::Failed(_)) {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::NotAllowed);
+                    ctx.set_cursor_icon(egui::CursorIcon::NotAllowed);
                     tooltip("Skin failed to load. See Project Editor");
                     return;
                 }
                 if app.project.skin().is_none() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::Wait);
+                    ctx.set_cursor_icon(egui::CursorIcon::Wait);
                     tooltip("Waiting for skin to load...");
                     return;
                 }
 
-                let Some(pointer_screen_pos) = ui.ctx().pointer_latest_pos() else {
+                let Some(pointer_screen_pos) = ctx.pointer_latest_pos() else {
                     return;
                 };
                 let pointer_world_pos =
@@ -165,7 +165,7 @@ impl MapWindow {
                 );
                 let (x, y) = (crosshair_screen_pos.x, crosshair_screen_pos.y);
 
-                ui.ctx().set_cursor_icon(egui::CursorIcon::None);
+                ctx.set_cursor_icon(egui::CursorIcon::None);
                 painter.hline(
                     egui::Rangef::new(x + 1.0 - 16.0, x + 1.0 + 16.0),
                     y + 1.0,
@@ -199,14 +199,14 @@ impl MapWindow {
             }
         }
     }
-    fn interaction(app: &mut App, ui: &egui::Ui, response: &egui::Response) {
+    fn interaction(app: &mut App, ctx: &egui::Context, response: &egui::Response) {
         let Some(hover_pos) = response.hover_pos().or_else(|| {
             response
                 .ctx
                 .data_mut(|a| {
                     *a.get_temp_mut_or_default::<bool>(Self::HOVERED_OVER_CTX_MENU.into())
                 })
-                .then(|| ui.ctx().pointer_latest_pos())
+                .then(|| ctx.pointer_latest_pos())
                 .flatten()
         }) else {
             app.ui.map.cursor_world_pos = None;
@@ -215,7 +215,7 @@ impl MapWindow {
         let mut cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
 
         let old_zoom = app.ui.map.zoom;
-        app.ui.map.zoom += ui.ctx().input(egui::InputState::zoom_delta).log2();
+        app.ui.map.zoom += ctx.input(egui::InputState::zoom_delta).log2();
 
         app.ui.map.zoom = app.ui.map.zoom.clamp(
             0.0,
@@ -233,7 +233,7 @@ impl MapWindow {
             (ShortcutAction::ZoomMapOut, -1.0),
             (ShortcutAction::ZoomMapIn, 1.0),
         ] {
-            app.ui.map.zoom += if ui.ctx().input_mut(|a| {
+            app.ui.map.zoom += if ctx.input_mut(|a| {
                 a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
             }) {
                 app.map_settings.shortcut_zoom_amount * sign
@@ -245,7 +245,7 @@ impl MapWindow {
         let world_screen_ratio = app.world_screen_ratio_with_current_basemap_at_current_zoom();
 
         let invert = app.map_settings.invert_scroll;
-        let mut translation = ui.ctx().input(egui::InputState::translation_delta)
+        let mut translation = ctx.input(egui::InputState::translation_delta)
             * world_screen_ratio
             * egui::vec2(
                 if invert.x { -1.0 } else { 1.0 },
@@ -262,7 +262,7 @@ impl MapWindow {
                 &mut translation.x
             } else {
                 &mut translation.y
-            }) += if ui.ctx().input_mut(|a| {
+            }) += if ctx.input_mut(|a| {
                 a.consume_shortcut(&app.shortcut_settings.action_to_shortcut(action))
             }) {
                 app.map_settings.shortcut_pan_amount * sign * world_screen_ratio
@@ -282,19 +282,19 @@ impl MapWindow {
     }
     fn components(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        Self::paint_components(app, ui, response, painter);
-        Self::select_hovered_component(app, ui, response, painter);
+        Self::paint_components(app, response, painter);
+        Self::select_hovered_component(app, ctx, response, painter);
         Self::component_context_menu(app, response);
         Self::move_components(app, response);
 
         match app.mode {
-            EditorMode::CreatePoint => Self::create_point(app, ui, response, painter),
-            EditorMode::CreateLine => Self::create_line(app, ui, response, painter),
-            EditorMode::CreateArea => Self::create_area(app, ui, response, painter),
+            EditorMode::CreatePoint => Self::create_point(app, ctx, response, painter),
+            EditorMode::CreateLine => Self::create_line(app, ctx, response, painter),
+            EditorMode::CreateArea => Self::create_area(app, ctx, response, painter),
             _ => {}
         }
     }

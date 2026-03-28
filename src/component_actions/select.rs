@@ -11,7 +11,7 @@ use crate::{
 impl MapWindow {
     pub fn select_hovered_component(
         app: &mut App,
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
@@ -28,10 +28,10 @@ impl MapWindow {
                     .input(|i| !i.modifiers.command && !i.modifiers.alt && !i.modifiers.shift)
             {
                 info!("Drag start");
-                ui.data_mut(|d| d.insert_temp(id, cursor_world_pos));
+                ctx.data_mut(|d| d.insert_temp(id, cursor_world_pos));
                 return;
             }
-            if let Some(start_world_pos) = ui.data(|d| d.get_temp::<geo::Coord<f32>>(id)) {
+            if let Some(start_world_pos) = ctx.data(|d| d.get_temp::<geo::Coord<f32>>(id)) {
                 if response.dragged_by2(egui::PointerButton::Primary) {
                     painter.add(Self::white_dash(
                         &[
@@ -61,12 +61,12 @@ impl MapWindow {
                                 .is_some_and(|rect| bounding_box.contains_rect(rect))
                         })
                         .map(|a| a.full_id.clone());
-                    if ui.ctx().input(|a| a.modifiers.shift) {
+                    if ctx.input(|a| a.modifiers.shift) {
                         app.ui.map.selected_components.extend(components_to_add);
                     } else {
                         app.ui.map.selected_components = components_to_add.collect();
                     }
-                    ui.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
+                    ctx.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
                     return;
                 }
             }
@@ -81,15 +81,15 @@ impl MapWindow {
         let Some(hovered_component) = &app.ui.map.hovered_component else {
             info!(ids=?app.ui.map.selected_components, "Deselected all");
             app.ui.map.selected_components.clear();
-            app.status_default(ui.ctx());
+            app.status_default(ctx);
             return;
         };
-        app.select_component(ui, hovered_component.to_owned());
+        app.select_component(ctx, hovered_component.to_owned());
     }
 }
 impl App {
-    pub fn select_component(&mut self, ui: &egui::Ui, id: FullId) {
-        if ui.ctx().input(|a| a.modifiers.shift) {
+    pub fn select_component(&mut self, ctx: &egui::Context, id: FullId) {
+        if ctx.input(|a| a.modifiers.shift) {
             if let Some(pos) = self
                 .ui
                 .map
@@ -108,6 +108,6 @@ impl App {
             self.ui.map.selected_components.clear();
             self.ui.map.selected_components.push(id);
         }
-        self.status_select(ui.ctx());
+        self.status_select(ctx);
     }
 }

@@ -53,18 +53,12 @@ impl PaintResult {
 }
 
 impl MapWindow {
-    pub fn paint_components(
-        app: &mut App,
-        ui: &egui::Ui,
-        response: &egui::Response,
-        painter: &egui::Painter,
-    ) {
+    pub fn paint_components(app: &mut App, response: &egui::Response, painter: &egui::Painter) {
         let mut hovered_shapes = Vec::new();
         let mut hovered_component = None;
         for component in app.project.components.iter() {
             let result = Self::paint_component(
                 app,
-                ui,
                 response,
                 painter,
                 hovered_component.is_none(),
@@ -107,7 +101,6 @@ impl MapWindow {
     }
     pub fn paint_component(
         app: &App,
-        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
@@ -142,7 +135,6 @@ impl MapWindow {
                     unreachable!();
                 };
                 Self::paint_point(
-                    ui,
                     response,
                     painter,
                     detect_hovered,
@@ -241,7 +233,7 @@ impl MapWindow {
         Self::dash(path, egui::Color32::YELLOW, arrows)
     }
     fn image_shape_from_bytes(
-        ui: &egui::Ui,
+        ctx: &egui::Context,
         uri: impl Into<Cow<'static, str>>,
         bytes: impl Into<egui::load::Bytes>,
         rect: egui::Rect,
@@ -251,7 +243,7 @@ impl MapWindow {
             bytes: bytes.into(),
         }
         .load(
-            ui.ctx(),
+            ctx,
             egui::TextureOptions::LINEAR,
             egui::SizeHint::Scale(2.0.into()),
         )
@@ -534,7 +526,6 @@ impl MapWindow {
         PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || hover_coords)
     }
     pub fn paint_point(
-        ui: &egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
         detect_hovered: bool,
@@ -555,7 +546,7 @@ impl MapWindow {
                     ..
                 } => {
                     let Some(shape) = Self::image_shape_from_bytes(
-                        ui,
+                        &response.ctx,
                         format!(
                             "{style_name}.{}",
                             if extension == "svg+xml" {

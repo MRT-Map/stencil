@@ -192,8 +192,7 @@ impl UiButtonWithShortcutExt for egui::Ui {
         shortcut_settings: &mut ShortcutSettings,
     ) -> egui::Response {
         self.add(
-            egui::Button::new(atoms)
-                .shortcut_text(shortcut_settings.format_action(shortcut, self.ctx())),
+            egui::Button::new(atoms).shortcut_text(shortcut_settings.format_action(shortcut, self)),
         )
     }
 }

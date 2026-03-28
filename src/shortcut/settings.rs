@@ -157,7 +157,7 @@ impl Settings for ShortcutSettings {
                             )
                             .on_hover_text(format!(
                                 "Default: {}",
-                                ui.ctx().format_shortcut(&default_keyboard)
+                                ui.format_shortcut(&default_keyboard)
                             ))
                             .clicked()
                         {
@@ -169,7 +169,7 @@ impl Settings for ShortcutSettings {
                         ui.label(format!("{action}"));
                     });
                     row.col(|ui| {
-                        ui.label(self.format_action(action, ui.ctx()));
+                        ui.label(self.format_action(action, ui));
 
                         if tab_state.changed_shortcut() != Some(action) {
                             return;
@@ -201,28 +201,28 @@ impl Settings for ShortcutSettings {
         let ShortcutsTabState::WaitForShortcut(action) = *tab_state else {
             return;
         };
-        let Some(key) = ui.ctx().input(|i| i.keys_down.iter().next().copied()) else {
+        let Some(key) = ui.input(|i| i.keys_down.iter().next().copied()) else {
             return;
         };
-        let mut new_shortcut = egui::KeyboardShortcut::new(ui.ctx().input(|i| i.modifiers), key);
+        let mut new_shortcut = egui::KeyboardShortcut::new(ui.input(|i| i.modifiers), key);
         #[cfg(not(target_os = "macos"))]
         if new_shortcut.modifiers.ctrl {
             new_shortcut.modifiers.command = true;
             new_shortcut.modifiers.ctrl = false;
         }
 
-        assert!(ui.ctx().input_mut(|i| i.consume_shortcut(&new_shortcut)));
+        assert!(ui.input_mut(|i| i.consume_shortcut(&new_shortcut)));
 
         if let Some(taken_by) = self.shortcut_to_action(new_shortcut)
             && taken_by != action
         {
-            info!(changing=?action, ?taken_by, new_shortcut=ui.ctx().format_shortcut(&new_shortcut), "Shortcut already taken");
+            info!(changing=?action, ?taken_by, new_shortcut=ui.format_shortcut(&new_shortcut), "Shortcut already taken");
             *tab_state = ShortcutsTabState::ChangeFail {
                 changing: action,
                 taken_by,
             }
         } else {
-            info!(changing=?action, new_shortcut=ui.ctx().format_shortcut(&new_shortcut), "Shortcut change succeeded");
+            info!(changing=?action, new_shortcut=ui.format_shortcut(&new_shortcut), "Shortcut change succeeded");
             self.insert(action, new_shortcut);
             *tab_state = ShortcutsTabState::ChangeSuccess(action);
         }

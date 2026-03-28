@@ -79,9 +79,9 @@ impl DockWindow for ProjectEditorWindow {
                             }
                             if ui.checkbox(&mut vis, "").changed() {
                                 if vis {
-                                    app.run_event(ProjectEv::Load(ns.clone()), ui.ctx());
+                                    app.run_event(ProjectEv::Load(ns.clone()), ui);
                                 } else {
-                                    app.run_event(ProjectEv::Hide(ns.clone()), ui.ctx());
+                                    app.run_event(ProjectEv::Hide(ns.clone()), ui);
                                 }
                             }
                         });
@@ -106,7 +106,7 @@ impl DockWindow for ProjectEditorWindow {
                                 )
                                 .clicked()
                             {
-                                app.run_event(ProjectEv::Delete(ns), ui.ctx());
+                                app.run_event(ProjectEv::Delete(ns), ui);
                             }
                         });
                     });
@@ -130,7 +130,7 @@ impl DockWindow for ProjectEditorWindow {
                         {
                             app.run_event(
                                 ProjectEv::Create(std::mem::take(&mut new_namespace)),
-                                ui.ctx(),
+                                ui,
                             );
                         }
                     });
@@ -266,8 +266,8 @@ impl ProjectEditorWindow {
             });
         if let Some(component_to_delete) = component_to_delete {
             let component_to_delete = vec![component_to_delete];
-            app.status_on_delete(&component_to_delete, ui.ctx());
-            app.run_event(ComponentEv::Delete(component_to_delete), ui.ctx());
+            app.status_on_delete(&component_to_delete, ui);
+            app.run_event(ComponentEv::Delete(component_to_delete), ui);
         }
         if let Some(component_to_select) = component_to_select {
             app.select_component(ui, component_to_select);
