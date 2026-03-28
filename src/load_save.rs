@@ -15,11 +15,11 @@ macro_rules! impl_load_save {
             }
             fn ser(&self) -> eyre::Result<Vec<u8>> {
                 toml::to_string_pretty(&self)
-                    .map(|a| a.into_bytes())
-                    .map_err(|e| e.into())
+                    .map(String::into_bytes)
+                    .map_err(Into::into)
             }
             fn de(ser: &[u8]) -> eyre::Result<Self> {
-                toml::from_slice(ser).map_err(|e| e.into())
+                toml::from_slice(ser).map_err(Into::into)
             }
         }
     };
@@ -31,23 +31,23 @@ macro_rules! impl_load_save {
             fn ser(&self) -> eyre::Result<Vec<u8>> {
                 toml::to_string_pretty(&self)
                     .map(|a| format!("{}\n\n{a}", $header).into_bytes())
-                    .map_err(|e| e.into())
+                    .map_err(Into::into)
             }
             fn de(ser: &[u8]) -> eyre::Result<Self> {
-                toml::from_slice(ser).map_err(|e| e.into())
+                toml::from_slice(ser).map_err(Into::into)
             }
         }
     };
-    (mpk $t:ty, $path:expr) => {
+    (json $t:ty, $path:expr) => {
         impl $crate::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
             fn ser(&self) -> eyre::Result<Vec<u8>> {
-                rmp_serde::to_vec_named(self).map_err(|e| e.into())
+                serde_json::to_vec(self).map_err(Into::into)
             }
             fn de(ser: &[u8]) -> eyre::Result<Self> {
-                rmp_serde::from_slice(ser).map_err(|e| e.into())
+                serde_json::from_slice(ser).map_err(Into::into)
             }
         }
     };

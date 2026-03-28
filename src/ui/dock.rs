@@ -44,7 +44,7 @@ pub enum DockWindows {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DockLayout(pub egui_dock::DockState<DockWindows>);
 
-impl_load_save!(mpk DockLayout, data_path("dock.mpk"));
+impl_load_save!(json DockLayout, data_path("dock.json"));
 
 impl Default for DockLayout {
     fn default() -> Self {

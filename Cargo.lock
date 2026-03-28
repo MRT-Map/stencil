@@ -4934,7 +4934,6 @@ dependencies = [
  "license-retriever",
  "lru",
  "rand 0.10.0",
- "rmp-serde",
  "semver",
  "serde",
  "serde_json",
@@ -4945,7 +4944,6 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "url",
- "winit",
  "zip",
 ]
 

@@ -52,7 +52,7 @@ fn main() {
                 eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/icon.png"))
                     .unwrap(),
             ),
-            persistence_path: Some(DATA_DIR.join("eframe_data")),
+            persistence_path: Some(DATA_DIR.join("eframe.json")),
             ..Default::default()
         },
         Box::new(|cc| Ok(Box::new(App::new(cc)))),
