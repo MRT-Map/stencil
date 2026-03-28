@@ -1,4 +1,5 @@
 pub mod misc_settings;
+pub mod window_settings;
 
 use std::{any::Any, fmt::Display};
 
@@ -115,9 +116,7 @@ impl DockWindow for SettingsWindow {
             SettingsTab::Map => {
                 app.map_settings.ui(ui, &mut ());
             }
-            SettingsTab::Window => {
-                ui.label("Window");
-            }
+            SettingsTab::Window => app.window_settings.ui(ui, &mut ()),
             SettingsTab::Shortcuts(state) => {
                 app.shortcut_settings.ui(ui, state);
             }

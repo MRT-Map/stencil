@@ -25,7 +25,7 @@ use crate::{
     map::settings::MapSettings,
     mode::EditorMode,
     project::Project,
-    settings::misc_settings::MiscSettings,
+    settings::{misc_settings::MiscSettings, window_settings::WindowSettings},
     shortcut::settings::ShortcutSettings,
     ui::{UiState, dock::DockLayout, notif::NotifState},
 };
@@ -66,6 +66,7 @@ struct App {
     misc_settings: MiscSettings,
     shortcut_settings: ShortcutSettings,
     map_settings: MapSettings,
+    window_settings: WindowSettings,
 
     mode: EditorMode,
     project: Project,
