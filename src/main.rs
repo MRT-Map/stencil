@@ -81,12 +81,18 @@ impl App {
         if app.map_settings.clear_cache_on_startup {
             app.project.basemap.clear_cache_path(&mut app.ui.notifs);
         }
+        cc.egui_ctx.set_style_of(
+            egui::Theme::Dark,
+            app.window_settings.dark_mode_style.clone(),
+        );
+        cc.egui_ctx.set_style_of(
+            egui::Theme::Light,
+            app.window_settings.light_mode_style.clone(),
+        );
         app
     }
     fn load_state() -> Self {
         let mut notifs = NotifState::default();
-        let misc_settings = MiscSettings::load(&mut notifs);
-        misc_settings.update_notif_duration();
         Self {
             ui: UiState {
                 dock_layout: DockLayout::load(&mut notifs),
@@ -94,7 +100,12 @@ impl App {
             },
             shortcut_settings: ShortcutSettings::load(&mut notifs),
             map_settings: MapSettings::load(&mut notifs),
-            misc_settings,
+            window_settings: WindowSettings::load(&mut notifs),
+            misc_settings: {
+                let s = MiscSettings::load(&mut notifs);
+                s.update_notif_duration();
+                s
+            },
             ..Self::default()
         }
     }
@@ -103,6 +114,7 @@ impl App {
         self.misc_settings.save(&mut self.ui.notifs);
         self.shortcut_settings.save(&mut self.ui.notifs);
         self.map_settings.save(&mut self.ui.notifs);
+        self.window_settings.save(&mut self.ui.notifs);
     }
 }
 
