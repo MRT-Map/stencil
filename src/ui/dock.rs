@@ -91,14 +91,18 @@ impl egui_dock::TabViewer for App {
     fn allowed_in_windows(&self, tab: &mut Self::Tab) -> bool {
         tab.allowed_in_windows()
     }
+
+    fn scroll_bars(&self, _tab: &Self::Tab) -> [bool; 2] {
+        return [false, false];
+    }
 }
 
 impl App {
-    pub fn dock(&mut self, ctx: &egui::Context) {
+    pub fn dock(&mut self, ui: &mut egui::Ui) {
         let mut dock_state = self.ui.dock_layout.0.clone();
         egui_dock::DockArea::new(&mut dock_state)
-            .style(egui_dock::Style::from_egui(ctx.style().as_ref()))
-            .show(ctx, self);
+            .style(egui_dock::Style::from_egui(ui.style().as_ref()))
+            .show_inside(ui, self);
         self.ui.dock_layout.0 = dock_state;
     }
     pub fn open_dock_window<W: Into<DockWindows>>(&mut self, window: W) {

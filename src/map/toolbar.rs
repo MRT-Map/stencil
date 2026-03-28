@@ -13,7 +13,7 @@ use crate::{
 impl MapWindow {
     pub fn toolbar(app: &mut App, ui: &mut egui::Ui) {
         let old_mode = app.mode;
-        egui::TopBottomPanel::top("toolbar").show_inside(ui, |ui| {
+        egui::Panel::top("toolbar").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
                     ($text:literal, $next_state:expr) => {

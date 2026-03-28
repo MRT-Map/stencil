@@ -15,7 +15,6 @@ mod ui;
 use std::{sync::LazyLock, time::Instant};
 
 use async_executor::StaticExecutor;
-use eframe::egui;
 use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 
@@ -107,22 +106,23 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let start = Instant::now();
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.project.load_skin(ctx);
         self.status_init(ctx);
-
-        self.menu_bar(ctx);
-        self.dock(ctx);
-        self.popups(ctx);
-        self.notifs(ctx);
-
         self.shortcuts(ctx);
+    }
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let start = Instant::now();
+
+        self.menu_bar(ui);
+        self.dock(ui);
+        self.popups(ui);
+        self.notifs(ui);
 
         let end = Instant::now();
         self.ui
             .mspf
-            .add(ctx.input(|a| a.time), (end - start).as_millis() as f32);
+            .add(ui.input(|a| a.time), (end - start).as_millis() as f32);
     }
 
     fn save(&mut self, _storage: &mut dyn eframe::Storage) {

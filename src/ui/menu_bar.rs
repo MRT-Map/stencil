@@ -51,8 +51,8 @@ impl App {
 }
 
 impl App {
-    pub fn menu_bar(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::top("menu").show(ctx, |ui| {
+    pub fn menu_bar(&mut self, ui: &mut egui::Ui) {
+        egui::Panel::top("menu").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
                     ($ui:ident, $label:literal, $action:expr, $f:block) => {
@@ -98,21 +98,21 @@ impl App {
                     });
                     ui.separator();
                     button!(ui, "Copy", Some(ShortcutAction::Copy), {
-                        self.copy_selected_components(ctx);
+                        self.copy_selected_components(ui);
                     });
                     button!(ui, "Cut", Some(ShortcutAction::Cut), {
-                        self.cut_selected_components(ctx);
+                        self.cut_selected_components(ui);
                     });
                     button!(ui, "Delete", Some(ShortcutAction::Delete), {
-                        self.delete_selected_components(ctx);
+                        self.delete_selected_components(ui);
                     });
                     ui.separator();
                     button!(ui, "Paste", Some(ShortcutAction::Paste), {
-                        self.paste_clipboard_components(ctx);
+                        self.paste_clipboard_components(ui);
                     });
                     ui.separator();
                     button!(ui, "Clear Clipboard", None, {
-                        self.map_clear_clipboard(ctx);
+                        self.map_clear_clipboard(ui);
                     });
                 });
                 ui.menu_button("View", |ui| {

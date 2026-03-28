@@ -106,7 +106,7 @@ impl App {
                         }
                         _ => false,
                     })
-                    && !ctx.wants_keyboard_input()
+                    && !ctx.egui_wants_keyboard_input()
                 {
                     eframe_workaround_used = true;
                 } else {

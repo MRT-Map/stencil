@@ -80,7 +80,7 @@ impl DockWindow for SettingsWindow {
         "Settings".into()
     }
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
-        egui::TopBottomPanel::top("select_settings").show_inside(ui, |ui| {
+        egui::Panel::top("select_settings").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! selectable_button {
                     ($label:literal, $new_val:expr, $match_:pat) => {
