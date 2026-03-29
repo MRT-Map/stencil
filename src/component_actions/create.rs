@@ -167,7 +167,7 @@ impl MapWindow {
 
         if ctx.input(|a| a.modifiers.command)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
-                Some(PlaNode::Line { .. }) => app
+                Some(PlaNode::Line { .. }) if app.ui.map.created_nodes.len() > 1 => app
                     .ui
                     .map
                     .created_nodes
@@ -175,7 +175,7 @@ impl MapWindow {
                     .map(|a| a.coord()),
                 Some(PlaNode::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
                 Some(PlaNodeBase::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
-                None => None,
+                _ => None,
             }
             && world_coord != prev_coord
         {

@@ -1,6 +1,9 @@
 use std::borrow::Cow;
 
-use geo::{Contains, Distance};
+use geo::{
+    Contains, Distance, MapCoords, TriangulateDelaunay,
+    triangulate_delaunay::DelaunayTriangulationConfig,
+};
 use itertools::Itertools;
 use tracing::{debug, error};
 
@@ -291,7 +294,10 @@ impl MapWindow {
                         if let Some(previous_coord) = previous_coord {
                             let shape = egui::Shape::line_segment(
                                 [previous_coord, coord],
-                                egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
+                                egui::Stroke::new(
+                                    *outline_width * 2.0,
+                                    outline.unwrap_or_default(),
+                                ),
                             );
                             shapes.push(shape);
                             if !hover_coords_is_filled {
@@ -305,7 +311,7 @@ impl MapWindow {
                             [previous_coord.unwrap(), ctrl, coord],
                             false,
                             egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
+                            egui::Stroke::new(*outline_width * 2.0, outline.unwrap_or_default()),
                         );
 
                         if !hover_coords_is_filled {
@@ -324,7 +330,7 @@ impl MapWindow {
                             [previous_coord.unwrap(), ctrl1, ctrl2, coord],
                             false,
                             egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width, outline.unwrap_or_default()),
+                            egui::Stroke::new(*outline_width * 2.0, outline.unwrap_or_default()),
                         );
 
                         if !hover_coords_is_filled {
@@ -337,7 +343,7 @@ impl MapWindow {
 
                 shapes.push(egui::Shape::circle_filled(
                     final_coord,
-                    outline_width / 2.0,
+                    *outline_width,
                     colour.unwrap_or_default(),
                 ));
                 previous_coord = Some(final_coord);
@@ -377,19 +383,26 @@ impl MapWindow {
                 is_hovered = true;
             }
 
-            let coords = polygon
-                .exterior()
-                .coords()
-                .map(|a| a.to_egui_pos2())
-                .collect::<Vec<_>>();
-            painter.add(egui::Shape::convex_polygon(
-                coords,
-                colour.unwrap_or(egui::Color32::TRANSPARENT),
-                egui::Stroke::new(
-                    *outline_width,
-                    outline.unwrap_or(egui::Color32::TRANSPARENT),
-                ),
-            ));
+            let Ok(triangles) = polygon
+                .constrained_triangulation(DelaunayTriangulationConfig::default())
+                .map(|a| {
+                    a.iter()
+                        .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
+                        .collect::<Vec<_>>()
+                })
+            else {
+                continue;
+            };
+            for triangle in triangles {
+                painter.add(egui::Shape::convex_polygon(
+                    triangle.to_vec(),
+                    colour.unwrap_or(egui::Color32::TRANSPARENT),
+                    egui::Stroke::new(
+                        (*outline_width * 2.0).max(1.0),
+                        colour.unwrap_or(egui::Color32::TRANSPARENT),
+                    ),
+                ));
+            }
             painter.add(shapes);
         }
 
