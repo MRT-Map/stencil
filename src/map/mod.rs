@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
@@ -124,6 +125,11 @@ impl MapWindow {
             EditorMode::Select | EditorMode::Nodes => {
                 if app.ui.map.hovered_component.is_some() {
                     ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
+                } else if ctx.data(|d| {
+                    d.get_temp::<geo::Coord<f32>>("marquee select".into())
+                        .is_some()
+                }) {
+                    ctx.set_cursor_icon(egui::CursorIcon::Crosshair);
                 } else {
                     ctx.set_cursor_icon(egui::CursorIcon::Grab);
                 }
