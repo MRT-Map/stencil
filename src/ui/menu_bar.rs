@@ -45,7 +45,7 @@ impl App {
         window: W,
     ) {
         if self.menu_button_fn(location, ui, label, action) {
-            self.open_dock_window(window);
+            self.ui.dock_layout.open_window(window);
         }
     }
 }

@@ -105,24 +105,20 @@ impl App {
             .show_inside(ui, self);
         self.ui.dock_layout.0 = dock_state;
     }
-    pub fn open_dock_window<W: Into<DockWindows>>(&mut self, window: W) {
+}
+impl DockLayout {
+    pub fn open_window<W: Into<DockWindows>>(&mut self, window: W) {
         let window = window.into();
-        let tab_path = self
-            .ui
-            .dock_layout
-            .0
-            .find_tab_from(|a| a.title() == window.title());
+        let tab_path = self.0.find_tab_from(|a| a.title() == window.title());
         if let Some(tab_path) = tab_path {
             info!("Focusing on {}", window.title());
             let _ = self
-                .ui
-                .dock_layout
                 .0
                 .set_active_tab(tab_path)
                 .inspect_err(|e| error!("{e:#}"));
         } else {
             info!("Creating new window {}", window.title());
-            self.ui.dock_layout.0.add_window(vec![window]);
+            self.0.add_window(vec![window]);
         }
     }
 }
