@@ -11,7 +11,7 @@ documentation = "https://github.com/MRT-Map/stencil2/wiki"
 readme = "README.md"
 keywords = ["stencil", "stencil3", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]
-rust-version = "1.91"
+rust-version = "1.92"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,8 +20,7 @@ egui = { version = "=0.34.1", features = ["serde"] }
 eframe = { version = "=0.34.1", features = ["persistence"] }
 egui_commonmark = "=0.23.0"
 egui_extras = { version = "=0.34.1", features = ["http", "all_loaders"] }
-#egui_dock = { version = "=0.18.0" , features = ["serde"] }
-egui_dock = { git = "https://github.com/enomado/egui_dock", branch = "update-egui-0.34", features = ["serde"] }
+egui_dock = { version = "=0.19.0" , features = ["serde"] }
 egui-file-dialog = "=0.13.0"
 egui-notify = "=0.22.0"
 

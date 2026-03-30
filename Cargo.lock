@@ -1430,13 +1430,15 @@ dependencies = [
 
 [[package]]
 name = "egui_dock"
-version = "0.18.0"
-source = "git+https://github.com/enomado/egui_dock?branch=update-egui-0.34#a7cea2601e0e36babe4459435ad475564e263099"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a0981832aeec3a45c9fff5b59a7a7ed4394347c543a093d243ced1be4d8bf1d"
 dependencies = [
  "duplicate",
  "egui",
  "paste",
  "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

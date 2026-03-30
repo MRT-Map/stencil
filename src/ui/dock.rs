@@ -1,6 +1,6 @@
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::{error, info};
 
 use crate::{
     App,
@@ -107,16 +107,19 @@ impl App {
     }
     pub fn open_dock_window<W: Into<DockWindows>>(&mut self, window: W) {
         let window = window.into();
-        let a = self
+        let tab_path = self
             .ui
             .dock_layout
             .0
-            .iter_all_tabs()
-            .find(|(_, a)| a.title() == window.title());
-        if let Some((a, _)) = a {
+            .find_tab_from(|a| a.title() == window.title());
+        if let Some(tab_path) = tab_path {
             info!("Focusing on {}", window.title());
-            let a = a.to_owned();
-            self.ui.dock_layout.0.set_focused_node_and_surface(a);
+            let _ = self
+                .ui
+                .dock_layout
+                .0
+                .set_active_tab(tab_path)
+                .inspect_err(|e| error!("{e:#}"));
         } else {
             info!("Creating new window {}", window.title());
             self.ui.dock_layout.0.add_window(vec![window]);
