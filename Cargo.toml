@@ -42,7 +42,7 @@ ehttp = { version = "=0.7.1", features = ["json", "native-async"] }
 url = "=2.5.8"
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.149"
-toml = "=1.1.1"
+toml = "=1.1.2"
 
 dirs = "=6.0.0"
 zip = "=8.5.0"
