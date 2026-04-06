@@ -50,7 +50,7 @@ image = "=0.25.10"
 chrono = "=0.4.44"
 
 bimap = { version = "=0.6.3", features = ["serde"] }
-indexmap = "=2.13.0"
+indexmap = "=2.13.1"
 strum = { version = "=0.28.0", features = ["derive"] }
 geo = { version = "=0.32.0", features = ["use-serde"] }
 lru = "=0.16.3"
