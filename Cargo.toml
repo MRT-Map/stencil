@@ -54,7 +54,7 @@ indexmap = "=2.13.1"
 strum = { version = "=0.28.0", features = ["derive"] }
 geo = { version = "=0.32.0", features = ["use-serde"] }
 lru = "=0.16.3"
-semver = "=1.0.27"
+semver = "=1.0.28"
 base64-serde = "=0.8.0"
 base64 = "=0.22.1"
 itertools = "=0.14.0"
