@@ -1,12 +1,11 @@
 use std::{
-    any::Any,
     path::{Path, PathBuf},
     sync::LazyLock,
     time::SystemTime,
 };
 
 use egui_notify::ToastLevel;
-use etcetera::{AppStrategyArgs, app_strategy};
+use etcetera::app_strategy;
 use eyre::Result;
 use tracing::debug;
 

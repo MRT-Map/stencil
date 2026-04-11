@@ -1,12 +1,8 @@
-use std::{
-    borrow::Cow,
-    f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8},
-};
+use std::{borrow::Cow, f32::consts::FRAC_PI_2};
 
 use geo::{
-    Area, BooleanOps, Buffer, Contains, CoordsIter, Distance, LinesIter, Simplify,
-    TriangulateDelaunay,
-    buffer::{BufferStyle, LineCap, LineJoin},
+    Area, BooleanOps, Buffer, Contains, CoordsIter, Distance, TriangulateDelaunay,
+    buffer::{BufferStyle, LineJoin},
     triangulate_delaunay::{DelaunayTriangulationConfig, TriangulationResult},
 };
 use itertools::Itertools;

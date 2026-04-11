@@ -1,8 +1,8 @@
 use tracing::info;
 
 use crate::{
-    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
-    map::MapWindow, mode::EditorMode, pointer::ResponsePointerExt,
+    App, component_actions::event::ComponentEv, map::MapWindow, mode::EditorMode,
+    pointer::ResponsePointerExt,
 };
 
 impl MapWindow {
