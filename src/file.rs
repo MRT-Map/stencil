@@ -16,7 +16,7 @@ pub static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         .join("target")
         .join("data");
     #[cfg(not(debug_assertions))]
-    let dir = dirs::data_dir()
+    let dir = directories::data_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil3");
     let _ = std::fs::create_dir_all(&dir);
@@ -39,7 +39,7 @@ pub static CACHE_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         .join("target")
         .join("cache");
     #[cfg(not(debug_assertions))]
-    let dir = dirs::cache_dir()
+    let dir = directories::cache_dir()
         .unwrap_or_else(|| std::env::current_dir().unwrap())
         .join("stencil3");
     let _ = std::fs::create_dir_all(&dir);
