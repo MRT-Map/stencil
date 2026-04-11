@@ -18,15 +18,13 @@ impl MapWindow {
     }
     pub fn move_components(app: &mut App, response: &egui::Response) {
         let id = "move delta".into();
-        let mut move_delta = response
-            .ctx
-            .memory_mut(|m| m.data.get_temp::<geo::Coord<i32>>(id));
+        let mut move_delta = response.ctx.data_mut(|d| d.get_temp::<geo::Coord<i32>>(id));
         let set_move_delta = |move_delta: Option<geo::Coord<i32>>| {
-            response.ctx.memory_mut(|m| {
+            response.ctx.data_mut(|d| {
                 if let Some(move_delta) = move_delta {
-                    m.data.insert_temp(id, move_delta);
+                    d.insert_temp(id, move_delta);
                 } else {
-                    m.data.remove::<geo::Coord<i32>>(id);
+                    d.remove::<geo::Coord<i32>>(id);
                 }
             });
         };

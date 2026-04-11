@@ -137,8 +137,8 @@ impl DockWindow for ProjectEditorWindow {
                 });
             });
 
-        ui.memory_mut(|m| {
-            m.data.insert_persisted(id, new_namespace);
+        ui.data_mut(|d| {
+            d.insert_persisted(id, new_namespace);
         });
 
         ui.separator();
