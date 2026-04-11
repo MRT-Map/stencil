@@ -26,7 +26,7 @@ impl Default for MiscSettings {
     }
 }
 
-impl_load_save!(toml MiscSettings, FOLDERS.in_data_dir("settings").join("misc.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.misctoml");
+impl_load_save!(toml MiscSettings, FOLDERS.in_config_dir("misc.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.misctoml");
 
 impl Settings for MiscSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
