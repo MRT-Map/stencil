@@ -81,15 +81,13 @@ impl DockWindow for ComponentEditorWindow {
         ui.end_row();
 
         ui.horizontal(|ui| {
-            let namespace = Itertools::exactly_one(
-                selected_components
-                    .iter()
-                    .map(|c| &c.full_id.namespace)
-                    .sorted()
-                    .dedup(),
-            )
-            .cloned()
-            .ok();
+            let namespace = selected_components
+                .iter()
+                .map(|c| &c.full_id.namespace)
+                .unique()
+                .exactly_one()
+                .cloned()
+                .ok();
             egui::ComboBox::from_id_salt("component namespace")
                 .selected_text(
                     namespace
@@ -115,7 +113,7 @@ impl DockWindow for ComponentEditorWindow {
                     }
                 });
 
-            if let Ok(component) = Itertools::exactly_one(selected_components.iter_mut()) {
+            if let Ok(component) = selected_components.iter_mut().exactly_one() {
                 ui.code(&component.full_id.id);
             } else {
                 ui.label(egui::RichText::new("mixed ids").italics());
@@ -123,14 +121,12 @@ impl DockWindow for ComponentEditorWindow {
         });
         ui.end_row();
 
-        let display_name = Itertools::exactly_one(
-            selected_components
-                .iter()
-                .map(|c| &c.display_name)
-                .sorted()
-                .dedup(),
-        )
-        .ok();
+        let display_name = selected_components
+            .iter()
+            .map(|c| &c.display_name)
+            .unique()
+            .exactly_one()
+            .ok();
         let mut new_display_name = display_name.cloned().unwrap_or_default();
         if ui
             .add(
@@ -153,27 +149,24 @@ impl DockWindow for ComponentEditorWindow {
 
         ui.separator();
 
-        let skin_ty = Itertools::exactly_one(
-            selected_components
-                .iter()
-                .map(|c| &c.ty)
-                .sorted_by_key(|a| a.name())
-                .dedup(),
-        )
-        .map(Arc::clone)
-        .ok();
-        let component_ty = Itertools::exactly_one(
-            selected_components
-                .iter()
-                .map(|c| &c.ty)
-                .map(|a| match &**a {
-                    SkinType::Point { .. } => "point",
-                    SkinType::Line { .. } => "line",
-                    SkinType::Area { .. } => "area",
-                })
-                .dedup(),
-        )
-        .ok();
+        let skin_ty = selected_components
+            .iter()
+            .map(|c| &c.ty)
+            .unique_by(|a| a.name())
+            .exactly_one()
+            .map(Arc::clone)
+            .ok();
+        let component_ty = selected_components
+            .iter()
+            .map(|c| &c.ty)
+            .map(|a| match &**a {
+                SkinType::Point { .. } => "point",
+                SkinType::Line { .. } => "line",
+                SkinType::Area { .. } => "area",
+            })
+            .unique()
+            .exactly_one()
+            .ok();
         egui::ComboBox::from_label("Component type")
             .selected_text(skin_ty.as_ref().map_or_else(
                 || {
@@ -219,14 +212,13 @@ impl DockWindow for ComponentEditorWindow {
             });
         ui.end_row();
 
-        let layer = Itertools::exactly_one(
-            selected_components
-                .iter()
-                .map(|c| c.layer)
-                .sorted_by(f32::total_cmp)
-                .dedup(),
-        )
-        .ok();
+        let layer = selected_components
+            .iter()
+            .map(|c| c.layer)
+            .sorted_by(f32::total_cmp)
+            .dedup() // todo non-nan
+            .exactly_one()
+            .ok();
         let mut new_layer = layer.unwrap_or_default();
         if ui
             .add(
@@ -258,7 +250,10 @@ impl DockWindow for ComponentEditorWindow {
             ui.separator();
         }
 
-        let Ok(component) = Itertools::exactly_one(selected_components.iter_mut()) else {
+        let Ok(component) = selected_components.iter_mut().exactly_one() else {
+            for ev in events_to_add {
+                app.add_event(ev);
+            }
             return;
         };
 
