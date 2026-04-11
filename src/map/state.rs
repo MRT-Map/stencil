@@ -35,6 +35,9 @@ pub struct MapState {
     pub selected_components: Vec<FullId>,
     #[serde(skip)]
     pub clipboard: Vec<PlaComponent>,
+
+    #[serde(skip)]
+    pub comp_move_origin_world_pos: Option<geo::Coord<f32>>,
 }
 
 impl Default for MapState {
@@ -50,6 +53,7 @@ impl Default for MapState {
             hovered_component: None,
             selected_components: Vec::new(),
             clipboard: Vec::new(),
+            comp_move_origin_world_pos: None,
         }
     }
 }
@@ -113,6 +117,10 @@ impl MapState {
         info!("Resetting map view");
         self.centre_coord = geo::Coord::zero();
         self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
+    }
+
+    pub fn comp_move_delta(&self) -> Option<geo::Coord<i32>> {
+        Some((self.cursor_world_pos? - self.comp_move_origin_world_pos?).to_geo_coord_i32())
     }
 
     pub fn hovered_component<'a>(

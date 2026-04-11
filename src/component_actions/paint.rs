@@ -123,7 +123,13 @@ impl MapWindow {
         let mut screen_coords = component
             .nodes
             .iter()
-            .map(|a| a.to_screen(app, response.rect.center()));
+            .map(|n| {
+                if is_selected && let Some(move_delta) = app.ui.map.comp_move_delta() {
+                    return *n + move_delta;
+                }
+                *n
+            })
+            .map(|n| n.to_screen(app, response.rect.center()));
         match &*component.ty {
             SkinType::Point {
                 styles,
