@@ -1,7 +1,13 @@
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8},
+};
 
 use geo::{
-    Contains, Distance, TriangulateDelaunay, triangulate_delaunay::DelaunayTriangulationConfig,
+    Area, BooleanOps, Buffer, Contains, CoordsIter, Distance, LinesIter, Simplify,
+    TriangulateDelaunay,
+    buffer::{BufferStyle, LineCap, LineJoin},
+    triangulate_delaunay::{DelaunayTriangulationConfig, TriangulationResult},
 };
 use itertools::Itertools;
 use tracing::{debug, error};
@@ -379,35 +385,66 @@ impl MapWindow {
                 Vec::new(),
             );
 
-            // let polygon_edge = polygon.difference(&polygon.buffer(16.0 * outline_width));
-
+            let polygon_edge = if polygon.coords_count() < 2 {
+                None
+            } else {
+                let buffer = polygon.buffer_with_style(
+                    BufferStyle::new(-100.0).line_join(LineJoin::Miter(FRAC_PI_2)),
+                );
+                if buffer.signed_area() < f32::EPSILON {
+                    None
+                } else {
+                    Some(polygon.difference(&buffer))
+                }
+            };
             if !is_hovered
                 && let Some(hover_pos) = response.hover_pos()
-                && polygon.contains(&geo::point! { x: hover_pos.x, y: hover_pos.y })
+                && polygon_edge.as_ref().map_or_else(
+                    || polygon.contains(&hover_pos.to_geo_coord_f32()),
+                    |polygon_edge| polygon_edge.contains(&hover_pos.to_geo_coord_f32()),
+                )
             {
                 is_hovered = true;
             }
 
-            let Ok(triangles) = polygon
-                .constrained_triangulation(DelaunayTriangulationConfig::default())
-                .map(|a| {
-                    a.iter()
-                        .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
-                        .collect::<Vec<_>>()
-                })
-            else {
-                continue;
-            };
-            for triangle in triangles {
-                painter.add(egui::Shape::convex_polygon(
-                    triangle.to_vec(),
-                    colour.unwrap_or(egui::Color32::TRANSPARENT),
-                    egui::Stroke::new(
-                        (*outline_width * 2.0).max(1.0),
-                        colour.unwrap_or(egui::Color32::TRANSPARENT),
-                    ),
-                ));
+            #[expect(clippy::items_after_statements)]
+            fn triangulate<'a>(
+                p: &'a impl TriangulateDelaunay<'a, f32>,
+            ) -> TriangulationResult<Vec<[egui::Pos2; 3]>> {
+                p.constrained_triangulation(DelaunayTriangulationConfig::default())
+                    .map(|a| {
+                        a.iter()
+                            .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
+                            .collect::<Vec<_>>()
+                    })
             }
+
+            if polygon_edge.is_some()
+                && let Ok(fill_triangles) = triangulate(&polygon)
+            {
+                let fill_colour =
+                    colour.map_or(egui::Color32::TRANSPARENT, |c| c.gamma_multiply(0.5));
+                for triangle in fill_triangles {
+                    painter.add(egui::Shape::convex_polygon(
+                        triangle.to_vec(),
+                        fill_colour,
+                        egui::Stroke::new((*outline_width * 2.0).max(1.0), fill_colour),
+                    ));
+                }
+            }
+            if let Ok(edge_triangles) =
+                polygon_edge.map_or_else(|| triangulate(&polygon), |p| triangulate(&p))
+            {
+                let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
+                for triangle in edge_triangles {
+                    painter.add(egui::Shape::convex_polygon(
+                        triangle.to_vec(),
+                        edge_colour,
+                        egui::Stroke::new((*outline_width * 2.0).max(1.0), edge_colour),
+                    ));
+                }
+            }
+
             painter.add(shapes);
         }
 
