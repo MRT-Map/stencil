@@ -2,6 +2,7 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use geo::Vector2DOps;
 use itertools::{Either, Itertools};
+use ordered_float::NotNan;
 use tracing::info;
 
 use crate::{
@@ -89,7 +90,7 @@ impl MapWindow {
             ),
             ty: Arc::clone(ty),
             display_name: String::new(),
-            layer: 0.0,
+            layer: NotNan::<f32>::default(),
             nodes: vec![PlaNode::Line {
                 coord: world_coord,
                 label: None,
@@ -342,7 +343,7 @@ impl MapWindow {
                     ),
                     ty: Arc::clone(ty.into_inner()),
                     display_name: String::new(),
-                    layer: 0.0,
+                    layer: NotNan::<f32>::default(),
                     nodes: app.ui.map.created_nodes.drain(..).collect(),
                     misc: BTreeMap::default(),
                 };

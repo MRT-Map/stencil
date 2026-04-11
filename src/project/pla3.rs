@@ -8,6 +8,7 @@ use std::{
 
 use eyre::{ContextCompat, Report, Result, eyre};
 use itertools::Itertools;
+use ordered_float::NotNan;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
@@ -211,7 +212,7 @@ pub struct PlaComponent {
     pub full_id: FullId,
     pub ty: Arc<SkinType>,
     pub display_name: String,
-    pub layer: f32,
+    pub layer: NotNan<f32>,
     pub nodes: Vec<PlaNode>,
     pub misc: BTreeMap<String, toml::Value>,
 }
@@ -289,7 +290,7 @@ impl PlaComponent {
         }
 
         let mut display_name = String::new();
-        let mut layer = 0.0f32;
+        let mut layer = NotNan::<f32>::default();
         let mut skin_component = Arc::clone(if nodes.len() == 1 {
             project.skin().unwrap().get_type("simplePoint").unwrap()
         } else {
@@ -306,8 +307,8 @@ impl PlaComponent {
                 "layer" => {
                     layer = v
                         .as_float()
-                        .map(|a| a as f32)
-                        .or_else(|| v.as_integer().map(|a| a as f32))
+                        .and_then(|a| NotNan::new(a as f32).ok())
+                        .or_else(|| v.as_integer().and_then(|a| NotNan::new(a as f32).ok()))
                         .wrap_err(format!("`{v}` not number"))?;
                 }
                 "type" => {
@@ -374,7 +375,7 @@ impl PlaComponent {
             .into_iter()
             .chain([
                 ("display_name".into(), self.display_name.clone().into()),
-                ("layer".into(), self.layer.into()),
+                ("layer".into(), (*self.layer).into()),
                 ("type".into(), self.ty.name().as_str().into()),
             ])
             .collect::<toml::Table>();

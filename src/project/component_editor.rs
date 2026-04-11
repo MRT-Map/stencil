@@ -1,6 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use itertools::{Either, Itertools};
+use ordered_float::NotNan;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -215,11 +216,10 @@ impl DockWindow for ComponentEditorWindow {
         let layer = selected_components
             .iter()
             .map(|c| c.layer)
-            .sorted_by(f32::total_cmp)
-            .dedup() // todo non-nan
+            .unique()
             .exactly_one()
             .ok();
-        let mut new_layer = layer.unwrap_or_default();
+        let mut new_layer = *layer.unwrap_or_default();
         if ui
             .add(
                 egui::Slider::new(&mut new_layer, -10.0..=10.0).text(if layer.is_none() {
@@ -231,7 +231,7 @@ impl DockWindow for ComponentEditorWindow {
             .changed()
         {
             for component in &mut selected_components {
-                component.layer = new_layer;
+                component.layer = NotNan::new(new_layer).unwrap();
             }
             add_event("layer", &selected_components);
         }

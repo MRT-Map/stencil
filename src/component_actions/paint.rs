@@ -1,8 +1,7 @@
 use std::borrow::Cow;
 
 use geo::{
-    Contains, Distance, MapCoords, TriangulateDelaunay,
-    triangulate_delaunay::DelaunayTriangulationConfig,
+    Contains, Distance, TriangulateDelaunay, triangulate_delaunay::DelaunayTriangulationConfig,
 };
 use itertools::Itertools;
 use tracing::{debug, error};
