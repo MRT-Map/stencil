@@ -93,6 +93,9 @@ icon = ["icons/icon_*.png"]
 [lints.rust]
 future-incompatible = "deny"
 
+# temporary
+dead_code = "allow"
+
 [lints.clippy]
 all = "warn"
 pedantic = "warn"
