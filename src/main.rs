@@ -71,14 +71,6 @@ impl App {
         if app.settings.map.clear_cache_on_startup {
             app.project.basemap.clear_cache_path(&mut app.ui.notifs);
         }
-        cc.egui_ctx.set_style_of(
-            egui::Theme::Dark,
-            app.settings.window.dark_mode_style.clone(),
-        );
-        cc.egui_ctx.set_style_of(
-            egui::Theme::Light,
-            app.settings.window.light_mode_style.clone(),
-        );
         app
     }
     fn load_state() -> Self {
