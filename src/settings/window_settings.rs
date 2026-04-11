@@ -1,16 +1,17 @@
 use std::any::Any;
 
 use egui::Ui;
+use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 
-use crate::{file::data_dir, impl_load_save, settings::Settings};
+use crate::{file::FOLDERS, impl_load_save, settings::Settings};
 
 #[expect(clippy::empty_structs_with_brackets)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, Default)]
 #[serde(default)]
 pub struct WindowSettings {}
 
-impl_load_save!(toml WindowSettings, data_dir("settings").join("window.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.windowtoml");
+impl_load_save!(toml WindowSettings, FOLDERS.in_data_dir("settings").join("window.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.windowtoml");
 
 impl Settings for WindowSettings {
     fn ui_inner(&mut self, ui: &mut Ui, _tab_state: &mut dyn Any) {

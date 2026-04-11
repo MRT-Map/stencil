@@ -1,3 +1,4 @@
+use etcetera::AppStrategy;
 mod component_actions;
 mod coord_conversion;
 mod file;
@@ -20,7 +21,7 @@ use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 
 use crate::{
-    file::DATA_DIR, load_save::LoadSave, logging::init_logger, mode::EditorMode, project::Project,
+    file::FOLDERS, load_save::LoadSave, logging::init_logger, mode::EditorMode, project::Project,
     settings::AppSettings, ui::UiState,
 };
 
@@ -46,7 +47,7 @@ fn main() -> Result<()> {
                 eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/icon.png"))
                     .unwrap(),
             ),
-            persistence_path: Some(DATA_DIR.join("eframe.json")),
+            persistence_path: Some(FOLDERS.in_data_dir("eframe.json")),
             ..Default::default()
         },
         Box::new(|cc| Ok(Box::new(App::new(cc)))),
@@ -89,7 +90,7 @@ impl App {
 
 impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.project.load_skin(ctx);
+        self.project.load_skin(ctx, &mut self.ui.notifs);
         self.status_init(ctx);
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {

@@ -48,7 +48,7 @@ impl Event for ProjectEv {
                     .components
                     .iter()
                     .filter(|a| a.full_id.namespace == *namespace);
-                let errors = app.project.save_components(components);
+                let errors = app.project.save_components(components, &mut app.ui.notifs);
                 if !errors.is_empty() {
                     app.ui.notifs.push_errors(
                         format!("Errors while saving `{namespace}`"),

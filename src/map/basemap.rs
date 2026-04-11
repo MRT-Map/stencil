@@ -1,10 +1,11 @@
 use std::path::PathBuf;
 
+use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     URL_REPLACER,
-    file::{cache_dir, safe_delete},
+    file::{FOLDERS, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
     ui::notif::NotifState,
@@ -82,7 +83,9 @@ impl Basemap {
     }
     #[must_use]
     pub fn cache_path(&self) -> PathBuf {
-        cache_dir("tile-cache").join(URL_REPLACER.replace_all(&self.url, "").as_ref())
+        FOLDERS
+            .in_cache_dir("tile-cache")
+            .join(URL_REPLACER.replace_all(&self.url, "").as_ref())
     }
     pub fn clear_cache_path(&self, notifs: &mut NotifState) {
         let _ = safe_delete(self.cache_path(), notifs);

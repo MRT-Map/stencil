@@ -1,70 +1,71 @@
 use std::{
+    any::Any,
     path::{Path, PathBuf},
     sync::LazyLock,
     time::SystemTime,
 };
 
 use egui_notify::ToastLevel;
+use etcetera::{AppStrategyArgs, app_strategy};
 use eyre::Result;
 use tracing::debug;
 
 use crate::ui::notif::NotifState;
 
-pub static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
+#[cfg(debug_assertions)]
+pub struct Dev;
+
+#[cfg(debug_assertions)]
+impl app_strategy::AppStrategy for Dev {
+    fn home_dir(&self) -> &Path {
+        unimplemented!()
+    }
+    fn config_dir(&self) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/config")
+    }
+    fn data_dir(&self) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/data")
+    }
+    fn cache_dir(&self) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/cache")
+    }
+    fn state_dir(&self) -> Option<PathBuf> {
+        unimplemented!()
+    }
+    fn runtime_dir(&self) -> Option<PathBuf> {
+        unimplemented!()
+    }
+}
+
+cfg_if::cfg_if! {
+    if #[cfg(debug_assertions)] {
+        pub type AppStrategy = Dev;
+    } else if #[cfg(target_os = "windows")] {
+        pub type AppStrategy = app_strategy::Windows;
+    } else if #[cfg(any(target_os = "macos", target_os = "ios"))] {
+        pub type AppStrategy = app_strategy::Apple;
+    } else {
+        pub type AppStrategy = app_strategy::Xdg;
+    }
+}
+
+pub static FOLDERS: LazyLock<AppStrategy> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("data");
+    return Dev;
     #[cfg(not(debug_assertions))]
-    let dir = directories::data_dir()
-        .unwrap_or_else(|| std::env::current_dir().unwrap())
-        .join("stencil3");
-    let _ = std::fs::create_dir_all(&dir);
-    dir
+    app_strategy::choose_native_strategy(AppStrategyArgs {
+        top_level_domain: "io.github".into(),
+        author: "mrt-map".into(),
+        app_name: "stencil3".into(),
+    })
+    .unwrap()
 });
-
-pub fn data_dir<T: AsRef<Path>>(next: T) -> PathBuf {
-    let path = DATA_DIR.join(next);
-    let _ = std::fs::create_dir_all(&path);
-    path
-}
-
-pub fn data_path<T: AsRef<Path>>(next: T) -> PathBuf {
-    DATA_DIR.join(next)
-}
-
-pub static CACHE_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
-    #[cfg(debug_assertions)]
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("cache");
-    #[cfg(not(debug_assertions))]
-    let dir = directories::cache_dir()
-        .unwrap_or_else(|| std::env::current_dir().unwrap())
-        .join("stencil3");
-    let _ = std::fs::create_dir_all(&dir);
-    dir
-});
-
-pub fn cache_dir<T: AsRef<Path>>(next: T) -> PathBuf {
-    let path = CACHE_DIR.join(next);
-    let _ = std::fs::create_dir_all(&path);
-    path
-}
-
-pub fn cache_path<T: AsRef<Path>>(next: T) -> PathBuf {
-    CACHE_DIR.join(next)
-}
 
 pub static TRASH_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("trash");
+    return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/trash");
     #[cfg(not(debug_assertions))]
-    let dir = std::env::temp_dir().join("stencil3");
-    let _ = std::fs::create_dir_all(&dir);
-    dir
+    std::env::temp_dir().join("stencil3");
 });
 
 pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
@@ -73,6 +74,9 @@ pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
     notifs: &mut NotifState,
 ) -> std::io::Result<()> {
     let _ = safe_delete(&path, notifs);
+    if let Some(folder) = path.as_ref().parent() {
+        let _ = std::fs::create_dir_all(folder);
+    }
     std::fs::write(path, contents)
 }
 pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<Option<PathBuf>> {
@@ -80,6 +84,7 @@ pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<O
     if !path.exists() {
         return Ok(None);
     }
+    let _ = std::fs::create_dir_all(&*TRASH_DIR);
     let timestamp = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)?
         .as_nanos();

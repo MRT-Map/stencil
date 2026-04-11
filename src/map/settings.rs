@@ -1,10 +1,11 @@
 use std::any::Any;
 
+use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     App,
-    file::data_dir,
+    file::FOLDERS,
     impl_load_save,
     settings::{Settings, settings_ui_field},
     settings_field,
@@ -94,7 +95,7 @@ impl Default for MapSettings {
     }
 }
 
-impl_load_save!(toml MapSettings, data_dir("settings").join("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.maptoml");
+impl_load_save!(toml MapSettings, FOLDERS.in_data_dir("settings").join("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.maptoml");
 
 impl Settings for MapSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {

@@ -1,3 +1,4 @@
+use etcetera::AppStrategy;
 pub mod component_editor;
 pub mod component_list;
 pub mod event;
@@ -20,7 +21,7 @@ use tracing::{error, info};
 
 use crate::{
     EXECUTOR, URL_REPLACER,
-    file::cache_dir,
+    file::{FOLDERS, safe_write},
     map::basemap::Basemap,
     project::{
         component_list::ComponentList,
@@ -73,9 +74,11 @@ impl Project {
         }
     }
     pub fn skin_cache_path(&self) -> PathBuf {
-        cache_dir("skin").join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
+        FOLDERS
+            .in_cache_dir("skin")
+            .join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
     }
-    pub fn load_skin(&mut self, ctx: &egui::Context) {
+    pub fn load_skin(&mut self, ctx: &egui::Context, notifs: &mut NotifState) {
         match &mut self.skin_status {
             SkinStatus::Unloaded => {
                 let skin_cache = self.skin_cache_path();
@@ -109,7 +112,7 @@ impl Project {
                     let skin_cache = self.skin_cache_path();
                     if let Ok(s) = serde_json::to_string(&skin).inspect_err(|e| {
                         error!(self.skin_url, "Cannot serialise skin cache: {e:?}");
-                    }) && std::fs::write(&skin_cache, &s)
+                    }) && safe_write(&skin_cache, &s, notifs)
                         .inspect_err(|e| error!(?skin_cache, "Cannot write skin cache: {e:?}"))
                         .is_ok()
                     {
@@ -244,14 +247,14 @@ impl Project {
         if self.path.is_none() {
             return;
         }
-        let errors = self.save();
+        let errors = self.save(notifs);
         if !errors.is_empty() {
             notifs.push_errors("Errors while saving", &errors, ToastLevel::Warning);
             return;
         }
         notifs.push("Saved project", ToastLevel::Success);
     }
-    pub fn save(&self) -> Vec<Report> {
+    pub fn save(&self, notifs: &mut NotifState) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();
         };
@@ -263,18 +266,19 @@ impl Project {
         };
         if let Err(e) = toml::to_string_pretty(&project_toml)
             .map_err(Report::from)
-            .and_then(|s| std::fs::write(path.join("project.toml"), s).map_err(Report::from))
+            .and_then(|s| safe_write(path.join("project.toml"), s, notifs).map_err(Report::from))
         {
             errors.push(e);
         }
 
-        errors.extend(self.save_components(self.components.iter()));
+        errors.extend(self.save_components(self.components.iter(), notifs));
 
         errors
     }
     pub fn save_components<'a, C: Iterator<Item = &'a PlaComponent>>(
         &self,
         components: C,
+        notifs: &mut NotifState,
     ) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();
@@ -284,7 +288,7 @@ impl Project {
         for component in components {
             if let Err(e) = component
                 .save_to_string()
-                .and_then(|s| std::fs::write(component.path(path), s).map_err(Report::from))
+                .and_then(|s| safe_write(component.path(path), s, notifs).map_err(Report::from))
             {
                 errors.push(e);
             }

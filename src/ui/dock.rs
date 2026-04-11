@@ -1,10 +1,11 @@
 use enum_dispatch::enum_dispatch;
+use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
 use crate::{
     App,
-    file::data_path,
+    file::FOLDERS,
     impl_load_save,
     map::MapWindow,
     project::{
@@ -44,7 +45,7 @@ pub enum DockWindows {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DockLayout(pub egui_dock::DockState<DockWindows>);
 
-impl_load_save!(json DockLayout, data_path("dock.json"));
+impl_load_save!(json DockLayout, FOLDERS.in_data_dir("dock.json"));
 
 impl Default for DockLayout {
     fn default() -> Self {

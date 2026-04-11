@@ -12,7 +12,7 @@ use itertools::Either;
 use lru::LruCache;
 use tracing::error;
 
-use crate::{EXECUTOR, map::basemap::Basemap};
+use crate::{EXECUTOR, file::safe_write, map::basemap::Basemap, ui::notif::NotifState};
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -57,6 +57,7 @@ impl TileCoord {
         ctx: &egui::Context,
         basemap: &Basemap,
         tile_cache: &mut MutexGuard<LruCache<Self, TileCacheItem>>,
+        notifs: &mut NotifState,
     ) -> Option<TextureIdResult> {
         let url = basemap.url(self);
         let item = tile_cache.get_or_insert_mut(self, || {
@@ -82,7 +83,7 @@ impl TileCoord {
                 }
                 Some(Ok(bytes)) => {
                     let cache_path = self.cache_path(basemap);
-                    let _ = std::fs::write(cache_path, &bytes).map_err(|a| error!("{a:?}"));
+                    let _ = safe_write(cache_path, &bytes, notifs).map_err(|a| error!("{a:?}"));
 
                     *item = TileCacheItem::Loaded(Ok(bytes.clone()));
                     Either::Left(bytes)
