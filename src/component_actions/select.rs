@@ -25,7 +25,7 @@ impl MapWindow {
             if response.drag_started_by2(egui::PointerButton::Primary)
                 && response
                     .ctx
-                    .input(|i| !i.modifiers.command && !i.modifiers.alt && !i.modifiers.shift)
+                    .input(|i| !i.modifiers.command && !i.modifiers.alt)
             {
                 info!("Drag start");
                 ctx.data_mut(|d| d.insert_temp(id, cursor_world_pos));

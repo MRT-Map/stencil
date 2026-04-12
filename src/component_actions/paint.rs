@@ -424,7 +424,7 @@ impl MapWindow {
                     painter.add(egui::Shape::convex_polygon(
                         triangle.to_vec(),
                         fill_colour,
-                        egui::Stroke::new((*outline_width * 2.0).max(1.0), fill_colour),
+                        egui::Stroke::default(),
                     ));
                 }
             }
@@ -436,7 +436,7 @@ impl MapWindow {
                     painter.add(egui::Shape::convex_polygon(
                         triangle.to_vec(),
                         edge_colour,
-                        egui::Stroke::new((*outline_width * 2.0).max(1.0), edge_colour),
+                        egui::Stroke::new(outline_width.max(1.0), edge_colour),
                     ));
                 }
             }
