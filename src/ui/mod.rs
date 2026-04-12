@@ -10,6 +10,7 @@ pub mod dock;
 pub mod menu_bar;
 pub mod notif;
 pub mod popup;
+pub mod settings;
 pub mod status;
 
 pub struct UiState {

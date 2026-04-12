@@ -1,5 +1,4 @@
 pub mod misc_settings;
-pub mod window_settings;
 
 use std::{any::Any, fmt::Display};
 
@@ -10,15 +9,15 @@ use crate::{
     App,
     load_save::LoadSave,
     map::settings::MapSettings,
-    settings::{misc_settings::MiscSettings, window_settings::WindowSettings},
+    settings::misc_settings::MiscSettings,
     shortcut::settings::{ShortcutSettings, ShortcutsTabState},
-    ui::{dock::DockWindow, notif::NotifState},
+    ui::{dock::DockWindow, notif::NotifState, settings::UiSettings},
 };
 
 #[derive(Default)]
 pub struct AppSettings {
     pub map: MapSettings,
-    pub window: WindowSettings,
+    pub ui: UiSettings,
     pub shortcut: ShortcutSettings,
     pub misc: MiscSettings,
 }
@@ -27,7 +26,7 @@ impl AppSettings {
     pub fn load_state(notifs: &mut NotifState) -> Self {
         Self {
             map: MapSettings::load(notifs),
-            window: WindowSettings::load(notifs),
+            ui: UiSettings::load(notifs),
             shortcut: ShortcutSettings::load(notifs),
             misc: {
                 let s = MiscSettings::load(notifs);
@@ -40,7 +39,7 @@ impl AppSettings {
         self.misc.save(notifs);
         self.shortcut.save(notifs);
         self.map.save(notifs);
-        self.window.save(notifs);
+        self.ui.save(notifs);
     }
 }
 
@@ -100,7 +99,7 @@ pub fn settings_ui_field<
 enum SettingsTab {
     #[default]
     Map,
-    Window,
+    Ui,
     Shortcuts(ShortcutsTabState),
     Miscellaneous,
 }
@@ -132,7 +131,7 @@ impl DockWindow for SettingsWindow {
                     };
                 }
                 selectable_button!("Map", SettingsTab::Map, SettingsTab::Map);
-                selectable_button!("Window", SettingsTab::Window, SettingsTab::Window);
+                selectable_button!("UI", SettingsTab::Ui, SettingsTab::Ui);
                 selectable_button!(
                     "Shortcuts",
                     SettingsTab::Shortcuts(ShortcutsTabState::default()),
@@ -150,7 +149,7 @@ impl DockWindow for SettingsWindow {
             SettingsTab::Map => {
                 app.settings.map.ui(ui, &mut ());
             }
-            SettingsTab::Window => app.settings.window.ui(ui, &mut ()),
+            SettingsTab::Ui => app.settings.ui.ui(ui, &mut ()),
             SettingsTab::Shortcuts(state) => {
                 app.settings.shortcut.ui(ui, state);
             }
