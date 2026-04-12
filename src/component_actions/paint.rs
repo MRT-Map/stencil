@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-pub const TOLERANCE: Option<f32> = Some(0.1);
+pub const TOLERANCE: Option<f32> = Some(1.0);
 
 macro_rules! hovering {
     ($is_hovered:expr, $response:expr, $width:expr, $line:expr) => {
