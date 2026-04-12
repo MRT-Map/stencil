@@ -302,7 +302,7 @@ impl MapWindow {
                             let shape = egui::Shape::line_segment(
                                 [previous_coord, coord],
                                 egui::Stroke::new(
-                                    *outline_width * 2.0,
+                                    *outline_width * 4.0,
                                     outline.unwrap_or_default(),
                                 ),
                             );
@@ -318,7 +318,7 @@ impl MapWindow {
                             [previous_coord.unwrap(), ctrl, coord],
                             false,
                             egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width * 2.0, outline.unwrap_or_default()),
+                            egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
                         );
 
                         if !hover_coords_is_filled {
@@ -337,7 +337,7 @@ impl MapWindow {
                             [previous_coord.unwrap(), ctrl1, ctrl2, coord],
                             false,
                             egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width * 2.0, outline.unwrap_or_default()),
+                            egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
                         );
 
                         if !hover_coords_is_filled {
