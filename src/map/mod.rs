@@ -228,18 +228,6 @@ impl MapWindow {
         let old_zoom = app.ui.map.zoom;
         app.ui.map.zoom += ctx.input(egui::InputState::zoom_delta).log2();
 
-        app.ui.map.zoom = app.ui.map.zoom.clamp(
-            0.0,
-            f32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
-        );
-
-        if (old_zoom - app.ui.map.zoom).abs() > f32::EPSILON {
-            let new_cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
-            app.ui.map.centre_coord =
-                app.ui.map.centre_coord + cursor_world_pos - new_cursor_world_pos;
-            cursor_world_pos = new_cursor_world_pos;
-        }
-
         for (action, sign) in [
             (ShortcutAction::ZoomMapOut, -1.0),
             (ShortcutAction::ZoomMapIn, 1.0),
@@ -251,6 +239,18 @@ impl MapWindow {
             } else {
                 0.0
             }
+        }
+
+        app.ui.map.zoom = app.ui.map.zoom.clamp(
+            0.0,
+            f32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
+        );
+
+        if (old_zoom - app.ui.map.zoom).abs() > f32::EPSILON {
+            let new_cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
+            app.ui.map.centre_coord =
+                app.ui.map.centre_coord + cursor_world_pos - new_cursor_world_pos;
+            cursor_world_pos = new_cursor_world_pos;
         }
 
         let world_screen_ratio = app.world_screen_ratio_with_current_basemap_at_current_zoom();

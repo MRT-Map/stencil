@@ -15,8 +15,6 @@ impl_load_save!(toml UiSettings, FOLDERS.in_config_dir("ui.toml"), "# Documentat
 
 impl Settings for UiSettings {
     fn ui_inner(&mut self, ui: &mut Ui, _tab_state: &mut dyn Any) {
-        let mut options = ui.memory(|m| m.options.clone());
-        options.ui(ui);
-        ui.memory_mut(|m| m.options = options);
+        ui.ctx().clone().settings_ui(ui);
     }
 }

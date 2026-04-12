@@ -35,13 +35,13 @@ impl Default for ShortcutSettings {
         shortcut!(HistoryViewerWindow => COMMAND | ALT + H);
         shortcut!(NotifLogWindow => COMMAND | ALT + N);
         shortcut!(ProjectEditorWindow => COMMAND | ALT + P);
-        shortcut!(ResetMapView => COMMAND + Backtick);
         shortcut!(PanMapUp -> ArrowUp);
         shortcut!(PanMapDown -> ArrowDown);
         shortcut!(PanMapLeft -> ArrowLeft);
         shortcut!(PanMapRight -> ArrowRight);
-        shortcut!(ZoomMapIn -> Equals);
-        shortcut!(ZoomMapOut -> Minus);
+        shortcut!(ZoomMapIn => ALT + Equals);
+        shortcut!(ZoomMapOut => ALT + Minus);
+        shortcut!(ResetMapView => ALT + Num0);
         shortcut!(OpenProject => COMMAND + O);
         shortcut!(ReloadProject => COMMAND + R);
         shortcut!(SaveProject => COMMAND + S);
