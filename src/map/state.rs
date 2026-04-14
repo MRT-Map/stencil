@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -10,7 +9,7 @@ use crate::{
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
-        pla3::{FullId, PlaComponent, PlaNode, PlaNodeIndex, PlaNodeList},
+        pla3::{FullId, PlaComponent, PlaNodeIndex, PlaNodeList},
         skin::SkinType,
     },
 };
@@ -65,6 +64,7 @@ impl App {
             .reset_view(&self.settings.map, &self.project.basemap);
     }
 
+    #[must_use]
     pub fn map_hovered_component(&self) -> Option<&PlaComponent> {
         self.ui.map.hovered_component(&self.project.components)
     }
@@ -74,6 +74,7 @@ impl App {
             .hovered_component_mut(&mut self.project.components)
     }
 
+    #[must_use]
     pub fn map_selected_components(&self) -> Vec<&PlaComponent> {
         self.ui.map.selected_components(&self.project.components)
     }
@@ -83,6 +84,7 @@ impl App {
             .selected_components_mut(&mut self.project.components)
     }
 
+    #[must_use]
     pub fn map_world_to_screen(
         &self,
         map_centre: egui::Pos2,
@@ -92,6 +94,7 @@ impl App {
             .map
             .world_to_screen(&self.settings.map, &self.project.basemap, map_centre, world)
     }
+    #[must_use]
     pub fn map_screen_to_world(
         &self,
         map_centre: egui::Pos2,
@@ -104,11 +107,13 @@ impl App {
             screen,
         )
     }
+    #[must_use]
     pub fn map_world_boundaries(&self, map_rect: egui::Rect) -> geo::Rect<f32> {
         self.ui
             .map
             .map_world_boundaries(&self.settings.map, &self.project.basemap, map_rect)
     }
+    #[must_use]
     pub fn map_zoom_level(&self) -> u8 {
         self.ui.map.zoom_level(&self.project.basemap)
     }

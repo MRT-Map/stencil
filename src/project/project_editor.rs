@@ -5,7 +5,7 @@ use crate::{
     App,
     component_actions::event::ComponentEv,
     coord_conversion::CoordConversionExt,
-    project::{Project, SkinStatus, event::ProjectEv, pla3::PlaNode},
+    project::{Project, SkinStatus, event::ProjectEv},
     settings::settings_ui_field,
     shortcut::ShortcutAction,
     ui::dock::DockWindow,

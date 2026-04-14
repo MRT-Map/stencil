@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 
 use crate::{
-    App,
-    component_actions::event::ComponentEv,
-    coord_conversion::CoordConversionExt,
-    project::pla3::{PlaNode, PlaNodeList},
+    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
+    project::pla3::PlaNodeList,
 };
 
 impl App {

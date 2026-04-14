@@ -230,11 +230,13 @@ impl Settings for MapSettings {
 }
 
 impl MapSettings {
+    #[must_use]
     pub fn world_screen_ratio_at_zoom(&self, max_tile_zoom: i8, zoom: f32) -> f32 {
         self.world_screen_ratio * (f32::from(max_tile_zoom) - zoom).exp2()
     }
 }
 impl App {
+    #[must_use]
     pub fn world_screen_ratio_with_current_basemap_at_current_zoom(&self) -> f32 {
         self.settings
             .map

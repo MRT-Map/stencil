@@ -1,11 +1,8 @@
 use tracing::info;
 
 use crate::{
-    App,
-    coord_conversion::CoordConversionExt,
-    map::MapWindow,
-    pointer::ResponsePointerExt,
-    project::pla3::{FullId, PlaNode},
+    App, coord_conversion::CoordConversionExt, map::MapWindow, pointer::ResponsePointerExt,
+    project::pla3::FullId,
 };
 
 impl MapWindow {
@@ -91,6 +88,7 @@ impl MapWindow {
 impl App {
     pub fn select_component(&mut self, ctx: &egui::Context, id: FullId) {
         if ctx.input(|a| a.modifiers.shift) {
+            #[expect(clippy::map_entry)]
             if self.ui.map.selected.contains_key(&id) {
                 info!(%id, "Deselected");
                 self.ui.map.selected.remove(&id);
