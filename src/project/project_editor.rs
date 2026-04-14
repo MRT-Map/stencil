@@ -209,7 +209,7 @@ impl ProjectEditorWindow {
                     .sorted_by_key(|a| &a.full_id.id)
                 {
                     body.row(20.0, |mut row| {
-                        if app.ui.map.selected_components.contains(&component.full_id) {
+                        if app.ui.map.is_selected(&component.full_id) {
                             row.set_selected(true);
                         }
                         row.col(|ui| {

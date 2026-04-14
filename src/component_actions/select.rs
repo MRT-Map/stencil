@@ -16,7 +16,7 @@ impl MapWindow {
         painter: &egui::Painter,
     ) {
         if app.mode.is_editing() {
-            app.ui.map.selected_components.clear();
+            app.ui.map.selected.clear();
             return;
         }
 
@@ -61,11 +61,11 @@ impl MapWindow {
                                 .bounding_box()
                                 .is_some_and(|rect| bounding_box.contains_rect(rect))
                         })
-                        .map(|a| a.full_id.clone());
+                        .map(|a| (a.full_id.clone(), Vec::new()));
                     if ctx.input(|a| a.modifiers.shift) {
-                        app.ui.map.selected_components.extend(components_to_add);
+                        app.ui.map.selected.extend(components_to_add);
                     } else {
-                        app.ui.map.selected_components = components_to_add.collect();
+                        app.ui.map.selected = components_to_add.collect();
                     }
                     ctx.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
                     return;
@@ -80,8 +80,8 @@ impl MapWindow {
         }
 
         let Some(hovered_component) = &app.ui.map.hovered_component else {
-            info!(ids=?app.ui.map.selected_components, "Deselected all");
-            app.ui.map.selected_components.clear();
+            info!(ids=?app.ui.map.selected, "Deselected all");
+            app.ui.map.selected.clear();
             app.status_default(ctx);
             return;
         };
@@ -91,23 +91,17 @@ impl MapWindow {
 impl App {
     pub fn select_component(&mut self, ctx: &egui::Context, id: FullId) {
         if ctx.input(|a| a.modifiers.shift) {
-            if let Some(pos) = self
-                .ui
-                .map
-                .selected_components
-                .iter()
-                .position(|a| *a == id)
-            {
+            if self.ui.map.selected.contains_key(&id) {
                 info!(%id, "Deselected");
-                self.ui.map.selected_components.remove(pos);
+                self.ui.map.selected.remove(&id);
             } else {
                 info!(%id, "Selected");
-                self.ui.map.selected_components.push(id);
+                self.ui.map.selected.insert(id, Vec::new());
             }
         } else {
             info!(%id, "Deselected all and selected one");
-            self.ui.map.selected_components.clear();
-            self.ui.map.selected_components.push(id);
+            self.ui.map.selected.retain(|k, _| *k != id);
+            self.ui.map.selected.entry(id).or_default();
         }
         self.status_select(ctx);
     }

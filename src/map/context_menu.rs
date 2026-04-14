@@ -20,7 +20,7 @@ impl MapWindow {
                         app.menu_button_window("context menu", $ui, $label, $action, $w);
                     };
                 }
-                if !app.ui.map.selected_components.is_empty() {
+                if !app.ui.map.selected.is_empty() {
                     button!(ui, "Copy", Some(ShortcutAction::Copy), {
                         app.copy_selected_components(&response.ctx);
                     });

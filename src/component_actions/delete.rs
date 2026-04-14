@@ -13,6 +13,6 @@ impl App {
         }
         self.status_on_delete(&components, ctx);
         self.run_event(ComponentEv::Delete(components), ctx);
-        self.ui.map.selected_components.clear();
+        self.ui.map.selected.clear();
     }
 }

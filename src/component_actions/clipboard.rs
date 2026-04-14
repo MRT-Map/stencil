@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     App,
     component_actions::event::ComponentEv,
@@ -63,11 +65,11 @@ impl App {
 
         let ids = components_to_add
             .iter()
-            .map(|a| a.full_id.clone())
-            .collect::<Vec<_>>();
+            .map(|a| (a.full_id.clone(), Vec::new()))
+            .collect::<HashMap<_, _>>();
         self.status_on_paste(&components_to_add, ctx);
         self.run_event(ComponentEv::Create(components_to_add), ctx);
-        self.ui.map.selected_components = ids;
+        self.ui.map.selected = ids;
     }
     pub fn map_clear_clipboard(&mut self, ctx: &egui::Context) {
         self.ui.map.clipboard.clear();

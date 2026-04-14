@@ -17,6 +17,13 @@ use crate::{
     project::{Project, skin::SkinType},
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlaNodeIndex {
+    Coord(usize),
+    Ctrl1(usize),
+    Ctrl2(usize),
+}
+
 pub trait PlaNodeType: Debug + Clone + Copy + PartialEq + Eq {}
 impl<T: Debug + Clone + Copy + PartialEq + Eq> PlaNodeType for T {}
 
@@ -294,7 +301,7 @@ impl<T: PlaNodeType> FromIterator<PlaNodeBase<T>> for PlaNodeListBase<T> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FullId {
     pub namespace: String,
     pub id: String,

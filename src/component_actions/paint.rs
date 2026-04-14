@@ -66,7 +66,7 @@ impl MapWindow {
                 response,
                 painter,
                 hovered_component.is_none(),
-                app.ui.map.selected_components.contains(&component.full_id),
+                app.ui.map.is_selected(&component.full_id),
                 component,
             );
 

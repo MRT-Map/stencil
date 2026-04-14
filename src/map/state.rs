@@ -1,5 +1,6 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -9,7 +10,7 @@ use crate::{
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
-        pla3::{FullId, PlaComponent, PlaNode, PlaNodeList},
+        pla3::{FullId, PlaComponent, PlaNode, PlaNodeIndex, PlaNodeList},
         skin::SkinType,
     },
 };
@@ -32,7 +33,7 @@ pub struct MapState {
     #[serde(skip)]
     pub hovered_component: Option<FullId>,
     #[serde(skip)]
-    pub selected_components: Vec<FullId>,
+    pub selected: HashMap<FullId, Vec<PlaNodeIndex>>,
     #[serde(skip)]
     pub clipboard: Vec<PlaComponent>,
 
@@ -51,7 +52,7 @@ impl Default for MapState {
             created_line_type: None,
             created_area_type: None,
             hovered_component: None,
-            selected_components: Vec::new(),
+            selected: HashMap::new(),
             clipboard: Vec::new(),
             comp_move_origin_world_pos: None,
         }
@@ -142,28 +143,31 @@ impl MapState {
             .find(|a| *hovered_component == a.full_id)
     }
 
+    pub fn is_selected(&self, id: &FullId) -> bool {
+        self.selected.contains_key(id)
+    }
     pub fn selected_components<'a>(
         &self,
         component_list: &'a ComponentList,
     ) -> Vec<&'a PlaComponent> {
-        if self.selected_components.is_empty() {
+        if self.selected.is_empty() {
             return Vec::new();
         }
         component_list
             .iter()
-            .filter(|a| self.selected_components.contains(&a.full_id))
+            .filter(|a| self.is_selected(&a.full_id))
             .collect::<Vec<_>>()
     }
     pub fn selected_components_mut<'a>(
         &self,
         component_list: &'a mut ComponentList,
     ) -> Vec<&'a mut PlaComponent> {
-        if self.selected_components.is_empty() {
+        if self.selected.is_empty() {
             return Vec::new();
         }
         component_list
             .iter_mut()
-            .filter(|a| self.selected_components.contains(&a.full_id))
+            .filter(|a| self.is_selected(&a.full_id))
             .collect::<Vec<_>>()
     }
     pub fn world_to_screen(

@@ -15,7 +15,7 @@ impl MapWindow {
             return;
         }
         if response.drag_stopped_by2(egui::PointerButton::Primary)
-            && !app.ui.map.selected_components.is_empty()
+            && !app.ui.map.selected.is_empty()
             && let Some(move_delta) = app.ui.map.comp_move_delta()
         {
             let before = app
@@ -27,9 +27,7 @@ impl MapWindow {
                 .iter()
                 .map(|component| {
                     let mut component = component.to_owned();
-                    for node in &mut component.nodes {
-                        *node += move_delta;
-                    }
+                    component.nodes += move_delta;
                     component
                 })
                 .collect();
@@ -54,7 +52,7 @@ impl MapWindow {
                     .map
                     .hovered_component
                     .as_ref()
-                    .is_none_or(|a| !app.ui.map.selected_components.contains(a)))
+                    .is_none_or(|a| !app.ui.map.is_selected(a)))
         {
             app.ui.map.comp_move_origin_world_pos = None;
             return;

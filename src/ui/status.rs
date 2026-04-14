@@ -229,7 +229,7 @@ impl App {
     }
 
     pub fn status_select(&mut self, ctx: &egui::Context) {
-        if self.ui.map.selected_components.is_empty() {
+        if self.ui.map.selected.is_empty() {
             self.status_default(ctx);
             return;
         }
