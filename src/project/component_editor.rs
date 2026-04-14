@@ -9,7 +9,7 @@ use crate::{
     component_actions::event::ComponentEv,
     mode::EditorMode,
     project::{
-        pla3::{PlaComponent, PlaNode},
+        pla3::{PlaComponent, PlaNode, PlaNodeList},
         skin::SkinType,
     },
     ui::dock::DockWindow,
@@ -242,7 +242,7 @@ impl DockWindow for ComponentEditorWindow {
         if component_ty == Some("line") {
             if ui.button("Reverse direction").clicked() {
                 for component in &mut selected_components {
-                    component.nodes = PlaNode::rev(component.nodes.iter().copied());
+                    component.nodes = component.nodes.rev();
                 }
                 add_event("reverse", &selected_components);
             }
@@ -706,7 +706,7 @@ impl ComponentEditorWindow {
 
         changed
     }
-    fn show_position_data(ui: &mut egui::Ui, nodes: &[PlaNode]) {
+    fn show_position_data(ui: &mut egui::Ui, nodes: &PlaNodeList) {
         egui_extras::TableBuilder::new(ui)
             .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)

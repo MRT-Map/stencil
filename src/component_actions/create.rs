@@ -94,7 +94,8 @@ impl MapWindow {
             nodes: vec![PlaNode::Line {
                 coord: world_coord,
                 label: None,
-            }],
+            }]
+            .into(),
             misc: BTreeMap::default(),
         };
         app.status_on_create("point", &component, ctx);
@@ -168,12 +169,9 @@ impl MapWindow {
 
         if ctx.input(|a| a.modifiers.command)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
-                Some(PlaNode::Line { .. }) if app.ui.map.created_nodes.len() > 1 => app
-                    .ui
-                    .map
-                    .created_nodes
-                    .get(app.ui.map.created_nodes.len() - 2)
-                    .map(|a| a.coord()),
+                Some(PlaNode::Line { .. }) if app.ui.map.created_nodes.len() > 1 => {
+                    app.ui.map.created_nodes.second_last().map(|a| a.coord())
+                }
                 Some(PlaNode::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
                 Some(PlaNodeBase::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
                 _ => None,
@@ -206,20 +204,14 @@ impl MapWindow {
                 coord: world_coord,
                 label: None,
             }),
-            Some(
-                PlaNode::Line { coord, .. }
-                | PlaNode::QuadraticBezier { coord, .. }
-                | PlaNode::CubicBezier { coord, .. },
-            ) => *coord = world_coord,
+            Some(node) => *node.coord_mut() = world_coord,
         }
 
         let screen_nodes = app
             .ui
             .map
             .created_nodes
-            .iter()
-            .map(|a| a.to_screen(app, response.rect.center()))
-            .collect::<Vec<_>>();
+            .to_screen(app, response.rect.center());
         match style {
             Either::Left(style) => {
                 Self::paint_line(response, painter, false, false, &screen_nodes, style);
@@ -329,10 +321,11 @@ impl MapWindow {
                     && app.ui.map.created_nodes.first().unwrap().coord()
                         != app.ui.map.created_nodes.last().unwrap().coord()
                 {
-                    app.ui.map.created_nodes.push(PlaNode::Line {
-                        coord: app.ui.map.created_nodes.first().unwrap().coord(),
-                        label: None,
-                    });
+                    let coord = app.ui.map.created_nodes.first().unwrap().coord();
+                    app.ui
+                        .map
+                        .created_nodes
+                        .push(PlaNode::Line { coord, label: None });
                 }
                 let component = PlaComponent {
                     full_id: FullId::new(

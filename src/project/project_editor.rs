@@ -234,8 +234,7 @@ impl ProjectEditorWindow {
                             );
                         });
                         row.col(|ui| {
-                            let Some(centre) = PlaNode::centre(component.nodes.iter().copied())
-                            else {
+                            let Some(centre) = component.nodes.centre() else {
                                 return;
                             };
                             let see_button = ui.small_button("➡");

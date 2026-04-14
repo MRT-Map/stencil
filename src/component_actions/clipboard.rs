@@ -1,6 +1,8 @@
 use crate::{
-    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
-    project::pla3::PlaNode,
+    App,
+    component_actions::event::ComponentEv,
+    coord_conversion::CoordConversionExt,
+    project::pla3::{PlaNode, PlaNodeList},
 };
 
 impl App {
@@ -20,8 +22,15 @@ impl App {
         self.status_on_cut(ctx);
     }
     pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
-        let Some(centre) =
-            PlaNode::centre(self.ui.map.clipboard.iter().flat_map(|a| a.nodes.clone()))
+        let Some(centre) = self
+            .ui
+            .map
+            .clipboard
+            .iter()
+            .flat_map(|a| &a.nodes)
+            .copied()
+            .collect::<PlaNodeList>()
+            .centre()
         else {
             self.status_on_paste(&[], ctx);
             return;

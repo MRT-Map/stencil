@@ -57,7 +57,8 @@ impl MapWindow {
                         .components
                         .iter()
                         .filter(|a| {
-                            PlaNode::bounding_box(a.nodes.iter().copied())
+                            a.nodes
+                                .bounding_box()
                                 .is_some_and(|rect| bounding_box.contains_rect(rect))
                         })
                         .map(|a| a.full_id.clone());

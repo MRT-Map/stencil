@@ -13,7 +13,7 @@ use crate::{
     coord_conversion::CoordConversionExt,
     map::MapWindow,
     project::{
-        pla3::{PlaComponent, PlaNodeScreen},
+        pla3::{PlaComponent, PlaNodeListScreen, PlaNodeScreen},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
     },
 };
@@ -122,16 +122,12 @@ impl MapWindow {
         }
 
         let zl = app.map_zoom_level();
-        let mut screen_coords = component
-            .nodes
-            .iter()
-            .map(|n| {
-                if is_selected && let Some(move_delta) = app.ui.map.comp_move_delta() {
-                    return *n + move_delta;
-                }
-                *n
-            })
-            .map(|n| n.to_screen(app, response.rect.center()));
+        let screen_coords = if is_selected && let Some(move_delta) = app.ui.map.comp_move_delta() {
+            Cow::Owned(component.nodes.clone() + move_delta)
+        } else {
+            Cow::Borrowed(&component.nodes)
+        }
+        .to_screen(app, response.rect.center());
         match &*component.ty {
             SkinType::Point {
                 styles,
@@ -141,7 +137,7 @@ impl MapWindow {
                 let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
                     return PaintResult::None;
                 };
-                let PlaNodeScreen::Line { coord, .. } = screen_coords.next().unwrap() else {
+                let PlaNodeScreen::Line { coord, .. } = screen_coords[0] else {
                     unreachable!();
                 };
                 Self::paint_point(
@@ -163,7 +159,7 @@ impl MapWindow {
                     painter,
                     detect_hovered,
                     is_selected,
-                    &screen_coords.collect::<Vec<_>>(),
+                    &screen_coords,
                     style,
                 )
             }
@@ -176,7 +172,7 @@ impl MapWindow {
                     painter,
                     detect_hovered,
                     is_selected,
-                    &screen_coords.collect::<Vec<_>>(),
+                    &screen_coords,
                     style,
                 )
             }
@@ -274,7 +270,7 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         is_selected: bool,
-        nodes: &[PlaNodeScreen],
+        nodes: &PlaNodeListScreen,
         style: &[AreaStyle],
     ) -> PaintResult {
         let mut is_hovered = !detect_hovered;
@@ -451,7 +447,7 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         is_selected: bool,
-        nodes: &[PlaNodeScreen],
+        nodes: &PlaNodeListScreen,
         style: &[LineStyle],
     ) -> PaintResult {
         let mut is_hovered = !detect_hovered;

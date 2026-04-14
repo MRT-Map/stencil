@@ -56,7 +56,7 @@ fn main() -> Result<()> {
 }
 
 #[derive(Default)]
-struct App {
+pub struct App {
     ui: UiState,
     settings: AppSettings,
     mode: EditorMode,
