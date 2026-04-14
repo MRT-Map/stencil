@@ -45,22 +45,24 @@ impl MapWindow {
             app.ui.map.comp_move_origin_world_pos = None;
             return;
         }
-        if !response.dragged_by2(egui::PointerButton::Primary)
-            || (response.drag_started_by2(egui::PointerButton::Primary)
-                && app
-                    .ui
-                    .map
-                    .hovered_component
-                    .as_ref()
-                    .is_none_or(|a| !app.ui.map.is_selected(a)))
-        {
+
+        if !response.dragged_by2(egui::PointerButton::Primary) {
             app.ui.map.comp_move_origin_world_pos = None;
             return;
         }
 
-        if response.drag_started_by2(egui::PointerButton::Primary)
-            && response.ctx.input(|i| i.modifiers.command)
-        {
+        if response.drag_started_by2(egui::PointerButton::Primary) {
+            if response.ctx.input(|i| !i.modifiers.command) {
+                app.ui.map.comp_move_origin_world_pos = None;
+                return;
+            }
+            let Some(hovered_component) = &app.ui.map.hovered_component else {
+                app.ui.map.comp_move_origin_world_pos = None;
+                return;
+            };
+
+            app.select_component(&response.ctx, hovered_component.clone());
+
             info!("Move started");
             app.ui.map.comp_move_origin_world_pos = app.ui.map.cursor_world_pos;
         }
