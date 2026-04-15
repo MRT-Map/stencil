@@ -68,15 +68,7 @@ impl MapWindow {
         let world_coord = cursor_world_pos.to_geo_coord_i32();
         let screen_coord =
             app.map_world_to_screen(response.rect.center(), world_coord.to_geo_coord_f32());
-        Self::paint_point(
-            response,
-            painter,
-            false,
-            false,
-            screen_coord,
-            ty.name(),
-            style,
-        );
+        Self::paint_point(response, false, screen_coord, ty.name(), style).paint(painter);
 
         if !response.clicked_by2(egui::PointerButton::Primary) {
             return;
@@ -214,10 +206,10 @@ impl MapWindow {
             .to_screen(app, response.rect.center());
         match style {
             Either::Left(style) => {
-                Self::paint_line(response, painter, false, false, &screen_nodes, style);
+                Self::paint_line(response, false, &screen_nodes, style).paint(painter);
             }
             Either::Right(style) => {
-                Self::paint_area(response, painter, false, false, &screen_nodes, style);
+                Self::paint_area(response, false, &screen_nodes, style).paint(painter);
             }
         }
 

@@ -82,10 +82,10 @@ impl ComponentList {
         let item = ComponentListItem::from_component(item, skin);
         self.0.insert(self.insert_position(&item), item);
     }
-    pub fn iter(&self) -> impl Iterator<Item = &PlaComponent> {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &PlaComponent> {
         self.0.iter().map(|a| &a.value)
     }
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut PlaComponent> {
+    pub fn iter_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut PlaComponent> {
         self.0.iter_mut().map(|a| &mut a.value)
     }
     pub fn remove_namespace(&mut self, namespace: &str) {

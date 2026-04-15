@@ -13,8 +13,12 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     App,
+    component_actions::paint::{PaintResult, TOLERANCE},
     coord_conversion::CoordConversionExt,
-    project::{Project, skin::SkinType},
+    project::{
+        Project,
+        skin::{PointStyle, SkinType},
+    },
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -235,6 +239,45 @@ impl PlaNodeVec {
         self.iter().map(|a| a.to_screen(app, map_centre)).collect()
     }
 }
+impl PlaNodeScreenVec {
+    pub fn outline(&self) -> Vec<egui::Pos2> {
+        let mut previous_coord = Option::<egui::Pos2>::None;
+        let mut out = Vec::new();
+        for n in self {
+            out.extend(&match (*n, previous_coord) {
+                (PlaNodeScreen::Line { coord, .. }, _) => vec![coord],
+                (PlaNodeScreen::QuadraticBezier { ctrl, coord, .. }, Some(previous_coord)) => {
+                    egui::epaint::QuadraticBezierShape::from_points_stroke(
+                        [previous_coord, ctrl, coord],
+                        false,
+                        egui::Color32::default(),
+                        egui::Stroke::default(),
+                    )
+                    .flatten(TOLERANCE)
+                }
+                (
+                    PlaNodeScreen::CubicBezier {
+                        ctrl1,
+                        ctrl2,
+                        coord,
+                        ..
+                    },
+                    Some(previous_coord),
+                ) => egui::epaint::CubicBezierShape::from_points_stroke(
+                    [previous_coord, ctrl1, ctrl2, coord],
+                    false,
+                    egui::Color32::default(),
+                    egui::Stroke::default(),
+                )
+                .flatten(TOLERANCE),
+                _ => unreachable!(),
+            });
+            previous_coord = Some(n.coord());
+        }
+        out.dedup();
+        out
+    }
+}
 impl<T: PlaNodeType> From<Vec<PlaNodeBase<T>>> for PlaNodeBaseVec<T> {
     fn from(value: Vec<PlaNodeBase<T>>) -> Self {
         Self(value)
@@ -249,7 +292,7 @@ impl Add<geo::Coord<i32>> for PlaNodeVec {
 }
 impl AddAssign<geo::Coord<i32>> for PlaNodeVec {
     fn add_assign(&mut self, rhs: geo::Coord<i32>) {
-        for a in &mut self.0 {
+        for a in self {
             *a += rhs;
         }
     }

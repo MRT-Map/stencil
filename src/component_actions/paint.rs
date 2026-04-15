@@ -31,64 +31,85 @@ macro_rules! hovering {
         }
     };
 }
-pub enum PaintResult {
-    None,
-    Hovered(Vec<egui::Pos2>),
-    Selected(Vec<egui::Pos2>),
-    HoveredAndSelected(Vec<egui::Pos2>),
+#[must_use]
+pub struct PaintResult<'a> {
+    pub shapes: Vec<egui::Shape>,
+    pub is_hovering: bool,
+    pub screen_coords: PlaNodeScreenVec,
+    pub point_style: Option<&'a [PointStyle]>,
 }
-impl PaintResult {
-    pub fn from_conditions<F: FnOnce() -> Vec<egui::Pos2>>(
-        is_selected: bool,
-        detect_hovered: bool,
-        is_hovered: bool,
-        hover_coords: F,
-    ) -> Self {
-        if is_selected && detect_hovered && is_hovered {
-            Self::HoveredAndSelected(hover_coords())
-        } else if is_selected {
-            Self::Selected(hover_coords())
-        } else if detect_hovered && is_hovered {
-            Self::Hovered(hover_coords())
-        } else {
-            Self::None
-        }
+impl PaintResult<'_> {
+    pub fn paint(self, painter: &egui::Painter) {
+        painter.add(self.shapes);
+    }
+}
+#[must_use]
+pub struct PartialPaintResult {
+    pub shapes: Vec<egui::Shape>,
+    pub is_hovering: bool,
+}
+impl PartialPaintResult {
+    pub fn paint(self, painter: &egui::Painter) {
+        painter.add(self.shapes);
     }
 }
 
 impl MapWindow {
     pub fn paint_components(app: &mut App, response: &egui::Response, painter: &egui::Painter) {
-        let mut hovered_shapes = Vec::new();
         let mut hovered_component = None;
-        for component in app.project.components.iter() {
-            let result = Self::paint_component(
+        let mut selected_shapes = Vec::new();
+        let mut all_shapes = Vec::new();
+        for component in app.project.components.iter().rev() {
+            let is_selected = app.ui.map.is_selected(&component.full_id);
+            let Some(PaintResult {
+                is_hovering,
+                screen_coords,
+                point_style,
+                shapes,
+            }) = Self::paint_component(
                 app,
                 response,
-                painter,
                 hovered_component.is_none(),
-                app.ui.map.is_selected(&component.full_id),
+                is_selected,
                 component,
-            );
+            )
+            else {
+                continue;
+            };
 
-            if !app.mode.is_editing() {
-                match result {
-                    PaintResult::Hovered(path) | PaintResult::HoveredAndSelected(path) => {
-                        hovered_component = Some(component.full_id.clone());
-                        hovered_shapes.extend(Self::white_dash(
-                            &path,
-                            matches!(&*component.ty, SkinType::Line { .. }),
-                        ));
-                    }
-                    PaintResult::Selected(path) => {
-                        hovered_shapes.extend(Self::select_dash(
-                            &path,
-                            matches!(&*component.ty, SkinType::Line { .. }),
-                        ));
-                    }
-                    PaintResult::None => {}
-                }
+            all_shapes.push(shapes.into());
+
+            if app.mode.is_editing() {
+                continue;
+            }
+
+            if is_hovering {
+                hovered_component = Some((
+                    component.full_id.clone(),
+                    Self::white_dash(
+                        &Self::outline(point_style, &screen_coords),
+                        matches!(&*component.ty, SkinType::Line { .. }),
+                    ),
+                ));
+            }
+            if is_selected {
+                selected_shapes.extend(Self::select_dash(
+                    &Self::outline(point_style, &screen_coords),
+                    matches!(&*component.ty, SkinType::Line { .. }),
+                ));
             }
         }
+
+        all_shapes.reverse();
+        painter.add(all_shapes);
+        painter.add(selected_shapes);
+
+        let hovered_component = if let Some((id, hover_shapes)) = hovered_component {
+            painter.add(hover_shapes);
+            Some(id)
+        } else {
+            None
+        };
 
         match (&app.ui.map.hovered_component, &hovered_component) {
             (Some(id), None) => {
@@ -100,17 +121,14 @@ impl MapWindow {
             _ => {}
         }
         app.ui.map.hovered_component = hovered_component;
-
-        painter.add(hovered_shapes);
     }
-    pub fn paint_component(
+    pub fn paint_component<'a>(
         app: &App,
         response: &egui::Response,
-        painter: &egui::Painter,
         detect_hovered: bool,
         is_selected: bool,
-        component: &PlaComponent,
-    ) -> PaintResult {
+        component: &'a PlaComponent,
+    ) -> Option<PaintResult<'a>> {
         let bounding_rect = component.bounding_rect();
         let world_boundaries = app.map_world_boundaries(response.rect);
         if world_boundaries.max().x < bounding_rect.min().x
@@ -118,7 +136,7 @@ impl MapWindow {
             || world_boundaries.max().y < bounding_rect.min().y
             || bounding_rect.max().y < world_boundaries.min().y
         {
-            return PaintResult::None;
+            return None;
         }
 
         let zl = app.map_zoom_level();
@@ -128,55 +146,67 @@ impl MapWindow {
             Cow::Borrowed(&component.nodes)
         }
         .to_screen(app, response.rect.center());
-        match &*component.ty {
+        let (result, point_style) = match &*component.ty {
             SkinType::Point {
                 styles,
                 name: style_name,
                 ..
             } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return PaintResult::None;
-                };
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
                 let PlaNodeScreen::Line { coord, .. } = screen_coords[0] else {
                     unreachable!();
                 };
-                Self::paint_point(
-                    response,
-                    painter,
-                    detect_hovered,
-                    is_selected,
-                    coord,
-                    style_name,
-                    style,
+                (
+                    Self::paint_point(response, detect_hovered, coord, style_name, style),
+                    Some(style.as_ref()),
                 )
             }
             SkinType::Line { styles, .. } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return PaintResult::None;
-                };
-                Self::paint_line(
-                    response,
-                    painter,
-                    detect_hovered,
-                    is_selected,
-                    &screen_coords,
-                    style,
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
+                (
+                    Self::paint_line(response, detect_hovered, &screen_coords, style),
+                    None,
                 )
             }
             SkinType::Area { styles, .. } => {
-                let Some(style) = SkinType::style_in_zoom_level(styles, zl) else {
-                    return PaintResult::None;
-                };
-                Self::paint_area(
-                    response,
-                    painter,
-                    detect_hovered,
-                    is_selected,
-                    &screen_coords,
-                    style,
+                let style = SkinType::style_in_zoom_level(styles, zl)?;
+                (
+                    Self::paint_area(response, detect_hovered, &screen_coords, style),
+                    None,
                 )
             }
-        }
+        };
+        Some(PaintResult {
+            is_hovering: result.is_hovering,
+            shapes: result.shapes,
+            screen_coords,
+            point_style,
+        })
+    }
+
+    fn outline(point_style: Option<&[PointStyle]>, nodes: &PlaNodeScreenVec) -> Vec<egui::Pos2> {
+        let Some(style) = point_style else {
+            return nodes.outline();
+        };
+        let PlaNodeScreen::Line { coord, .. } = nodes[0] else {
+            unreachable!();
+        };
+        let dimensions = style
+            .iter()
+            .filter_map(|a| match a {
+                PointStyle::Image { size, .. } => Some(*size),
+                PointStyle::Square { size, .. } => Some(egui::Vec2::splat(*size)),
+                PointStyle::Text { .. } => None,
+            })
+            .reduce(egui::Vec2::max)
+            .unwrap_or_else(|| egui::Vec2::splat(8.0));
+        vec![
+            coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
+            coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
+            coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
+            coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
+            coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
+        ]
     }
 
     // adapted from egui::Painter::arrow
@@ -198,7 +228,7 @@ impl MapWindow {
         dashes
             .into_iter()
             .circular_tuple_windows()
-            .map(|(shape1, shape2)| {
+            .flat_map(|(shape1, shape2)| {
                 let egui::Shape::LineSegment { points, stroke } = shape1 else {
                     unreachable!()
                 };
@@ -209,9 +239,9 @@ impl MapWindow {
                     unreachable!()
                 };
                 if points[1] == points2[0] {
-                    return shape1;
+                    return vec![shape1];
                 }
-                egui::Shape::Vec(Self::arrow(points[0], points[1], 4.0, stroke))
+                Self::arrow(points[0], points[1], 4.0, stroke)
             })
             .collect()
     }
@@ -267,16 +297,12 @@ impl MapWindow {
 
     pub fn paint_area(
         response: &egui::Response,
-        painter: &egui::Painter,
         detect_hovered: bool,
-        is_selected: bool,
         nodes: &PlaNodeScreenVec,
         style: &[AreaStyle],
-    ) -> PaintResult {
+    ) -> PartialPaintResult {
         let mut is_hovered = !detect_hovered;
-
-        let mut hover_coords = Vec::new();
-        let mut hover_coords_is_filled = !detect_hovered && !is_selected;
+        let mut shapes = Vec::new();
 
         for style in style {
             let AreaStyle::Fill {
@@ -290,7 +316,7 @@ impl MapWindow {
             };
             let mut previous_coord = Option::<egui::Pos2>::None;
 
-            let mut shapes = Vec::new();
+            let mut outline_shapes = Vec::new();
             for node in nodes {
                 let final_coord = match *node {
                     PlaNodeScreen::Line { coord, .. } => {
@@ -302,10 +328,7 @@ impl MapWindow {
                                     outline.unwrap_or_default(),
                                 ),
                             );
-                            shapes.push(shape);
-                            if !hover_coords_is_filled {
-                                hover_coords.extend([previous_coord, coord]);
-                            }
+                            outline_shapes.push(shape);
                         }
                         coord
                     }
@@ -317,10 +340,7 @@ impl MapWindow {
                             egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
                         );
 
-                        if !hover_coords_is_filled {
-                            hover_coords.extend(shape.flatten(TOLERANCE));
-                        }
-                        shapes.push(shape.into());
+                        outline_shapes.push(shape.into());
                         coord
                     }
                     PlaNodeScreen::CubicBezier {
@@ -336,25 +356,21 @@ impl MapWindow {
                             egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
                         );
 
-                        if !hover_coords_is_filled {
-                            hover_coords.extend(shape.flatten(TOLERANCE));
-                        }
-                        shapes.push(shape.into());
+                        outline_shapes.push(shape.into());
                         coord
                     }
                 };
 
-                shapes.push(egui::Shape::circle_filled(
+                outline_shapes.push(egui::Shape::circle_filled(
                     final_coord,
                     *outline_width,
                     colour.unwrap_or_default(),
                 ));
                 previous_coord = Some(final_coord);
             }
-            hover_coords_is_filled = true;
 
             let polygon = geo::Polygon::new(
-                shapes
+                outline_shapes
                     .iter()
                     .flat_map(|a| match a {
                         egui::Shape::LineSegment { points, .. } => {
@@ -417,7 +433,7 @@ impl MapWindow {
                 let fill_colour =
                     colour.map_or(egui::Color32::TRANSPARENT, |c| c.gamma_multiply(0.5));
                 for triangle in fill_triangles {
-                    painter.add(egui::Shape::convex_polygon(
+                    shapes.push(egui::Shape::convex_polygon(
                         triangle.to_vec(),
                         fill_colour,
                         egui::Stroke::default(),
@@ -429,7 +445,7 @@ impl MapWindow {
             {
                 let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
                 for triangle in edge_triangles {
-                    painter.add(egui::Shape::convex_polygon(
+                    shapes.push(egui::Shape::convex_polygon(
                         triangle.to_vec(),
                         edge_colour,
                         egui::Stroke::new(outline_width.max(1.0), edge_colour),
@@ -437,23 +453,22 @@ impl MapWindow {
                 }
             }
 
-            painter.add(shapes);
+            shapes.push(outline_shapes.into());
         }
 
-        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || hover_coords)
+        PartialPaintResult {
+            is_hovering: detect_hovered && is_hovered,
+            shapes,
+        }
     }
     pub fn paint_line(
         response: &egui::Response,
-        painter: &egui::Painter,
         detect_hovered: bool,
-        is_selected: bool,
         nodes: &PlaNodeScreenVec,
         style: &[LineStyle],
-    ) -> PaintResult {
+    ) -> PartialPaintResult {
         let mut is_hovered = !detect_hovered;
-
-        let mut hover_coords = Vec::new();
-        let mut hover_coords_is_filled = !detect_hovered && !is_selected;
+        let mut shapes = Vec::new();
 
         for style in style {
             let mut previous_coord = Option::<egui::Pos2>::None;
@@ -485,13 +500,10 @@ impl MapWindow {
                                         )
                                     );
 
-                                    painter.line_segment(
+                                    shapes.push(egui::Shape::line_segment(
                                         [previous_coord, coord],
                                         egui::Stroke::new(width, colour.unwrap_or_default()),
-                                    );
-                                    if !hover_coords_is_filled {
-                                        hover_coords.extend([previous_coord, coord]);
-                                    }
+                                    ));
                                 }
                                 coord
                             }
@@ -508,9 +520,6 @@ impl MapWindow {
                                     .into_iter()
                                     .map(CoordConversionExt::to_geo_coord_f32)
                                     .collect::<Vec<_>>();
-                                if !hover_coords_is_filled {
-                                    hover_coords.extend(approx.iter().map(|a| a.to_egui_pos2()));
-                                }
                                 hovering!(
                                     is_hovered,
                                     response,
@@ -518,7 +527,7 @@ impl MapWindow {
                                     geo::LineString::new(approx)
                                 );
 
-                                painter.add(shape);
+                                shapes.push(shape.into());
                                 coord
                             }
                             PlaNodeScreen::CubicBezier {
@@ -539,9 +548,6 @@ impl MapWindow {
                                     .into_iter()
                                     .map(CoordConversionExt::to_geo_coord_f32)
                                     .collect::<Vec<_>>();
-                                if !hover_coords_is_filled {
-                                    hover_coords.extend(approx.iter().map(|a| a.to_egui_pos2()));
-                                }
                                 hovering!(
                                     is_hovered,
                                     response,
@@ -549,41 +555,45 @@ impl MapWindow {
                                     geo::LineString::new(approx)
                                 );
 
-                                painter.add(shape);
+                                shapes.push(shape.into());
                                 coord
                             }
                         };
 
                         if !(*unrounded && (i == 0 || i == nodes.len() - 1)) {
-                            painter.circle_filled(
-                                final_coord,
-                                width / 2.0,
-                                colour.unwrap_or_default(),
+                            shapes.push(
+                                egui::epaint::CircleShape::filled(
+                                    final_coord,
+                                    width / 2.0,
+                                    colour.unwrap_or_default(),
+                                )
+                                .into(),
                             );
                         }
 
                         previous_coord = Some(final_coord);
                     }
-                    hover_coords_is_filled = true;
                 }
                 LineStyle::Text { .. } => {}
             }
         }
 
-        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || hover_coords)
+        PartialPaintResult {
+            is_hovering: detect_hovered && is_hovered,
+            shapes,
+        }
     }
     pub fn paint_point(
         response: &egui::Response,
-        painter: &egui::Painter,
         detect_hovered: bool,
-        is_selected: bool,
         coord: egui::Pos2,
         style_name: &str,
-        styles: &[PointStyle],
-    ) -> PaintResult {
+        style: &[PointStyle],
+    ) -> PartialPaintResult {
         let mut is_hovered = !detect_hovered;
+        let mut shapes = Vec::new();
 
-        for style in styles {
+        for style in style {
             match style {
                 PointStyle::Image {
                     image,
@@ -613,7 +623,7 @@ impl MapWindow {
                     {
                         is_hovered = true;
                     }
-                    painter.add(shape);
+                    shapes.push(shape);
                 }
                 PointStyle::Square {
                     colour,
@@ -632,29 +642,15 @@ impl MapWindow {
                     {
                         is_hovered = true;
                     }
-                    painter.add(shape);
+                    shapes.push(shape);
                 }
                 PointStyle::Text { .. } => {}
             }
         }
 
-        PaintResult::from_conditions(is_selected, detect_hovered, is_hovered, || {
-            let dimensions = styles
-                .iter()
-                .filter_map(|a| match a {
-                    PointStyle::Image { size, .. } => Some(*size),
-                    PointStyle::Square { size, .. } => Some(egui::Vec2::splat(*size)),
-                    PointStyle::Text { .. } => None,
-                })
-                .reduce(egui::Vec2::max)
-                .unwrap_or_else(|| egui::Vec2::splat(8.0));
-            vec![
-                coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
-                coord + 2.0 * egui::vec2(dimensions.x, -dimensions.y),
-                coord + 2.0 * egui::vec2(-dimensions.x, -dimensions.y),
-                coord + 2.0 * egui::vec2(-dimensions.x, dimensions.y),
-                coord + 2.0 * egui::vec2(dimensions.x, dimensions.y),
-            ]
-        })
+        PartialPaintResult {
+            is_hovering: detect_hovered && is_hovered,
+            shapes,
+        }
     }
 }

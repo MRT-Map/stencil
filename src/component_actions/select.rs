@@ -102,7 +102,7 @@ impl App {
             }
         } else {
             info!(%id, "Deselected all and selected one");
-            self.ui.map.selected.retain(|k, _| *k != id);
+            self.ui.map.selected.retain(|k, _| *k == id);
             self.ui.map.selected.entry(id).or_default();
         }
         self.status_select(ctx);
