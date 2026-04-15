@@ -14,14 +14,10 @@ pub fn init_logger() {
                 ),
             ),
         )
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::try_new(
-                "info,\
-            surf::middleware::logger::native=off,\
-            isahc::handler=error",
-            )
-            .unwrap()
-        }))
+        .with(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::try_new("info").unwrap()),
+        )
         .with(ErrorLayer::default())
         .init();
 }

@@ -17,14 +17,14 @@ impl MapWindow {
             return;
         }
 
+        let id = "marquee select".into();
         if let Some(cursor_world_pos) = app.ui.map.cursor_world_pos {
-            let id = "marquee select".into();
             if response.drag_started_by2(egui::PointerButton::Primary)
                 && response
                     .ctx
                     .input(|i| !i.modifiers.command && !i.modifiers.alt)
             {
-                info!("Drag start");
+                info!("Marquee start");
                 ctx.data_mut(|d| d.insert_temp(id, cursor_world_pos));
                 return;
             }
@@ -44,7 +44,7 @@ impl MapWindow {
                     return;
                 }
                 if response.drag_stopped_by2(egui::PointerButton::Primary) {
-                    info!("Drag end");
+                    info!("Marquee end");
                     let bounding_box = egui::Rect::from_two_pos(
                         start_world_pos.to_egui_pos2(),
                         cursor_world_pos.to_egui_pos2(),
@@ -68,6 +68,10 @@ impl MapWindow {
                     return;
                 }
             }
+        } else if response.drag_stopped_by2(egui::PointerButton::Primary) {
+            info!("Marquee cancelled");
+            ctx.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
+            return;
         }
 
         if !response.clicked_by2(egui::PointerButton::Primary)
