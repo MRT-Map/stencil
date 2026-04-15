@@ -158,7 +158,7 @@ impl MapWindow {
 
                 if app.project.path.is_none() {
                     ui.label(
-                        egui::RichText::new(" THIS IS A SCRATCHPAD - NOTHING WILL BE SAVED ")
+                        egui::RichText::new(" NOT SAVED ")
                             .background_color(egui::Color32::LIGHT_RED)
                             .color(egui::Color32::BLACK),
                     );
