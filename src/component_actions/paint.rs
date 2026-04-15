@@ -13,7 +13,7 @@ use crate::{
     coord_conversion::CoordConversionExt,
     map::MapWindow,
     project::{
-        pla3::{PlaComponent, PlaNodeListScreen, PlaNodeScreen},
+        pla3::{PlaComponent, PlaNodeScreen, PlaNodeScreenVec},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
     },
 };
@@ -270,7 +270,7 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         is_selected: bool,
-        nodes: &PlaNodeListScreen,
+        nodes: &PlaNodeScreenVec,
         style: &[AreaStyle],
     ) -> PaintResult {
         let mut is_hovered = !detect_hovered;
@@ -447,7 +447,7 @@ impl MapWindow {
         painter: &egui::Painter,
         detect_hovered: bool,
         is_selected: bool,
-        nodes: &PlaNodeListScreen,
+        nodes: &PlaNodeScreenVec,
         style: &[LineStyle],
     ) -> PaintResult {
         let mut is_hovered = !detect_hovered;

@@ -141,19 +141,19 @@ impl AddAssign<geo::Coord<i32>> for PlaNode {
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(bound = "T: Serialize + DeserializeOwned")]
-pub struct PlaNodeListBase<T: PlaNodeType>(Vec<PlaNodeBase<T>>);
+pub struct PlaNodeBaseVec<T: PlaNodeType>(Vec<PlaNodeBase<T>>);
 
-pub type PlaNodeList = PlaNodeListBase<geo::Coord<i32>>;
-pub type PlaNodeListScreen = PlaNodeListBase<egui::Pos2>;
-impl<T: PlaNodeType> PlaNodeListBase<T> {
+pub type PlaNodeVec = PlaNodeBaseVec<geo::Coord<i32>>;
+pub type PlaNodeScreenVec = PlaNodeBaseVec<egui::Pos2>;
+impl<T: PlaNodeType> PlaNodeBaseVec<T> {
     pub const fn new() -> Self {
         Self(Vec::new())
     }
     pub fn second_last(&self) -> Option<&PlaNodeBase<T>> {
-        self.0.get(self.0.len() - 2)
+        self.get(self.len() - 2)
     }
     pub fn rev(&self) -> Self {
-        let mut s = self.0.iter().rev().peekable();
+        let mut s = self.iter().rev().peekable();
         let Some(last) = s.peek() else {
             return Self::new();
         };
@@ -181,9 +181,9 @@ impl<T: PlaNodeType> PlaNodeListBase<T> {
         .collect()
     }
 }
-impl PlaNodeList {
+impl PlaNodeVec {
     pub fn bounding_box(&self) -> Option<egui::Rect> {
-        let mut s = self.0.iter().peekable();
+        let mut s = self.iter().peekable();
         let mut bb = egui::Rect::from_pos(s.peek()?.coord().to_egui_pos2());
         if let Some(bb2) = s
             .tuple_windows()
@@ -231,26 +231,23 @@ impl PlaNodeList {
     pub fn centre(&self) -> Option<geo::Coord<i32>> {
         self.bounding_box().map(|a| a.center().to_geo_coord_i32())
     }
-    pub fn to_screen(&self, app: &App, map_centre: egui::Pos2) -> PlaNodeListScreen {
-        self.0
-            .iter()
-            .map(|a| a.to_screen(app, map_centre))
-            .collect()
+    pub fn to_screen(&self, app: &App, map_centre: egui::Pos2) -> PlaNodeScreenVec {
+        self.iter().map(|a| a.to_screen(app, map_centre)).collect()
     }
 }
-impl<T: PlaNodeType> From<Vec<PlaNodeBase<T>>> for PlaNodeListBase<T> {
+impl<T: PlaNodeType> From<Vec<PlaNodeBase<T>>> for PlaNodeBaseVec<T> {
     fn from(value: Vec<PlaNodeBase<T>>) -> Self {
         Self(value)
     }
 }
-impl Add<geo::Coord<i32>> for PlaNodeList {
+impl Add<geo::Coord<i32>> for PlaNodeVec {
     type Output = Self;
 
     fn add(self, rhs: geo::Coord<i32>) -> Self::Output {
-        self.0.iter().map(|a| *a + rhs).collect()
+        self.iter().map(|a| *a + rhs).collect()
     }
 }
-impl AddAssign<geo::Coord<i32>> for PlaNodeList {
+impl AddAssign<geo::Coord<i32>> for PlaNodeVec {
     fn add_assign(&mut self, rhs: geo::Coord<i32>) {
         for a in &mut self.0 {
             *a += rhs;
@@ -258,20 +255,20 @@ impl AddAssign<geo::Coord<i32>> for PlaNodeList {
     }
 }
 
-impl<T: PlaNodeType> Deref for PlaNodeListBase<T> {
+impl<T: PlaNodeType> Deref for PlaNodeBaseVec<T> {
     type Target = Vec<PlaNodeBase<T>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
-impl<T: PlaNodeType> DerefMut for PlaNodeListBase<T> {
+impl<T: PlaNodeType> DerefMut for PlaNodeBaseVec<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T: PlaNodeType> IntoIterator for PlaNodeListBase<T> {
+impl<T: PlaNodeType> IntoIterator for PlaNodeBaseVec<T> {
     type Item = PlaNodeBase<T>;
     type IntoIter = std::vec::IntoIter<PlaNodeBase<T>>;
 
@@ -279,7 +276,7 @@ impl<T: PlaNodeType> IntoIterator for PlaNodeListBase<T> {
         self.0.into_iter()
     }
 }
-impl<'a, T: PlaNodeType> IntoIterator for &'a PlaNodeListBase<T> {
+impl<'a, T: PlaNodeType> IntoIterator for &'a PlaNodeBaseVec<T> {
     type Item = &'a PlaNodeBase<T>;
     type IntoIter = std::slice::Iter<'a, PlaNodeBase<T>>;
 
@@ -287,7 +284,7 @@ impl<'a, T: PlaNodeType> IntoIterator for &'a PlaNodeListBase<T> {
         self.0.iter()
     }
 }
-impl<'a, T: PlaNodeType> IntoIterator for &'a mut PlaNodeListBase<T> {
+impl<'a, T: PlaNodeType> IntoIterator for &'a mut PlaNodeBaseVec<T> {
     type Item = &'a mut PlaNodeBase<T>;
     type IntoIter = std::slice::IterMut<'a, PlaNodeBase<T>>;
 
@@ -295,7 +292,7 @@ impl<'a, T: PlaNodeType> IntoIterator for &'a mut PlaNodeListBase<T> {
         self.0.iter_mut()
     }
 }
-impl<T: PlaNodeType> FromIterator<PlaNodeBase<T>> for PlaNodeListBase<T> {
+impl<T: PlaNodeType> FromIterator<PlaNodeBase<T>> for PlaNodeBaseVec<T> {
     fn from_iter<I: IntoIterator<Item = PlaNodeBase<T>>>(iter: I) -> Self {
         Self(iter.into_iter().collect())
     }
@@ -324,7 +321,7 @@ pub struct PlaComponent {
     pub ty: Arc<SkinType>,
     pub display_name: String,
     pub layer: NotNan<f32>,
-    pub nodes: PlaNodeList,
+    pub nodes: PlaNodeVec,
     pub misc: BTreeMap<String, toml::Value>,
 }
 
@@ -391,7 +388,7 @@ impl PlaComponent {
                 }
             })
             .filter_map(Result::transpose)
-            .collect::<Result<PlaNodeList>>()?;
+            .collect::<Result<PlaNodeVec>>()?;
 
         if !matches!(nodes.first(), Some(PlaNode::Line { .. })) {
             return Err(eyre!(

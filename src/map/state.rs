@@ -9,7 +9,7 @@ use crate::{
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
-        pla3::{FullId, PlaComponent, PlaNodeIndex, PlaNodeList},
+        pla3::{FullId, PlaComponent, PlaNodeIndex, PlaNodeVec},
         skin::SkinType,
     },
 };
@@ -21,7 +21,7 @@ pub struct MapState {
     pub cursor_world_pos: Option<geo::Coord<f32>>,
 
     #[serde(skip)]
-    pub created_nodes: PlaNodeList,
+    pub created_nodes: PlaNodeVec,
     #[serde(skip)]
     pub created_point_type: Option<Arc<SkinType>>,
     #[serde(skip)]
@@ -46,7 +46,7 @@ impl Default for MapState {
             centre_coord: geo::Coord::<f32>::default(),
             zoom: 0.0,
             cursor_world_pos: None,
-            created_nodes: PlaNodeList::default(),
+            created_nodes: PlaNodeVec::default(),
             created_point_type: None,
             created_line_type: None,
             created_area_type: None,

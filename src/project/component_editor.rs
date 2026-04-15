@@ -9,7 +9,7 @@ use crate::{
     component_actions::event::ComponentEv,
     mode::EditorMode,
     project::{
-        pla3::{PlaComponent, PlaNode, PlaNodeList},
+        pla3::{PlaComponent, PlaNode, PlaNodeVec},
         skin::SkinType,
     },
     ui::dock::DockWindow,
@@ -706,7 +706,7 @@ impl ComponentEditorWindow {
 
         changed
     }
-    fn show_position_data(ui: &mut egui::Ui, nodes: &PlaNodeList) {
+    fn show_position_data(ui: &mut egui::Ui, nodes: &PlaNodeVec) {
         egui_extras::TableBuilder::new(ui)
             .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)

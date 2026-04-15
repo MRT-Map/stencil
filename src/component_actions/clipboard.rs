@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
-    project::pla3::PlaNodeList,
+    project::pla3::PlaNodeVec,
 };
 
 impl App {
@@ -29,7 +29,7 @@ impl App {
             .iter()
             .flat_map(|a| &a.nodes)
             .copied()
-            .collect::<PlaNodeList>()
+            .collect::<PlaNodeVec>()
             .centre()
         else {
             self.status_on_paste(&[], ctx);
