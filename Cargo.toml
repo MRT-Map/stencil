@@ -35,7 +35,7 @@ async-lock = "=3.4.2"
 async-executor = { version = "=1.14.0", features = ["static"] }
 
 backtrace = "=0.3.76"
-color-backtrace = "=0.7.3"
+color-backtrace = "=0.7.2"
 
 ehttp = { version = "=0.7.1", features = ["json", "native-async"] }
 url = "=2.5.8"

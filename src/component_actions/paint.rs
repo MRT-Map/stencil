@@ -1,11 +1,19 @@
-use std::{borrow::Cow, f32::consts::FRAC_PI_2};
+use std::{
+    borrow::Cow,
+    f32::consts::FRAC_PI_2,
+    num::NonZeroUsize,
+    sync::{LazyLock, Mutex, MutexGuard},
+};
 
 use geo::{
-    Area, BooleanOps, Buffer, Contains, CoordsIter, Distance, TriangulateDelaunay,
+    Area, BooleanOps, Buffer, Contains, CoordsIter, Distance, MapCoords, SimplifyVw,
+    TriangulateDelaunay,
     buffer::{BufferStyle, LineJoin},
     triangulate_delaunay::{DelaunayTriangulationConfig, TriangulationResult},
 };
 use itertools::Itertools;
+use lru::LruCache;
+use ordered_float::OrderedFloat;
 use tracing::{debug, error};
 
 use crate::{
@@ -420,20 +428,18 @@ impl MapWindow {
                 is_hovered = true;
             }
 
-            #[expect(clippy::items_after_statements)]
-            fn triangulate<'a>(
-                p: &'a impl TriangulateDelaunay<'a, f32>,
-            ) -> TriangulationResult<Vec<[egui::Pos2; 3]>> {
-                p.constrained_triangulation(DelaunayTriangulationConfig::default())
-                    .map(|a| {
-                        a.iter()
-                            .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
-                            .collect::<Vec<_>>()
-                    })
-            }
+            let screen_boundaries = geo::Polygon::from(geo::Rect::new(
+                response.rect.max.to_geo_coord_f32(),
+                response.rect.min.to_geo_coord_f32(),
+            ));
+            let polygon = polygon.intersection(&screen_boundaries);
+            let polygon_edge =
+                polygon_edge.map(|polygon_edge| polygon_edge.intersection(&screen_boundaries));
+
+            let mut cache = TRIANGULATION_CACHE.lock().unwrap();
 
             if polygon_edge.is_some()
-                && let Ok(fill_triangles) = triangulate(&polygon)
+                && let Ok(fill_triangles) = triangulate(&polygon, &mut cache)
             {
                 let fill_colour =
                     colour.map_or(egui::Color32::TRANSPARENT, |c| c.gamma_multiply(0.5));
@@ -445,9 +451,11 @@ impl MapWindow {
                     ));
                 }
             }
-            if let Ok(edge_triangles) =
-                polygon_edge.map_or_else(|| triangulate(&polygon), |p| triangulate(&p))
-            {
+            if let Ok(edge_triangles) = if let Some(polygon_edge) = polygon_edge {
+                triangulate(&polygon_edge, &mut cache)
+            } else {
+                triangulate(&polygon, &mut cache)
+            } {
                 let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
                 for triangle in edge_triangles {
                     shapes.push(egui::Shape::convex_polygon(
@@ -658,4 +666,26 @@ impl MapWindow {
             shapes,
         }
     }
+}
+
+type TriangulationCache =
+    LruCache<geo::MultiPolygon<OrderedFloat<f32>>, TriangulationResult<Vec<[egui::Pos2; 3]>>>;
+static TRIANGULATION_CACHE: LazyLock<Mutex<TriangulationCache>> =
+    LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(0x1_0000).unwrap())));
+
+fn triangulate<'a>(
+    p: &geo::MultiPolygon<f32>,
+    cache: &'a mut MutexGuard<TriangulationCache>,
+) -> &'a TriangulationResult<Vec<[egui::Pos2; 3]>> {
+    let cache_key = p.map_coords(|c| geo::coord! {x: OrderedFloat(c.x), y: OrderedFloat(c.y)});
+
+    cache.get_or_insert(cache_key, || {
+        p.simplify_vw(1.0)
+            .constrained_triangulation(DelaunayTriangulationConfig::default())
+            .map(|a| {
+                a.iter()
+                    .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
+                    .collect::<Vec<_>>()
+            })
+    })
 }
