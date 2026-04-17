@@ -1,8 +1,28 @@
 ***Coming soon***
 * Directly download namespace files from GitHub repositories
-* Selecting multiple components
-* Copying and pasting
 * Font configuration
+
+# v3.0.0-alpha.0
+This is a major rewrite of stencil, removing the dependency on `bevy` and relying solely on `egui` through `eframe`.
+
+In addition, it also supports a new PLA3 format that has Bézier curves and a git-diffable file structure/format.
+
+More attention has also been paid to the user interface and experience.
+
+This prerelease includes:
+* Tilemap panning and zooming
+* Component creation, deletion
+* **Selection of multiple components**
+* **Clipboard**
+* Component selecting, moving and data editing
+* History (undo/redo)
+* Project configuration & Component list
+* Notification log
+* Settings
+
+This prerelease does not include:
+* Loading and saving from disk
+* Node editing
 
 # v2.2.12
 * Upgrade `bevy` to v0.16.1, among other dependencies

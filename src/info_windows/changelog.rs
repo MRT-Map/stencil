@@ -24,7 +24,7 @@ impl Popup for ChangelogPopup {
             .max_height(ui.available_height() * 0.75)
             .show(ui, |ui| {
                 let mut cache = CommonMarkCache::default();
-                CommonMarkViewer::new().show(ui, &mut cache, include_str!("../../changelog.md"));
+                CommonMarkViewer::new().show(ui, &mut cache, include_str!("../../CHANGELOG.md"));
             });
         ui.separator();
         !ui.button("Close").clicked()

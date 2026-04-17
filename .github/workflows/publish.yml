@@ -15,6 +15,30 @@ env:
   WIX_VERSION: 7.0.0
 
 jobs:
+  version-changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - run: cargo update
+      - id: version
+        run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
+      - id: changelog
+        run: |
+          {
+          echo 'changelog<<__EOF__'
+          python -c "
+          import os
+          print('\n'.join(open('CHANGELOG.md').read().split('# v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n#')[0])
+          "
+          echo __EOF__
+          } >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
   build-macos-aarch64:
     runs-on: macos-latest
 
@@ -122,30 +146,6 @@ jobs:
       with:
         name: windows-${{ matrix.os }}
         path: target/wix/stencil3-*.msi
-
-  version-changelog:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      changelog: ${{ steps.changelog.outputs.changelog }}
-
-    steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-    - run: cargo update
-    - id: version
-      run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
-    - id: changelog
-      run: |
-        {
-        echo 'changelog<<__EOF__'
-        python -c "
-        import os
-        print('\n'.join(open('changelog.md').read().split('# v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n#')[0])
-        "
-        echo __EOF__
-        } >> "$GITHUB_OUTPUT"
-      env:
-        VERSION: ${{ steps.version.outputs.version }}
 
   github-release:
     runs-on: ubuntu-latest
