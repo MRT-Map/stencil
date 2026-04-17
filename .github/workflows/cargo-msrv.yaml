@@ -6,4 +6,4 @@ on:
     
 jobs:
   cargo-msrv:
-    uses: iiiii7d/cargo-msrv-workflow/.github/workflows/workflow.yml@ff63cf91e4351cefcc084b589d8a6618d9eab59c # main
+    uses: iiiii7d/cargo-msrv-workflow/.github/workflows/workflow.yml@20b36628d66483e17213b6b1199a0518c347c934 # main
