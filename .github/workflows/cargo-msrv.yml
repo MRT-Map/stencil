@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths: ["**/Cargo.toml", "**/Cargo.lock"]
-    branches: ["!master"]
+    branches: ["!v2"]
     
 jobs:
   cargo-msrv:
