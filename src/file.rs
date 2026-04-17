@@ -52,7 +52,7 @@ pub static FOLDERS: LazyLock<AppStrategy> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
     return Dev;
     #[cfg(not(debug_assertions))]
-    app_strategy::choose_native_strategy(AppStrategyArgs {
+    app_strategy::choose_native_strategy(etcetera::AppStrategyArgs {
         top_level_domain: "io.github".into(),
         author: "mrt-map".into(),
         app_name: "stencil3".into(),
@@ -64,7 +64,7 @@ pub static TRASH_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[cfg(debug_assertions)]
     return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/trash");
     #[cfg(not(debug_assertions))]
-    std::env::temp_dir().join("stencil3");
+    std::env::temp_dir().join("stencil3")
 });
 
 pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(

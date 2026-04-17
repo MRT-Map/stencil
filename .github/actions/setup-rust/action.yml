@@ -29,5 +29,5 @@ runs:
         override: 'true'
     - run: |
         mkdir .cargo
-        mv .github/actions_config.toml .cargo/config.toml
+        cp .github/actions_config.toml .cargo/config.toml
       shell: bash

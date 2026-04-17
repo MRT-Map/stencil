@@ -1,5 +1,4 @@
 use egui::scroll_area::ScrollBarVisibility;
-use egui_notify::ToastLevel;
 use tracing::info;
 
 use crate::{
@@ -138,7 +137,7 @@ impl App {
                             info!(label = "Trigger Warning", "Clicked menu item");
                             self.ui
                                 .notifs
-                                .push("Warning Triggered", ToastLevel::Warning);
+                                .push("Warning Triggered", egui_notify::ToastLevel::Warning);
                         }
                         if ui.button("Trigger Panic").clicked() {
                             info!(label = "Trigger Panic", "Clicked menu item");

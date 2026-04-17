@@ -15,7 +15,7 @@ rustflags = ["-Zshare-generics=y", "-Zthreads=0"]
 
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
-rustflags = ["-Zshare-generics=n", "-Zthreads=0"]
+rustflags = ["-Zshare-generics=n", "-Zthreads=0", "-C", "target-feature=+crt-static"]
 [target.aarch64-pc-windows-msvc]
 linker = "rust-lld.exe"
-rustflags = ["-Zshare-generics=n", "-Zthreads=0"]
+rustflags = ["-Zshare-generics=n", "-Zthreads=0", "-C", "target-feature=+crt-static"]

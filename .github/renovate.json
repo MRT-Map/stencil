@@ -12,5 +12,21 @@
       ],
       "groupName": "egui-group"
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)(workflow-templates|\\.(?:github|gitea|forgejo)/(?:workflows|actions))/.+\\.ya?ml$/",
+        "/(^|/)action\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: cargo-wix\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentDigest>.+?)[\"']?\\s"
+      ],
+      "currentValueTemplate": "main",
+      "depNameTemplate": "cargo-wix",
+      "packageNameTemplate": "https://github.com/volks73/cargo-wix",
+      "datasourceTemplate": "git-refs"
+    }
   ]
 }

@@ -9,8 +9,8 @@ env:
 
   # renovate: datasource=crate depName=cargo-bundle versioning=loose
   CARGO_BUNDLE_VERSION: 0.9.0
-  # renovate: datasource=crate depName=cargo-wix versioning=loose
-  CARGO_WIX_VERSION: 0.3.9
+  # renovate: cargo-wix
+  CARGO_WIX_REV: 041cc3c624abca5bcab3c3eaf785ceba9ea59394
   # renovate: datasource=nuget depname=wix
   WIX_VERSION: 7.0.0
 
@@ -47,11 +47,8 @@ jobs:
     - uses: ./.github/actions/setup-rust
       with:
         cache: false
-        components: llvm-tools
-    - run: brew install openssl@3
-    - uses: taiki-e/install-action@85b24a67ef0c632dfefad70b9d5ce8fddb040754 # v2.75.10
-      with:
-        tool: cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+    - uses: cargo-bins/cargo-binstall@a73df93e1ed593fcb62c58204ab4d5731ae8cf42 # main
+    - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 
     - run: cargo --locked bundle --release
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -67,9 +64,8 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           cache: false
-      - run: brew install openssl@3
 
-      - run: cargo --locked  build --release
+      - run: cargo --locked build --release
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: macos-x86_64
@@ -77,7 +73,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: [build-macos-aarch64, build-macos-x86_64]
+    needs: [build-macos-aarch64, build-macos-x86_64, version-changelog]
 
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -93,12 +89,14 @@ jobs:
           mv stencil3-new app/stencil3.app/Contents/MacOS/stencil3
       - run: |
           ln -s "/Applications" "app/"
-          hdiutil create stencil3.dmg -fs HFS+ -volname stencil3 -srcfolder "app/" -ov
+          hdiutil create "stencil3-$VERSION.dmg" -fs HFS+ -volname stencil3 -srcfolder "app/" -ov
+        env:
+          VERSION: ${{ needs.version-changelog.outputs.version }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: macos
-          path: stencil3.dmg
+          path: stencil3-*.dmg
 
   build-linux:
     runs-on: ${{ matrix.os }}
@@ -111,9 +109,8 @@ jobs:
     - uses: ./.github/actions/setup-rust
       with:
         cache: false
-    - uses: taiki-e/install-action@85b24a67ef0c632dfefad70b9d5ce8fddb040754 # v2.75.10
-      with:
-        tool: cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+    - uses: cargo-bins/cargo-binstall@a73df93e1ed593fcb62c58204ab4d5731ae8cf42 # main
+    - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
 #      with:
 #        packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
@@ -136,13 +133,15 @@ jobs:
     - uses: ./.github/actions/setup-rust
       with:
         cache: false
-    - uses: taiki-e/install-action@85b24a67ef0c632dfefad70b9d5ce8fddb040754 # v2.75.10
-      with:
-        tool: cargo-wix@${{ env.CARGO_WIX_VERSION }}
-    - run: dotnet tool install --global wix --version "${{ env.WIX_VERSION }}"
+    - run: |
+        dotnet tool install --global "wix@${{ env.WIX_VERSION }}"
+        wix eula accept wix7
+        wix extension add -g "WixToolset.Util.wixext/${{ env.WIX_VERSION }}"
+        wix extension add -g "WixToolset.UI.wixext/${{ env.WIX_VERSION }}"
+    - run: cargo install --git https://github.com/volks73/cargo-wix --rev ${{ env.CARGO_WIX_REV }} --locked cargo-wix
 
     - run: cargo --locked build --release
-    - run: cargo wix -I "./build/windows/main.wxs" -v
+    - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: windows-${{ matrix.os }}
@@ -171,7 +170,7 @@ jobs:
         path: dist
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
-        name: windows-latest
+        name: windows-windows-latest
         path: dist
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
@@ -229,7 +228,7 @@ jobs:
       - env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
         run: |
-          export MAC_SHA=$(cat "dist/stencil3.dmg" | shasum -a 256 | cut -d ' ' -f1)
+          export MAC_SHA=$(cat "dist/stencil3-${VERSION}.dmg" | shasum -a 256 | cut -d ' ' -f1)
           cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$MAC_SHA\"/" > build/macos/brew2.rb
           cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$VERSION\"/" > build/macos/brew.rb
           rm build/macos/brew2.rb

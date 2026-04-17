@@ -79,7 +79,7 @@ impl ShortcutSettings {
     pub fn insert(
         &mut self,
         action: ShortcutAction,
-        mut shortcut: egui::KeyboardShortcut,
+        #[cfg_attr(target_os = "macos", expect(unused_mut))] mut shortcut: egui::KeyboardShortcut,
     ) -> bimap::Overwritten<ShortcutAction, egui::KeyboardShortcut> {
         #[cfg(not(target_os = "macos"))]
         if shortcut.modifiers.ctrl {
@@ -205,6 +205,7 @@ impl Settings for ShortcutSettings {
         let Some(key) = ui.input(|i| i.keys_down.iter().next().copied()) else {
             return;
         };
+        #[cfg_attr(target_os = "macos", expect(unused_mut))]
         let mut new_shortcut = egui::KeyboardShortcut::new(ui.input(|i| i.modifiers), key);
         #[cfg(not(target_os = "macos"))]
         if new_shortcut.modifiers.ctrl {
