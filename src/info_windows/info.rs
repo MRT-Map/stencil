@@ -20,7 +20,7 @@ impl Popup for InfoPopup {
                 .fit_to_exact_size(egui::vec2(975.0 / 4.0, 569.0 / 4.0)),
         );
         ui.label("Made by __7d for the MRT Mapping Services");
-        ui.hyperlink_to("GitHub", "https://github.com/MRT-Map/stencil2");
+        ui.hyperlink_to("GitHub", "https://github.com/MRT-Map/stencil3");
         !ui.button("Close").clicked()
     }
 }

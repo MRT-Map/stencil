@@ -95,7 +95,7 @@ impl Default for MapSettings {
     }
 }
 
-impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil2/wiki/Advanced-Topics#settings.maptoml");
+impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil3/wiki/Advanced-Topics#settings.maptoml");
 
 impl Settings for MapSettings {
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {

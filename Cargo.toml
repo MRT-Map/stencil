@@ -1,13 +1,13 @@
 [package]
 name = "stencil3"
-version = "3.0.0"
+version = "3.0.0-alpha.0"
 edition = "2024"
 description = "Map editor for MRT Map data"
 authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
 license = "GPL-3.0-only"
-homepage = "https://mrt-map.github.io/stencil2"
-repository = "https://github.com/mrt-map/stencil2"
-documentation = "https://github.com/MRT-Map/stencil2/wiki"
+homepage = "https://mrt-map.github.io/stencil3"
+repository = "https://github.com/mrt-map/stencil3"
+documentation = "https://github.com/MRT-Map/stencil3/wiki"
 readme = "README.md"
 keywords = ["stencil", "stencil3", "mrt", "mrt-map", "mrt-mapping-services"]
 categories = ["games"]

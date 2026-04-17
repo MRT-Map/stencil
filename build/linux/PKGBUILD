@@ -1,15 +1,16 @@
 # Maintainer: 7d <i.third.7d@protonmail.com>
 pkgname=stencil3
-pkgver=3.0.0
+pkgver=3.0.0-alpha.0
 pkgrel=1
-depends=('curl')
 makedepends=('dpkg')
-arch=('x86_64' 'aarch64' 'armv7')
+arch=('x86_64' 'aarch64')
 pkgdesc="Map editor for MRT Map data"
-license=('GPL3')
-url="https://github.com/mrt-map/stencil2"
-source=("$pkgname-$pkgver.deb::$url/releases/download/v$pkgver/stencil3_${pkgver}_amd64.deb")
-sha256sums=('c11cff52737048d34ec357f36ee9a1262344a673376fade66c1b35b802a8c45d')
+license=('GPL-3.0-only')
+url="https://github.com/mrt-map/stencil3"
+source_x86_64=("$pkgname_$pkgver.deb::$url/releases/download/v$pkgver/stencil3_${pkgver}_amd64.deb")
+source_aarch64=("$pkgname_$pkgver.deb::$url/releases/download/v$pkgver/stencil3_${pkgver}_arm64.deb")
+sha256sums_x86_64=('c11cff52737048d34ec357f36ee9a1262344a673376fade66c1b35b802a8c45d')
+sha256sums_aarch64=('c11cff52737048d34ec357f36ee9a1262344a673376fade66c1b35b802a8c45d')
 
 if [[ -f PKGBUILD ]]; then
     cp PKGBUILD stencil3.install

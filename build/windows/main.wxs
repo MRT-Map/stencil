@@ -165,7 +165,7 @@
         <Icon Id='ProductICO' SourceFile='.\icons\icon.ico'/>
         <Property Id='ARPPRODUCTICON' Value='ProductICO' />
         
-        <Property Id='ARPHELPLINK' Value='https://github.com/mrt-map/stencil2'/>
+        <Property Id='ARPHELPLINK' Value='https://github.com/mrt-map/stencil3'/>
         
         <UI>
             <UIRef Id='WixUI_FeatureTree'/>
