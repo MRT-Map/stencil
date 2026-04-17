@@ -13,12 +13,9 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::{
     App,
-    component_actions::paint::{PaintResult, TOLERANCE},
+    component_actions::paint::TOLERANCE,
     coord_conversion::CoordConversionExt,
-    project::{
-        Project,
-        skin::{PointStyle, SkinType},
-    },
+    project::{Project, skin::SkinType},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

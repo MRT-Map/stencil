@@ -247,13 +247,18 @@ impl MapWindow {
     }
 
     fn dash(path: &[egui::Pos2], colour: egui::Color32, arrows: bool) -> Vec<egui::Shape> {
-        let mut dashes =
-            egui::Shape::dashed_line(path, egui::Stroke::new(6.0, egui::Color32::BLACK), 8.0, 8.0);
+        let mut dashes = egui::Shape::dashed_line(
+            path,
+            egui::Stroke::new(6.0_f32, egui::Color32::BLACK),
+            8.0,
+            8.0,
+        );
         if arrows {
             dashes = Self::add_arrows(dashes);
         }
 
-        let mut dashes2 = egui::Shape::dashed_line(path, egui::Stroke::new(2.0, colour), 8.0, 8.0);
+        let mut dashes2 =
+            egui::Shape::dashed_line(path, egui::Stroke::new(2.0_f32, colour), 8.0, 8.0);
         if arrows {
             dashes2 = Self::add_arrows(dashes2);
         }

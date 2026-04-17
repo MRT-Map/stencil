@@ -180,32 +180,32 @@ impl MapWindow {
                 painter.hline(
                     egui::Rangef::new(x + 1.0 - 16.0, x + 1.0 + 16.0),
                     y + 1.0,
-                    egui::Stroke::new(8.0, egui::Color32::BLACK.gamma_multiply(0.25)),
+                    egui::Stroke::new(8.0_f32, egui::Color32::BLACK.gamma_multiply(0.25)),
                 );
                 painter.vline(
                     x + 1.0,
                     egui::Rangef::new(y + 1.0 - 16.0, y + 1.0 + 16.0),
-                    egui::Stroke::new(8.0, egui::Color32::BLACK.gamma_multiply(0.25)),
+                    egui::Stroke::new(8.0_f32, egui::Color32::BLACK.gamma_multiply(0.25)),
                 );
                 painter.hline(
                     egui::Rangef::new(x - 16.0, x + 16.0),
                     y,
-                    egui::Stroke::new(6.0, egui::Color32::BLACK),
+                    egui::Stroke::new(6.0_f32, egui::Color32::BLACK),
                 );
                 painter.vline(
                     x,
                     egui::Rangef::new(y - 16.0, y + 16.0),
-                    egui::Stroke::new(6.0, egui::Color32::BLACK),
+                    egui::Stroke::new(6.0_f32, egui::Color32::BLACK),
                 );
                 painter.hline(
                     egui::Rangef::new(x - 14.0, x + 14.0),
                     y,
-                    egui::Stroke::new(2.0, egui::Color32::WHITE),
+                    egui::Stroke::new(2.0_f32, egui::Color32::WHITE),
                 );
                 painter.vline(
                     x,
                     egui::Rangef::new(y - 14.0, y + 14.0),
-                    egui::Stroke::new(2.0, egui::Color32::WHITE),
+                    egui::Stroke::new(2.0_f32, egui::Color32::WHITE),
                 );
             }
         }
