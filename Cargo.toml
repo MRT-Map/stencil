@@ -88,7 +88,7 @@ codegen-units = 1
 [package.metadata.bundle]
 name = "stencil3"
 identifier = "io.github.mrt-map.stencil3"
-icon = ["icons/icon_*.png"]
+icon = ["assets/icons/icon_*.png"]
 
 [lints.rust]
 future-incompatible = "deny"
