@@ -48,7 +48,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           components: clippy
-      - uses: taiki-e/install-action@85b24a67ef0c632dfefad70b9d5ce8fddb040754 # v2.75.10
+      - uses: taiki-e/install-action@0c7a94999971db56e9df89df226240aab222e776 # v2.75.14
         env:
           # renovate: datasource=crate depName=clippy-sarif versioning=loose
           CLIPPY_SARIF_VERSION: 0.8.0
