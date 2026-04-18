@@ -235,9 +235,9 @@ jobs:
 
           export LINUX_SHA1=$(cat "dist/stencil3_${VERSION}_amd64.deb" | shasum -a 256 | cut -d ' ' -f1)
           export LINUX_SHA2=$(cat "dist/stencil3_${VERSION}_arm64.deb" | shasum -a 256 | cut -d ' ' -f1)
-          cat build/linux/PKGBUILD | sed "s/sha256sums_x86_64=.*/sha256sums=('$LINUX_SHA1')/" > build/linux/PKGBUILD2
-          cat build/linux/PKGBUILD2 | sed "s/sha256sums_aarch64=.*/sha256sums=('$LINUX_SHA2')/" > build/linux/PKGBUILD3
-          cat build/linux/PKGBUILD3 | sed "s/pkgver=.*/pkgver=$VERSION/" > build/linux/PKGBUILD
+          cat build/linux/PKGBUILD | sed "s/sha256sums_x86_64=.*/sha256sums_x86_64=('$LINUX_SHA1')/" > build/linux/PKGBUILD2
+          cat build/linux/PKGBUILD2 | sed "s/sha256sums_aarch64=.*/sha256sums_aarch64=('$LINUX_SHA2')/" > build/linux/PKGBUILD3
+          cat build/linux/PKGBUILD3 | sed "s/pkgver=.*/pkgver=${VERSION//-/_}/" > build/linux/PKGBUILD
           rm build/linux/PKGBUILD2 build/linux/PKGBUILD3
           
           cat build/windows/scoop.json | sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop2.json
