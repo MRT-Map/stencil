@@ -48,12 +48,11 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           components: clippy
-      - uses: taiki-e/install-action@5939f3337e40968c39aa70f5ecb1417a92fb25a0 # v2.75.15
+      - uses: cargo-bins/cargo-binstall@d125de8b4538541574fd9357b6feb61c8486464b # main
+      - run: cargo binstall --force clippy-sarif@${{ env.CLIPPY_SARIF_VERSION }}
         env:
           # renovate: datasource=crate depName=clippy-sarif versioning=loose
           CLIPPY_SARIF_VERSION: 0.8.0
-        with:
-          tool: clippy-sarif@${{ env.CLIPPY_SARIF_VERSION }}
 
       - uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
 
