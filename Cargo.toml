@@ -1,9 +1,9 @@
 [package]
 name = "stencil3"
-version = "3.0.0-alpha.0"
+version = "3.0.0-alpha.1"
 edition = "2024"
 description = "Map editor for MRT Map data"
-authors = ["MRT Mapping Services", "7d <i.third.7d@protonmail.com>"]
+authors = ["MRT Mapping Services", "7d <61975820+iiiii7d@users.noreply.github.com>"]
 license = "GPL-3.0-only"
 homepage = "https://mrt-map.github.io/stencil3"
 repository = "https://github.com/mrt-map/stencil3"
