@@ -684,7 +684,7 @@ fn triangulate<'a>(
             .constrained_triangulation(DelaunayTriangulationConfig::default())
             .map(|a| {
                 a.iter()
-                    .map(|a| [a.0, a.1, a.2].map(CoordConversionExt::to_egui_pos2))
+                    .map(|a| a.to_array().map(CoordConversionExt::to_egui_pos2))
                     .collect::<Vec<_>>()
             })
     })
