@@ -22,6 +22,7 @@ impl DockWindow for ComponentEditorWindow {
     fn title(self) -> String {
         "Component".into()
     }
+    #[tracing::instrument(skip_all)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         let Some(skin) = app.project.skin() else {
             ui.heading("Waiting for skin...");

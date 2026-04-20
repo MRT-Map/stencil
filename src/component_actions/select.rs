@@ -6,6 +6,7 @@ use crate::{
 };
 
 impl MapWindow {
+    #[tracing::instrument(skip_all)]
     pub fn select_hovered_component(
         app: &mut App,
         ctx: &egui::Context,
@@ -90,6 +91,7 @@ impl MapWindow {
     }
 }
 impl App {
+    #[tracing::instrument(skip_all)]
     pub fn select_component(&mut self, ctx: &egui::Context, id: FullId) {
         if ctx.input(|a| a.modifiers.shift) {
             #[expect(clippy::map_entry)]

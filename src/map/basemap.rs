@@ -106,6 +106,7 @@ impl Basemap {
 }
 
 impl Basemap {
+    #[tracing::instrument(skip_all)]
     pub fn config_ui(&mut self, ui: &mut egui::Ui) {
         let default = Self::default();
 

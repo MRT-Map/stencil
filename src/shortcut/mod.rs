@@ -73,6 +73,7 @@ impl ShortcutAction {
 }
 
 impl App {
+    #[tracing::instrument(skip_all)]
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
         let mut eframe_workaround_used = false;
         for shortcut in self.settings.shortcut.shortcuts_ordered() {

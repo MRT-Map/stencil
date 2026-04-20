@@ -29,6 +29,7 @@ impl Default for MiscSettings {
 impl_load_save!(toml MiscSettings, FOLDERS.in_config_dir("misc.toml"), "# Documentation is at https://github.com/MRT-Map/stencil3/wiki/Advanced-Topics#settings.misctoml");
 
 impl Settings for MiscSettings {
+    #[tracing::instrument(skip_all)]
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
         let default = Self::default();
 

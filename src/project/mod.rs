@@ -78,6 +78,7 @@ impl Project {
             .in_cache_dir("skin")
             .join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
     }
+    #[tracing::instrument(skip_all)]
     pub fn load_skin(&mut self, ctx: &egui::Context, notifs: &mut NotifState) {
         match &mut self.skin_status {
             SkinStatus::Unloaded => {
@@ -158,6 +159,7 @@ struct ProjectToml<'a> {
 }
 
 impl Project {
+    #[tracing::instrument(skip_all)]
     pub fn load(path: PathBuf) -> Result<Self> {
         let project_toml: ProjectToml =
             toml::from_str(&std::fs::read_to_string(path.join("project.toml"))?)?;
@@ -204,6 +206,7 @@ impl Project {
 
         Ok(errors)
     }
+    #[tracing::instrument(skip_all)]
     pub fn load_namespace(&mut self, namespace: &str) -> Result<Vec<Report>> {
         let Some(path) = &self.path else {
             return Ok(Vec::new());
@@ -254,6 +257,7 @@ impl Project {
         }
         notifs.push("Saved project", ToastLevel::Success);
     }
+    #[tracing::instrument(skip_all)]
     pub fn save(&self, notifs: &mut NotifState) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();

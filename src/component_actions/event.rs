@@ -19,6 +19,7 @@ pub enum ComponentEv {
 }
 
 impl Event for ComponentEv {
+    #[tracing::instrument(skip_all, fields(self))]
     fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
         match self {
             Self::Create(components) => {

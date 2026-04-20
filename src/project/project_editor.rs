@@ -18,6 +18,7 @@ impl DockWindow for ProjectEditorWindow {
     fn title(self) -> String {
         "Project".into()
     }
+    #[tracing::instrument(skip_all)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
@@ -184,6 +185,7 @@ impl DockWindow for ProjectEditorWindow {
 }
 
 impl ProjectEditorWindow {
+    #[tracing::instrument(skip_all)]
     pub fn component_list(app: &mut App, ui: &mut egui::Ui, ns: &str) {
         let mut component_to_delete = None;
         let mut component_to_select = None;

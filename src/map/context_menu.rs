@@ -2,6 +2,7 @@ use crate::{App, map::MapWindow, shortcut::ShortcutAction};
 
 impl MapWindow {
     pub const HOVERED_OVER_CTX_MENU: &str = "hovered over context menu";
+    #[tracing::instrument(skip_all)]
     pub fn component_context_menu(app: &mut App, response: &egui::Response) {
         if app.mode.is_editing() {
             return;

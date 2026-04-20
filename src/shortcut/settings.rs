@@ -127,6 +127,7 @@ impl ShortcutsTabState {
 }
 
 impl Settings for ShortcutSettings {
+    #[tracing::instrument(skip_all)]
     fn ui_inner(&mut self, ui: &mut egui::Ui, tab_state: &mut dyn Any) {
         let tab_state = tab_state.downcast_mut::<ShortcutsTabState>().unwrap();
 

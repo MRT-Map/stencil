@@ -7,6 +7,7 @@ use crate::{
 
 impl MapWindow {
     // todo glitch when mouse leaves window
+    #[tracing::instrument(skip_all)]
     pub fn move_components(app: &mut App, response: &egui::Response) {
         if app.mode != EditorMode::Select {
             if let Some(origin_world_pos) = app.ui.map.comp_move_origin_world_pos.take() {

@@ -63,6 +63,7 @@ impl PartialPaintResult {
 }
 
 impl MapWindow {
+    #[tracing::instrument(skip_all)]
     pub fn paint_components(app: &mut App, response: &egui::Response, painter: &egui::Painter) {
         let mut hovered_component = None;
         let mut selected_shapes = Vec::new();
@@ -130,6 +131,7 @@ impl MapWindow {
         }
         app.ui.map.hovered_component = hovered_component;
     }
+    #[tracing::instrument(skip_all, fields(%id = component.full_id))]
     pub fn paint_component<'a>(
         app: &App,
         response: &egui::Response,
@@ -308,6 +310,7 @@ impl MapWindow {
         ))
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn paint_area(
         response: &egui::Response,
         detect_hovered: bool,
@@ -474,6 +477,7 @@ impl MapWindow {
             shapes,
         }
     }
+    #[tracing::instrument(skip_all)]
     pub fn paint_line(
         response: &egui::Response,
         detect_hovered: bool,
@@ -596,6 +600,7 @@ impl MapWindow {
             shapes,
         }
     }
+    #[tracing::instrument(skip_all)]
     pub fn paint_point(
         response: &egui::Response,
         detect_hovered: bool,

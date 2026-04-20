@@ -9,6 +9,7 @@ impl DockWindow for HistoryViewerWindow {
     fn title(self) -> String {
         "History".into()
     }
+    #[tracing::instrument(skip_all)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {

@@ -43,6 +43,7 @@ impl DockWindow for MapWindow {
     }
 }
 impl MapWindow {
+    #[tracing::instrument(skip_all)]
     fn tiles(
         app: &mut App,
         ctx: &egui::Context,
@@ -118,6 +119,7 @@ impl MapWindow {
             tile_screen_top_left.y = min_tile_screen_top_left.y;
         }
     }
+    #[tracing::instrument(skip_all)]
     fn cursor(app: &App, ctx: &egui::Context, response: &egui::Response, painter: &egui::Painter) {
         if response.hover_pos().is_none() {
             return;
@@ -210,6 +212,7 @@ impl MapWindow {
             }
         }
     }
+    #[tracing::instrument(skip_all)]
     fn interaction(app: &mut App, ctx: &egui::Context, response: &egui::Response) {
         let Some(hover_pos) = response.hover_pos().or_else(|| {
             response

@@ -117,6 +117,7 @@ impl DockWindow for NotifLogWindow {
     fn title(self) -> String {
         "Notification Log".into()
     }
+    #[tracing::instrument(skip_all)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         for entry in app.ui.notifs.notifs.iter().rev() {
             let (colour, notif_type) = match &entry.level {

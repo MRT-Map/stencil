@@ -380,6 +380,7 @@ impl PlaComponent {
         root.join(&self.full_id.namespace)
             .join(format!("{}.pla3", self.full_id.id))
     }
+    #[tracing::instrument(skip_all, fields(full_id))]
     pub fn load_from_string(
         s: &str,
         full_id: FullId,

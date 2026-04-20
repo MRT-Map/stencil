@@ -52,6 +52,7 @@ impl TileCoord {
         let _ = std::fs::create_dir_all(&path);
         path.join(format!("{}.{}", self.y, basemap.extension))
     }
+    #[tracing::instrument(skip_all, fields(self))]
     pub fn texture_id(
         self,
         ctx: &egui::Context,

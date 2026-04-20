@@ -6,6 +6,7 @@ use crate::{
 };
 
 impl App {
+    #[tracing::instrument(skip_all)]
     pub fn copy_selected_components(&mut self, ctx: &egui::Context) {
         self.ui.map.clipboard = self
             .map_selected_components()
@@ -15,12 +16,14 @@ impl App {
 
         self.status_on_copy(ctx);
     }
+    #[tracing::instrument(skip_all)]
     pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
         self.copy_selected_components(ctx);
         self.delete_selected_components(ctx);
 
         self.status_on_cut(ctx);
     }
+    #[tracing::instrument(skip_all)]
     pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
         let Some(centre) = self
             .ui
@@ -69,6 +72,7 @@ impl App {
         self.run_event(ComponentEv::Create(components_to_add), ctx);
         self.ui.map.selected = ids;
     }
+    #[tracing::instrument(skip_all)]
     pub fn map_clear_clipboard(&mut self, ctx: &egui::Context) {
         self.ui.map.clipboard.clear();
         self.status_on_clear_clipboard(ctx);

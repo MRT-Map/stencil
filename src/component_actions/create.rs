@@ -38,6 +38,7 @@ const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
 ];
 
 impl MapWindow {
+    #[tracing::instrument(skip_all)]
     pub fn create_point(
         app: &mut App,
         ctx: &egui::Context,
@@ -94,6 +95,7 @@ impl MapWindow {
         app.run_event(ComponentEv::Create(vec![component]), ctx);
     }
     #[inline]
+    #[tracing::instrument(skip_all)]
     pub fn create_line(
         app: &mut App,
         ctx: &egui::Context,
@@ -103,6 +105,7 @@ impl MapWindow {
         Self::create_line_or_area::<true>(app, ctx, response, painter);
     }
     #[inline]
+    #[tracing::instrument(skip_all)]
     pub fn create_area(
         app: &mut App,
         ctx: &egui::Context,

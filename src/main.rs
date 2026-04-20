@@ -64,6 +64,7 @@ pub struct App {
 }
 
 impl App {
+    #[tracing::instrument(skip_all, name = "app_new")]
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
@@ -74,6 +75,7 @@ impl App {
         }
         app
     }
+    #[tracing::instrument(skip_all, name = "app_load_state")]
     fn load_state() -> Self {
         let mut ui = UiState::load_state();
         Self {
@@ -82,6 +84,7 @@ impl App {
             ..Self::default()
         }
     }
+    #[tracing::instrument(skip_all, name = "app_save_state")]
     fn save_state(&mut self) {
         self.ui.dock_layout.save(&mut self.ui.notifs);
         self.settings.save_state(&mut self.ui.notifs);
