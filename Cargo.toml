@@ -24,7 +24,7 @@ egui_dock = { version = "=0.19.1" , features = ["serde"] }
 egui-notify = "=0.22.0"
 
 tracing = "=0.1.44"
-tracing-appender = "=0.2.4"
+tracing-appender = "=0.2.5"
 tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
 color-spantrace = "=0.3.0"
 tracing-error = "=0.2.1"
