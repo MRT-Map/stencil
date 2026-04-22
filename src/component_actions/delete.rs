@@ -9,10 +9,10 @@ impl App {
             .cloned()
             .collect::<Vec<_>>();
         if components.is_empty() {
-            self.status_on_delete(&[], ctx);
+            self.status_on_delete(&[]);
             return;
         }
-        self.status_on_delete(&components, ctx);
+        self.status_on_delete(&components);
         self.run_event(ComponentEv::Delete(components), ctx);
         self.ui.map.selected.clear();
     }

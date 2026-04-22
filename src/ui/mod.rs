@@ -14,7 +14,7 @@ pub mod settings;
 pub mod status;
 
 pub struct UiState {
-    pub status: egui::WidgetText,
+    pub status: egui::text::LayoutJob,
     pub dock_layout: DockLayout,
     pub popups: HashMap<String, Popups>,
     pub notifs: NotifState,
@@ -25,7 +25,7 @@ pub struct UiState {
 impl Default for UiState {
     fn default() -> Self {
         Self {
-            status: egui::WidgetText::default(),
+            status: egui::text::LayoutJob::default(),
             dock_layout: DockLayout::default(),
             popups: HashMap::default(),
             notifs: NotifState::default(),

@@ -34,7 +34,7 @@ impl MapWindow {
                 .collect();
 
             info!(?move_delta, "Move finished");
-            app.status_on_move_finish(move_delta, &response.ctx);
+            app.status_on_move_finish(move_delta);
             app.run_event(
                 ComponentEv::ChangeField {
                     before,
@@ -69,7 +69,7 @@ impl MapWindow {
         }
 
         if let Some(move_delta) = app.ui.map.comp_move_delta() {
-            app.status_on_move(move_delta, &response.ctx);
+            app.status_on_move(move_delta);
         }
     }
 }

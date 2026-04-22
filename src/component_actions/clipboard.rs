@@ -7,21 +7,21 @@ use crate::{
 
 impl App {
     #[tracing::instrument(skip_all)]
-    pub fn copy_selected_components(&mut self, ctx: &egui::Context) {
+    pub fn copy_selected_components(&mut self) {
         self.ui.map.clipboard = self
             .map_selected_components()
             .into_iter()
             .cloned()
             .collect();
 
-        self.status_on_copy(ctx);
+        self.status_on_copy();
     }
     #[tracing::instrument(skip_all)]
     pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
-        self.copy_selected_components(ctx);
+        self.copy_selected_components();
         self.delete_selected_components(ctx);
 
-        self.status_on_cut(ctx);
+        self.status_on_cut();
     }
     #[tracing::instrument(skip_all)]
     pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
@@ -35,7 +35,7 @@ impl App {
             .collect::<PlaNodeVec>()
             .centre()
         else {
-            self.status_on_paste(&[], ctx);
+            self.status_on_paste(&[]);
             return;
         };
         let delta = self.ui.map.cursor_world_pos.map_or_else(
@@ -68,13 +68,13 @@ impl App {
             .iter()
             .map(|a| (a.full_id.clone(), Vec::new()))
             .collect::<HashMap<_, _>>();
-        self.status_on_paste(&components_to_add, ctx);
+        self.status_on_paste(&components_to_add);
         self.run_event(ComponentEv::Create(components_to_add), ctx);
         self.ui.map.selected = ids;
     }
     #[tracing::instrument(skip_all)]
-    pub fn map_clear_clipboard(&mut self, ctx: &egui::Context) {
+    pub fn map_clear_clipboard(&mut self) {
         self.ui.map.clipboard.clear();
-        self.status_on_clear_clipboard(ctx);
+        self.status_on_clear_clipboard();
     }
 }

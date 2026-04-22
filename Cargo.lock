@@ -1417,6 +1417,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_layout_job_macro"
+version = "0.1.0"
+source = "git+https://github.com/iiiii7d/egui_layout_job_macro#aeca02bd5f86990f0e2027cc07987e736f0bd0c3"
+dependencies = [
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "ehttp"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4866,6 +4877,7 @@ dependencies = [
  "egui_commonmark",
  "egui_dock",
  "egui_extras",
+ "egui_layout_job_macro",
  "ehttp",
  "embed-resource",
  "enum_dispatch",

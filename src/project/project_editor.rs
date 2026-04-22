@@ -267,7 +267,7 @@ impl ProjectEditorWindow {
             });
         if let Some(component_to_delete) = component_to_delete {
             let component_to_delete = vec![component_to_delete];
-            app.status_on_delete(&component_to_delete, ui);
+            app.status_on_delete(&component_to_delete);
             app.run_event(ComponentEv::Delete(component_to_delete), ui);
         }
         if let Some(component_to_select) = component_to_select {

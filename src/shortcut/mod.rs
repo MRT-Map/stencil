@@ -167,7 +167,7 @@ impl App {
                     self.history_redo(ctx);
                 }
                 ShortcutAction::Delete => self.delete_selected_components(ctx),
-                ShortcutAction::Copy => self.copy_selected_components(ctx),
+                ShortcutAction::Copy => self.copy_selected_components(),
                 ShortcutAction::Cut => self.cut_selected_components(ctx),
                 ShortcutAction::Paste => self.paste_clipboard_components(ctx),
                 _ => {}

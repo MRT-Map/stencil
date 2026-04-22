@@ -91,7 +91,7 @@ impl App {
         };
         debug!(?event, "Undoing event");
         if event.undo(ctx, self) {
-            self.status_undo(&event, ctx);
+            self.status_undo(&event);
             self.project.history.redo_stack.push_front(event);
         } else {
             self.project.history.undo_stack.push_back(event);
@@ -103,7 +103,7 @@ impl App {
         };
         debug!(?event, "Redoing event");
         if event.run(ctx, self) {
-            self.status_redo(&event, ctx);
+            self.status_redo(&event);
             self.project.history.undo_stack.push_back(event);
         } else {
             self.project.history.redo_stack.push_front(event);

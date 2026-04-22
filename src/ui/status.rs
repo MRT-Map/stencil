@@ -1,3 +1,6 @@
+use std::sync::LazyLock;
+
+use egui_layout_job_macro::{layout_job, text_format};
 use itertools::Itertools;
 use tracing::{debug, info};
 
@@ -5,307 +8,180 @@ use crate::{
     App,
     mode::EditorMode,
     project::{history::Events, pla3::PlaComponent},
-    shortcut::{ShortcutAction, settings::ShortcutSettings},
 };
 
-enum Section<'a> {
-    Text(&'a str),
-    Emphasis(&'a str),
-    Mouse(&'a str),
-    Modifier(&'a str),
-    ShortcutAction(ShortcutAction),
-    Code(&'a str),
-}
-impl Section<'_> {
-    const LEADING_SPACE: f32 = 1.0;
-    fn format(
-        sections: impl IntoIterator<Item = Self>,
-        shortcut_settings: &mut ShortcutSettings,
-        ctx: &egui::Context,
-    ) -> egui::text::LayoutJob {
-        let action_default_format = egui::TextFormat {
-            background: egui::Color32::BLACK,
-            expand_bg: 2.0,
-            color: egui::Color32::WHITE,
-            ..egui::TextFormat::default()
-        };
-        let mut job = egui::text::LayoutJob::default();
-        for section in sections {
-            match section {
-                Self::Text(s) => job.append(s, Self::LEADING_SPACE, egui::TextFormat::default()),
-                Self::Emphasis(s) => job.append(
-                    s,
-                    Self::LEADING_SPACE,
-                    egui::TextFormat {
-                        color: egui::Color32::YELLOW,
-                        ..egui::TextFormat::default()
-                    },
-                ),
-                Self::Mouse(c) => job.append(
-                    &format!("{c}-click"),
-                    Self::LEADING_SPACE,
-                    action_default_format.clone(),
-                ),
-                Self::Modifier(modifier) => {
-                    job.append(modifier, Self::LEADING_SPACE, action_default_format.clone());
-                }
-                Self::ShortcutAction(action) => job.append(
-                    &shortcut_settings.format_action(action, ctx),
-                    Self::LEADING_SPACE,
-                    action_default_format.clone(),
-                ),
-                Self::Code(code) => job.append(
-                    code,
-                    Self::LEADING_SPACE,
-                    egui::TextFormat {
-                        font_id: egui::FontId {
-                            family: egui::FontFamily::Monospace,
-                            ..egui::FontId::default()
-                        },
-                        ..egui::TextFormat::default()
-                    },
-                ),
-            }
-        }
-        job
-    }
-}
-macro_rules! s {
-    (em $text:expr) => {
-        Section::Emphasis($text)
-    };
+static EM: LazyLock<egui::TextFormat> = LazyLock::new(|| text_format!(yellow));
+static AC: LazyLock<egui::TextFormat> =
+    LazyLock::new(|| text_format!(white, bg_black, expand_bg[2.0]));
+static CD: LazyLock<egui::TextFormat> = LazyLock::new(|| text_format!(mono));
+macro_rules! ac {
     (l-click) => {
-        Section::Mouse("L")
+        ("L-click", 1.0, AC.clone())
     };
     (m-click) => {
-        Section::Mouse("M")
+        ("M-click", 1.0, AC.clone())
     };
     (r-click) => {
-        Section::Mouse("R")
+        ("R-click", 1.0, AC.clone())
     };
     (l-click2) => {
-        Section::Mouse("Dbl-L")
+        ("Dbl-L-click", 1.0, AC.clone())
     };
     (m-click2) => {
-        Section::Mouse("Dbl-M")
+        ("Dbl-M-click", 1.0, AC.clone())
     };
     (r-click2) => {
-        Section::Mouse("Dbl-R")
+        ("Dbl-R-click", 1.0, AC.clone())
     };
     (shift) => {
-        Section::Modifier("Shift")
-    };
-    (cmd) => {
-        Section::Modifier(if cfg!(target_os = "macos") {"Cmd"} else {"Ctrl"})
+        ("Shift", 1.0, AC.clone())
     };
     (alt) => {
-        Section::Modifier("Alt")
+        ("Alt", 1.0, AC.clone())
     };
-    (ac $action:expr) => {
-        Section::ShortcutAction($action)
+    (cmd) => {
+        (
+            if cfg!(target_os = "macos") {
+                "Cmd"
+            } else {
+                "Ctrl"
+            },
+            1.0,
+            AC.clone(),
+        )
     };
-    (cd $code:expr) => {
-        Section::Code($code)
+    ($action:expr) => {
+        (
+            &shortcut_settings.format_action($action, ctx),
+            1.0,
+            AC.clone(),
+        )
     };
-    (tx $text:expr) => {
-        Section::Text($text)
-    };
-    (cm $components:expr) => {{
+}
+macro_rules! cm {
+    ($components:expr) => {{
         const COMPONENT_THRESHOLD: usize = 5;
-        if $components.len() > COMPONENT_THRESHOLD {
-            s!(em &format!("{} components", $components.len()))
+        let components = $components;
+        if components.len() > COMPONENT_THRESHOLD {
+            (&format!("{} components", components.len()), 1.0, EM.clone())
         } else {
-            s!(cd &$components.iter().map(ToString::to_string).join(" "))
+            (
+                &components.iter().map(ToString::to_string).join(" "),
+                1.0,
+                CD.clone(),
+            )
         }
     }};
-    ($app:ident, $ctx:ident, $($section:expr),+) => {
-        Section::format([$($section),+], &mut $app.settings.shortcut, $ctx).into()
-    };
 }
 
 impl App {
-    pub fn status_init(&mut self, ctx: &egui::Context) {
+    pub fn status_init(&mut self) {
         if self.ui.status.is_empty() {
-            self.status_default(ctx);
+            self.status_default();
         }
     }
 
-    pub fn status_on_copy(&mut self, ctx: &egui::Context) {
+    pub fn status_on_copy(&mut self) {
         if self.ui.map.clipboard.is_empty() {
             info!("Nothing to copy");
-            self.ui.status = s!(self, ctx, s!(tx "Nothing to copy"));
+            self.ui.status = layout_job!("Nothing to copy");
         } else {
             let components = &self.ui.map.clipboard;
             info!(ids=?components
                 .iter()
                 .map(|a| &a.full_id)
                 .collect::<Vec<_>>(), "Copied components");
-            let c = s!(cm components);
-            self.ui.status = s!(self, ctx, s!(tx "Copied "), c);
+            self.ui.status = layout_job!("Copied " #cm!(components));
         }
     }
-    pub fn status_on_cut(&mut self, ctx: &egui::Context) {
+    pub fn status_on_cut(&mut self) {
         if self.ui.map.clipboard.is_empty() {
             info!("Nothing to cut");
-            self.ui.status = s!(self, ctx, s!(tx "Nothing to cut"));
+            self.ui.status = layout_job!("Nothing to cut");
         } else {
             let components = &self.ui.map.clipboard;
             info!(ids=?components
                 .iter()
                 .map(|a| &a.full_id)
                 .collect::<Vec<_>>(), "Cut components");
-            let c = s!(cm components);
-            self.ui.status = s!(self, ctx, s!(tx "Cut "), c);
+            self.ui.status = layout_job!("Cut " #cm!(components));
         }
     }
-    pub fn status_on_paste(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
+    pub fn status_on_paste(&mut self, components: &[PlaComponent]) {
         if components.is_empty() {
             info!("Nothing to paste");
-            self.ui.status = s!(self, ctx, s!(tx "Nothing to paste"));
+            self.ui.status = layout_job!("Nothing to paste");
         } else {
             info!(ids=?components.iter()
                 .map(|a| &a.full_id)
                 .collect::<Vec<_>>(), "Pasted and selected components");
-            let c = s!(cm components);
-            self.ui.status = s!(self, ctx, s!(tx "Pasted "), c);
+            self.ui.status = layout_job!("Pasted " #cm!(components));
         }
     }
-    pub fn status_on_clear_clipboard(&mut self, ctx: &egui::Context) {
+    pub fn status_on_clear_clipboard(&mut self) {
         info!("Cleared clipboard");
-        self.ui.status = s!(self, ctx, s!(tx "Cleared clipboard"));
+        self.ui.status = layout_job!("Cleared clipboard");
     }
-    pub fn status_on_delete(&mut self, components: &[PlaComponent], ctx: &egui::Context) {
+    pub fn status_on_delete(&mut self, components: &[PlaComponent]) {
         if components.is_empty() {
             info!("Nothing to delete");
-            self.ui.status = s!(self, ctx, s!(tx "Nothing to delete"));
+            self.ui.status = layout_job!("Nothing to delete");
         } else {
             info!(ids=?components
                 .iter()
                 .map(|a| &a.full_id)
                 .collect::<Vec<_>>(), "Deleted components");
-            let c = s!(cm components);
-            self.ui.status = s!(self, ctx, s!(tx "Deleted "), c);
+            self.ui.status = layout_job!("Deleted " #cm!(components));
         }
     }
 
-    pub fn status_on_create(&mut self, ty: &str, component: &PlaComponent, ctx: &egui::Context) {
+    pub fn status_on_create(&mut self, ty: &str, component: &PlaComponent) {
         info!(%component, "Created new {ty}");
         debug!(?component);
-        self.ui.status = s!(
-            self,
-            ctx,
-            s!(tx & format!("Created new {ty}")),
-            s!(cd & component.full_id.to_string())
-        );
+        self.ui.status = layout_job!(format!("Created new {ty} ") @[CD](component.full_id));
     }
 
-    pub fn status_on_move(&mut self, delta: geo::Coord<i32>, ctx: &egui::Context) {
-        self.ui.status = s!(
-            self,
-            ctx,
-            s!(tx "Moving selected components by "),
-            s!(cd & delta.x.to_string()),
-            s!(tx ", "),
-            s!(cd & delta.y.to_string())
-        );
+    pub fn status_on_move(&mut self, delta: geo::Coord<i32>) {
+        self.ui.status = layout_job!("Move selected components by " @[CD](delta.x ", " delta.y));
     }
-    pub fn status_on_move_finish(&mut self, delta: geo::Coord<i32>, ctx: &egui::Context) {
-        self.ui.status = s!(
-            self,
-            ctx,
-            s!(tx "Finished moving selected components by "),
-            s!(cd & delta.x.to_string()),
-            s!(tx ", "),
-            s!(cd & delta.y.to_string())
-        );
+    pub fn status_on_move_finish(&mut self, delta: geo::Coord<i32>) {
+        self.ui.status =
+            layout_job!("Finished moving selected components by " @[CD](delta.x ", " delta.y));
     }
 
-    pub fn status_undo(&mut self, event: &Events, ctx: &egui::Context) {
-        self.ui.status = s!(self, ctx, s!(tx "Undid "), s!(em & event.to_string()));
+    pub fn status_undo(&mut self, event: &Events) {
+        self.ui.status = layout_job!("Undid " @[EM](event));
     }
 
-    pub fn status_redo(&mut self, event: &Events, ctx: &egui::Context) {
-        self.ui.status = s!(self, ctx, s!(tx "Redid "), s!(em & event.to_string()));
+    pub fn status_redo(&mut self, event: &Events) {
+        self.ui.status = layout_job!("Redid " @[EM](event));
     }
 
-    pub fn status_select(&mut self, ctx: &egui::Context) {
+    pub fn status_select(&mut self) {
         if self.ui.map.selected.is_empty() {
-            self.status_default(ctx);
+            self.status_default();
             return;
         }
-        let c = s!(cm & self.map_selected_components());
-        self.ui.status = s!(self, ctx, s!(tx "Selecting "), c);
+        self.ui.status = layout_job!("Selecting " #cm!(&self.map_selected_components()));
     }
 
-    pub fn status_default(&mut self, ctx: &egui::Context) {
+    pub fn status_default(&mut self) {
         self.ui.status = match self.mode {
-            EditorMode::Select => s!(
-                self,
-                ctx,
-                s!(em "Select: "),
-                s!(l - click),
-                s!(tx " to select component ("),
-                s!(shift),
-                s!(tx " to select multiple). "),
-                s!(m - click),
-                s!(tx " and drag, or ("),
-                s!(shift),
-                s!(tx " and) scroll to pan. "),
-                s!(cmd),
-                s!(tx " and scroll to zoom.")
-            ),
-            EditorMode::Nodes => s!(
-                self,
-                ctx,
-                s!(em "Editing nodes: "),
-                s!(r - click),
-                s!(tx " and drag circle to create/move node. "),
-                s!(r - click),
-                s!(tx " large circle without dragging to delete node."),
-                s!(r - click),
-                s!(tx " anywhere else on a selected component to move it.")
-            ),
-            EditorMode::CreatePoint => s!(
-                self,
-                ctx,
-                s!(em "Creating points: "),
-                s!(l - click),
-                s!(tx " to create point.")
-            ),
-            EditorMode::CreateLine => s!(
-                self,
-                ctx,
-                s!(em "Creating lines: "),
-                s!(l - click),
-                s!(tx " to start and continue line "),
-                s!(r - click),
-                s!(tx " to undo. "),
-                s!(l - click2),
-                s!(tx " to end at pointer, "),
-                s!(m - click2),
-                s!(tx " to end at last node."),
-                s!(shift),
-                s!(tx " to create bézier curves. "),
-                s!(cmd),
-                s!(tx " to snap to angle.")
-            ),
-            EditorMode::CreateArea => s!(
-                self,
-                ctx,
-                s!(em "Creating areas: "),
-                s!(l - click),
-                s!(tx " to start and continue line "),
-                s!(r - click),
-                s!(tx " to undo. "),
-                s!(l - click2),
-                s!(tx " to end at pointer, "),
-                s!(m - click2),
-                s!(tx " to end at last node."),
-                s!(shift),
-                s!(tx " to create bézier curves. "),
-                s!(cmd),
-                s!(tx " to snap to angle.")
-            ),
+            EditorMode::Select => {
+                layout_job!(@[EM]("Select: ") #ac!(l-click) " to select component (" #ac!(shift) " to select multiple). " #ac!(m-click) " and drag, or (" #ac!(shift) " and) scroll to pan. " #ac!(cmd) " and scroll to zoom.")
+            }
+            EditorMode::Nodes => {
+                layout_job!(@[EM]("Editing nodes: ") #ac!(r-click) " and drag circle to create/move node. " #ac!(r-click) " large circle without dragging to delete node." #ac!(r-click) " anywhere else on a selected component to move it.")
+            }
+            EditorMode::CreatePoint => {
+                layout_job!(@[EM]("Creating points: ") #ac!(l-click) " to create point.")
+            }
+            EditorMode::CreateLine => {
+                layout_job!(@[EM]("Creating lines: ") #ac!(l-click) " to start and continue line " #ac!(r-click) " to undo. " #ac!(l-click2) " to end at pointer, " #ac!(m-click2) " to end at last node." #ac!(shift) " to create bézier curves. " #ac!(cmd) " to snap to angle.")
+            }
+            EditorMode::CreateArea => {
+                layout_job!(@[EM]("Creating areas: ") #ac!(l-click) " to start and continue line " #ac!(r-click) " to undo. " #ac!(l-click2) " to end at pointer, " #ac!(m-click2) " to end at last node." #ac!(shift) " to create bézier curves. " #ac!(cmd) " to snap to angle.")
+            }
         };
     }
 }

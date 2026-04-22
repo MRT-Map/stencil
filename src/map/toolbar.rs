@@ -195,7 +195,7 @@ impl MapWindow {
         if old_mode != app.mode {
             app.ui.map.created_nodes.clear();
             info!(mode=?app.mode, "Mode changed");
-            app.status_default(ui);
+            app.status_default();
         }
     }
 }
