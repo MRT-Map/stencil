@@ -48,7 +48,7 @@ jobs:
       - uses: ./.github/actions/setup-rust
         with:
           components: clippy
-      - uses: cargo-bins/cargo-binstall@d8b2727b3a60691310e57c65e989cb974c787690 # main
+      - uses: cargo-bins/cargo-binstall@145ab7536465bbe738da5f500d3d211eadd3f655 # main
       - run: cargo binstall --force clippy-sarif@${{ env.CLIPPY_SARIF_VERSION }}
         env:
           # renovate: datasource=crate depName=clippy-sarif versioning=loose
