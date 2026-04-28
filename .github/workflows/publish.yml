@@ -55,7 +55,7 @@ jobs:
     - uses: ./.github/actions/setup-rust
       with:
         cache: false
-    - uses: cargo-bins/cargo-binstall@d53a6272dbf8d0bb6b2b9cbad1e50c821d9f7d09 # main
+    - uses: cargo-bins/cargo-binstall@102d26bba1c34bd90cceb4ff0d582033ea6c1d47 # main
     - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 
     - run: cargo --locked bundle --release
@@ -127,7 +127,7 @@ jobs:
     - uses: ./.github/actions/setup-rust
       with:
         cache: false
-    - uses: cargo-bins/cargo-binstall@d53a6272dbf8d0bb6b2b9cbad1e50c821d9f7d09 # main
+    - uses: cargo-bins/cargo-binstall@102d26bba1c34bd90cceb4ff0d582033ea6c1d47 # main
     - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
 #      with:
