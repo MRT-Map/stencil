@@ -1477,7 +1477,8 @@ dependencies = [
 [[package]]
 name = "egui_layout_job_macro"
 version = "0.1.0"
-source = "git+https://github.com/iiiii7d/egui_layout_job_macro#83698fe2848382dc0e5867074ab3827986ab45d6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "714009572a86d786639a0219ca594c6011599fd1efa4bc7ae6ee1052bd64c6ab"
 dependencies = [
  "itertools",
  "proc-macro2",
