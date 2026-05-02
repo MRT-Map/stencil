@@ -20,7 +20,7 @@ runs:
     - id: rust
       uses: actions-rust-lang/setup-rust-toolchain@2b1f5e9b395427c92ee4e3331786ca3c37afe2d7 # v1.16.0
       env:
-        # renovate: datasource=custom.rust.nightly depName=x86_64-unknown-linux-gnu
+        # renovate: datasource=rust-version depName=rust-nightly
         RUST_VERSION: nightly-2026-04-14
       with:
         toolchain: ${{ env.RUST_VERSION }}
