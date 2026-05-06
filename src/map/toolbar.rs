@@ -165,30 +165,35 @@ impl MapWindow {
                     );
                 }
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
-                    if ui
-                        .button_with_shortcut(
-                            "Reset View",
-                            ShortcutAction::ResetMapView,
-                            &mut app.settings.shortcut,
-                        )
-                        .clicked()
-                    {
-                        app.map_reset_view();
-                    }
-                    if let Some(prev_cursor_world_pos) = app.ui.map.cursor_world_pos {
-                        ui.label(format!(
-                            "x: {} z: {} \u{1f50d}: {:.2}",
-                            prev_cursor_world_pos.x.round() as i32,
-                            prev_cursor_world_pos.y.round() as i32,
-                            app.ui.map.zoom
-                        ));
-                    } else {
-                        ui.label(format!("\u{1f50d}: {:.2}", app.ui.map.zoom));
-                    }
+                ui.scope_builder(
+                    egui::UiBuilder::new()
+                        .id("right toolbar".into())
+                        .layout(egui::Layout::right_to_left(egui::Align::RIGHT)),
+                    |ui| {
+                        if ui
+                            .button_with_shortcut(
+                                "Reset View",
+                                ShortcutAction::ResetMapView,
+                                &mut app.settings.shortcut,
+                            )
+                            .clicked()
+                        {
+                            app.map_reset_view();
+                        }
+                        if let Some(prev_cursor_world_pos) = app.ui.map.cursor_world_pos {
+                            ui.label(format!(
+                                "x: {} z: {} \u{1f50d}: {:.2}",
+                                prev_cursor_world_pos.x.round() as i32,
+                                prev_cursor_world_pos.y.round() as i32,
+                                app.ui.map.zoom
+                            ));
+                        } else {
+                            ui.label(format!("\u{1f50d}: {:.2}", app.ui.map.zoom));
+                        }
 
-                    ui.separator();
-                });
+                        ui.separator();
+                    },
+                );
             });
         });
 
