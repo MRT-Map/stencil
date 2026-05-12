@@ -18,7 +18,7 @@ runs:
     - if: runner.os == 'Linux'
       uses: rui314/setup-mold@9c9c13bf4c3f1adef0cc596abc155580bcb04444
     - id: rust
-      uses: actions-rust-lang/setup-rust-toolchain@2b1f5e9b395427c92ee4e3331786ca3c37afe2d7 # v1.16.0
+      uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
       env:
         # renovate: datasource=rust-version depName=rust-nightly
         RUST_VERSION: nightly-2026-05-08
