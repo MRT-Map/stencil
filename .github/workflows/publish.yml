@@ -248,24 +248,21 @@ jobs:
         with:
           name: combined-dist
           path: dist
+
       - env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
-
         run: |
-          MAC_SHA=$(cat "dist/stencil3-${VERSION}.dmg" | shasum -a 256 | cut -d ' ' -f1)
-          cat build/macos/brew.rb | sed "s/sha256 \".*\"/sha256 \"$MAC_SHA\"/" > build/macos/brew2.rb
-          cat build/macos/brew2.rb | sed "s/version \".*\"/version \"$VERSION\"/" > build/macos/brew.rb
-          rm build/macos/brew2.rb
+          MAC_SHA=$(shasum -a 256 "dist/stencil3-${VERSION}.dmg" | cut -d ' ' -f1)
+          sed "s/sha256 \".*\"/sha256 \"$MAC_SHA\"/" -i build/macos/brew.rb
+          sed "s/version \".*\"/version \"$VERSION\"/" -i build/macos/brew.rb
 
-          LINUX_SHA1=$(cat "dist/stencil3_${VERSION}_amd64.deb" | shasum -a 256 | cut -d ' ' -f1)
-          LINUX_SHA2=$(cat "dist/stencil3_${VERSION}_arm64.deb" | shasum -a 256 | cut -d ' ' -f1)
-          cat build/linux/PKGBUILD | sed "s/sha256sums_x86_64=.*/sha256sums_x86_64=('$LINUX_SHA1')/" > build/linux/PKGBUILD2
-          cat build/linux/PKGBUILD2 | sed "s/sha256sums_aarch64=.*/sha256sums_aarch64=('$LINUX_SHA2')/" > build/linux/PKGBUILD3
-          cat build/linux/PKGBUILD3 | sed "s/pkgver=.*/pkgver=${VERSION//-/_}/" > build/linux/PKGBUILD
-          rm build/linux/PKGBUILD2 build/linux/PKGBUILD3
+          LINUX_SHA1=$(shasum -a 256 | "dist/stencil3_${VERSION}_amd64.deb" | cut -d ' ' -f1)
+          LINUX_SHA2=$(shasum -a 256 | "dist/stencil3_${VERSION}_arm64.deb" | cut -d ' ' -f1)
+          sed "s/sha256sums_x86_64=.*/sha256sums_x86_64=('$LINUX_SHA1')/" -i build/linux/PKGBUILD
+          sed "s/sha256sums_aarch64=.*/sha256sums_aarch64=('$LINUX_SHA2')/" -i build/linux/PKGBUILD
+          sed "s/pkgver=.*/pkgver=${VERSION//-/_}/" -i build/linux/PKGBUILD
           
-          cat build/windows/scoop.json | sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop2.json
-          mv build/windows/scoop2.json build/windows/scoop.json
+          sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop.json
       - uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         with:
           default_author: github_actions
