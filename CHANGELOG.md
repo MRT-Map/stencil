@@ -3,7 +3,10 @@
 * Font configuration
 
 # v3.0.0-alpha.2
-migrate to mise and hk
+* migrate to mise and hk
+* add tracing instruments
+* move to `egui_layout_job_macros`
+* fix ID change for position/zoom labels
 
 # v3.0.0-alpha.1
 fix app icon
