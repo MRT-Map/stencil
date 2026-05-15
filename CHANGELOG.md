@@ -2,6 +2,9 @@
 * Directly download namespace files from GitHub repositories
 * Font configuration
 
+# v3.0.0-alpha.2
+migrate to mise and hk
+
 # v3.0.0-alpha.1
 fix app icon
 
