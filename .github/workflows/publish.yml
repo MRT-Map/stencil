@@ -126,7 +126,6 @@ jobs:
     - uses: ./.github/actions/mise
       with:
         cache: false
-
     - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
 #      with:
@@ -256,8 +255,8 @@ jobs:
           sed "s/sha256 \".*\"/sha256 \"$MAC_SHA\"/" -i build/macos/brew.rb
           sed "s/version \".*\"/version \"$VERSION\"/" -i build/macos/brew.rb
 
-          LINUX_SHA1=$(shasum -a 256 | "dist/stencil3_${VERSION}_amd64.deb" | cut -d ' ' -f1)
-          LINUX_SHA2=$(shasum -a 256 | "dist/stencil3_${VERSION}_arm64.deb" | cut -d ' ' -f1)
+          LINUX_SHA1=$(shasum -a 256 "dist/stencil3_${VERSION}_amd64.deb" | cut -d ' ' -f1)
+          LINUX_SHA2=$(shasum -a 256 "dist/stencil3_${VERSION}_arm64.deb" | cut -d ' ' -f1)
           sed "s/sha256sums_x86_64=.*/sha256sums_x86_64=('$LINUX_SHA1')/" -i build/linux/PKGBUILD
           sed "s/sha256sums_aarch64=.*/sha256sums_aarch64=('$LINUX_SHA2')/" -i build/linux/PKGBUILD
           sed "s/pkgver=.*/pkgver=${VERSION//-/_}/" -i build/linux/PKGBUILD
