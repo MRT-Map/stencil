@@ -16,7 +16,7 @@ env:
 
 jobs:
   version-changelog:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       changelog: ${{ steps.changelog.outputs.changelog }}
