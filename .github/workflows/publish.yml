@@ -55,6 +55,7 @@ jobs:
     - uses: ./.github/actions/mise
       with:
         cache: false
+        envs: ''
     - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 
     - run: cargo --locked bundle --release
@@ -75,6 +76,7 @@ jobs:
       - uses: ./.github/actions/mise
         with:
           cache: false
+          envs: ''
 
       - run: cargo --locked build --release
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -126,6 +128,7 @@ jobs:
     - uses: ./.github/actions/mise
       with:
         cache: false
+        envs: ''
     - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
 #      with:
@@ -153,6 +156,7 @@ jobs:
     - uses: ./.github/actions/mise
       with:
         cache: false
+        envs: ''
 
     - run: |
         dotnet tool install --global "wix@${{ env.WIX_VERSION }}"

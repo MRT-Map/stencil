@@ -37,7 +37,6 @@ local sarif = new Mapping<String, Step> {
         check = linters["poutine"].check as String + " --format=sarif > .sarif/poutine.sarif"
     }
 }
-
 hooks {
     ["pre-commit"] {
         fix = true
