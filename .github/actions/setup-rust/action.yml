@@ -21,7 +21,7 @@ runs:
       uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
       env:
         # renovate: datasource=rust-version depName=rust-nightly
-        RUST_VERSION: nightly-2026-05-08
+        RUST_VERSION: nightly-2026-05-13
       with:
         toolchain: ${{ env.RUST_VERSION }}
         components: ${{ inputs.components }}
