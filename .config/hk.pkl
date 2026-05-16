@@ -16,7 +16,6 @@ local linters = new Mapping<String, Step> {
         glob = Builtins.zizmor.glob
         check = "poutine analyze_local . --skip github_action_from_unverified_creator_used"
     }
-    ["shellcheck"] = Builtins.shellcheck
 }
 local sarif = new Mapping<String, Step> {
     ["mkdir"] {
