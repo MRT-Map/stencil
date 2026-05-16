@@ -981,4 +981,3 @@ secring.*
 .idea/
 .cargo
 .sarif
-.miserc.toml

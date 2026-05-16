@@ -276,3 +276,5 @@ jobs:
     needs: update-hash
     permissions:
       contents: read
+    secrets:
+      PAT: ${{ secrets.PAT }}
