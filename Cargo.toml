@@ -41,7 +41,7 @@ color-backtrace = "=0.7.2"
 ehttp = { version = "=0.7.1", features = ["json", "native-async"] }
 url = "=2.5.8"
 serde = { version = "=1.0.228", features = ["derive"] }
-serde_json = "=1.0.149"
+serde_json = "=1.0.150"
 toml = "=1.1.2"
 
 etcetera = "=0.11.0"
