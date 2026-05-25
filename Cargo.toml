@@ -91,25 +91,31 @@ name = "stencil3"
 identifier = "io.github.mrt-map.stencil3"
 icon = ["assets/icons/icon_*.png"]
 
-[lints.rust]
+[lints]
+workspace = true
+
+[workspace]
+members = ["pla3"]
+
+[workspace.lints.rust]
 future-incompatible = "deny"
 
 # temporary
 dead_code = "allow"
 
-[lints.clippy]
+[workspace.lints.clippy]
 all = "warn"
 pedantic = "warn"
 cargo = "warn"
 nursery = "warn"
 
-missing_errors_doc = { level="allow", priority = 1 }
-missing_panics_doc = { level="allow", priority = 1 }
-cast_precision_loss = { level="allow", priority = 1 }
-cast_possible_truncation = { level="allow", priority = 1 }
-module_name_repetitions = { level="allow", priority = 1 }
-multiple_crate_versions = { level="allow", priority = 1 }
-cognitive_complexity = { level="allow", priority = 1 }
+missing_errors_doc = { level = "allow", priority = 1 }
+missing_panics_doc = { level = "allow", priority = 1 }
+cast_precision_loss = { level = "allow", priority = 1 }
+cast_possible_truncation = { level = "allow", priority = 1 }
+module_name_repetitions = { level = "allow", priority = 1 }
+multiple_crate_versions = { level = "allow", priority = 1 }
+cognitive_complexity = { level = "allow", priority = 1 }
 
 allow_attributes = "warn"
 #arithmetic_side_effects = "warn"
@@ -158,4 +164,4 @@ type_complexity = { level="allow", priority = 1 }
 too_many_lines = { level="allow", priority = 1 }
 too_many_arguments = { level="allow", priority = 1 }
 needless_pass_by_value = { level="allow", priority = 1 }
-implicit_hasher = {level = "allow", priority = 1}
+implicit_hasher = { level = "allow", priority = 1 }
