@@ -300,7 +300,7 @@ impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
         geo::Rect::new(a, b)
     }
     fn rect_centre(rect: Self::Rect) -> Self {
-        geo::Centroid::centroid(&rect).into()
+        rect.center()
     }
 }
 #[cfg(feature = "egui")]

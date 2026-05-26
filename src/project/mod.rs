@@ -8,8 +8,9 @@ pub mod pla3;
 pub mod project_editor;
 pub mod skin;
 
-use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+use std::{borrow::Cow, collections::HashSet, path::PathBuf, sync::Arc};
 
+use ::pla3::FullId;
 use async_executor::Task;
 use egui::ahash::HashMap;
 use egui_notify::ToastLevel;
@@ -23,11 +24,7 @@ use crate::{
     EXECUTOR, URL_REPLACER,
     file::{FOLDERS, safe_write},
     map::basemap::Basemap,
-    project::{
-        component_list::ComponentList,
-        pla3::{FullId, PlaComponent},
-        skin::Skin,
-    },
+    project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
     ui::notif::NotifState,
 };
 
@@ -232,7 +229,7 @@ impl Project {
             match PlaComponent::load_from_string(
                 &string,
                 FullId::new(namespace.to_owned(), id.to_string_lossy().into_owned()),
-                self,
+                |a| self.skin()?.get_type(a).map(Arc::clone),
             ) {
                 Ok((component, unknown_type_error)) => {
                     if let Some(e) = unknown_type_error {
@@ -291,7 +288,7 @@ impl Project {
 
         for component in components {
             if let Err(e) = component
-                .save_to_string()
+                .save_to_string(|ty| ty.name().as_str())
                 .and_then(|s| safe_write(component.path(path), s, notifs).map_err(Report::from))
             {
                 errors.push(e);

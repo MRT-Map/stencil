@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     App,
     component_actions::event::ComponentEv,
-    coord_conversion::CoordConversionExt,
+    coord::{CoordFrom, CoordInto},
     project::{Project, SkinStatus, event::ProjectEv},
     settings::settings_ui_field,
     shortcut::ShortcutAction,
@@ -236,7 +236,9 @@ impl ProjectEditorWindow {
                             );
                         });
                         row.col(|ui| {
-                            let Some(centre) = component.nodes.centre() else {
+                            let Some(centre) =
+                                component.nodes.clone().map(egui::Pos2::coord_from).centre()
+                            else {
                                 return;
                             };
                             let see_button = ui.small_button("➡");
@@ -244,7 +246,7 @@ impl ProjectEditorWindow {
                                 ui.label("See");
                             });
                             if see_button.clicked() {
-                                app.ui.map.centre_coord = centre.to_geo_coord_f32();
+                                app.ui.map.centre_coord = centre.coord_into();
                             }
                         });
                         row.col(|ui| {

@@ -1,6 +1,6 @@
 use etcetera::AppStrategy;
 mod component_actions;
-mod coord_conversion;
+mod coord;
 mod file;
 mod info_windows;
 mod load_save;

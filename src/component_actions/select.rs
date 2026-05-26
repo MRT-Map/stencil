@@ -1,9 +1,8 @@
+use geo::Contains;
+use pla3::FullId;
 use tracing::info;
 
-use crate::{
-    App, coord_conversion::CoordConversionExt, map::MapWindow, pointer::ResponsePointerExt,
-    project::pla3::FullId,
-};
+use crate::{App, coord::CoordFrom, map::MapWindow, pointer::ResponsePointerExt};
 
 impl MapWindow {
     #[tracing::instrument(skip_all)]
@@ -46,18 +45,19 @@ impl MapWindow {
                 }
                 if response.drag_stopped_by2(egui::PointerButton::Primary) {
                     info!("Marquee end");
-                    let bounding_box = egui::Rect::from_two_pos(
-                        start_world_pos.to_egui_pos2(),
-                        cursor_world_pos.to_egui_pos2(),
-                    );
+                    let bounding_box = geo::Rect::new(start_world_pos, cursor_world_pos);
                     let components_to_add = app
                         .project
                         .components
                         .iter()
                         .filter(|a| {
                             a.nodes
+                                .clone()
+                                .map(egui::Pos2::coord_from)
                                 .bounding_box()
-                                .is_some_and(|rect| bounding_box.contains_rect(rect))
+                                .is_some_and(|rect| {
+                                    bounding_box.contains(&geo::Rect::<f32>::coord_from(rect))
+                                })
                         })
                         .map(|a| (a.full_id.clone(), Vec::new()));
                     if ctx.input(|a| a.modifiers.shift) {

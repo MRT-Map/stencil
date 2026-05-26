@@ -43,6 +43,7 @@ url = "=2.5.8"
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.150"
 toml = "=1.1.2"
+pla3 = { path = "pla3", features = ["serde", "geo", "egui", "tracing"] }
 
 etcetera = "=0.11.0"
 zip = "=8.6.0"
@@ -101,7 +102,7 @@ members = ["pla3"]
 future-incompatible = "deny"
 
 # temporary
-dead_code = "allow"
+#dead_code = "allow"
 
 [workspace.lints.clippy]
 all = "warn"

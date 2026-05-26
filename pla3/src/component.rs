@@ -35,7 +35,7 @@ impl FullId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct PlaComponent<S, T: PlaNodeType> {
     pub full_id: FullId,
     pub ty: Arc<S>,
@@ -43,6 +43,19 @@ pub struct PlaComponent<S, T: PlaNodeType> {
     pub layer: NotNan<f32>,
     pub nodes: PlaNodeVec<T>,
     pub misc: BTreeMap<String, toml::Value>,
+}
+
+impl<S, T: PlaNodeType> Clone for PlaComponent<S, T> {
+    fn clone(&self) -> Self {
+        Self {
+            full_id: self.full_id.clone(),
+            ty: Arc::clone(&self.ty),
+            display_name: self.display_name.clone(),
+            layer: self.layer,
+            nodes: self.nodes.clone(),
+            misc: self.misc.clone(),
+        }
+    }
 }
 
 impl<S, T: PlaNodeType> Display for PlaComponent<S, T> {
@@ -58,7 +71,7 @@ impl<S, T: PlaNodeType> Display for PlaComponent<S, T> {
 impl<S, T: PlaNodeType> PlaComponent<S, T> {
     #[must_use]
     pub fn path(&self, root: &Path) -> PathBuf {
-        root.join(&self.full_id.namespace)
+        root.join(&*self.full_id.namespace)
             .join(format!("{}.pla3", self.full_id.id))
     }
 }
@@ -81,10 +94,10 @@ where
         label.parse::<u8>().map(Some).map_err(Into::into)
     }
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(full_id)))]
-    pub fn load_from_string(
+    pub fn load_from_string<GT: Fn(&str) -> Option<Arc<S>>>(
         s: &str,
         full_id: FullId,
-        get_type: impl Fn(&str) -> Option<Arc<S>>,
+        get_type: GT,
     ) -> eyre::Result<(Self, Option<Report>)> {
         let mut unknown_type_error = None;
         let (nodes_str, attrs_str) = s
@@ -174,9 +187,15 @@ where
     }
 }
 
-impl<S: Display, T: PlaNodeTypeGet> PlaComponent<S, T> {
+impl<S, T: PlaNodeTypeGet> PlaComponent<S, T> {
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(self.full_id)))]
-    pub fn save_to_string(&self) -> eyre::Result<String> {
+    pub fn save_to_string<'a, TS: Fn(&'a S) -> V, V: Into<toml::Value> + 'a>(
+        &'a self,
+        format_ty: TS,
+    ) -> eyre::Result<String>
+    where
+        S: 'a,
+    {
         let mut out = String::new();
 
         for node in &self.nodes {
@@ -216,7 +235,7 @@ impl<S: Display, T: PlaNodeTypeGet> PlaComponent<S, T> {
             .chain([
                 ("display_name".into(), self.display_name.clone().into()),
                 ("layer".into(), (*self.layer).into()),
-                ("type".into(), self.ty.to_string().into()),
+                ("type".into(), format_ty(&self.ty).into()),
             ])
             .collect::<toml::Table>();
         out += &toml::to_string_pretty(&attrs)?;

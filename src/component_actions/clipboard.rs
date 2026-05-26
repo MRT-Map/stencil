@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    App, component_actions::event::ComponentEv, coord_conversion::CoordConversionExt,
-    project::pla3::PlaNodeVec,
+    App, component_actions::event::ComponentEv, coord::CoordFrom, project::pla3::PlaNodeWorldVec,
 };
 
 impl App {
@@ -32,15 +31,19 @@ impl App {
             .iter()
             .flat_map(|a| &a.nodes)
             .copied()
-            .collect::<PlaNodeVec>()
+            .collect::<PlaNodeWorldVec>()
+            .map(egui::Pos2::coord_from)
             .centre()
+            .map(geo::Coord::<i32>::coord_from)
         else {
             self.status_on_paste(&[]);
             return;
         };
-        let delta = self.ui.map.cursor_world_pos.map_or_else(
-            || self.ui.map.centre_coord.to_geo_coord_i32(),
-            CoordConversionExt::to_geo_coord_i32,
+        let delta = geo::Coord::<i32>::coord_from(
+            self.ui
+                .map
+                .cursor_world_pos
+                .unwrap_or(self.ui.map.centre_coord),
         ) - centre;
         let components_to_add = self
             .ui

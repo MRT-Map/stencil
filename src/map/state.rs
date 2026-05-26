@@ -1,15 +1,16 @@
 use std::{collections::HashMap, sync::Arc};
 
+use pla3::{FullId, PlaNodeIndex};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
     App,
-    coord_conversion::CoordConversionExt,
+    coord::CoordInto,
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
-        pla3::{FullId, PlaComponent, PlaNodeIndex, PlaNodeVec},
+        pla3::{PlaComponent, PlaNodeWorldVec},
         skin::SkinType,
     },
 };
@@ -21,7 +22,7 @@ pub struct MapState {
     pub cursor_world_pos: Option<geo::Coord<f32>>,
 
     #[serde(skip)]
-    pub created_nodes: PlaNodeVec,
+    pub created_nodes: PlaNodeWorldVec,
     #[serde(skip)]
     pub created_point_type: Option<Arc<SkinType>>,
     #[serde(skip)]
@@ -46,7 +47,7 @@ impl Default for MapState {
             centre_coord: geo::Coord::<f32>::default(),
             zoom: 0.0,
             cursor_world_pos: None,
-            created_nodes: PlaNodeVec::default(),
+            created_nodes: PlaNodeWorldVec::default(),
             created_point_type: None,
             created_line_type: None,
             created_area_type: None,
@@ -126,7 +127,7 @@ impl MapState {
     }
 
     pub fn comp_move_delta(&self) -> Option<geo::Coord<i32>> {
-        Some((self.cursor_world_pos? - self.comp_move_origin_world_pos?).to_geo_coord_i32())
+        Some((self.cursor_world_pos? - self.comp_move_origin_world_pos?).coord_into())
     }
 
     pub fn hovered_component<'a>(
@@ -197,7 +198,7 @@ impl MapState {
         let screen_delta = screen - map_centre;
         let world_delta = screen_delta
             * map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
-        self.centre_coord + world_delta.to_geo_coord_f32()
+        self.centre_coord + world_delta.coord_into()
     }
 
     pub fn map_world_boundaries(

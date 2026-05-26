@@ -4948,6 +4948,7 @@ dependencies = [
  "license-retriever",
  "lru",
  "ordered-float",
+ "pla3",
  "rand 0.10.1",
  "semver",
  "serde",

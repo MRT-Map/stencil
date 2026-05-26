@@ -18,10 +18,10 @@ use tracing::{debug, error};
 
 use crate::{
     App,
-    coord_conversion::CoordConversionExt,
+    coord::{CoordFrom, CoordInto},
     map::MapWindow,
     project::{
-        pla3::{PlaComponent, PlaNodeScreen, PlaNodeScreenVec},
+        pla3::{PlaComponent, PlaNodeScreen, PlaNodeScreenVec, ToScreenExt},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
     },
 };
@@ -139,12 +139,20 @@ impl MapWindow {
         is_selected: bool,
         component: &'a PlaComponent,
     ) -> Option<PaintResult<'a>> {
-        let bounding_rect = component.bounding_rect();
+        let Some(bounding_box) = component
+            .nodes
+            .clone()
+            .map(egui::Pos2::coord_from)
+            .bounding_box()
+            .map(geo::Rect::<f32>::coord_from)
+        else {
+            return None;
+        };
         let world_boundaries = app.map_world_boundaries(response.rect);
-        if world_boundaries.max().x < bounding_rect.min().x
-            || bounding_rect.max().x < world_boundaries.min().x
-            || world_boundaries.max().y < bounding_rect.min().y
-            || bounding_rect.max().y < world_boundaries.min().y
+        if world_boundaries.max().x < bounding_box.min().x
+            || bounding_box.max().x < world_boundaries.min().x
+            || world_boundaries.max().y < bounding_box.min().y
+            || bounding_box.max().y < world_boundaries.min().y
         {
             return None;
         }
@@ -196,7 +204,7 @@ impl MapWindow {
 
     fn outline(point_style: Option<&[PointStyle]>, nodes: &PlaNodeScreenVec) -> Vec<egui::Pos2> {
         let Some(style) = point_style else {
-            return nodes.outline();
+            return nodes.outline(TOLERANCE);
         };
         let PlaNodeScreen::Line { coord, .. } = nodes[0] else {
             unreachable!();
@@ -390,17 +398,17 @@ impl MapWindow {
                     .iter()
                     .flat_map(|a| match a {
                         egui::Shape::LineSegment { points, .. } => {
-                            vec![points[0].to_geo_coord_f32(), points[1].to_geo_coord_f32()]
+                            vec![points[0].coord_into(), points[1].coord_into()]
                         }
                         egui::Shape::QuadraticBezier(shape) => shape
                             .flatten(TOLERANCE)
                             .into_iter()
-                            .map(CoordConversionExt::to_geo_coord_f32)
+                            .map(geo::Coord::<f32>::coord_from)
                             .collect(),
                         egui::Shape::CubicBezier(shape) => shape
                             .flatten(TOLERANCE)
                             .into_iter()
-                            .map(CoordConversionExt::to_geo_coord_f32)
+                            .map(geo::Coord::<f32>::coord_from)
                             .collect(),
                         egui::Shape::Circle(_) => Vec::new(),
                         _ => unreachable!(),
@@ -422,18 +430,18 @@ impl MapWindow {
                 }
             };
             if !is_hovered
-                && let Some(hover_pos) = response.hover_pos()
+                && let Some(hover_pos) = response.hover_pos().map(geo::Coord::<f32>::coord_from)
                 && polygon_edge.as_ref().map_or_else(
-                    || polygon.contains(&hover_pos.to_geo_coord_f32()),
-                    |polygon_edge| polygon_edge.contains(&hover_pos.to_geo_coord_f32()),
+                    || polygon.contains(&hover_pos),
+                    |polygon_edge| polygon_edge.contains(&hover_pos),
                 )
             {
                 is_hovered = true;
             }
 
-            let screen_boundaries = geo::Polygon::from(geo::Rect::new(
-                response.rect.max.to_geo_coord_f32(),
-                response.rect.min.to_geo_coord_f32(),
+            let screen_boundaries = geo::Polygon::from(geo::Rect::new::<geo::Coord<f32>>(
+                response.rect.max.coord_into(),
+                response.rect.min.coord_into(),
             ));
             let polygon = polygon.intersection(&screen_boundaries);
             let polygon_edge =
@@ -511,9 +519,9 @@ impl MapWindow {
                                         is_hovered,
                                         response,
                                         width,
-                                        geo::Line::new(
-                                            previous_coord.to_geo_coord_f32(),
-                                            coord.to_geo_coord_f32(),
+                                        geo::Line::new::<geo::Coord<f32>>(
+                                            previous_coord.coord_into(),
+                                            coord.coord_into(),
                                         )
                                     );
 
@@ -535,7 +543,7 @@ impl MapWindow {
                                 let approx = shape
                                     .flatten(TOLERANCE)
                                     .into_iter()
-                                    .map(CoordConversionExt::to_geo_coord_f32)
+                                    .map(CoordInto::coord_into)
                                     .collect::<Vec<_>>();
                                 hovering!(
                                     is_hovered,
@@ -563,7 +571,7 @@ impl MapWindow {
                                 let approx = shape
                                     .flatten(TOLERANCE)
                                     .into_iter()
-                                    .map(CoordConversionExt::to_geo_coord_f32)
+                                    .map(CoordInto::coord_into)
                                     .collect::<Vec<_>>();
                                 hovering!(
                                     is_hovered,
@@ -689,7 +697,7 @@ fn triangulate<'a>(
             .constrained_triangulation(DelaunayTriangulationConfig::default())
             .map(|a| {
                 a.iter()
-                    .map(|a| a.to_array().map(CoordConversionExt::to_egui_pos2))
+                    .map(|a| a.to_array().map(CoordInto::coord_into))
                     .collect::<Vec<_>>()
             })
     })

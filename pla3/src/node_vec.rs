@@ -64,6 +64,9 @@ impl<T: PlaNodeType> PlaNodeVec<T> {
         }))
         .collect()
     }
+    pub fn map<U: PlaNodeType, F: Fn(T) -> U>(self, f: F) -> PlaNodeVec<U> {
+        self.iter().map(|a| a.map(&f)).collect()
+    }
 }
 
 impl<T: PlaNodeTypeBezierRect> PlaNodeVec<T> {
@@ -97,7 +100,7 @@ impl<T: PlaNodeTypeBezierRect> PlaNodeVec<T> {
 
 impl<T: PlaNodeTypeBezier> PlaNodeVec<T> {
     #[must_use]
-    pub fn outline(&self, tolerance: impl Into<Option<f32>> + Clone) -> Vec<T> {
+    pub fn outline<Tolerance: Into<Option<f32>> + Clone>(&self, tolerance: Tolerance) -> Vec<T> {
         let mut previous_coord = Option::<T>::None;
         let mut out = Vec::new();
         for n in self {

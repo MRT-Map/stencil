@@ -3,15 +3,16 @@ use std::{collections::BTreeMap, sync::Arc};
 use geo::Vector2DOps;
 use itertools::{Either, Itertools};
 use ordered_float::NotNan;
+use pla3::FullId;
 use tracing::info;
 
 use crate::{
     App,
     component_actions::event::ComponentEv,
-    coord_conversion::CoordConversionExt,
+    coord::CoordInto,
     map::MapWindow,
     pointer::ResponsePointerExt,
-    project::pla3::{FullId, PlaComponent, PlaNode, PlaNodeBase},
+    project::pla3::{PlaComponent, PlaNodeWorld, ToScreenExt},
 };
 
 const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
@@ -66,9 +67,9 @@ impl MapWindow {
             return;
         };
 
-        let world_coord = cursor_world_pos.to_geo_coord_i32();
+        let world_coord: geo::Coord<i32> = cursor_world_pos.coord_into();
         let screen_coord =
-            app.map_world_to_screen(response.rect.center(), world_coord.to_geo_coord_f32());
+            app.map_world_to_screen(response.rect.center(), world_coord.coord_into());
         Self::paint_point(response, false, screen_coord, ty.name(), style).paint(painter);
 
         if !response.clicked_by2(egui::PointerButton::Primary) {
@@ -84,7 +85,7 @@ impl MapWindow {
             ty: Arc::clone(ty),
             display_name: String::new(),
             layer: NotNan::<f32>::default(),
-            nodes: vec![PlaNode::Line {
+            nodes: vec![PlaNodeWorld::Line {
                 coord: world_coord,
                 label: None,
             }]
@@ -160,20 +161,20 @@ impl MapWindow {
             (Either::Right(ty), Either::Right(style))
         };
 
-        let mut world_coord = cursor_world_pos.to_geo_coord_i32();
+        let mut world_coord: geo::Coord<i32> = cursor_world_pos.coord_into();
 
         if ctx.input(|a| a.modifiers.command)
             && let Some(prev_coord) = match app.ui.map.created_nodes.last() {
-                Some(PlaNode::Line { .. }) if app.ui.map.created_nodes.len() > 1 => {
+                Some(PlaNodeWorld::Line { .. }) if app.ui.map.created_nodes.len() > 1 => {
                     app.ui.map.created_nodes.second_last().map(|a| a.coord())
                 }
-                Some(PlaNode::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
-                Some(PlaNodeBase::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
+                Some(PlaNodeWorld::QuadraticBezier { ctrl, .. }) => Some(*ctrl),
+                Some(PlaNodeWorld::CubicBezier { ctrl2, .. }) => Some(*ctrl2),
                 _ => None,
             }
             && world_coord != prev_coord
         {
-            let angle_vec = (world_coord - prev_coord).to_geo_coord_f32();
+            let angle_vec: geo::Coord<f32> = (world_coord - prev_coord).coord_into();
             let (closest_angle_vec, _) = ANGLE_VECTORS
                 .into_iter()
                 .chain(ANGLE_VECTORS.into_iter().map(|a| -a))
@@ -191,11 +192,11 @@ impl MapWindow {
             // adapted from https://docs.rs/glam/latest/src/glam/f32/vec2.rs.html#618-622
             let world_coord_f32 = closest_angle_vec * angle_vec.dot_product(closest_angle_vec)
                 / closest_angle_vec.dot_product(closest_angle_vec);
-            world_coord = world_coord_f32.to_geo_coord_i32() + prev_coord;
+            world_coord = prev_coord + world_coord_f32.coord_into();
         }
 
         match app.ui.map.created_nodes.last_mut() {
-            None => app.ui.map.created_nodes.push(PlaNode::Line {
+            None => app.ui.map.created_nodes.push(PlaNodeWorld::Line {
                 coord: world_coord,
                 label: None,
             }),
@@ -217,13 +218,16 @@ impl MapWindow {
         }
 
         if let Some(curve_vec) = match app.ui.map.created_nodes.last_chunk::<2>() {
-            Some([second_last, PlaNode::QuadraticBezier { ctrl, coord, .. }]) => {
-                Some(vec![second_last.coord(), *ctrl, *coord])
-            }
             Some(
                 [
                     second_last,
-                    PlaNode::CubicBezier {
+                    PlaNodeWorld::QuadraticBezier { ctrl, coord, .. },
+                ],
+            ) => Some(vec![second_last.coord(), *ctrl, *coord]),
+            Some(
+                [
+                    second_last,
+                    PlaNodeWorld::CubicBezier {
                         ctrl1,
                         ctrl2,
                         coord,
@@ -233,8 +237,8 @@ impl MapWindow {
             ) => Some(vec![second_last.coord(), *ctrl1, *ctrl2, *coord]),
             Some(
                 [
-                    PlaNode::Line { coord: coord1, .. },
-                    PlaNode::Line { coord: coord2, .. },
+                    PlaNodeWorld::Line { coord: coord1, .. },
+                    PlaNodeWorld::Line { coord: coord2, .. },
                 ],
             ) => {
                 (!IS_LINE && app.ui.map.created_nodes.len() == 2).then_some(vec![*coord1, *coord2])
@@ -243,7 +247,7 @@ impl MapWindow {
         } {
             let curve_vec = curve_vec
                 .iter()
-                .map(|a| app.map_world_to_screen(response.rect.center(), a.to_geo_coord_f32()))
+                .map(|a| app.map_world_to_screen(response.rect.center(), a.coord_into()))
                 .collect::<Vec<_>>();
             painter.add(Self::white_dash(&curve_vec, false));
         }
@@ -252,19 +256,19 @@ impl MapWindow {
             let last_node = app.ui.map.created_nodes.last_mut().unwrap();
             info!(?last_node, "Undoing last control point / node");
             match *last_node {
-                PlaNode::Line { .. } => {
+                PlaNodeWorld::Line { .. } => {
                     app.ui.map.created_nodes.pop();
                 }
-                PlaNode::QuadraticBezier { coord, label, .. } => {
-                    *last_node = PlaNodeBase::Line { coord, label }
+                PlaNodeWorld::QuadraticBezier { coord, label, .. } => {
+                    *last_node = PlaNodeWorld::Line { coord, label }
                 }
-                PlaNode::CubicBezier {
+                PlaNodeWorld::CubicBezier {
                     ctrl1,
                     coord,
                     label,
                     ..
                 } => {
-                    *last_node = PlaNode::QuadraticBezier {
+                    *last_node = PlaNodeWorld::QuadraticBezier {
                         ctrl: ctrl1,
                         coord,
                         label,
@@ -275,22 +279,22 @@ impl MapWindow {
             if ctx.input(|a| a.modifiers.shift) && app.ui.map.created_nodes.len() > 1 {
                 let last_node = app.ui.map.created_nodes.last_mut().unwrap();
                 match *last_node {
-                    PlaNode::Line { coord, label } => {
-                        *last_node = PlaNode::QuadraticBezier {
+                    PlaNodeWorld::Line { coord, label } => {
+                        *last_node = PlaNodeWorld::QuadraticBezier {
                             ctrl: coord,
                             coord,
                             label,
                         }
                     }
-                    PlaNode::QuadraticBezier { ctrl, coord, label } => {
-                        *last_node = PlaNode::CubicBezier {
+                    PlaNodeWorld::QuadraticBezier { ctrl, coord, label } => {
+                        *last_node = PlaNodeWorld::CubicBezier {
                             ctrl1: ctrl,
                             ctrl2: coord,
                             coord,
                             label,
                         }
                     }
-                    PlaNode::CubicBezier { .. } => {}
+                    PlaNodeWorld::CubicBezier { .. } => {}
                 }
                 info!(?last_node, "Adding control point");
             } else if app
@@ -300,7 +304,7 @@ impl MapWindow {
                 .last_chunk::<2>()
                 .is_none_or(|[sl, l]| sl.coord() != l.coord())
             {
-                app.ui.map.created_nodes.push(PlaNode::Line {
+                app.ui.map.created_nodes.push(PlaNodeWorld::Line {
                     coord: world_coord,
                     label: None,
                 });
@@ -320,7 +324,7 @@ impl MapWindow {
                     app.ui
                         .map
                         .created_nodes
-                        .push(PlaNode::Line { coord, label: None });
+                        .push(PlaNodeWorld::Line { coord, label: None });
                 }
                 let component = PlaComponent {
                     full_id: FullId::new(

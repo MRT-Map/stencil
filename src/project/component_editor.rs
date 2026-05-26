@@ -9,7 +9,7 @@ use crate::{
     component_actions::event::ComponentEv,
     mode::EditorMode,
     project::{
-        pla3::{PlaComponent, PlaNode, PlaNodeVec},
+        pla3::{PlaComponent, PlaNodeWorld, PlaNodeWorldVec},
         skin::SkinType,
     },
     ui::dock::DockWindow,
@@ -707,7 +707,7 @@ impl ComponentEditorWindow {
 
         changed
     }
-    fn show_position_data(ui: &mut egui::Ui, nodes: &PlaNodeVec) {
+    fn show_position_data(ui: &mut egui::Ui, nodes: &PlaNodeWorldVec) {
         egui_extras::TableBuilder::new(ui)
             .id_salt("component position data")
             .columns(egui_extras::Column::auto().at_least(50.0), 4)
@@ -751,14 +751,14 @@ impl ComponentEditorWindow {
                     };
                 for node in nodes {
                     match *node {
-                        PlaNode::Line { coord, label } => {
+                        PlaNodeWorld::Line { coord, label } => {
                             add_row("line", coord, egui::Color32::WHITE, label);
                         }
-                        PlaNode::QuadraticBezier { ctrl, coord, label } => {
+                        PlaNodeWorld::QuadraticBezier { ctrl, coord, label } => {
                             add_row("ctrl", ctrl, egui::Color32::DARK_GRAY, None);
                             add_row("quad", coord, egui::Color32::WHITE, label);
                         }
-                        PlaNode::CubicBezier {
+                        PlaNodeWorld::CubicBezier {
                             ctrl1,
                             ctrl2,
                             coord,
