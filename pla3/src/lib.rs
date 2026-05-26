@@ -1,4 +1,5 @@
 mod component;
+mod error;
 mod node;
 mod node_type;
 mod node_vec;

@@ -6,10 +6,10 @@ use std::{
     sync::Arc,
 };
 
-use eyre::{ContextCompat, Report, eyre};
 use ordered_float::NotNan;
 
 use crate::{
+    error::{Error, InvalidLabelError, InvalidLayerError, Result},
     node::PlaNode,
     node_type::{PlaNodeType, PlaNodeTypeGet, PlaNodeTypeNew},
     node_vec::PlaNodeVec,
@@ -80,29 +80,41 @@ impl<S, T: PlaNodeTypeNew> PlaComponent<S, T>
 where
     <T::C as FromStr>::Err: 'static,
 {
-    fn get_coord(split: &[&str], i: usize) -> eyre::Result<T, <T::C as FromStr>::Err> {
+    fn get_coord(split: &[&str], i: usize) -> Result<T> {
         let (x, y) = (split[i], split[i + 1]);
-        Ok(PlaNodeTypeNew::new(x.parse()?, y.parse()?))
+        let (x, y) = (
+            x.parse()
+                .map_err(|e| Error::InvalidCoordinate(x.to_owned(), Box::new(e)))?,
+            y.parse()
+                .map_err(|e| Error::InvalidCoordinate(y.to_owned(), Box::new(e)))?,
+        );
+        Ok(PlaNodeTypeNew::new(x, y))
     }
-    fn get_label(split: &[&str], i: usize) -> eyre::Result<Option<u8>> {
+    fn get_label(split: &[&str], i: usize) -> Result<Option<u8>> {
         let Some(label) = split.get(i) else {
             return Ok(None);
         };
         let Some(label) = label.strip_suffix("#") else {
-            return Err(eyre!("`{label}` does not start with #"));
+            return Err(Error::InvalidLabel(
+                label.to_string(),
+                InvalidLabelError::MissingPrefix,
+            ));
         };
-        label.parse::<u8>().map(Some).map_err(Into::into)
+        label
+            .parse::<u8>()
+            .map_err(|e| Error::InvalidLabel(label.to_owned(), e.into()))
+            .map(Some)
     }
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(full_id)))]
     pub fn load_from_string<GT: Fn(&str) -> Option<Arc<S>>>(
         s: &str,
         full_id: FullId,
         get_type: GT,
-    ) -> eyre::Result<(Self, Option<Report>)> {
+    ) -> Result<(Self, Option<Error>)> {
         let mut unknown_type_error = None;
         let (nodes_str, attrs_str) = s
             .split_once("\n---\n")
-            .wrap_err(format!("`---` not found in: {s}"))?;
+            .ok_or_else(|| Error::MissingSeparator(s.to_owned()))?;
 
         let nodes = nodes_str
             .split('\n')
@@ -124,47 +136,54 @@ where
                         coord: Self::get_coord(&split, 4)?,
                         label: Self::get_label(&split, 6)?,
                     })),
-                    len => Err(eyre!("`{node_str}` has invalid split length {len}")),
+                    len => Err(Error::InvalidSplitLength(node_str.to_owned(), len)),
                 }
             })
-            .filter_map(eyre::Result::transpose)
-            .collect::<eyre::Result<PlaNodeVec<T>>>()?;
+            .filter_map(Result::transpose)
+            .collect::<Result<PlaNodeVec<T>>>()?;
 
-        if !matches!(nodes.first(), Some(PlaNode::Line { .. })) {
-            return Err(eyre!(
-                "First node must exist and not be a curve (Got {:?})",
-                nodes.first()
-            ));
+        if let Some(node @ PlaNode::Line { .. }) = nodes.first() {
+            return Err(Error::FirstNodeIsCurve(format!("{node:?}")));
         }
 
         let mut display_name = String::new();
         let mut layer = NotNan::<f32>::default();
-        let mut skin_component = if nodes.len() == 1 {
-            get_type("simplePoint").wrap_err("No type `simplePoint`")?
+        let mut ty = if nodes.len() == 1 {
+            get_type("simplePoint").ok_or_else(|| Error::MissingType("simplePoint".into()))
         } else {
-            get_type("simpleLine").wrap_err("No type `simpleLine`")?
+            get_type("simpleLine").ok_or_else(|| Error::MissingType("simpleLine".into()))
         };
         let mut misc = BTreeMap::<String, toml::Value>::new();
         for (k, v) in toml::from_str::<toml::Table>(attrs_str)? {
             match &*k {
                 "display_name" => {
                     v.as_str()
-                        .wrap_err(format!("`{v}` not string"))?
+                        .ok_or_else(|| Error::InvalidDisplayName(v.clone()))?
                         .clone_into(&mut display_name);
                 }
                 "layer" => {
-                    layer = v
-                        .as_float()
-                        .and_then(|a| NotNan::new(a as f32).ok())
-                        .or_else(|| v.as_integer().and_then(|a| NotNan::new(a as f32).ok()))
-                        .wrap_err(format!("`{v}` not number"))?;
+                    let float = if let Some(f) = v.as_float() {
+                        f as f32
+                    } else if let Some(i) = v.as_integer() {
+                        i as f32
+                    } else {
+                        return Err(Error::InvalidLayer(
+                            v,
+                            InvalidLayerError::NeitherIntegerNorFloat,
+                        ));
+                    };
+                    layer = NotNan::new(float)
+                        .map_err(|e| Error::InvalidLayer(v, InvalidLayerError::IsNaN(e)))?;
                 }
                 "type" => {
-                    if let Some(s) = get_type(v.as_str().wrap_err(format!("`{v}` not string"))?) {
-                        skin_component = s;
+                    let ty_str = v
+                        .as_str()
+                        .ok_or_else(|| Error::InvalidSkinType(v.clone()))?;
+                    if let Some(s) = get_type(ty_str) {
+                        ty = Ok(s);
                     } else {
                         unknown_type_error =
-                            Some(eyre!("Unknown skin type for component {full_id}: {v}"));
+                            Some(Error::UnknownType(full_id.clone(), ty_str.into()));
                     }
                 }
                 _ => {
@@ -176,7 +195,7 @@ where
         Ok((
             Self {
                 full_id,
-                ty: skin_component,
+                ty: ty?,
                 display_name,
                 layer,
                 nodes,
@@ -192,7 +211,7 @@ impl<S, T: PlaNodeTypeGet> PlaComponent<S, T> {
     pub fn save_to_string<'a, TS: Fn(&'a S) -> V, V: Into<toml::Value> + 'a>(
         &'a self,
         format_ty: TS,
-    ) -> eyre::Result<String>
+    ) -> Result<String>
     where
         S: 'a,
     {

@@ -233,11 +233,11 @@ impl Project {
             ) {
                 Ok((component, unknown_type_error)) => {
                     if let Some(e) = unknown_type_error {
-                        errors.push(e);
+                        errors.push(e.into());
                     }
                     self.components.insert(self.skin().unwrap(), component);
                 }
-                Err(e) => errors.push(e),
+                Err(e) => errors.push(e.into()),
             }
         }
 
@@ -289,6 +289,7 @@ impl Project {
         for component in components {
             if let Err(e) = component
                 .save_to_string(|ty| ty.name().as_str())
+                .map_err(Report::from)
                 .and_then(|s| safe_write(component.path(path), s, notifs).map_err(Report::from))
             {
                 errors.push(e);

@@ -3829,13 +3829,13 @@ version = "0.1.0"
 dependencies = [
  "duplicate",
  "egui",
- "eyre",
  "geo",
  "glam",
  "itertools",
  "mint",
  "ordered-float",
  "serde",
+ "thiserror 2.0.18",
  "toml",
  "tracing",
 ]
