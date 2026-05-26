@@ -36,7 +36,7 @@ impl FullId {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct PlaComponent<S, T: PlaNodeType> {
+pub struct PlaComponent<S: ?Sized, T: PlaNodeType> {
     pub full_id: FullId,
     pub ty: Arc<S>,
     pub display_name: String,
@@ -45,7 +45,7 @@ pub struct PlaComponent<S, T: PlaNodeType> {
     pub misc: BTreeMap<String, toml::Value>,
 }
 
-impl<S, T: PlaNodeType> Clone for PlaComponent<S, T> {
+impl<S: ?Sized, T: PlaNodeType> Clone for PlaComponent<S, T> {
     fn clone(&self) -> Self {
         Self {
             full_id: self.full_id.clone(),
@@ -58,7 +58,7 @@ impl<S, T: PlaNodeType> Clone for PlaComponent<S, T> {
     }
 }
 
-impl<S, T: PlaNodeType> Display for PlaComponent<S, T> {
+impl<S: ?Sized, T: PlaNodeType> Display for PlaComponent<S, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.full_id)?;
         if !self.display_name.is_empty() {
@@ -68,7 +68,7 @@ impl<S, T: PlaNodeType> Display for PlaComponent<S, T> {
     }
 }
 
-impl<S, T: PlaNodeType> PlaComponent<S, T> {
+impl<S: ?Sized, T: PlaNodeType> PlaComponent<S, T> {
     #[must_use]
     pub fn path(&self, root: &Path) -> PathBuf {
         root.join(&*self.full_id.namespace)
@@ -76,7 +76,7 @@ impl<S, T: PlaNodeType> PlaComponent<S, T> {
     }
 }
 
-impl<S, T: PlaNodeTypeNew> PlaComponent<S, T>
+impl<S: ?Sized, T: PlaNodeTypeNew> PlaComponent<S, T>
 where
     <T::C as FromStr>::Err: 'static,
 {
@@ -206,7 +206,7 @@ where
     }
 }
 
-impl<S, T: PlaNodeTypeGet> PlaComponent<S, T> {
+impl<S: ?Sized, T: PlaNodeTypeGet> PlaComponent<S, T> {
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(self.full_id)))]
     pub fn save_to_string<'a, TS: Fn(&'a S) -> V, V: Into<toml::Value> + 'a>(
         &'a self,
@@ -259,5 +259,19 @@ impl<S, T: PlaNodeTypeGet> PlaComponent<S, T> {
             .collect::<toml::Table>();
         out += &toml::to_string_pretty(&attrs)?;
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use proptest::prelude::*;
+
+    use crate::{FullId, PlaComponent};
+
+    proptest! {
+        #[test]
+        fn test_loading_no_crash(s in ".*", namespace in ".*", id in ".*") {
+            let _ = PlaComponent::<str, glam::Vec2>::load_from_string(&s, FullId::new(namespace, id), |t| Some(t.into()));
+        }
     }
 }

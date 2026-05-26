@@ -8,7 +8,7 @@ use itertools::Itertools;
 use crate::{
     PlaNodeTypeAdd,
     node::PlaNode,
-    node_type::{PlaNodeType, PlaNodeTypeBezier, PlaNodeTypeBezierRect, PlaNodeTypeRect},
+    node_type::{PlaNodeType, PlaNodeTypeBezier, PlaNodeTypeBezierRect},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -193,5 +193,39 @@ impl<'a, T: PlaNodeType> IntoIterator for &'a mut PlaNodeVec<T> {
 impl<T: PlaNodeType> FromIterator<PlaNode<T>> for PlaNodeVec<T> {
     fn from_iter<I: IntoIterator<Item = PlaNode<T>>>(iter: I) -> Self {
         Self(iter.into_iter().collect())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use proptest::prelude::*;
+
+    use crate::{PlaNode, PlaNodeVec};
+
+    prop_compose! {
+        fn glam_vec2()(a in any::<f32>(), b in any::<f32>()) -> glam::Vec2 {
+            glam::vec2(a, b)
+        }
+    }
+
+    proptest! {
+        #[test]
+        fn test_rev(a in glam_vec2(), b in glam_vec2(), c in glam_vec2(), d in glam_vec2(), e in glam_vec2(), f in glam_vec2(), g in glam_vec2()) {
+            let vec = [
+                PlaNode::Line {coord: a, label: None},
+                PlaNode::Line {coord: b, label: None},
+                PlaNode::QuadraticBezier {ctrl: c, coord: d, label: None},
+                PlaNode::CubicBezier {ctrl1: e, ctrl2: f, coord: g, label: None}
+            ].into_iter().collect::<PlaNodeVec<glam::Vec2>>();
+
+            let actual = vec.rev();
+            let expected = [
+                PlaNode::Line {coord: g, label: None},
+                PlaNode::CubicBezier {ctrl1: f, ctrl2: e, coord: d, label: None},
+                PlaNode::QuadraticBezier {ctrl: c, coord: b, label: None},
+                PlaNode::Line {coord: a, label: None}
+            ].into_iter().collect::<PlaNodeVec<glam::Vec2>>();
+            prop_assert_eq!(actual, expected);
+        }
     }
 }

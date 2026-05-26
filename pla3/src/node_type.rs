@@ -284,7 +284,7 @@ impl<T: geo::CoordNum + Eq + Display> PlaNodeTypeGet for Type<T> {
     }
 }
 
-#[cfg(feature = "egui")]
+#[cfg(feature = "geo")]
 impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
     type Rect = geo::Rect<T>;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {
@@ -303,7 +303,7 @@ impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
         rect.center()
     }
 }
-#[cfg(feature = "egui")]
+#[cfg(feature = "geo")]
 impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Point<T> {
     type Rect = geo::Rect<T>;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {

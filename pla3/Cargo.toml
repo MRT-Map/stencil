@@ -26,5 +26,7 @@ glam = ["dep:glam", "duplicate"]
 [dev-dependencies]
 glam = { version = "=0.33.0", features = ["std"] }
 
+proptest = "=1.11.0"
+
 [lints]
 workspace = true
