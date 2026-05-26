@@ -1,8 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>mrt-map/renovate-config",
-    ":pinAllExceptPeerDependencies"
+    "github>mrt-map/renovate-config"
   ],
   "packageRules": [
     {
@@ -11,6 +10,14 @@
         "eframe"
       ],
       "groupName": "egui-group"
+    },
+    {
+      "matchFileNames": ["pla3/**"],
+      "extends": [":pinOnlyDevDependencies"]
+    },
+    {
+      "matchFileNames": ["!pla3/**"],
+      "extends": [":pinAllExceptPeerDependencies"]
     }
   ],
   "customManagers": [
