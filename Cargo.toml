@@ -102,7 +102,7 @@ members = ["pla3"]
 future-incompatible = "deny"
 
 # temporary
-#dead_code = "allow"
+dead_code = "allow"
 
 [workspace.lints.clippy]
 all = "warn"
