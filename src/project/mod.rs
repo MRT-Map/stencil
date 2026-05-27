@@ -1,9 +1,9 @@
 use etcetera::AppStrategy;
 pub mod component_editor;
 pub mod component_list;
-pub mod event;
 pub mod history;
 pub mod history_viewer;
+pub mod namespace_event;
 pub mod pla3;
 pub mod project_editor;
 pub mod skin;
@@ -13,7 +13,6 @@ use std::{borrow::Cow, collections::HashSet, path::PathBuf, sync::Arc};
 use ::pla3::FullId;
 use async_executor::Task;
 use egui::ahash::HashMap;
-use egui_notify::ToastLevel;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use history::History;
@@ -24,6 +23,7 @@ use crate::{
     EXECUTOR, URL_REPLACER,
     file::{FOLDERS, safe_write},
     map::basemap::Basemap,
+    notif,
     project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
     ui::notif::NotifState,
 };
@@ -249,10 +249,10 @@ impl Project {
         }
         let errors = self.save(notifs);
         if !errors.is_empty() {
-            notifs.push_errors("Errors while saving", &errors, ToastLevel::Warning);
+            notif!(warning "Errors while saving", errors &errors, "Errors while saving");
             return;
         }
-        notifs.push("Saved project", ToastLevel::Success);
+        notif!(success "Saved project");
     }
     #[tracing::instrument(skip_all)]
     pub fn save(&self, notifs: &mut NotifState) -> Vec<Report> {

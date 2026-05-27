@@ -7,7 +7,7 @@ edition = "2024"
 thiserror = "=2.0.18"
 itertools = "=0.14.0"
 ordered-float = "=5.3.0"
-toml = "=1.1.2+spec-1.1.0"
+toml = "=1.1.2"
 serde = { version = "=1.0.228", features = ["derive"], optional = true }
 tracing = { version = "=0.1.44", optional = true }
 

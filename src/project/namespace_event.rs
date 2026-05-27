@@ -1,45 +1,33 @@
 use std::fmt::{Display, Formatter};
 
-use egui_notify::ToastLevel;
 use itertools::Itertools;
 
-use crate::{App, file::safe_delete, project::history::Event};
+use crate::{App, file::safe_delete, notif, project::history::Event};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub enum ProjectEv {
+pub enum NamespaceEv {
     Load(String),
     Hide(String),
     Create(String),
     Delete(String),
 }
 
-impl Event for ProjectEv {
+impl Event for NamespaceEv {
     #[tracing::instrument(skip_all, fields(self))]
     fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
         match self {
             Self::Load(namespace) => match app.project.load_namespace(namespace) {
                 Ok(errors) => {
                     if !errors.is_empty() {
-                        app.ui.notifs.push(
-                            format!(
-                                "Errors while loading `{namespace}`:\n{}",
-                                errors.iter().map(|e| format!("{e}")).join("\n")
-                            ),
-                            ToastLevel::Warning,
-                        );
+                        notif!(warning format!("Errors while loading `{namespace}`"), errors &errors);
                     }
-                    app.ui.notifs.push(
-                        format!("Loaded namespace `{namespace}`"),
-                        ToastLevel::Success,
-                    );
+                    notif!(success format!("Loaded namespace `{namespace}`"));
                     app.project.namespaces.insert(namespace.clone(), true);
                     true
                 }
                 Err(e) => {
-                    app.ui.notifs.push(
-                        format!("Error while loading `{namespace}`: {e}"),
-                        ToastLevel::Error,
-                    );
+                    let errors = [e];
+                    notif!(error format!("Error while loading `{namespace}`"), errors &errors);
                     false
                 }
             },
@@ -51,17 +39,11 @@ impl Event for ProjectEv {
                     .filter(|a| a.full_id.namespace == *namespace);
                 let errors = app.project.save_components(components, &mut app.ui.notifs);
                 if !errors.is_empty() {
-                    app.ui.notifs.push_errors(
-                        format!("Errors while saving `{namespace}`"),
-                        &errors,
-                        ToastLevel::Warning,
-                    );
+                    notif!(warning format!("Errors while saving `{namespace}`"), errors &errors);
                     return false;
                 }
                 app.project.components.remove_namespace(namespace);
-                app.ui
-                    .notifs
-                    .push(format!("Hid namespace `{namespace}`"), ToastLevel::Success);
+                notif!(success format!("Hid namespace `{namespace}`"));
                 app.project.namespaces.insert(namespace.clone(), false);
                 true
             }
@@ -69,16 +51,10 @@ impl Event for ProjectEv {
                 if let Some(path) = &app.project.path
                     && let Err(e) = std::fs::create_dir_all(path.join(namespace))
                 {
-                    app.ui.notifs.push_error(
-                        format!("Error while creating `{namespace}`"),
-                        e,
-                        ToastLevel::Warning,
-                    );
+                    let errors = [e];
+                    notif!(warning format!("Error while creating `{namespace}`"), errors &errors);
                 }
-                app.ui.notifs.push(
-                    format!("Created namespace `{namespace}`"),
-                    ToastLevel::Success,
-                );
+                notif!(success format!("Created namespace `{namespace}`"));
                 app.project.namespaces.insert(namespace.clone(), true);
                 app.project.new_component_ns.clone_from(namespace);
                 true
@@ -90,10 +66,7 @@ impl Event for ProjectEv {
                     .iter()
                     .any(|a| a.full_id.namespace == *namespace)
                 {
-                    app.ui.notifs.push(
-                        format!("Attempted to delete non-empty namespace `{namespace}`"),
-                        ToastLevel::Error,
-                    );
+                    notif!(error format!("Attempted to delete non-empty namespace `{namespace}`"));
                     return false;
                 }
                 if let Some(path) = &app.project.path {
@@ -101,10 +74,7 @@ impl Event for ProjectEv {
                 }
                 app.project.components.remove_namespace(namespace);
                 app.project.namespaces.remove(namespace);
-                app.ui.notifs.push(
-                    format!("Deleted namespace `{namespace}`"),
-                    ToastLevel::Success,
-                );
+                notif!(success format!("Deleted namespace `{namespace}`"));
                 true
             }
         }
@@ -120,7 +90,7 @@ impl Event for ProjectEv {
     }
 }
 
-impl Display for ProjectEv {
+impl Display for NamespaceEv {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Load(ns) => write!(f, "Load namespace {ns}"),

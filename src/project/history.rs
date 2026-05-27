@@ -6,7 +6,7 @@ use std::{
 use enum_dispatch::enum_dispatch;
 use tracing::debug;
 
-use crate::{App, component_actions::event::ComponentEv, project::event::ProjectEv};
+use crate::{App, component_actions::event::ComponentEv, project::namespace_event::NamespaceEv};
 
 #[enum_dispatch]
 pub trait Event: Debug + Sized + Display {
@@ -17,14 +17,14 @@ pub trait Event: Debug + Sized + Display {
 #[enum_dispatch(Event)]
 #[derive(Clone, Debug)]
 pub enum Events {
-    ProjectEv,
+    NamespaceEv,
     ComponentEv,
 }
 
 impl Display for Events {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Self::ProjectEv(e) => write!(f, "{e}"),
+            Self::NamespaceEv(e) => write!(f, "{e}"),
             Self::ComponentEv(e) => write!(f, "{e}"),
         }
     }

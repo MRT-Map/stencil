@@ -1,10 +1,9 @@
 use std::path::PathBuf;
 
-use egui_notify::ToastLevel;
 use eyre::Result;
 use tracing::{debug, info};
 
-use crate::{file::safe_write, ui::notif::NotifState};
+use crate::{file::safe_write, notif, ui::notif::NotifState};
 
 #[macro_export]
 macro_rules! impl_load_save {
@@ -72,11 +71,8 @@ pub trait LoadSave: Default {
                 vec
             }
             Err(e) => {
-                notifs.push_error(
-                    format!("Couldn't open file at {}", Self::path().display()),
-                    e,
-                    ToastLevel::Error,
-                );
+                let errors = [e];
+                notif!(error format!("Couldn't open file at {}", Self::path().display()), errors &errors);
                 return Self::default();
             }
         };
@@ -87,11 +83,8 @@ pub trait LoadSave: Default {
                 s
             }
             Err(e) => {
-                notifs.push_error(
-                    format!("Couldn't deserialise file at {}", Self::path().display()),
-                    e,
-                    ToastLevel::Error,
-                );
+                let errors = [e];
+                notif!(error format!("Couldn't deserialise file at {}", Self::path().display()), errors &errors);
                 Self::default()
             }
         }
@@ -103,11 +96,8 @@ pub trait LoadSave: Default {
                 vec
             }
             Err(e) => {
-                notifs.push_error(
-                    format!("Couldn't serialise file for {}", Self::path().display()),
-                    e,
-                    ToastLevel::Error,
-                );
+                let errors = [e];
+                notif!(error format!("Couldn't serialise file for {}", Self::path().display()), errors &errors);
                 return;
             }
         };
@@ -117,11 +107,8 @@ pub trait LoadSave: Default {
                 debug!("Wrote file at {}", Self::path().display());
             }
             Err(e) => {
-                notifs.push_error(
-                    format!("Couldn't write file for {}", Self::path().display()),
-                    e,
-                    ToastLevel::Error,
-                );
+                let errors = [e];
+                notif!(error format!("Couldn't write file at {}", Self::path().display()), errors &errors);
             }
         }
     }

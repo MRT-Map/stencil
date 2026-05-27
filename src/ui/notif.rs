@@ -1,22 +1,97 @@
 use std::{
-    fmt::{Debug, Display},
-    sync::{
-        LazyLock,
-        atomic::{AtomicU64, Ordering},
-    },
+    fmt::Debug,
+    sync::{LazyLock, atomic::AtomicU64},
     time::{Duration, SystemTime},
 };
 
 use chrono::{DateTime, Utc};
+use crossbeam_channel::TryRecvError;
 use egui_notify::{Anchor, Toast, ToastLevel, Toasts};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
 
 pub static NOTIF_DURATION: LazyLock<AtomicU64> =
     LazyLock::new(|| AtomicU64::new(MiscSettings::default().notif_duration));
+
+pub static CHANNEL: LazyLock<(
+    crossbeam_channel::Sender<Notif>,
+    crossbeam_channel::Receiver<Notif>,
+)> = LazyLock::new(crossbeam_channel::unbounded);
+
+#[macro_export]
+macro_rules! notif {
+    (info $message:expr) => {
+        ::tracing::info!("{}", $message);
+        $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Info, $message);
+    };
+    (info $message:expr, $tracing:tt) => {
+        ::tracing::info!($tracing);
+        $crate::notif!(info $message);
+    };
+    (success $message:expr) => {
+        ::tracing::info!("{}", $message);
+        $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Success, $message);
+    };
+    (success $message:expr, $tracing:tt) => {
+        ::tracing::info!($tracing);
+        $crate::notif!(success $message);
+    };
+    (warning $message:expr) => {
+        ::tracing::warn!("{}", $message);
+        $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Warning, $message);
+    };
+    (warning $message:expr, errors $errors:expr) => {
+        use ::itertools::Itertools;
+        ::tracing::warn!(errors = ?$errors, "{}", $message);
+        $crate::notif!(warning format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
+    };
+    (warning $message:expr, errors $errors:expr, $tracing:tt) => {
+        use ::itertools::Itertools;
+        ::tracing::warn!(errors = ?$errors, $tracing);
+        $crate::notif!(warning format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
+    };
+    (warning $message:expr, $tracing:tt) => {
+        ::tracing::warn!($tracing);
+        $crate::notif!(warning $message);
+    };
+    (error $message:expr) => {
+        ::tracing::error!("{}", $message);
+        $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Error, $message);
+    };
+    (error $message:expr, errors $errors:expr) => {
+        use ::itertools::Itertools;
+        ::tracing::error!(errors = ?$errors, "{}", $message);
+        $crate::notif!(error format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
+    };
+    (error $message:expr, errors $errors:expr, $tracing:tt) => {
+        use ::itertools::Itertools;
+        ::tracing::error!(errors = ?$errors, $tracing);
+        $crate::notif!(error format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
+    };
+    (error $message:expr, $tracing:tt) => {
+        ::tracing::error!($tracing);
+        $crate::notif!(error $message);
+    };
+}
+
+#[derive(Clone, Debug)]
+pub struct Notif {
+    pub timestamp: SystemTime,
+    pub level: ToastLevel,
+    pub message: egui::RichText,
+}
+impl Notif {
+    pub fn new<M: Into<egui::RichText>>(level: ToastLevel, message: M) -> Self {
+        Self {
+            timestamp: SystemTime::now(),
+            level,
+            message: message.into(),
+        }
+    }
+}
 
 pub struct NotifState {
     pub notifs: Vec<Notif>,
@@ -33,73 +108,30 @@ impl Default for NotifState {
 }
 
 impl NotifState {
-    fn push_base(&mut self, message: egui::RichText, level: ToastLevel) {
-        let notif_duration = NOTIF_DURATION.load(Ordering::Relaxed);
-        self.toasts
-            .add(Toast::custom(message.clone(), level.clone()))
-            .duration(
-                ((level == ToastLevel::Info || level == ToastLevel::Success)
-                    && notif_duration != 0)
-                    .then(|| Duration::from_secs(notif_duration)),
-            );
-        self.notifs.push(Notif::new(message, level));
-    }
-
-    pub fn push<S: Into<egui::RichText>>(&mut self, message: S, level: ToastLevel) {
+    #[tracing::instrument(skip_all)]
+    pub fn send<M: Into<egui::RichText>>(level: ToastLevel, message: M) {
         let message = message.into();
-        match level {
-            ToastLevel::Error => error!(msg = message.text(), "Sending notification"),
-            ToastLevel::Warning => warn!(msg = message.text(), "Sending notification"),
-            _ => info!(msg = message.text(), "Sending notification"),
-        }
-        self.push_base(message, level);
+        info!(message = %message.text(), ?level, "Sending notification");
+        CHANNEL
+            .0
+            .send(Notif::new(level, message))
+            .unwrap_or_else(|e| unreachable!("Disconnected channel: {e:#?}"));
     }
-    pub fn push_error<S: Display, E: Debug + Display>(
-        &mut self,
-        message: S,
-        error: E,
-        level: ToastLevel,
-    ) {
-        match level {
-            ToastLevel::Error => error!(msg=%message, ?error, "Sending notification"),
-            ToastLevel::Warning => warn!(msg=%message, ?error, "Sending notification"),
-            _ => info!(msg=%message, ?error, "Sending notification"),
-        }
-        self.push_base(format!("{message}\n{error}").into(), level);
-    }
-    pub fn push_errors<S: Display, E: Debug + Display>(
-        &mut self,
-        message: S,
-        errors: &[E],
-        level: ToastLevel,
-    ) {
-        match level {
-            ToastLevel::Error => error!(msg=%message, ?errors, "Sending notification"),
-            ToastLevel::Warning => warn!(msg=%message, ?errors, "Sending notification"),
-            _ => info!(msg=%message, ?errors, "Sending notification"),
-        }
-        self.push_base(
-            format!(
-                "{message}\n{}",
-                errors.iter().map(|e| format!("{e}")).join("\n")
-            )
-            .into(),
-            level,
-        );
-    }
-}
-#[derive(Clone, Debug)]
-pub struct Notif {
-    pub timestamp: SystemTime,
-    pub level: ToastLevel,
-    pub message: egui::RichText,
-}
-impl Notif {
-    pub fn new<S: Into<egui::RichText>>(message: S, level: ToastLevel) -> Self {
-        Self {
-            timestamp: SystemTime::now(),
-            level,
-            message: message.into(),
+    pub fn process_notifs(&mut self, misc_settings: &MiscSettings) {
+        loop {
+            let notif = match CHANNEL.1.try_recv() {
+                Ok(notif) => notif,
+                Err(TryRecvError::Empty) => break,
+                Err(TryRecvError::Disconnected) => unreachable!("Disconnected channel"),
+            };
+            self.toasts
+                .add(Toast::custom(notif.message.clone(), notif.level.clone()))
+                .duration(
+                    ((notif.level == ToastLevel::Info || notif.level == ToastLevel::Success)
+                        && misc_settings.notif_duration != 0)
+                        .then(|| Duration::from_secs(misc_settings.notif_duration)),
+                );
+            self.notifs.push(notif);
         }
     }
 }

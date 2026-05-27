@@ -95,6 +95,7 @@ impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.project.load_skin(ctx, &mut self.ui.notifs);
         self.status_init();
+        self.ui.notifs.process_notifs(&self.settings.misc);
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let start = Instant::now();

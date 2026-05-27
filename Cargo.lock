@@ -4994,6 +4994,7 @@ dependencies = [
  "chrono",
  "color-backtrace",
  "color-spantrace",
+ "crossbeam-channel",
  "duplicate",
  "eframe",
  "egui",

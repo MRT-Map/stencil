@@ -5,7 +5,7 @@ use crate::{
     App,
     component_actions::event::ComponentEv,
     coord::{CoordFrom, CoordInto},
-    project::{Project, SkinStatus, event::ProjectEv},
+    project::{Project, SkinStatus, namespace_event::NamespaceEv},
     settings::settings_ui_field,
     shortcut::ShortcutAction,
     ui::dock::DockWindow,
@@ -80,9 +80,9 @@ impl DockWindow for ProjectEditorWindow {
                             }
                             if ui.checkbox(&mut vis, "").changed() {
                                 if vis {
-                                    app.run_event(ProjectEv::Load(ns.clone()), ui);
+                                    app.run_event(NamespaceEv::Load(ns.clone()), ui);
                                 } else {
-                                    app.run_event(ProjectEv::Hide(ns.clone()), ui);
+                                    app.run_event(NamespaceEv::Hide(ns.clone()), ui);
                                 }
                             }
                         });
@@ -107,7 +107,7 @@ impl DockWindow for ProjectEditorWindow {
                                 )
                                 .clicked()
                             {
-                                app.run_event(ProjectEv::Delete(ns), ui);
+                                app.run_event(NamespaceEv::Delete(ns), ui);
                             }
                         });
                     });
@@ -130,7 +130,7 @@ impl DockWindow for ProjectEditorWindow {
                             .clicked()
                         {
                             app.run_event(
-                                ProjectEv::Create(std::mem::take(&mut new_namespace)),
+                                NamespaceEv::Create(std::mem::take(&mut new_namespace)),
                                 ui,
                             );
                         }

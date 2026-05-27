@@ -4,12 +4,11 @@ use std::{
     time::SystemTime,
 };
 
-use egui_notify::ToastLevel;
 use etcetera::app_strategy;
 use eyre::Result;
 use tracing::debug;
 
-use crate::ui::notif::NotifState;
+use crate::{notif, ui::notif::NotifState};
 
 #[cfg(debug_assertions)]
 pub struct Dev;
@@ -78,7 +77,7 @@ pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
     }
     std::fs::write(path, contents)
 }
-pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<Option<PathBuf>> {
+pub fn safe_delete<T: AsRef<Path>>(path: T, _notifs: &mut NotifState) -> Result<Option<PathBuf>> {
     let path = path.as_ref();
     if !path.exists() {
         return Ok(None);
@@ -97,11 +96,8 @@ pub fn safe_delete<T: AsRef<Path>>(path: T, notifs: &mut NotifState) -> Result<O
             Ok(Some(new_path))
         }
         Err(e) => {
-            notifs.push_error(
-                format!("Could not safe delete file/directory {}", path.display()),
-                &e,
-                ToastLevel::Warning,
-            );
+            let errors = [&e];
+            notif!(warning format!("Could not safe delete file/directory {}", path.display()), errors &errors);
             Err(e.into())
         }
     }
