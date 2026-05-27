@@ -2,6 +2,15 @@
 name = "pla3"
 version = "0.1.0"
 edition = "2024"
+description = "PLA3 format developed by MRT Mapping Services"
+authors = ["MRT Mapping Services", "7d <61975820+iiiii7d@users.noreply.github.com>"]
+license = "LGPL-3.0-only"
+homepage = "https://mrt-map.github.io/stencil3"
+repository = "https://github.com/mrt-map/stencil3"
+documentation = "https://github.com/MRT-Map/stencil3/wiki"
+readme = "../README.md"
+keywords = ["pla3", "pla3", "mrt", "mrt-map", "mrt-mapping-services"]
+categories = ["games", "science::geo", "parser-implementations"]
 
 [dependencies]
 thiserror = "2.0"
