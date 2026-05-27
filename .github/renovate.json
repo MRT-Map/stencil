@@ -12,11 +12,11 @@
       "groupName": "egui-group"
     },
     {
-      "matchFileNames": ["pla3/**"],
+      "matchFileNames": ["pla3/**/*"],
       "extends": [":pinOnlyDevDependencies"]
     },
     {
-      "matchFileNames": ["!pla3/**"],
+      "matchFileNames": ["!pla3/**/*"],
       "extends": [":pinAllExceptPeerDependencies"]
     }
   ],

@@ -1,17 +1,24 @@
+# Changelog
 ***Coming soon***
 * Directly download namespace files from GitHub repositories
 * Font configuration
 
-# v3.0.0-alpha.2
+## v3.0.0-alpha.3 (20260527)
+* rework notification system
+* move pla3 structs and types to separate crate (this will belong to a new repository in the future)
+* add menu bar buttons for importing and exporting PLA2 and PLA3
+* standardise changelog format
+
+## v3.0.0-alpha.2 (20260516)
 * migrate to mise and hk
 * add tracing instruments
 * move to `egui_layout_job_macros`
 * fix ID change for position/zoom labels
 
-# v3.0.0-alpha.1
+## v3.0.0-alpha.1 (20260420)
 fix app icon
 
-# v3.0.0-alpha.0
+## v3.0.0-alpha.0 (20260418)
 This is a major rewrite of stencil, removing the dependency on `bevy` and relying solely on `egui` through `eframe`.
 
 In addition, it also supports a new PLA3 format that has Bézier curves and a git-diffable file structure/format.
@@ -33,20 +40,20 @@ This prerelease does not include:
 * Loading and saving from disk
 * Node editing
 
-# v2.2.12
+## v2.2.12 (20250531)
 * Upgrade `bevy` to v0.16.1, among other dependencies
 
-# v2.2.11
+## v2.2.11 (20250512)
 * Add support for jpg and webp tile image loading
 
-# v2.2.10
+## v2.2.10 (20250511)
 * Fix crash on component delete
 
-# v2.2.9
+## v2.2.9 (20250504)
 * Fix inaccurate status messages on idle
 * Added version checker
 
-# v2.2.8
+## v2.2.8 (20250504)
 * Remove confirmation message for deleting a namespace, since it can be undone
 * Make `❌` buttons red
 * Remove `click_max_offset` option since it is no longer necessary anywhere
@@ -55,16 +62,16 @@ This prerelease does not include:
 * Position data is now shown as a table
 * Fix cursor staying as a pointing finger when hovered out
 
-# v2.2.7
+## v2.2.7 (20250503)
 * Support panning with mouse & zooming with pinch gesture on trackpad
 * Add select button for components in components list
 * UI fixes in component editor
 
-# v2.2.6
+## v2.2.6 (20250502)
 * Upgrade `bevy` to v0.16
 * Fix some English
 
-# v2.2.5
+## v2.2.5 (20250407)
 * Upgrade `bevy` to v0.15
   * This involves major internal refactors
   * Slight movements between mouse down and up will no longer count as a click
@@ -81,7 +88,7 @@ This prerelease does not include:
 * Components turn olive when hovered over
 * `bevy_inspector_egui` in debug builds
 
-# v2.2.4
+## v2.2.4 (20240814)
 * The order _should_ be more closely followed when selecting components that are at a higher order/layer over others
 * Image file extension field in basemaps
 * Default maximum GET requests is now 65536
@@ -91,18 +98,18 @@ This prerelease does not include:
   * A proper UI will be done in v2.3
 * Move coordinates and pending number of tiles from the top menu to the toolbar
 
-# v2.2.3
+## v2.2.3 (20240727)
 * Fix skin cache deletion every startup
 
-# v2.2.2
+## v2.2.2 (20240726)
 * Update skin format for `tile-renderer` v5
 * Sort components by ID before saving
 
-# v2.2.1
+## v2.2.1 (20240710)
 * Upgrade `bevy` to v0.14
 * Fix crash that happens sometimes (hopefully)
 
-# v2.2.0
+## v2.2.0 (20240524)
 * Revamped UI
   * New tabs and windows / docking format from `egui_dock`
   * New notifications from `egui_notify`
@@ -135,23 +142,23 @@ This prerelease does not include:
 * Added caching of skin JSON file
 * Added Apple Silicon support in `dmg` file
 
-# v2.1.3
+## v2.1.3 (20240427)
 * Upgrade `bevy` to v0.13
 * Fix mouse icon not changing
 * Fix application not existing in `dmg` file
 
-# v2.1.2
+## v2.1.2 (20231210)
 * Upgrade `bevy` to v0.12 (painfully)
 * No longer able to move the component in node-editing mode, go to select mode to do that
 * No longer able to select a line from its centre like an area
 * Update default tile URL for Minecart Rapid Transit
 
-# v2.1.1
+## v2.1.1 (20230701)
 * Added back limit to max number of HTTP requests
 * Added an option to clear tile cache on startup
 * All fields in `tile_settings.toml` are now optional too
 
-# v2.1.0
+## v2.1.0 (20230601)
 * Added window settings, GPU backend, Linux display server protocol configuration
 * stencil3 now starts in windowed mode instead of fullscreen
 * Settings files are saved as toml instead of msgpack
@@ -160,33 +167,33 @@ This prerelease does not include:
 * Now shows more licences from dependencies
 * Tile cache is moved from data folder to cache folder
 
-# v2.0.5
+## v2.0.5 (20230507)
 * URLs in tile cache are now escaped to fit Windows file-naming restrictions (especially `:`)
 
-# v2.0.4
+## v2.0.4 (20230507)
 * Fix textboxes losing focus (again)
 * ~~Changed backend of `surf` (http request lib) from `curl` to `async-h1` (it may or may not help render tiles in Windows?)~~
   * note from v2.0.5: this change was apparently not done; the actual change screwed up the tilemap
 * Spantrace in panic files
 
-# v2.0.3
+## v2.0.3 (20230423)
 * Update bevy
 * Fix tilemap also moving when the window is moving
 * Fix tiles not loading fast enough... hopefully
 * Option to show checkerboard instead of downloading tiles through environment variable
 
-# v2.0.2
+## v2.0.2 (20230216)
 * Fix skin not loading properly due to change in format of `font` field
 
-# v2.0.1
+## v2.0.1 (20230202)
 * Fix file where tile settings are stored being created as a folder instead of a file
 
-# v2.0.0
+## v2.0.0 (20221224)
 * Added hotkeys
 * Fix errors loading tilemap
 * Added manual
 
-# v2.0.0-beta.4
+### v2.0.0-beta.4 (20221125)
 * Added license page
 * Fixed text boxes not being editable and immediately losing focus
 * Undo / redo functionality
@@ -196,18 +203,18 @@ This prerelease does not include:
 * Better panic handling
 * Log output to file
 
-# v2.0.0-beta.3
+### v2.0.0-beta.3 (20221027)
 * For lines and areas, clicking on the last node placed will remove the node
 * Move popups (except one temporary one) to a new internal popup system
 * New internal file explorer for importing and exporting PLA 2 files
   * mostly because file importing broke on macOS Ventura
 
-# v2.0.0-beta.2
+### v2.0.0-beta.2 (20221024)
 * Stencil 2 is now distributed as .app in .dmg on macOS
 * Fix crosshair not showing up on Mac builds (maybe other builds too)
 * Shows a confirmation popup when deleting a component of more than 5 nodes
 
-# v2.0.0-beta.1
+### v2.0.0-beta.1 (20221023)
 * Added popup handling system
 * Handles in node editing of components with 50+ nodes will only show if they are nearest
 * Added changelog window
@@ -217,7 +224,7 @@ This prerelease does not include:
 * Add mouse X and Z-coordinate display
 * Increase transparency of areas
 
-# v2.0.0-beta.0
+### v2.0.0-beta.0 (20221023)
 * Added tile map
 * Added component modes for creation, deletion, node editing
 * Added top menu, toolbar, component panel
