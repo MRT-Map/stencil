@@ -84,10 +84,41 @@ impl App {
                     });
                 });
                 ui.menu_button("File", |ui| {
-                    // button!(ui, commands, "Open...", ProjectEv::Open);
-                    // button!(ui, commands, "Reload", ProjectEv::Reload);
+                    button!(ui, "Open", Some(ShortcutAction::OpenProject), {
+
+                    });
+                    ui.menu_button("Import", |ui| {
+                        button!(ui, "Import pla3.zip", None, {
+
+                        });
+                        button!(ui, "Import pla2.msgpack", None, {
+
+                        });
+                        button!(ui, "Import pla2.json", None, {
+
+                        });
+                    });
+                    ui.separator();
+                    button!(ui, "Reload", Some(ShortcutAction::ReloadProject), {
+
+                    });
+                    ui.separator();
                     button!(ui, "Save", Some(ShortcutAction::SaveProject), {
                         self.project.save_notif();
+                    });
+                    button!(ui, "Save As", Some(ShortcutAction::SaveProjectAs), {
+
+                    });
+                    ui.menu_button("Export", |ui| {
+                        button!(ui, "Export pla3.zip", None, {
+
+                        });
+                        button!(ui, "Export pla2.msgpack", None, {
+
+                        });
+                        button!(ui, "Export pla2.json", None, {
+
+                        });
                     });
                 });
                 ui.menu_button("Edit", |ui| {

@@ -46,6 +46,7 @@ pub enum ShortcutAction {
     OpenProject,
     ReloadProject,
     SaveProject,
+    SaveProjectAs,
     Undo,
     Redo,
     Delete,

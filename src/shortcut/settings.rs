@@ -45,6 +45,7 @@ impl Default for ShortcutSettings {
         shortcut!(OpenProject => COMMAND + O);
         shortcut!(ReloadProject => COMMAND + R);
         shortcut!(SaveProject => COMMAND + S);
+        shortcut!(SaveProjectAs => COMMAND | SHIFT + S);
         shortcut!(Undo => COMMAND + Z);
         shortcut!(Redo => COMMAND | SHIFT + Z);
         shortcut!(Delete -> Delete);

@@ -38,7 +38,6 @@ pub enum DockWindows {
     ProjectEditorWindow,
     SettingsWindow,
     NotifLogWindow,
-    // ComponentList,
     HistoryViewerWindow,
 }
 
@@ -59,11 +58,7 @@ impl Default for DockLayout {
         let [_, _] = tree.split_right(
             egui_dock::NodeIndex::root(),
             0.8,
-            vec![
-                ProjectEditorWindow.into(),
-                // ComponentList.into(),
-                HistoryViewerWindow.into(),
-            ],
+            vec![ProjectEditorWindow.into(), HistoryViewerWindow.into()],
         );
         Self(state)
     }
