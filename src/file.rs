@@ -8,7 +8,7 @@ use etcetera::app_strategy;
 use eyre::Result;
 use tracing::debug;
 
-use crate::{notif, ui::notif::NotifState};
+use crate::notif;
 
 #[cfg(debug_assertions)]
 pub struct Dev;
@@ -66,18 +66,14 @@ pub static TRASH_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     std::env::temp_dir().join("stencil3")
 });
 
-pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(
-    path: P,
-    contents: C,
-    notifs: &mut NotifState,
-) -> std::io::Result<()> {
-    let _ = safe_delete(&path, notifs);
+pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(path: P, contents: C) -> std::io::Result<()> {
+    let _ = safe_delete(&path);
     if let Some(folder) = path.as_ref().parent() {
         let _ = std::fs::create_dir_all(folder);
     }
     std::fs::write(path, contents)
 }
-pub fn safe_delete<T: AsRef<Path>>(path: T, _notifs: &mut NotifState) -> Result<Option<PathBuf>> {
+pub fn safe_delete<T: AsRef<Path>>(path: T) -> Result<Option<PathBuf>> {
     let path = path.as_ref();
     if !path.exists() {
         return Ok(None);

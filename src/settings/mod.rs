@@ -11,7 +11,7 @@ use crate::{
     map::settings::MapSettings,
     settings::misc_settings::MiscSettings,
     shortcut::settings::{ShortcutSettings, ShortcutsTabState},
-    ui::{dock::DockWindow, notif::NotifState, settings::UiSettings},
+    ui::{dock::DockWindow, settings::UiSettings},
 };
 
 #[derive(Default)]
@@ -23,23 +23,19 @@ pub struct AppSettings {
 }
 
 impl AppSettings {
-    pub fn load_state(notifs: &mut NotifState) -> Self {
+    pub fn load_state() -> Self {
         Self {
-            map: MapSettings::load(notifs),
-            ui: UiSettings::load(notifs),
-            shortcut: ShortcutSettings::load(notifs),
-            misc: {
-                let s = MiscSettings::load(notifs);
-                s.update_notif_duration();
-                s
-            },
+            map: MapSettings::load(),
+            ui: UiSettings::load(),
+            shortcut: ShortcutSettings::load(),
+            misc: MiscSettings::load(),
         }
     }
-    pub fn save_state(&self, notifs: &mut NotifState) {
-        self.misc.save(notifs);
-        self.shortcut.save(notifs);
-        self.map.save(notifs);
-        self.ui.save(notifs);
+    pub fn save_state(&self) {
+        self.misc.save();
+        self.shortcut.save();
+        self.map.save();
+        self.ui.save();
     }
 }
 

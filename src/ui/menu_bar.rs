@@ -87,7 +87,7 @@ impl App {
                     // button!(ui, commands, "Open...", ProjectEv::Open);
                     // button!(ui, commands, "Reload", ProjectEv::Reload);
                     button!(ui, "Save", Some(ShortcutAction::SaveProject), {
-                        self.project.save_notif(&mut self.ui.notifs);
+                        self.project.save_notif();
                     });
                 });
                 ui.menu_button("Edit", |ui| {

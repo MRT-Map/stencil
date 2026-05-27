@@ -8,7 +8,6 @@ use crate::{
     file::{FOLDERS, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
-    ui::notif::NotifState,
 };
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, Eq, strum::Display)]
@@ -87,8 +86,8 @@ impl Basemap {
             .in_cache_dir("tile-cache")
             .join(URL_REPLACER.replace_all(&self.url, "").as_ref())
     }
-    pub fn clear_cache_path(&self, notifs: &mut NotifState) {
-        let _ = safe_delete(self.cache_path(), notifs);
+    pub fn clear_cache_path(&self) {
+        let _ = safe_delete(self.cache_path());
     }
 }
 

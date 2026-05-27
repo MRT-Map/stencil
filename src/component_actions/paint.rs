@@ -139,15 +139,12 @@ impl MapWindow {
         is_selected: bool,
         component: &'a PlaComponent,
     ) -> Option<PaintResult<'a>> {
-        let Some(bounding_box) = component
+        let bounding_box = component
             .nodes
             .clone()
             .map(egui::Pos2::coord_from)
             .bounding_box()
-            .map(geo::Rect::<f32>::coord_from)
-        else {
-            return None;
-        };
+            .map(geo::Rect::<f32>::coord_from)?;
         let world_boundaries = app.map_world_boundaries(response.rect);
         if world_boundaries.max().x < bounding_box.min().x
             || bounding_box.max().x < world_boundaries.min().x

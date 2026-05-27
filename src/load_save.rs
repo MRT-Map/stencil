@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use eyre::Result;
 use tracing::{debug, info};
 
-use crate::{file::safe_write, notif, ui::notif::NotifState};
+use crate::{file::safe_write, notif};
 
 #[macro_export]
 macro_rules! impl_load_save {
@@ -57,11 +57,11 @@ pub trait LoadSave: Default {
     fn ser(&self) -> Result<Vec<u8>>;
     fn de(ser: &[u8]) -> Result<Self>;
 
-    fn load(notifs: &mut NotifState) -> Self {
+    fn load() -> Self {
         if !Self::path().exists() {
             info!("Loading default file for {}", Self::path().display());
             let s = Self::default();
-            let () = s.save(notifs);
+            let () = s.save();
             return s;
         }
 
@@ -89,7 +89,7 @@ pub trait LoadSave: Default {
             }
         }
     }
-    fn save(&self, notifs: &mut NotifState) {
+    fn save(&self) {
         let vec = match self.ser() {
             Ok(vec) => {
                 debug!("Serialised file for {}", Self::path().display());
@@ -102,7 +102,7 @@ pub trait LoadSave: Default {
             }
         };
 
-        match safe_write(Self::path(), vec, notifs) {
+        match safe_write(Self::path(), vec) {
             Ok(()) => {
                 debug!("Wrote file at {}", Self::path().display());
             }

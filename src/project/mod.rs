@@ -25,7 +25,6 @@ use crate::{
     map::basemap::Basemap,
     notif,
     project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
-    ui::notif::NotifState,
 };
 
 #[derive(Debug, Default)]
@@ -76,7 +75,7 @@ impl Project {
             .join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
     }
     #[tracing::instrument(skip_all)]
-    pub fn load_skin(&mut self, ctx: &egui::Context, notifs: &mut NotifState) {
+    pub fn load_skin(&mut self, ctx: &egui::Context) {
         match &mut self.skin_status {
             SkinStatus::Unloaded => {
                 let skin_cache = self.skin_cache_path();
@@ -110,7 +109,7 @@ impl Project {
                     let skin_cache = self.skin_cache_path();
                     if let Ok(s) = serde_json::to_string(&skin).inspect_err(|e| {
                         error!(self.skin_url, "Cannot serialise skin cache: {e:?}");
-                    }) && safe_write(&skin_cache, &s, notifs)
+                    }) && safe_write(&skin_cache, &s)
                         .inspect_err(|e| error!(?skin_cache, "Cannot write skin cache: {e:?}"))
                         .is_ok()
                     {
@@ -243,11 +242,11 @@ impl Project {
 
         Ok(errors)
     }
-    pub fn save_notif(&self, notifs: &mut NotifState) {
+    pub fn save_notif(&self) {
         if self.path.is_none() {
             return;
         }
-        let errors = self.save(notifs);
+        let errors = self.save();
         if !errors.is_empty() {
             notif!(warning "Errors while saving", errors &errors, "Errors while saving");
             return;
@@ -255,7 +254,7 @@ impl Project {
         notif!(success "Saved project");
     }
     #[tracing::instrument(skip_all)]
-    pub fn save(&self, notifs: &mut NotifState) -> Vec<Report> {
+    pub fn save(&self) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();
         };
@@ -267,19 +266,18 @@ impl Project {
         };
         if let Err(e) = toml::to_string_pretty(&project_toml)
             .map_err(Report::from)
-            .and_then(|s| safe_write(path.join("project.toml"), s, notifs).map_err(Report::from))
+            .and_then(|s| safe_write(path.join("project.toml"), s).map_err(Report::from))
         {
             errors.push(e);
         }
 
-        errors.extend(self.save_components(self.components.iter(), notifs));
+        errors.extend(self.save_components(self.components.iter()));
 
         errors
     }
     pub fn save_components<'a, C: Iterator<Item = &'a PlaComponent>>(
         &self,
         components: C,
-        notifs: &mut NotifState,
     ) -> Vec<Report> {
         let Some(path) = &self.path else {
             return Vec::new();
@@ -290,7 +288,7 @@ impl Project {
             if let Err(e) = component
                 .save_to_string(|ty| ty.name().as_str())
                 .map_err(Report::from)
-                .and_then(|s| safe_write(component.path(path), s, notifs).map_err(Report::from))
+                .and_then(|s| safe_write(component.path(path), s).map_err(Report::from))
             {
                 errors.push(e);
             }

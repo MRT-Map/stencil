@@ -37,9 +37,9 @@ impl Default for UiState {
 
 impl UiState {
     pub fn load_state() -> Self {
-        let mut notifs = NotifState::default();
+        let notifs = NotifState::default();
         Self {
-            dock_layout: DockLayout::load(&mut notifs),
+            dock_layout: DockLayout::load(),
             notifs,
             ..Self::default()
         }

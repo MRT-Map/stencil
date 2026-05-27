@@ -6,7 +6,7 @@ impl<F: Copy, T: CoordFrom<F>> CoordFrom<&F> for T {
         Self::coord_from(*value)
     }
 }
-pub trait CoordInto<T: ?Sized>: Copy
+pub trait CoordInto<T>: Copy
 where
     T: CoordFrom<Self>,
 {

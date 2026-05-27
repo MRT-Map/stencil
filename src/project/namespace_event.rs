@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-use itertools::Itertools;
-
 use crate::{App, file::safe_delete, notif, project::history::Event};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -37,7 +35,7 @@ impl Event for NamespaceEv {
                     .components
                     .iter()
                     .filter(|a| a.full_id.namespace == *namespace);
-                let errors = app.project.save_components(components, &mut app.ui.notifs);
+                let errors = app.project.save_components(components);
                 if !errors.is_empty() {
                     notif!(warning format!("Errors while saving `{namespace}`"), errors &errors);
                     return false;
@@ -70,7 +68,7 @@ impl Event for NamespaceEv {
                     return false;
                 }
                 if let Some(path) = &app.project.path {
-                    let _ = safe_delete(path.join(namespace), &mut app.ui.notifs);
+                    let _ = safe_delete(path.join(namespace));
                 }
                 app.project.components.remove_namespace(namespace);
                 app.project.namespaces.remove(namespace);

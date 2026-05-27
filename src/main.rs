@@ -71,29 +71,28 @@ impl App {
         let mut app = Self::load_state();
         app.map_reset_view();
         if app.settings.map.clear_cache_on_startup {
-            app.project.basemap.clear_cache_path(&mut app.ui.notifs);
+            app.project.basemap.clear_cache_path();
         }
         app
     }
     #[tracing::instrument(skip_all, name = "app_load_state")]
     fn load_state() -> Self {
-        let mut ui = UiState::load_state();
         Self {
-            settings: AppSettings::load_state(&mut ui.notifs),
-            ui,
+            settings: AppSettings::load_state(),
+            ui: UiState::load_state(),
             ..Self::default()
         }
     }
     #[tracing::instrument(skip_all, name = "app_save_state")]
-    fn save_state(&mut self) {
-        self.ui.dock_layout.save(&mut self.ui.notifs);
-        self.settings.save_state(&mut self.ui.notifs);
+    fn save_state(&self) {
+        self.ui.dock_layout.save();
+        self.settings.save_state();
     }
 }
 
 impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.project.load_skin(ctx, &mut self.ui.notifs);
+        self.project.load_skin(ctx);
         self.status_init();
         self.ui.notifs.process_notifs(&self.settings.misc);
     }

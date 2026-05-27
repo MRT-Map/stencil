@@ -35,7 +35,7 @@ impl DockWindow for ProjectEditorWindow {
                 // commands.trigger(ProjectEv::Reload);
             });
             button!(ui, "Save", Some(ShortcutAction::SaveProject), {
-                app.project.save_notif(&mut app.ui.notifs);
+                app.project.save_notif();
             });
         });
         ui.separator();

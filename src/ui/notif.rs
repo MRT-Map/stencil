@@ -1,20 +1,16 @@
 use std::{
     fmt::Debug,
-    sync::{LazyLock, atomic::AtomicU64},
+    sync::LazyLock,
     time::{Duration, SystemTime},
 };
 
 use chrono::{DateTime, Utc};
 use crossbeam_channel::TryRecvError;
 use egui_notify::{Anchor, Toast, ToastLevel, Toasts};
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 
 use crate::{App, settings::misc_settings::MiscSettings, ui::dock::DockWindow};
-
-pub static NOTIF_DURATION: LazyLock<AtomicU64> =
-    LazyLock::new(|| AtomicU64::new(MiscSettings::default().notif_duration));
 
 pub static CHANNEL: LazyLock<(
     crossbeam_channel::Sender<Notif>,

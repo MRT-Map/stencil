@@ -44,12 +44,7 @@ impl DockWindow for MapWindow {
 }
 impl MapWindow {
     #[tracing::instrument(skip_all)]
-    fn tiles(
-        app: &mut App,
-        ctx: &egui::Context,
-        response: &egui::Response,
-        painter: &egui::Painter,
-    ) {
+    fn tiles(app: &App, ctx: &egui::Context, response: &egui::Response, painter: &egui::Painter) {
         let world_boundaries = app.map_world_boundaries(response.rect);
         let tile_zoom = app.project.basemap.tile_zoom(app.ui.map.zoom);
         let tile_screen_size = app
@@ -76,7 +71,6 @@ impl MapWindow {
                     ctx,
                     &app.project.basemap,
                     &mut tile_cache,
-                    &mut app.ui.notifs,
                 ) {
                     Some(TextureIdResult::Success(texture_id)) => {
                         painter.image(

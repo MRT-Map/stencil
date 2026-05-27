@@ -143,7 +143,7 @@ impl App {
                     self.map_reset_view();
                 }
                 ShortcutAction::SaveProject => {
-                    self.project.save_notif(&mut self.ui.notifs);
+                    self.project.save_notif();
                 }
                 ShortcutAction::EditorModeSelect => {
                     self.mode = EditorMode::Select;
