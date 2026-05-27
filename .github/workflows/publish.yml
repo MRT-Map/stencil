@@ -36,7 +36,7 @@ jobs:
           echo 'changelog<<__EOF__'
           python -c "
           import os
-          print('\n'.join(open('CHANGELOG.md').read().split('# v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n#')[0])
+          print('\n'.join(open('CHANGELOG.md').read().split('## v' + os.environ['VERSION'])[1].split('\n')[1:]).split('\n##')[0])
           "
           echo __EOF__
           } >> "$GITHUB_OUTPUT"
@@ -230,7 +230,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - run: gh release delete "$TAG" --cleanup-tag -y
+      - run: gh release delete "v$TAG" --cleanup-tag -y
         env:
           TAG: ${{ needs.version-changelog.outputs.version }}
           GH_TOKEN: ${{ github.token }}
