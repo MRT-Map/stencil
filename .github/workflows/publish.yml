@@ -166,7 +166,7 @@ jobs:
     - run: cargo install --git https://github.com/volks73/cargo-wix --rev ${{ env.CARGO_WIX_REV }} --locked cargo-wix
 
     - run: cargo --locked build --release
-    - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture
+    - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture --package stencil3
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: windows-${{ matrix.os }}
