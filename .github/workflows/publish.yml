@@ -94,17 +94,27 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: macos-aarch64
-          path: app/stencil3.app
+          path: stencil3.app
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: macos-x86_64
+      - run: brew install create-dmg
 
       - run: |
-          lipo app/stencil3.app/Contents/MacOS/stencil3 stencil3 -create -output stencil3-new
-          mv stencil3-new app/stencil3.app/Contents/MacOS/stencil3
+          lipo stencil3.app/Contents/MacOS/stencil3 stencil3 -create -output stencil3-new
+          mv stencil3-new stencil3.app/Contents/MacOS/stencil3
       - run: |
-          ln -s "/Applications" "app/"
-          hdiutil create "stencil3-$VERSION.dmg" -fs HFS+ -volname stencil3 -srcfolder "app/" -ov
+          create-dmg \
+            --volname stencil3 \
+            --volicon "stencil3.app/Contents/Resources/stencil3.icns" \
+            --background "assets/ste-dmg-background.png" \
+            --window-size 600 325 \
+            --icon-size 100 \
+            --icon "stencil3.app" 200 180 \
+            --hide-extension "stencil3.app" \
+            --app-drop-link 400 180 \
+            --eula LICENSE \
+            "stencil3-$VERSION.dmg" "stencil3.app"
         env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
 
