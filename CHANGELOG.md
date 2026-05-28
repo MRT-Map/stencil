@@ -3,6 +3,9 @@
 * Directly download namespace files from GitHub repositories
 * Font configuration
 
+## v3.0.0-alpha.4 (20260529)
+* add background images and banners to msi and dmg
+
 ## v3.0.0-alpha.3 (20260527)
 * rework notification system
 * move pla3 structs and types to separate crate (this will belong to a new repository in the future)
