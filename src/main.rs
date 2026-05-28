@@ -1,4 +1,4 @@
-use etcetera::AppStrategy;
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod component_actions;
 mod coord;
 mod file;
@@ -16,6 +16,7 @@ mod ui;
 use std::{sync::LazyLock, time::Instant};
 
 use async_executor::StaticExecutor;
+use etcetera::AppStrategy;
 use eyre::Result;
 use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
