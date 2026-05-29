@@ -3,6 +3,13 @@
 * Directly download namespace files from GitHub repositories
 * Font configuration
 
+## v3.0.0-alpha.5 (20260530)
+* update background images for msi
+* change functionality of escape key in modes other than Select
+  * it now cancels drawing or goes back to Select mode instead of quitting the app
+* use NotNaN in various places that use f32
+* various backend changes
+
 ## v3.0.0-alpha.4 (20260529)
 * add background images and banners to msi and dmg
 
