@@ -15,10 +15,10 @@ impl Event for NamespaceEv {
     fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
         match self {
             Self::Load(namespace) => match app.project.load_namespace(namespace) {
-                Ok(errors) => {
-                    if !errors.is_empty() {
+                Ok(ww) => {
+                    ww.handle_warnings(|errors| {
                         notif!(warning format!("Errors while loading `{namespace}`"), errors &errors);
-                    }
+                    });
                     notif!(success format!("Loaded namespace `{namespace}`"));
                     app.project.namespaces.insert(namespace.clone(), true);
                     true
@@ -35,11 +35,13 @@ impl Event for NamespaceEv {
                     .components
                     .iter()
                     .filter(|a| a.full_id.namespace == *namespace);
-                let errors = app.project.save_components(components);
-                if !errors.is_empty() {
+                let ((), has_errors) = app.project.save_components(components).handle_warnings(|errors| {
                     notif!(warning format!("Errors while saving `{namespace}`"), errors &errors);
+                });
+                if has_errors.is_some() {
                     return false;
                 }
+
                 app.project.components.remove_namespace(namespace);
                 notif!(success format!("Hid namespace `{namespace}`"));
                 app.project.namespaces.insert(namespace.clone(), false);

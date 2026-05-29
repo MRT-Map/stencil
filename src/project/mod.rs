@@ -25,6 +25,7 @@ use crate::{
     map::basemap::Basemap,
     notif,
     project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
+    with_warnings::{WithWarning, WithWarnings},
 };
 
 #[derive(Debug, Default)]
@@ -165,12 +166,12 @@ impl Project {
             path: Some(path),
             ..Self::default()
         };
-        s.update_namespace_list()?;
+        let _ = s.update_namespace_list()?;
         Ok(s)
     }
-    pub fn update_namespace_list(&mut self) -> Result<Vec<Report>> {
+    pub fn update_namespace_list(&mut self) -> Result<WithWarnings<()>> {
         let Some(path) = &self.path else {
-            return Ok(Vec::new());
+            return Ok(WithWarnings::ok(()));
         };
         let mut errors = Vec::new();
 
@@ -200,12 +201,12 @@ impl Project {
             self.namespaces.insert(namespace, false);
         }
 
-        Ok(errors)
+        Ok(WithWarnings::new((), errors))
     }
     #[tracing::instrument(skip_all)]
-    pub fn load_namespace(&mut self, namespace: &str) -> Result<Vec<Report>> {
+    pub fn load_namespace(&mut self, namespace: &str) -> Result<WithWarnings<()>> {
         let Some(path) = &self.path else {
-            return Ok(Vec::new());
+            return Ok(WithWarnings::ok(()));
         };
         let mut errors = Vec::new();
 
@@ -229,34 +230,36 @@ impl Project {
                 &string,
                 FullId::new(namespace.to_owned(), id.to_string_lossy().into_owned()),
                 |a| self.skin()?.get_type(a).map(Arc::clone),
-            ) {
-                Ok((component, unknown_type_error)) => {
-                    if let Some(e) = unknown_type_error {
-                        errors.push(e.into());
-                    }
+            )
+            .map(WithWarning::from)
+            {
+                Ok(ww) => {
+                    let (component, _) = ww.handle_warning(|e| errors.push(e.into()));
                     self.components.insert(self.skin().unwrap(), component);
                 }
                 Err(e) => errors.push(e.into()),
             }
         }
 
-        Ok(errors)
+        Ok(WithWarnings::new((), errors))
     }
     pub fn save_notif(&self) {
         if self.path.is_none() {
             return;
         }
-        let errors = self.save();
-        if !errors.is_empty() {
-            notif!(warning "Errors while saving", errors &errors, "Errors while saving");
-            return;
-        }
-        notif!(success "Saved project");
+        self.save().handle_warnings2(
+            |errors| {
+                notif!(warning "Errors while saving", errors &errors, "Errors while saving");
+            },
+            || {
+                notif!(success "Saved project");
+            },
+        );
     }
     #[tracing::instrument(skip_all)]
-    pub fn save(&self) -> Vec<Report> {
+    pub fn save(&self) -> WithWarnings<()> {
         let Some(path) = &self.path else {
-            return Vec::new();
+            return WithWarnings::ok(());
         };
         let mut errors = Vec::new();
 
@@ -271,16 +274,16 @@ impl Project {
             errors.push(e);
         }
 
-        errors.extend(self.save_components(self.components.iter()));
+        errors.extend(self.save_components(self.components.iter()).warnings);
 
-        errors
+        WithWarnings::new((), errors)
     }
     pub fn save_components<'a, C: Iterator<Item = &'a PlaComponent>>(
         &self,
         components: C,
-    ) -> Vec<Report> {
+    ) -> WithWarnings<()> {
         let Some(path) = &self.path else {
-            return Vec::new();
+            return WithWarnings::ok(());
         };
         let mut errors = Vec::new();
 
@@ -294,6 +297,6 @@ impl Project {
             }
         }
 
-        errors
+        WithWarnings::new((), errors)
     }
 }

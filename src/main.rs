@@ -12,6 +12,7 @@ mod project;
 mod settings;
 mod shortcut;
 mod ui;
+mod with_warnings;
 
 use std::{sync::LazyLock, time::Instant};
 
