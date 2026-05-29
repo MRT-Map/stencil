@@ -35,14 +35,17 @@ impl app_strategy::AppStrategy for Dev {
     }
 }
 
-cfg_if::cfg_if! {
-    if #[cfg(debug_assertions)] {
+cfg_select! {
+    debug_assertions => {
         pub type AppStrategy = Dev;
-    } else if #[cfg(target_os = "windows")] {
+    }
+    target_os = "windows" => {
         pub type AppStrategy = app_strategy::Windows;
-    } else if #[cfg(any(target_os = "macos", target_os = "ios"))] {
+    }
+    any(target_os = "macos", target_os = "ios") => {
         pub type AppStrategy = app_strategy::Apple;
-    } else {
+    }
+    _ => {
         pub type AppStrategy = app_strategy::Xdg;
     }
 }
