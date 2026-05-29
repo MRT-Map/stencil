@@ -20,14 +20,8 @@ pub trait PlaNodeTypeGet: PlaNodeType {
     fn y(self) -> Self::C;
 }
 
-pub trait PlaNodeTypeAdd<Delta: Debug + Copy + Eq>:
-    PlaNodeType + Add<Delta, Output = Self>
-{
-}
-impl<Delta: Debug + Copy + Eq, T: PlaNodeType + Add<Delta, Output = Self>> PlaNodeTypeAdd<Delta>
-    for T
-{
-}
+pub trait PlaNodeTypeAdd<Delta: PlaNodeType>: PlaNodeType + Add<Delta, Output = Self> {}
+impl<Delta: PlaNodeType, T: PlaNodeType + Add<Delta, Output = Self>> PlaNodeTypeAdd<Delta> for T {}
 
 pub trait PlaNodeTypeRect: PlaNodeType {
     type Rect;
@@ -54,13 +48,41 @@ pub trait PlaNodeTypeBezierRect: PlaNodeTypeRect + PlaNodeTypeBezier {
     fn rect_from_cubic(a: Self, b: Self, c: Self, d: Self) -> Self::Rect;
 }
 
+#[duplicate::duplicate_item(
+    Type; [(CC, CC)]; [[CC; 2]]
+)]
+impl<CC: PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew for Type {
+    type C = CC;
+    fn new(x: Self::C, y: Self::C) -> Self {
+        Self::from([x, y])
+    }
+}
+
+impl<CC: PlaNodeType + Display> PlaNodeTypeGet for (CC, CC) {
+    type C = CC;
+    fn x(self) -> Self::C {
+        self.0
+    }
+    fn y(self) -> Self::C {
+        self.1
+    }
+}
+
+impl<CC: PlaNodeType + Display> PlaNodeTypeGet for [CC; 2] {
+    type C = CC;
+    fn x(self) -> Self::C {
+        self[0]
+    }
+    fn y(self) -> Self::C {
+        self[1]
+    }
+}
+
 #[cfg(feature = "mint")]
 #[duplicate::duplicate_item(
     Type; [mint::Point2]; [mint::Vector2]
 )]
-impl<CC: Debug + Copy + Eq + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew
-    for Type<CC>
-{
+impl<CC: PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew for Type<CC> {
     type C = CC;
     fn new(x: Self::C, y: Self::C) -> Self {
         Self::from([x, y])
@@ -71,7 +93,7 @@ impl<CC: Debug + Copy + Eq + FromStr<Err: Error + Send + Sync + 'static>> PlaNod
 #[duplicate::duplicate_item(
     Type; [mint::Point2]; [mint::Vector2]
 )]
-impl<CC: Debug + Copy + Eq + Display> PlaNodeTypeGet for Type<CC> {
+impl<CC: PlaNodeType + Display> PlaNodeTypeGet for Type<CC> {
     type C = CC;
     fn x(self) -> Self::C {
         self.x
@@ -261,7 +283,7 @@ impl PlaNodeTypeBezierRect for egui::Pos2 {
 #[duplicate::duplicate_item(
     Type; [geo::Coord]; [geo::Point]
 )]
-impl<T: geo::CoordNum + Eq + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew
+impl<T: geo::CoordNum + PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew
     for Type<T>
 {
     type C = T;
@@ -274,7 +296,7 @@ impl<T: geo::CoordNum + Eq + FromStr<Err: Error + Send + Sync + 'static>> PlaNod
 #[duplicate::duplicate_item(
     Type; [geo::Coord]; [geo::Point]
 )]
-impl<T: geo::CoordNum + Eq + Display> PlaNodeTypeGet for Type<T> {
+impl<T: geo::CoordNum + PlaNodeType + Display> PlaNodeTypeGet for Type<T> {
     type C = T;
     fn x(self) -> Self::C {
         self.x_y().0
@@ -285,7 +307,7 @@ impl<T: geo::CoordNum + Eq + Display> PlaNodeTypeGet for Type<T> {
 }
 
 #[cfg(feature = "geo")]
-impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
+impl<T: geo::CoordNum + PlaNodeType + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
     type Rect = geo::Rect<T>;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {
         geo::Rect::new(
@@ -304,7 +326,7 @@ impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Coord<T> {
     }
 }
 #[cfg(feature = "geo")]
-impl<T: geo::CoordNum + Eq + geo::GeoFloat> PlaNodeTypeRect for geo::Point<T> {
+impl<T: geo::CoordNum + PlaNodeType + geo::GeoFloat> PlaNodeTypeRect for geo::Point<T> {
     type Rect = geo::Rect<T>;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {
         geo::Rect::new(

@@ -133,7 +133,7 @@ impl<T: PlaNodeType> From<Vec<PlaNode<T>>> for PlaNodeVec<T> {
     }
 }
 
-impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNodeVec<T> {
+impl<Delta: PlaNodeType, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNodeVec<T> {
     type Output = Self;
 
     fn add(self, rhs: Delta) -> Self::Output {
@@ -141,7 +141,7 @@ impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNodeV
     }
 }
 
-impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> AddAssign<Delta> for PlaNodeVec<T> {
+impl<Delta: PlaNodeType, T: PlaNodeTypeAdd<Delta>> AddAssign<Delta> for PlaNodeVec<T> {
     fn add_assign(&mut self, rhs: Delta) {
         for a in self {
             *a += rhs;
@@ -203,20 +203,20 @@ mod test {
     use crate::{PlaNode, PlaNodeVec};
 
     prop_compose! {
-        fn glam_vec2()(a in any::<f32>(), b in any::<f32>()) -> glam::Vec2 {
-            glam::vec2(a, b)
+        fn vec2()(a in any::<f32>(), b in any::<f32>()) -> (f32, f32) {
+            (a, b)
         }
     }
 
     proptest! {
         #[test]
-        fn test_rev(a in glam_vec2(), b in glam_vec2(), c in glam_vec2(), d in glam_vec2(), e in glam_vec2(), f in glam_vec2(), g in glam_vec2()) {
+        fn test_rev(a in vec2(), b in vec2(), c in vec2(), d in vec2(), e in vec2(), f in vec2(), g in vec2()) {
             let vec = [
                 PlaNode::Line {coord: a, label: None},
                 PlaNode::Line {coord: b, label: None},
                 PlaNode::QuadraticBezier {ctrl: c, coord: d, label: None},
                 PlaNode::CubicBezier {ctrl1: e, ctrl2: f, coord: g, label: None}
-            ].into_iter().collect::<PlaNodeVec<glam::Vec2>>();
+            ].into_iter().collect::<PlaNodeVec<(f32, f32)>>();
 
             let actual = vec.rev();
             let expected = [
@@ -224,7 +224,7 @@ mod test {
                 PlaNode::CubicBezier {ctrl1: f, ctrl2: e, coord: d, label: None},
                 PlaNode::QuadraticBezier {ctrl: c, coord: b, label: None},
                 PlaNode::Line {coord: a, label: None}
-            ].into_iter().collect::<PlaNodeVec<glam::Vec2>>();
+            ].into_iter().collect::<PlaNodeVec<(f32, f32)>>();
             prop_assert_eq!(actual, expected);
         }
     }

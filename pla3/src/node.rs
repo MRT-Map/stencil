@@ -136,7 +136,7 @@ impl<T: PlaNodeType> PlaNode<T> {
     }
 }
 
-impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNode<T> {
+impl<Delta: PlaNodeType, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNode<T> {
     type Output = Self;
 
     fn add(mut self, rhs: Delta) -> Self::Output {
@@ -163,7 +163,7 @@ impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> Add<Delta> for PlaNode<
     }
 }
 
-impl<Delta: Debug + Copy + Eq, T: PlaNodeTypeAdd<Delta>> AddAssign<Delta> for PlaNode<T> {
+impl<Delta: PlaNodeType, T: PlaNodeTypeAdd<Delta>> AddAssign<Delta> for PlaNode<T> {
     fn add_assign(&mut self, rhs: Delta) {
         *self = *self + rhs;
     }

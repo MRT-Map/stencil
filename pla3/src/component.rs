@@ -271,7 +271,7 @@ mod test {
     proptest! {
         #[test]
         fn test_loading_no_crash(s in ".*", namespace in ".*", id in ".*") {
-            let _ = PlaComponent::<str, glam::Vec2>::load_from_string(&s, FullId::new(namespace, id), |t| Some(t.into()));
+            let _ = PlaComponent::<str, (f32, f32)>::load_from_string(&s, FullId::new(namespace, id), |t| Some(t.into()));
         }
     }
 }
