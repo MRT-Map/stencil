@@ -7,11 +7,11 @@ use tracing::info;
 
 use crate::{
     App,
-    load_save::LoadSave,
     map::settings::MapSettings,
     settings::misc_settings::MiscSettings,
     shortcut::settings::{ShortcutSettings, ShortcutsTabState},
     ui::{dock::DockWindow, settings::UiSettings},
+    utils::load_save::LoadSave,
 };
 
 #[derive(Default)]

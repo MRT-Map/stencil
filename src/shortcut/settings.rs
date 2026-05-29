@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use strum::{EnumCount, VariantArray};
 use tracing::info;
 
-use crate::{file::FOLDERS, impl_load_save, settings::Settings, shortcut::ShortcutAction};
+use crate::{impl_load_save, settings::Settings, shortcut::ShortcutAction, utils::file::FOLDERS};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ShortcutSettings(BiMap<ShortcutAction, egui::KeyboardShortcut>);

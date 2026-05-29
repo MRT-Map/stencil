@@ -4,7 +4,7 @@ use egui::Ui;
 use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 
-use crate::{file::FOLDERS, impl_load_save, settings::Settings};
+use crate::{impl_load_save, settings::Settings, utils::file::FOLDERS};
 
 #[expect(clippy::empty_structs_with_brackets)]
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, Default)]

@@ -6,10 +6,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     URL_REPLACER,
-    coord::{Nnf32, Nnf32UpdateExt, nn},
-    file::{FOLDERS, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
+    utils::{
+        coord::{Nnf32, Nnf32UpdateExt, nn},
+        file::{FOLDERS, safe_delete},
+    },
 };
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, Eq, strum::Display)]

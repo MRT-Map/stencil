@@ -4,10 +4,10 @@ use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    file::FOLDERS,
     impl_load_save,
     settings::{Settings, settings_ui_field},
     settings_field,
+    utils::file::FOLDERS,
 };
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);

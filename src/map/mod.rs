@@ -4,13 +4,15 @@ use tracing::error;
 
 use crate::{
     App,
-    coord::{Nnf32, nn},
     map::tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     mode::EditorMode,
-    pointer::ResponsePointerExt,
     project::SkinStatus,
     shortcut::ShortcutAction,
     ui::dock::DockWindow,
+    utils::{
+        coord::{Nnf32, nn},
+        pointer::ResponsePointerExt,
+    },
 };
 
 pub mod basemap;

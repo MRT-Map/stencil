@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
 use crate::{
-    App,
-    file::FOLDERS,
-    impl_load_save,
+    App, impl_load_save,
     map::MapWindow,
     project::{
         component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
@@ -14,6 +12,7 @@ use crate::{
     },
     settings::SettingsWindow,
     ui::notif::NotifLogWindow,
+    utils::file::FOLDERS,
 };
 
 #[enum_dispatch]

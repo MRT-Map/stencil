@@ -18,12 +18,12 @@ use tracing::{debug, error};
 
 use crate::{
     App,
-    coord::{CoordFrom, CoordInto, Nnf32},
     map::MapWindow,
     project::{
         pla3::{PlaComponent, PlaNodeScreen, PlaNodeScreenVec, ToScreenExt},
         skin::{AreaStyle, LineStyle, PointStyle, SkinType},
     },
+    utils::coord::{CoordFrom, CoordInto, Nnf32},
 };
 
 pub const TOLERANCE: Option<f32> = Some(1.0);

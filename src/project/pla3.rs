@@ -1,4 +1,4 @@
-use crate::{App, coord::CoordInto, project::skin::SkinType};
+use crate::{App, project::skin::SkinType, utils::coord::CoordInto};
 
 pub type PlaNodeWorld = pla3::PlaNode<geo::Coord<i32>>;
 pub type PlaNodeScreen = pla3::PlaNode<egui::Pos2>;

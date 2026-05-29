@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use crate::{App, file::safe_delete, notif, project::history::Event};
+use crate::{App, notif, project::history::Event, utils::file::safe_delete};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum NamespaceEv {

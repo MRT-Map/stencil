@@ -4,9 +4,11 @@ use tracing::info;
 
 use crate::{
     App,
-    coord::{CoordFrom, Nnf32},
     map::MapWindow,
-    pointer::ResponsePointerExt,
+    utils::{
+        coord::{CoordFrom, Nnf32},
+        pointer::ResponsePointerExt,
+    },
 };
 
 impl MapWindow {

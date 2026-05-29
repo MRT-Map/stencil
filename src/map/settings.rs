@@ -5,12 +5,13 @@ use num_traits::real::Real;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    App,
-    coord::{Nnf32, Nnf32UpdateExt, nn},
-    file::FOLDERS,
-    impl_load_save,
+    App, impl_load_save,
     settings::{Settings, settings_ui_field},
     settings_field,
+    utils::{
+        coord::{Nnf32, Nnf32UpdateExt, nn},
+        file::FOLDERS,
+    },
 };
 
 settings_field!(

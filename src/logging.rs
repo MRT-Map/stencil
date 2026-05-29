@@ -3,7 +3,7 @@ use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{EnvFilter, prelude::*};
 
-use crate::file::FOLDERS;
+use crate::utils::file::FOLDERS;
 
 pub fn init_logger() {
     tracing_subscriber::registry()

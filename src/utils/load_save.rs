@@ -3,12 +3,12 @@ use std::path::PathBuf;
 use eyre::Result;
 use tracing::{debug, info};
 
-use crate::{file::safe_write, notif};
+use crate::{notif, utils::file::safe_write};
 
 #[macro_export]
 macro_rules! impl_load_save {
     (toml $t:ty, $path:expr) => {
-        impl $crate::load_save::LoadSave for $t {
+        impl $crate::utils::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
@@ -23,7 +23,7 @@ macro_rules! impl_load_save {
         }
     };
     (toml $t:ty, $path:expr, $header:expr) => {
-        impl $crate::load_save::LoadSave for $t {
+        impl $crate::utils::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }
@@ -38,7 +38,7 @@ macro_rules! impl_load_save {
         }
     };
     (json $t:ty, $path:expr) => {
-        impl $crate::load_save::LoadSave for $t {
+        impl $crate::utils::load_save::LoadSave for $t {
             fn path() -> std::path::PathBuf {
                 $path
             }

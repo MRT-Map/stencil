@@ -12,10 +12,9 @@ use tracing::info;
 use crate::{
     App,
     component_actions::event::ComponentEv,
-    coord::CoordInto,
     map::MapWindow,
-    pointer::ResponsePointerExt,
     project::pla3::{PlaComponent, PlaNodeWorld, ToScreenExt},
+    utils::{coord::CoordInto, pointer::ResponsePointerExt},
 };
 
 static ANGLE_VECTORS: LazyLock<[geo::Coord<f32>; 40]> = LazyLock::new(|| {

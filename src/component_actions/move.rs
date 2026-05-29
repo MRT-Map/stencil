@@ -2,7 +2,7 @@ use tracing::info;
 
 use crate::{
     App, component_actions::event::ComponentEv, map::MapWindow, mode::EditorMode,
-    pointer::ResponsePointerExt,
+    utils::pointer::ResponsePointerExt,
 };
 
 impl MapWindow {

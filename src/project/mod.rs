@@ -21,11 +21,13 @@ use tracing::{error, info};
 
 use crate::{
     EXECUTOR, URL_REPLACER,
-    file::{FOLDERS, safe_write},
     map::basemap::Basemap,
     notif,
     project::{component_list::ComponentList, pla3::PlaComponent, skin::Skin},
-    with_warnings::{WithWarning, WithWarnings},
+    utils::{
+        file::{FOLDERS, safe_write},
+        with_warnings::{WithWarning, WithWarnings},
+    },
 };
 
 #[derive(Debug, Default)]

@@ -1,18 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod component_actions;
-mod coord;
-mod file;
 mod info_windows;
-mod load_save;
 mod logging;
 mod map;
 mod mode;
-mod pointer;
 mod project;
 mod settings;
 mod shortcut;
 mod ui;
-mod with_warnings;
+mod utils;
 
 use std::{sync::LazyLock, time::Instant};
 
@@ -23,8 +19,12 @@ use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
 
 use crate::{
-    file::FOLDERS, load_save::LoadSave, logging::init_logger, mode::EditorMode, project::Project,
-    settings::AppSettings, ui::UiState,
+    logging::init_logger,
+    mode::EditorMode,
+    project::Project,
+    settings::AppSettings,
+    ui::UiState,
+    utils::{file::FOLDERS, load_save::LoadSave},
 };
 
 pub static EXECUTOR: StaticExecutor = StaticExecutor::new();

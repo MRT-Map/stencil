@@ -6,13 +6,13 @@ use tracing::info;
 
 use crate::{
     App,
-    coord::{CoordInto, Nnf32, nn},
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
         pla3::{PlaComponent, PlaNodeWorldVec},
         skin::SkinType,
     },
+    utils::coord::{CoordInto, Nnf32, nn},
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]

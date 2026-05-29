@@ -4,11 +4,11 @@ use serde::{Deserialize, Serialize};
 use crate::{
     App,
     component_actions::event::ComponentEv,
-    coord::{CoordFrom, CoordInto},
     project::{Project, SkinStatus, namespace_event::NamespaceEv},
     settings::settings_ui_field,
     shortcut::ShortcutAction,
     ui::dock::DockWindow,
+    utils::coord::{CoordFrom, CoordInto},
 };
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, Default)]

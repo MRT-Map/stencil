@@ -15,9 +15,11 @@ use tracing::error;
 
 use crate::{
     EXECUTOR,
-    coord::{Nnf32, nn},
-    file::safe_write,
     map::basemap::Basemap,
+    utils::{
+        coord::{Nnf32, nn},
+        file::safe_write,
+    },
 };
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
