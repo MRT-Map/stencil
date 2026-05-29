@@ -1,6 +1,6 @@
 # Maintainer: 7d <61975820+iiiii7d@users.noreply.github.com>
 pkgname=stencil3
-pkgver=3.0.0_alpha.4
+pkgver=3.0.0_alpha.5
 pkgrel=1
 makedepends=('dpkg')
 arch=('x86_64' 'aarch64')
@@ -9,8 +9,8 @@ license=('GPL-3.0-only')
 url="https://github.com/mrt-map/stencil3"
 source_x86_64=("$pkgname-$pkgver.deb::$url/releases/download/v${pkgver//_/-}/stencil3_${pkgver//_/-}_amd64.deb")
 source_aarch64=("$pkgname-$pkgver.deb::$url/releases/download/v${pkgver//_/-}/stencil3_${pkgver//_/-}_arm64.deb")
-sha256sums_x86_64=('188ac7aec007fcf058e39810743a11cc81fc31de03526fca74ea062fe6e0030c')
-sha256sums_aarch64=('00a579d9e8135ee8074980b4361ced4ffffeb6af391ec36fa01b41eb9fac4671')
+sha256sums_x86_64=('f813bbb611f8f466d04a76360f87df9a38d6beb3376b1947ddb20c561f4a2b00')
+sha256sums_aarch64=('f983d5b66e9a8760da037b969f9cf67b80b54a062e877740eb4dcea4bc7248d2')
 
 if [[ -f PKGBUILD ]]; then
     cp PKGBUILD stencil3.install
