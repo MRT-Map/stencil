@@ -7,7 +7,6 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
-    notif,
     project::{
         component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
         project_editor::ProjectEditorWindow,
@@ -168,7 +167,7 @@ impl App {
                     ui.menu_button("Debug", |ui| {
                         if ui.button("Trigger Warning").clicked() {
                             info!(label = "Trigger Warning", "Clicked menu item");
-                            notif!(warning "Warning Triggered");
+                            crate::notif!(warning "Warning Triggered");
                         }
                         if ui.button("Trigger Panic").clicked() {
                             info!(label = "Trigger Panic", "Clicked menu item");
