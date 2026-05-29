@@ -33,6 +33,9 @@ impl<T: PlaNodeType> PlaNodeVec<T> {
     }
     #[must_use]
     pub fn second_last(&self) -> Option<&PlaNode<T>> {
+        if self.len() < 2 {
+            return None;
+        }
         self.get(self.len() - 2)
     }
     #[must_use]
@@ -100,14 +103,14 @@ impl<T: PlaNodeTypeBezierRect> PlaNodeVec<T> {
 
 impl<T: PlaNodeTypeBezier> PlaNodeVec<T> {
     #[must_use]
-    pub fn outline<Tolerance: Into<Option<f32>> + Clone>(&self, tolerance: Tolerance) -> Vec<T> {
+    pub fn outline<Tolerance: Into<Option<f32>> + Copy>(&self, tolerance: Tolerance) -> Vec<T> {
         let mut previous_coord = Option::<T>::None;
         let mut out = Vec::new();
         for n in self {
             out.extend(&match (*n, previous_coord) {
                 (PlaNode::Line { coord, .. }, _) => vec![coord],
                 (PlaNode::QuadraticBezier { ctrl, coord, .. }, Some(previous_coord)) => {
-                    T::flatten_quadratic(previous_coord, ctrl, coord, tolerance.clone())
+                    T::flatten_quadratic(previous_coord, ctrl, coord, tolerance)
                 }
                 (
                     PlaNode::CubicBezier {
@@ -117,7 +120,7 @@ impl<T: PlaNodeTypeBezier> PlaNodeVec<T> {
                         ..
                     },
                     Some(previous_coord),
-                ) => T::flatten_cubic(previous_coord, ctrl1, ctrl2, coord, tolerance.clone()),
+                ) => T::flatten_cubic(previous_coord, ctrl1, ctrl2, coord, tolerance),
                 _ => unreachable!(),
             });
             previous_coord = Some(n.coord());

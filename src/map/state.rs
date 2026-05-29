@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::{
     App,
-    coord::CoordInto,
+    coord::{CoordInto, Nnf32, nn},
     map::{basemap::Basemap, settings::MapSettings},
     project::{
         component_list::ComponentList,
@@ -15,11 +15,11 @@ use crate::{
     },
 };
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct MapState {
-    pub centre_coord: geo::Coord<f32>,
-    pub zoom: f32,
-    pub cursor_world_pos: Option<geo::Coord<f32>>,
+    pub centre_coord: geo::Coord<Nnf32>,
+    pub zoom: Nnf32,
+    pub cursor_world_pos: Option<geo::Coord<Nnf32>>,
 
     #[serde(skip)]
     pub created_nodes: PlaNodeWorldVec,
@@ -38,26 +38,9 @@ pub struct MapState {
     pub clipboard: Vec<PlaComponent>,
 
     #[serde(skip)]
-    pub comp_move_origin_world_pos: Option<geo::Coord<f32>>,
+    pub comp_move_origin_world_pos: Option<geo::Coord<Nnf32>>,
 }
 
-impl Default for MapState {
-    fn default() -> Self {
-        Self {
-            centre_coord: geo::Coord::<f32>::default(),
-            zoom: 0.0,
-            cursor_world_pos: None,
-            created_nodes: PlaNodeWorldVec::default(),
-            created_point_type: None,
-            created_line_type: None,
-            created_area_type: None,
-            hovered_component: None,
-            selected: HashMap::new(),
-            clipboard: Vec::new(),
-            comp_move_origin_world_pos: None,
-        }
-    }
-}
 impl App {
     pub fn map_reset_view(&mut self) {
         self.ui
@@ -89,7 +72,7 @@ impl App {
     pub fn map_world_to_screen(
         &self,
         map_centre: egui::Pos2,
-        world: geo::Coord<f32>,
+        world: geo::Coord<Nnf32>,
     ) -> egui::Pos2 {
         self.ui
             .map
@@ -100,7 +83,7 @@ impl App {
         &self,
         map_centre: egui::Pos2,
         screen: egui::Pos2,
-    ) -> geo::Coord<f32> {
+    ) -> geo::Coord<Nnf32> {
         self.ui.map.screen_to_world(
             &self.settings.map,
             &self.project.basemap,
@@ -109,7 +92,7 @@ impl App {
         )
     }
     #[must_use]
-    pub fn map_world_boundaries(&self, map_rect: egui::Rect) -> geo::Rect<f32> {
+    pub fn map_world_boundaries(&self, map_rect: egui::Rect) -> geo::Rect<Nnf32> {
         self.ui
             .map
             .map_world_boundaries(&self.settings.map, &self.project.basemap, map_rect)
@@ -123,7 +106,8 @@ impl MapState {
     pub fn reset_view(&mut self, map_settings: &MapSettings, basemap: &Basemap) {
         info!("Resetting map view");
         self.centre_coord = geo::Coord::zero();
-        self.zoom = map_settings.init_zoom_as_pc_of_max / 100.0 * f32::from(basemap.max_tile_zoom);
+        self.zoom =
+            map_settings.init_zoom_as_pc_of_max / nn(100.0) * Nnf32::from(basemap.max_tile_zoom);
     }
 
     pub fn comp_move_delta(&self) -> Option<geo::Coord<i32>> {
@@ -181,12 +165,12 @@ impl MapState {
         map_settings: &MapSettings,
         basemap: &Basemap,
         map_centre: egui::Pos2,
-        world: geo::Coord<f32>,
+        world: geo::Coord<Nnf32>,
     ) -> egui::Pos2 {
         let world_delta = world - self.centre_coord;
         let screen_delta =
             world_delta / map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
-        map_centre + egui::Vec2::from(screen_delta.x_y())
+        map_centre + screen_delta.coord_into()
     }
     pub fn screen_to_world(
         &self,
@@ -194,10 +178,10 @@ impl MapState {
         basemap: &Basemap,
         map_centre: egui::Pos2,
         screen: egui::Pos2,
-    ) -> geo::Coord<f32> {
+    ) -> geo::Coord<Nnf32> {
         let screen_delta = screen - map_centre;
         let world_delta = screen_delta
-            * map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
+            * *map_settings.world_screen_ratio_at_zoom(basemap.max_tile_zoom, self.zoom);
         self.centre_coord + world_delta.coord_into()
     }
 
@@ -206,7 +190,7 @@ impl MapState {
         map_settings: &MapSettings,
         basemap: &Basemap,
         map_rect: egui::Rect,
-    ) -> geo::Rect<f32> {
+    ) -> geo::Rect<Nnf32> {
         geo::Rect::new(
             self.screen_to_world(map_settings, basemap, map_rect.center(), map_rect.min),
             self.screen_to_world(map_settings, basemap, map_rect.center(), map_rect.max),

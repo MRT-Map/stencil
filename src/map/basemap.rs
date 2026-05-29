@@ -1,10 +1,12 @@
 use std::path::PathBuf;
 
 use etcetera::AppStrategy;
+use num_traits::real::Real;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     URL_REPLACER,
+    coord::{Nnf32, Nnf32UpdateExt, nn},
     file::{FOLDERS, safe_delete},
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
@@ -16,14 +18,14 @@ pub enum BasemapURLType {
     Regular,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct Basemap {
     pub url: String,
     pub extension: String,
     pub max_tile_zoom: i8,
-    pub max_zoom_world_size: f32,
+    pub max_zoom_world_size: Nnf32,
     pub url_type: BasemapURLType,
-    pub offset: (f32, f32),
+    pub offset: (Nnf32, Nnf32),
 }
 
 impl Default for Basemap {
@@ -32,9 +34,9 @@ impl Default for Basemap {
             url: "https://dynmap.minecartrapidtransit.net/main/tiles/new/flat".into(),
             extension: "png".into(),
             max_tile_zoom: 8,
-            max_zoom_world_size: 32.0,
+            max_zoom_world_size: nn(32.0),
             url_type: BasemapURLType::DynMap,
-            offset: (0.5, 32.5),
+            offset: (nn(0.5), nn(32.5)),
         }
     }
 }
@@ -47,7 +49,7 @@ impl Basemap {
                 let z = 2.0f32.powi(i32::from(self.max_tile_zoom - tile_coord.z));
                 let xy = egui::vec2(tile_coord.x as f32, -tile_coord.y as f32);
 
-                let group = (xy * z / self.max_zoom_world_size).floor();
+                let group = (xy * z / *self.max_zoom_world_size).floor();
 
                 let num_in_group = xy * z;
 
@@ -92,13 +94,13 @@ impl Basemap {
 }
 
 impl Basemap {
-    pub fn tile_zoom(&self, zoom: f32) -> i8 {
-        (zoom.round() as i8).clamp(0, self.max_tile_zoom)
+    pub fn tile_zoom(&self, zoom: Nnf32) -> i8 {
+        (*zoom.round() as i8).clamp(0, self.max_tile_zoom)
     }
-    pub fn tile_world_size(&self, zoom: i8) -> f32 {
-        self.max_zoom_world_size * 2.0f32.powi(i32::from(self.max_tile_zoom - zoom))
+    pub fn tile_world_size(&self, zoom: i8) -> Nnf32 {
+        self.max_zoom_world_size * nn(2.0).powi(i32::from(self.max_tile_zoom - zoom))
     }
-    pub fn tile_screen_size(&self, map_settings: &MapSettings, zoom: f32) -> f32 {
+    pub fn tile_screen_size(&self, map_settings: &MapSettings, zoom: Nnf32) -> Nnf32 {
         self.tile_world_size(self.tile_zoom(zoom))
             / map_settings.world_screen_ratio_at_zoom(self.max_tile_zoom, zoom)
     }
@@ -170,11 +172,14 @@ impl Basemap {
                 "The world size across the width/height of tiles of the maximum zoom\nFor example, a value of 32 and maximum zoom of 8 means tiles of zoom level 8 represent 32 tiles in the world",
             ),
             |ui, value| {
-                ui.add(
-                    egui::Slider::new(value, 1.0..=256.0)
-                        .text("Maximum tile zoom range")
-                        .max_decimals(5),
-                );
+                value.update(|mut value| {
+                    ui.add(
+                        egui::Slider::new(&mut value, 1.0..=256.0)
+                            .text("Maximum tile zoom range")
+                            .max_decimals(5),
+                    );
+                    value
+                });
             },
         );
 
@@ -187,10 +192,16 @@ impl Basemap {
                 self.offset = default.offset;
             }
 
-            ui.label("x +=");
-            ui.add(egui::DragValue::new(&mut self.offset.0).suffix("u"));
-            ui.label("y +=");
-            ui.add(egui::DragValue::new(&mut self.offset.1).suffix("u"));
+            self.offset.0.update(|mut x| {
+                ui.label("x +=");
+                ui.add(egui::DragValue::new(&mut x).suffix("u"));
+                x
+            });
+            self.offset.1.update(|mut y| {
+                ui.label("y +=");
+                ui.add(egui::DragValue::new(&mut y).suffix("u"));
+                y
+            });
 
             ui.label("Tile offset");
         });

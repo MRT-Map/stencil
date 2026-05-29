@@ -18,7 +18,7 @@ use tracing::{debug, error};
 
 use crate::{
     App,
-    coord::{CoordFrom, CoordInto},
+    coord::{CoordFrom, CoordInto, Nnf32},
     map::MapWindow,
     project::{
         pla3::{PlaComponent, PlaNodeScreen, PlaNodeScreenVec, ToScreenExt},
@@ -144,7 +144,7 @@ impl MapWindow {
             .clone()
             .map(egui::Pos2::coord_from)
             .bounding_box()
-            .map(geo::Rect::<f32>::coord_from)?;
+            .map(geo::Rect::<Nnf32>::coord_from)?;
         let world_boundaries = app.map_world_boundaries(response.rect);
         if world_boundaries.max().x < bounding_box.min().x
             || bounding_box.max().x < world_boundaries.min().x

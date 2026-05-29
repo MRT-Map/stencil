@@ -68,6 +68,7 @@ duplicate = "=2.0.1"
 ordered-float = { version = "=5.3.0", features = ["serde"] }
 cfg-if = "=1.0.4"
 itertools = "=0.14.0"
+num-traits = "=0.2.19"
 
 license-retriever = "=1.1.2"
 
@@ -93,19 +94,15 @@ name = "stencil3"
 identifier = "io.github.mrt-map.stencil3"
 icon = ["assets/icons/icon_*.png"]
 
-[lints]
-workspace = true
-
 [workspace]
-members = ["pla3"]
+exclude = ["pla3"]
 
-[workspace.lints.rust]
+[lints.rust]
 future-incompatible = "deny"
-
 # temporary
 dead_code = "allow"
 
-[workspace.lints.clippy]
+[lints.clippy]
 all = "warn"
 pedantic = "warn"
 cargo = "warn"

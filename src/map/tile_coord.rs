@@ -10,9 +10,15 @@ use eyre::{Report, Result};
 use futures_lite::future;
 use itertools::Either;
 use lru::LruCache;
+use num_traits::real::Real;
 use tracing::error;
 
-use crate::{EXECUTOR, file::safe_write, map::basemap::Basemap};
+use crate::{
+    EXECUTOR,
+    coord::{Nnf32, nn},
+    file::safe_write,
+    map::basemap::Basemap,
+};
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Debug, Hash)]
 pub struct TileCoord {
@@ -31,17 +37,17 @@ impl TileCoord {
     pub const fn new(z: i8, x: i32, y: i32) -> Self {
         Self { x, y, z }
     }
-    pub fn at_world_coord(coord: geo::Coord<f32>, z: i8, basemap: &Basemap) -> Self {
+    pub fn at_world_coord(coord: geo::Coord<Nnf32>, z: i8, basemap: &Basemap) -> Self {
         Self {
-            x: ((coord.x + basemap.offset.0) / basemap.tile_world_size(z)).floor() as i32,
-            y: ((coord.y + basemap.offset.1) / basemap.tile_world_size(z)).floor() as i32,
+            x: *((coord.x + basemap.offset.0) / basemap.tile_world_size(z)).floor() as i32,
+            y: *((coord.y + basemap.offset.1) / basemap.tile_world_size(z)).floor() as i32,
             z,
         }
     }
-    pub fn world_top_left(self, basemap: &Basemap) -> geo::Coord<f32> {
+    pub fn world_top_left(self, basemap: &Basemap) -> geo::Coord<Nnf32> {
         geo::coord! {
-            x: (self.x as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.0),
-            y: (self.y as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.1),
+            x: nn(self.x as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.0),
+            y: nn(self.y as f32).mul_add(basemap.tile_world_size(self.z), -basemap.offset.1),
         }
     }
     pub fn cache_path(self, basemap: &Basemap) -> PathBuf {

@@ -1,8 +1,10 @@
+use num_traits::{Zero, real::Real};
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
 use crate::{
     App,
+    coord::{Nnf32, nn},
     map::tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     mode::EditorMode,
     pointer::ResponsePointerExt,
@@ -77,7 +79,7 @@ impl MapWindow {
                             texture_id,
                             egui::Rect::from_min_size(
                                 tile_screen_top_left,
-                                egui::Vec2::splat(tile_screen_size),
+                                egui::Vec2::splat(*tile_screen_size),
                             ),
                             egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
                             egui::Color32::WHITE,
@@ -107,9 +109,9 @@ impl MapWindow {
                     }
                     None => {}
                 }
-                tile_screen_top_left.y += tile_screen_size;
+                tile_screen_top_left.y += *tile_screen_size;
             }
-            tile_screen_top_left.x += tile_screen_size;
+            tile_screen_top_left.x += *tile_screen_size;
             tile_screen_top_left.y = min_tile_screen_top_left.y;
         }
     }
@@ -127,7 +129,7 @@ impl MapWindow {
                 if app.ui.map.hovered_component.is_some() {
                     ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
                 } else if ctx.data(|d| {
-                    d.get_temp::<geo::Coord<f32>>("marquee select".into())
+                    d.get_temp::<geo::Coord<Nnf32>>("marquee select".into())
                         .is_some()
                 }) {
                     ctx.set_cursor_icon(egui::CursorIcon::Crosshair);
@@ -223,7 +225,7 @@ impl MapWindow {
         let mut cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
 
         let old_zoom = app.ui.map.zoom;
-        app.ui.map.zoom += ctx.input(egui::InputState::zoom_delta).log2();
+        app.ui.map.zoom += nn(ctx.input(egui::InputState::zoom_delta).log2());
 
         for (action, sign) in [
             (ShortcutAction::ZoomMapOut, -1.0),
@@ -232,18 +234,18 @@ impl MapWindow {
             app.ui.map.zoom += if ctx.input_mut(|a| {
                 a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
             }) {
-                app.settings.map.shortcut_zoom_amount * sign
+                app.settings.map.shortcut_zoom_amount * nn(sign)
             } else {
-                0.0
+                Nnf32::zero()
             }
         }
 
         app.ui.map.zoom = app.ui.map.zoom.clamp(
-            0.0,
-            f32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
+            Nnf32::zero(),
+            Nnf32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
         );
 
-        if (old_zoom - app.ui.map.zoom).abs() > f32::EPSILON {
+        if (old_zoom - app.ui.map.zoom).abs() > Nnf32::epsilon() {
             let new_cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
             app.ui.map.centre_coord =
                 app.ui.map.centre_coord + cursor_world_pos - new_cursor_world_pos;
@@ -254,7 +256,7 @@ impl MapWindow {
 
         let invert = app.settings.map.invert_scroll;
         let mut translation = ctx.input(egui::InputState::translation_delta)
-            * world_screen_ratio
+            * *world_screen_ratio
             * egui::vec2(
                 if invert.x { -1.0 } else { 1.0 },
                 if invert.y { -1.0 } else { 1.0 },
@@ -273,18 +275,18 @@ impl MapWindow {
             }) += if ctx.input_mut(|a| {
                 a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
             }) {
-                app.settings.map.shortcut_pan_amount * sign * world_screen_ratio
+                *app.settings.map.shortcut_pan_amount * sign * *world_screen_ratio
             } else {
                 0.0
             };
         }
         translation += if response.dragged_by2(egui::PointerButton::Middle) {
-            -response.drag_delta() * world_screen_ratio
+            -response.drag_delta() * *world_screen_ratio
         } else {
             egui::Vec2::ZERO
         };
-        app.ui.map.centre_coord.x += translation.x;
-        app.ui.map.centre_coord.y += translation.y;
+        app.ui.map.centre_coord.x += nn(translation.x);
+        app.ui.map.centre_coord.y += nn(translation.y);
 
         app.ui.map.cursor_world_pos = Some(cursor_world_pos);
     }

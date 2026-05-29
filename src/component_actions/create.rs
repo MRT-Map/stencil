@@ -1,4 +1,7 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    sync::{Arc, LazyLock},
+};
 
 use geo::Vector2DOps;
 use itertools::{Either, Itertools};
@@ -15,28 +18,35 @@ use crate::{
     project::pla3::{PlaComponent, PlaNodeWorld, ToScreenExt},
 };
 
-const ANGLE_VECTORS: [geo::Coord<f32>; 20] = [
-    geo::coord! { x: 4.0, y: 0.0 },
-    geo::coord! { x: 4.0, y: 1.0 },
-    geo::coord! { x: 3.0, y: 1.0 },
-    geo::coord! { x: 2.0, y: 1.0 },
-    geo::coord! { x: 1.5, y: 1.0 },
-    geo::coord! { x: 1.0, y: 1.0 },
-    geo::coord! { x: 1.0, y: 1.5 },
-    geo::coord! { x: 1.0, y: 2.0 },
-    geo::coord! { x: 1.0, y: 3.0 },
-    geo::coord! { x: 1.0, y: 4.0 },
-    geo::coord! { x: 0.0, y: 4.0 },
-    geo::coord! { x: -1.0, y: 4.0 },
-    geo::coord! { x: -1.0, y: 3.0 },
-    geo::coord! { x: -1.0, y: 2.0 },
-    geo::coord! { x: -1.0, y: 1.5 },
-    geo::coord! { x: -1.0, y: 1.0 },
-    geo::coord! { x: -1.5, y: 1.0 },
-    geo::coord! { x: -2.0, y: 1.0 },
-    geo::coord! { x: -3.0, y: 1.0 },
-    geo::coord! { x: -4.0, y: 1.0 },
-];
+static ANGLE_VECTORS: LazyLock<[geo::Coord<f32>; 40]> = LazyLock::new(|| {
+    let vec: [geo::Coord<f32>; 20] = [
+        (4.0, 0.0),
+        (4.0, 1.0),
+        (3.0, 1.0),
+        (2.0, 1.0),
+        (1.5, 1.0),
+        (1.0, 1.0),
+        (1.0, 1.5),
+        (1.0, 2.0),
+        (1.0, 3.0),
+        (1.0, 4.0),
+        (0.0, 4.0),
+        (-1.0, 4.0),
+        (-1.0, 3.0),
+        (-1.0, 2.0),
+        (-1.0, 1.5),
+        (-1.0, 1.0),
+        (-1.5, 1.0),
+        (-2.0, 1.0),
+        (-3.0, 1.0),
+        (-4.0, 1.0),
+    ]
+    .map(|(x, y)| geo::coord! { x: x, y: y }.try_normalize().unwrap());
+    vec.into_iter()
+        .chain(vec.into_iter().map(|a| -a))
+        .collect_array()
+        .unwrap()
+});
 
 impl MapWindow {
     #[tracing::instrument(skip_all)]
@@ -177,15 +187,7 @@ impl MapWindow {
             let angle_vec: geo::Coord<f32> = (world_coord - prev_coord).coord_into();
             let (closest_angle_vec, _) = ANGLE_VECTORS
                 .into_iter()
-                .chain(ANGLE_VECTORS.into_iter().map(|a| -a))
-                .map(|v| {
-                    (
-                        v,
-                        v.try_normalize()
-                            .unwrap()
-                            .dot_product(angle_vec.try_normalize().unwrap()),
-                    )
-                })
+                .map(|v| (v, v.dot_product(angle_vec.try_normalize().unwrap())))
                 .sorted_by(|(_, k1), (_, k2)| k1.total_cmp(k2))
                 .next()
                 .unwrap();

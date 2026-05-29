@@ -48,13 +48,17 @@ pub trait PlaNodeTypeBezierRect: PlaNodeTypeRect + PlaNodeTypeBezier {
     fn rect_from_cubic(a: Self, b: Self, c: Self, d: Self) -> Self::Rect;
 }
 
-#[duplicate::duplicate_item(
-    Type; [(CC, CC)]; [[CC; 2]]
-)]
-impl<CC: PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew for Type {
+impl<CC: PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew for (CC, CC) {
     type C = CC;
     fn new(x: Self::C, y: Self::C) -> Self {
-        Self::from([x, y])
+        (x, y)
+    }
+}
+
+impl<CC: PlaNodeType + FromStr<Err: Error + Send + Sync + 'static>> PlaNodeTypeNew for [CC; 2] {
+    type C = CC;
+    fn new(x: Self::C, y: Self::C) -> Self {
+        [x, y]
     }
 }
 
@@ -132,7 +136,7 @@ impl PlaNodeTypeGet for Type {
 impl PlaNodeTypeRect for egui::Vec2 {
     type Rect = egui::Rect;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {
-        a | b
+        a.union(b)
     }
     fn rect_from_point(self) -> Self::Rect {
         Self::Rect::from_pos(self.to_pos2())
@@ -148,7 +152,7 @@ impl PlaNodeTypeRect for egui::Vec2 {
 impl PlaNodeTypeRect for egui::Pos2 {
     type Rect = egui::Rect;
     fn combine_rect(a: Self::Rect, b: Self::Rect) -> Self::Rect {
-        a | b
+        a.union(b)
     }
     fn rect_from_point(self) -> Self::Rect {
         Self::Rect::from_pos(self)

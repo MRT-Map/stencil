@@ -2,7 +2,12 @@ use geo::Contains;
 use pla3::FullId;
 use tracing::info;
 
-use crate::{App, coord::CoordFrom, map::MapWindow, pointer::ResponsePointerExt};
+use crate::{
+    App,
+    coord::{CoordFrom, Nnf32},
+    map::MapWindow,
+    pointer::ResponsePointerExt,
+};
 
 impl MapWindow {
     #[tracing::instrument(skip_all)]
@@ -28,7 +33,7 @@ impl MapWindow {
                 ctx.data_mut(|d| d.insert_temp(id, cursor_world_pos));
                 return;
             }
-            if let Some(start_world_pos) = ctx.data(|d| d.get_temp::<geo::Coord<f32>>(id)) {
+            if let Some(start_world_pos) = ctx.data(|d| d.get_temp::<geo::Coord<Nnf32>>(id)) {
                 if response.dragged_by2(egui::PointerButton::Primary) {
                     painter.add(Self::white_dash(
                         &[
@@ -56,7 +61,7 @@ impl MapWindow {
                                 .map(egui::Pos2::coord_from)
                                 .bounding_box()
                                 .is_some_and(|rect| {
-                                    bounding_box.contains(&geo::Rect::<f32>::coord_from(rect))
+                                    bounding_box.contains(&geo::Rect::<Nnf32>::coord_from(rect))
                                 })
                         })
                         .map(|a| (a.full_id.clone(), Vec::new()));
@@ -65,13 +70,13 @@ impl MapWindow {
                     } else {
                         app.ui.map.selected = components_to_add.collect();
                     }
-                    ctx.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
+                    ctx.data_mut(|d| d.remove_temp::<geo::Coord<Nnf32>>(id));
                     return;
                 }
             }
         } else if response.drag_stopped_by2(egui::PointerButton::Primary) {
             info!("Marquee cancelled");
-            ctx.data_mut(|d| d.remove_temp::<geo::Coord<f32>>(id));
+            ctx.data_mut(|d| d.remove_temp::<geo::Coord<Nnf32>>(id));
             return;
         }
 
