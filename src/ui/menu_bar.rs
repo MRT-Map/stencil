@@ -79,7 +79,7 @@ impl App {
                     ui.separator();
                     button!(ui, "Settings", Some(ShortcutAction::SettingsWindow), window SettingsWindow::default());
                     ui.separator();
-                    button!(ui, "Quit", Some(ShortcutAction::Quit), {
+                    button!(ui, "Quit", Some(ShortcutAction::Escape), {
                         self.add_popup(QuitPopup);
                     });
                 });

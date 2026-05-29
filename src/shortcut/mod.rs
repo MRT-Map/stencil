@@ -30,7 +30,7 @@ pub mod settings;
     strum::VariantArray,
 )]
 pub enum ShortcutAction {
-    Quit,
+    Escape,
     SettingsWindow,
     ComponentEditorWindow,
     HistoryViewerWindow,
@@ -122,9 +122,17 @@ impl App {
                 "Handling shortcut"
             );
             match action {
-                ShortcutAction::Quit => {
-                    self.add_popup(QuitPopup);
-                }
+                ShortcutAction::Escape => match self.mode {
+                    EditorMode::Select => self.add_popup(QuitPopup),
+                    EditorMode::Nodes | EditorMode::CreatePoint => self.mode = EditorMode::Select,
+                    EditorMode::CreateLine | EditorMode::CreateArea => {
+                        if self.ui.map.created_nodes.len() <= 1 {
+                            self.mode = EditorMode::Select;
+                        } else {
+                            self.ui.map.created_nodes.clear();
+                        }
+                    }
+                },
                 ShortcutAction::SettingsWindow => {
                     self.ui.dock_layout.open_window(SettingsWindow::default());
                 }
@@ -171,7 +179,15 @@ impl App {
                 ShortcutAction::Copy => self.copy_selected_components(),
                 ShortcutAction::Cut => self.cut_selected_components(ctx),
                 ShortcutAction::Paste => self.paste_clipboard_components(ctx),
-                _ => {}
+                ShortcutAction::OpenProject
+                | ShortcutAction::ReloadProject
+                | ShortcutAction::SaveProjectAs => todo!(),
+                ShortcutAction::PanMapUp
+                | ShortcutAction::PanMapDown
+                | ShortcutAction::PanMapLeft
+                | ShortcutAction::PanMapRight
+                | ShortcutAction::ZoomMapIn
+                | ShortcutAction::ZoomMapOut => unreachable!(),
             }
         }
     }

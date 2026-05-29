@@ -29,7 +29,7 @@ impl Default for ShortcutSettings {
             };
         }
 
-        shortcut!(Quit -> Escape);
+        shortcut!(Escape -> Escape);
         shortcut!(SettingsWindow => COMMAND + Comma);
         shortcut!(ComponentEditorWindow => COMMAND | ALT + C);
         shortcut!(HistoryViewerWindow => COMMAND | ALT + H);
