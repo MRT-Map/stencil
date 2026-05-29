@@ -18,7 +18,7 @@ pub enum InvalidLayerError {
     #[error("Neither integer nor float")]
     NeitherIntegerNorFloat,
     #[error("Is NaN")]
-    IsNaN(#[from] FloatIsNan),
+    IsNaN(#[cfg_attr(feature = "std", from)] FloatIsNan),
 }
 
 #[derive(Error, Debug)]
