@@ -1,4 +1,8 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use ordered_float::NotNan;
 use serde::{Deserialize, Serialize};
@@ -116,12 +120,21 @@ pub struct Pla2File<T: PlaNodeType> {
 
 impl<T: PlaNodeType> Pla2File<T> {
     #[must_use]
-    pub fn json_path(&self) -> String {
-        format!("{}.pla2.json", self.namespace)
+    pub fn json_path(&self, root: &Path) -> PathBuf {
+        root.join(self.json_file_name())
     }
     #[must_use]
-    pub fn msgpack_path(&self) -> String {
+    pub fn json_file_name(&self) -> String {
         format!("{}.pla2.json", self.namespace)
+    }
+
+    #[must_use]
+    pub fn msgpack_path(&self, root: &Path) -> PathBuf {
+        root.join(self.msgpack_file_name())
+    }
+    #[must_use]
+    pub fn msgpack_file_name(&self) -> String {
+        format!("{}.pla2.msgpack", self.namespace)
     }
 }
 impl<T: PlaNodeType + Serialize> Pla2File<T> {
