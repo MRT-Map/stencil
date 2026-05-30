@@ -43,7 +43,7 @@ url = "=2.5.8"
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.150"
 toml = "=1.1.2"
-pla3 = { path = "pla3", features = ["serde", "geo", "egui", "tracing"] }
+pla = { path = "pla", features = ["serde", "geo", "egui", "tracing"] }
 
 etcetera = "=0.11.0"
 zip = "=8.6.0"
@@ -94,7 +94,7 @@ identifier = "io.github.mrt-map.stencil3"
 icon = ["assets/icons/icon_*.png"]
 
 [workspace]
-exclude = ["pla3"]
+exclude = ["pla"]
 
 [lints.rust]
 future-incompatible = "deny"

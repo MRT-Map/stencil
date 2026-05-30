@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use pla3::{FullId, PlaNodeIndex};
+use pla::{FullId, PlaNodeIndex};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 

@@ -10,7 +10,7 @@ pub mod skin;
 
 use std::{borrow::Cow, collections::HashSet, path::PathBuf, sync::Arc};
 
-use ::pla3::FullId;
+use ::pla::FullId;
 use async_executor::Task;
 use egui::ahash::HashMap;
 use eyre::{Report, Result, eyre};
