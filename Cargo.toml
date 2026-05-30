@@ -16,10 +16,10 @@ rust-version = "1.95"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-egui = { version = "=0.34.2", features = ["serde", "rayon"] }
-eframe = { version = "=0.34.2", features = ["persistence"] }
+egui = { version = "=0.34.3", features = ["serde", "rayon"] }
+eframe = { version = "=0.34.3", features = ["persistence"] }
 egui_commonmark = "=0.23.0"
-egui_extras = { version = "=0.34.2", features = ["http", "all_loaders"] }
+egui_extras = { version = "=0.34.3", features = ["http", "all_loaders"] }
 egui_dock = { version = "=0.19.1" , features = ["serde"] }
 egui-notify = "=0.22.0"
 egui_layout_job_macro = "=0.1.0"
