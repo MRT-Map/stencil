@@ -17,4 +17,3 @@
 Map editor for MRT Map data
 
 ## [Installation & Usage](https://github.com/MRT-Map/stencil3/wiki)
-
