@@ -7,6 +7,7 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
+    map::tile_coord::TILE_CACHE,
     project::{
         component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
         project_editor::ProjectEditorWindow,
@@ -157,6 +158,10 @@ impl App {
                     ui.separator();
                     button!(ui, "Reset Map View", Some(ShortcutAction::ResetMapView), {
                         self.map_reset_view();
+                    });
+                    button!(ui, "Clear Map Cache", None, {
+                        self.project.basemap.clear_cache_path();
+                        let _ = TILE_CACHE.lock().map(|mut a| a.clear());
                     });
                     button!(ui, "Reset Window Layout", None, {
                         self.ui.dock_layout.reset();
