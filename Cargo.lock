@@ -2873,9 +2873,9 @@ dependencies = [
 
 [[package]]
 name = "license-retriever"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "153281fc7fad1926ec12cdc7f108e39f578367c2576d85bf2017f6197ae84fa9"
+checksum = "c199c54ae6fbacadc13dc25e3b755b403dd3896784565f101847ea6e90743b31"
 dependencies = [
  "cargo_metadata",
  "git2",
