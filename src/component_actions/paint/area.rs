@@ -46,8 +46,167 @@ impl MapWindow {
         })
     }
 
-    #[tracing::instrument(skip_all)]
     #[expect(clippy::too_many_lines)]
+    pub fn paint_area_style(
+        response: &egui::Response,
+        detect_hovered: bool,
+        nodes: &PlaNodeScreenVec,
+        style: &AreaStyle,
+    ) -> Option<PartialPaintResult> {
+        let AreaStyle::Fill {
+            colour,
+            outline,
+            outline_width,
+            ..
+        } = style
+        else {
+            return None;
+        };
+        let mut previous_coord = Option::<egui::Pos2>::None;
+
+        let mut outline_shapes = Vec::new();
+        for node in nodes {
+            let final_coord = match *node {
+                PlaNodeScreen::Line { coord, .. } => {
+                    if let Some(previous_coord) = previous_coord {
+                        let shape = egui::Shape::line_segment(
+                            [previous_coord, coord],
+                            egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
+                        );
+                        outline_shapes.push(shape);
+                    }
+                    coord
+                }
+                PlaNodeScreen::QuadraticBezier { ctrl, coord, .. } => {
+                    let shape = egui::epaint::QuadraticBezierShape::from_points_stroke(
+                        [previous_coord.unwrap(), ctrl, coord],
+                        false,
+                        egui::Color32::TRANSPARENT,
+                        egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
+                    );
+
+                    outline_shapes.push(shape.into());
+                    coord
+                }
+                PlaNodeScreen::CubicBezier {
+                    ctrl1,
+                    ctrl2,
+                    coord,
+                    ..
+                } => {
+                    let shape = egui::epaint::CubicBezierShape::from_points_stroke(
+                        [previous_coord.unwrap(), ctrl1, ctrl2, coord],
+                        false,
+                        egui::Color32::TRANSPARENT,
+                        egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
+                    );
+
+                    outline_shapes.push(shape.into());
+                    coord
+                }
+            };
+
+            outline_shapes.push(egui::Shape::circle_filled(
+                final_coord,
+                *outline_width,
+                colour.unwrap_or_default(),
+            ));
+            previous_coord = Some(final_coord);
+        }
+
+        let polygon = geo::Polygon::new(
+            outline_shapes
+                .iter()
+                .flat_map(|a| match a {
+                    egui::Shape::LineSegment { points, .. } => {
+                        vec![points[0].coord_into(), points[1].coord_into()]
+                    }
+                    egui::Shape::QuadraticBezier(shape) => shape
+                        .flatten(TOLERANCE)
+                        .into_iter()
+                        .map(geo::Coord::<f32>::coord_from)
+                        .collect(),
+                    egui::Shape::CubicBezier(shape) => shape
+                        .flatten(TOLERANCE)
+                        .into_iter()
+                        .map(geo::Coord::<f32>::coord_from)
+                        .collect(),
+                    egui::Shape::Circle(_) => Vec::new(),
+                    _ => unreachable!(),
+                })
+                .collect(),
+            Vec::new(),
+        );
+
+        if polygon.coords_count() < 2 {
+            return Some(PartialPaintResult {
+                shapes: outline_shapes,
+                is_hovered: false,
+            });
+        }
+
+        let buffer = polygon
+            .buffer_with_style(BufferStyle::new(-100.0).line_join(LineJoin::Miter(FRAC_PI_2)));
+        let polygon_edge = if buffer.signed_area() < f32::EPSILON {
+            None
+        } else {
+            Some(polygon.difference(&buffer))
+        };
+
+        let is_hovered = detect_hovered
+            && response
+                .hover_pos()
+                .map(geo::Coord::<f32>::coord_from)
+                .is_some_and(|hover_pos| {
+                    polygon_edge.as_ref().map_or_else(
+                        || polygon.contains(&hover_pos),
+                        |polygon_edge| polygon_edge.contains(&hover_pos),
+                    )
+                });
+
+        let screen_boundaries = geo::Polygon::from(geo::Rect::new::<geo::Coord<f32>>(
+            response.rect.max.coord_into(),
+            response.rect.min.coord_into(),
+        ));
+        let polygon = polygon.intersection(&screen_boundaries);
+        let polygon_edge =
+            polygon_edge.map(|polygon_edge| polygon_edge.intersection(&screen_boundaries));
+
+        let mut cache = TRIANGULATION_CACHE.lock().unwrap();
+        let mut shapes = Vec::new();
+
+        if polygon_edge.is_some()
+            && let Ok(fill_triangles) = Self::triangulate(&polygon, &mut cache)
+        {
+            let fill_colour = colour.map_or(egui::Color32::TRANSPARENT, |c| c.gamma_multiply(0.5));
+            for triangle in fill_triangles {
+                shapes.push(egui::Shape::convex_polygon(
+                    triangle.to_vec(),
+                    fill_colour,
+                    egui::Stroke::default(),
+                ));
+            }
+        }
+        if let Ok(edge_triangles) = if let Some(polygon_edge) = polygon_edge {
+            Self::triangulate(&polygon_edge, &mut cache)
+        } else {
+            Self::triangulate(&polygon, &mut cache)
+        } {
+            let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
+            for triangle in edge_triangles {
+                shapes.push(egui::Shape::convex_polygon(
+                    triangle.to_vec(),
+                    edge_colour,
+                    egui::Stroke::new(outline_width.max(1.0), edge_colour),
+                ));
+            }
+        }
+
+        shapes.push(outline_shapes.into());
+        Some(PartialPaintResult { shapes, is_hovered })
+    }
+
+    #[tracing::instrument(skip_all)]
     pub fn paint_area(
         response: &egui::Response,
         detect_hovered: bool,
@@ -58,159 +217,19 @@ impl MapWindow {
         let mut shapes = Vec::new();
 
         for style in style {
-            let AreaStyle::Fill {
-                colour,
-                outline,
-                outline_width,
-                ..
-            } = style
+            let Some(PartialPaintResult {
+                is_hovered: style_is_hovered,
+                shapes: style_shapes,
+            }) = Self::paint_area_style(response, !is_hovered, nodes, style)
             else {
                 continue;
             };
-            let mut previous_coord = Option::<egui::Pos2>::None;
-
-            let mut outline_shapes = Vec::new();
-            for node in nodes {
-                let final_coord = match *node {
-                    PlaNodeScreen::Line { coord, .. } => {
-                        if let Some(previous_coord) = previous_coord {
-                            let shape = egui::Shape::line_segment(
-                                [previous_coord, coord],
-                                egui::Stroke::new(
-                                    *outline_width * 4.0,
-                                    outline.unwrap_or_default(),
-                                ),
-                            );
-                            outline_shapes.push(shape);
-                        }
-                        coord
-                    }
-                    PlaNodeScreen::QuadraticBezier { ctrl, coord, .. } => {
-                        let shape = egui::epaint::QuadraticBezierShape::from_points_stroke(
-                            [previous_coord.unwrap(), ctrl, coord],
-                            false,
-                            egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
-                        );
-
-                        outline_shapes.push(shape.into());
-                        coord
-                    }
-                    PlaNodeScreen::CubicBezier {
-                        ctrl1,
-                        ctrl2,
-                        coord,
-                        ..
-                    } => {
-                        let shape = egui::epaint::CubicBezierShape::from_points_stroke(
-                            [previous_coord.unwrap(), ctrl1, ctrl2, coord],
-                            false,
-                            egui::Color32::TRANSPARENT,
-                            egui::Stroke::new(*outline_width * 4.0, outline.unwrap_or_default()),
-                        );
-
-                        outline_shapes.push(shape.into());
-                        coord
-                    }
-                };
-
-                outline_shapes.push(egui::Shape::circle_filled(
-                    final_coord,
-                    *outline_width,
-                    colour.unwrap_or_default(),
-                ));
-                previous_coord = Some(final_coord);
-            }
-
-            let polygon = geo::Polygon::new(
-                outline_shapes
-                    .iter()
-                    .flat_map(|a| match a {
-                        egui::Shape::LineSegment { points, .. } => {
-                            vec![points[0].coord_into(), points[1].coord_into()]
-                        }
-                        egui::Shape::QuadraticBezier(shape) => shape
-                            .flatten(TOLERANCE)
-                            .into_iter()
-                            .map(geo::Coord::<f32>::coord_from)
-                            .collect(),
-                        egui::Shape::CubicBezier(shape) => shape
-                            .flatten(TOLERANCE)
-                            .into_iter()
-                            .map(geo::Coord::<f32>::coord_from)
-                            .collect(),
-                        egui::Shape::Circle(_) => Vec::new(),
-                        _ => unreachable!(),
-                    })
-                    .collect(),
-                Vec::new(),
-            );
-
-            let polygon_edge = if polygon.coords_count() < 2 {
-                None
-            } else {
-                let buffer = polygon.buffer_with_style(
-                    BufferStyle::new(-100.0).line_join(LineJoin::Miter(FRAC_PI_2)),
-                );
-                if buffer.signed_area() < f32::EPSILON {
-                    None
-                } else {
-                    Some(polygon.difference(&buffer))
-                }
-            };
-            if !is_hovered
-                && let Some(hover_pos) = response.hover_pos().map(geo::Coord::<f32>::coord_from)
-                && polygon_edge.as_ref().map_or_else(
-                    || polygon.contains(&hover_pos),
-                    |polygon_edge| polygon_edge.contains(&hover_pos),
-                )
-            {
-                is_hovered = true;
-            }
-
-            let screen_boundaries = geo::Polygon::from(geo::Rect::new::<geo::Coord<f32>>(
-                response.rect.max.coord_into(),
-                response.rect.min.coord_into(),
-            ));
-            let polygon = polygon.intersection(&screen_boundaries);
-            let polygon_edge =
-                polygon_edge.map(|polygon_edge| polygon_edge.intersection(&screen_boundaries));
-
-            let mut cache = TRIANGULATION_CACHE.lock().unwrap();
-
-            if polygon_edge.is_some()
-                && let Ok(fill_triangles) = Self::triangulate(&polygon, &mut cache)
-            {
-                let fill_colour =
-                    colour.map_or(egui::Color32::TRANSPARENT, |c| c.gamma_multiply(0.5));
-                for triangle in fill_triangles {
-                    shapes.push(egui::Shape::convex_polygon(
-                        triangle.to_vec(),
-                        fill_colour,
-                        egui::Stroke::default(),
-                    ));
-                }
-            }
-            if let Ok(edge_triangles) = if let Some(polygon_edge) = polygon_edge {
-                Self::triangulate(&polygon_edge, &mut cache)
-            } else {
-                Self::triangulate(&polygon, &mut cache)
-            } {
-                let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
-                for triangle in edge_triangles {
-                    shapes.push(egui::Shape::convex_polygon(
-                        triangle.to_vec(),
-                        edge_colour,
-                        egui::Stroke::new(outline_width.max(1.0), edge_colour),
-                    ));
-                }
-            }
-
-            shapes.push(outline_shapes.into());
+            is_hovered |= style_is_hovered;
+            shapes.extend(style_shapes);
         }
 
         PartialPaintResult {
-            is_hovering: detect_hovered && is_hovered,
+            is_hovered: detect_hovered && is_hovered,
             shapes,
         }
     }

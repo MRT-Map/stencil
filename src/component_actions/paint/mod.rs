@@ -29,7 +29,7 @@ impl MapWindow {
         for component in app.project.components.iter().rev() {
             let is_selected = app.ui.map.is_selected(&component.full_id);
             let Some(PaintResult {
-                is_hovering,
+                is_hovered: is_hovering,
                 screen_coords,
                 point_style,
                 shapes,
@@ -150,7 +150,7 @@ impl MapWindow {
             }
         };
         Some(PaintResult {
-            is_hovering: result.is_hovering,
+            is_hovered: result.is_hovered,
             shapes: result.shapes,
             screen_coords,
             point_style,

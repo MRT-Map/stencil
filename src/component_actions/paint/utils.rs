@@ -136,7 +136,7 @@ impl MapWindow {
 #[must_use]
 pub struct PaintResult<'a> {
     pub shapes: Vec<egui::Shape>,
-    pub is_hovering: bool,
+    pub is_hovered: bool,
     pub screen_coords: PlaNodeScreenVec,
     pub point_style: Option<&'a [PointStyle]>,
 }
@@ -150,7 +150,7 @@ impl PaintResult<'_> {
 #[must_use]
 pub struct PartialPaintResult {
     pub shapes: Vec<egui::Shape>,
-    pub is_hovering: bool,
+    pub is_hovered: bool,
 }
 
 impl PartialPaintResult {
