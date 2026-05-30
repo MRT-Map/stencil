@@ -10,30 +10,7 @@ pub trait ToScreenExt {
 impl ToScreenExt for PlaNodeWorld {
     type Output = PlaNodeScreen;
     fn to_screen(&self, app: &App, map_centre: egui::Pos2) -> Self::Output {
-        let world_to_screen =
-            |coord: geo::Coord<i32>| app.map_world_to_screen(map_centre, coord.coord_into());
-        match *self {
-            Self::Line { coord, label } => PlaNodeScreen::Line {
-                coord: world_to_screen(coord),
-                label,
-            },
-            Self::QuadraticBezier { ctrl, coord, label } => PlaNodeScreen::QuadraticBezier {
-                ctrl: world_to_screen(ctrl),
-                coord: world_to_screen(coord),
-                label,
-            },
-            Self::CubicBezier {
-                ctrl1,
-                ctrl2,
-                coord,
-                label,
-            } => PlaNodeScreen::CubicBezier {
-                ctrl1: world_to_screen(ctrl1),
-                ctrl2: world_to_screen(ctrl2),
-                coord: world_to_screen(coord),
-                label,
-            },
-        }
+        self.map(|coord| app.map_world_to_screen(map_centre, coord.coord_into()))
     }
 }
 

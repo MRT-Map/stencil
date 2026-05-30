@@ -52,6 +52,9 @@ pub enum Error {
     TOMLDeserialisation(#[from] toml::de::Error),
     #[error("Writing error")]
     Writing(#[from] std::fmt::Error),
+    #[cfg(feature = "pla2")]
+    #[error("Cannot write tag {0} into `misc` field as key already exists")]
+    KeyAlreadyExistsForTag(String),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
