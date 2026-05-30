@@ -11,10 +11,6 @@
         "eframe"
       ],
       "groupName": "egui-group"
-    },
-    {
-      "matchFileNames": ["pla3/**"],
-      "extends": ["github>mrt-map/renovate-config:library"]
     }
   ],
   "customManagers": [
