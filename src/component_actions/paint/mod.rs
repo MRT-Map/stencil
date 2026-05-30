@@ -25,7 +25,7 @@ impl MapWindow {
     pub fn paint_components(app: &mut App, response: &egui::Response, painter: &egui::Painter) {
         let mut hovered_component = None;
         let mut selected_shapes = Vec::new();
-        let mut all_shapes = Vec::new();
+        let mut all_shapes: Vec<egui::Shape> = Vec::new();
         for component in app.project.components.iter().rev() {
             let is_selected = app.ui.map.is_selected(&component.full_id);
             let Some(PaintResult {
@@ -68,7 +68,9 @@ impl MapWindow {
         }
 
         all_shapes.reverse();
-        painter.add(all_shapes);
+        for shape in all_shapes {
+            painter.add(shape);
+        }
         painter.add(selected_shapes);
 
         let hovered_component = if let Some((id, hover_shapes)) = hovered_component {
