@@ -124,6 +124,7 @@ impl MapWindow {
     ) {
         Self::create_line_or_area::<false>(app, ctx, response, painter);
     }
+    #[expect(clippy::too_many_lines)]
     pub fn create_line_or_area<const IS_LINE: bool>(
         app: &mut App,
         ctx: &egui::Context,
@@ -152,7 +153,7 @@ impl MapWindow {
             let Some(style) = ty.line_style_in_zoom_level(app.map_zoom_level()) else {
                 return;
             };
-            (Either::Left(ty), Either::Left(style))
+            (ty, Either::Left(style))
         } else {
             let Some(ty) = app
                 .ui
@@ -167,7 +168,7 @@ impl MapWindow {
             let Some(style) = ty.area_style_in_zoom_level(app.map_zoom_level()) else {
                 return;
             };
-            (Either::Right(ty), Either::Right(style))
+            (ty, Either::Right(style))
         };
 
         let mut world_coord: geo::Coord<i32> = cursor_world_pos.coord_into();
@@ -334,7 +335,7 @@ impl MapWindow {
                             .components
                             .get_new_id(&app.project.new_component_ns),
                     ),
-                    ty: Arc::clone(ty.into_inner()),
+                    ty: Arc::clone(ty),
                     display_name: String::new(),
                     layer: NotNan::<f32>::default(),
                     nodes: app.ui.map.created_nodes.drain(..).collect(),

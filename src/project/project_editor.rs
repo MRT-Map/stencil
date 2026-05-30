@@ -19,6 +19,7 @@ impl DockWindow for ProjectEditorWindow {
         "Project".into()
     }
     #[tracing::instrument(skip_all)]
+    #[expect(clippy::too_many_lines)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {

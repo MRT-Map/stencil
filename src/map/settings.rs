@@ -102,6 +102,7 @@ impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Document
 
 impl Settings for MapSettings {
     #[tracing::instrument(skip_all)]
+    #[expect(clippy::too_many_lines)]
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
         let default = Self::default();
 
