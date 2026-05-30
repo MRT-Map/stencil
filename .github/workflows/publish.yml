@@ -2,7 +2,7 @@ name: Publish
 on:
   workflow_dispatch:
   push:
-    tags: [ "**" ]
+    tags: ["**"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          submodules: true
       - run: cargo update
       - id: version
         run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
@@ -49,20 +50,21 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        persist-credentials: false
-    - uses: ./.github/actions/mise
-      with:
-        cache: false
-        envs: ''
-    - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: true
+      - uses: ./.github/actions/mise
+        with:
+          cache: false
+          envs: ""
+      - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
 
-    - run: cargo --locked bundle --release
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: macos-aarch64
-        path: target/release/bundle/osx/stencil3.app
+      - run: cargo --locked bundle --release
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: macos-aarch64
+          path: target/release/bundle/osx/stencil3.app
 
   build-macos-x86_64:
     runs-on: macos-15-intel
@@ -73,10 +75,11 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          submodules: true
       - uses: ./.github/actions/mise
         with:
           cache: false
-          envs: ''
+          envs: ""
 
       - run: cargo --locked build --release
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -94,6 +97,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          submodules: true
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: macos-aarch64
@@ -135,24 +139,25 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        persist-credentials: false
-    - uses: ./.github/actions/mise
-      with:
-        cache: false
-        envs: ''
-    - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
-#    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
-#      with:
-#        packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
-#        version: 1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: true
+      - uses: ./.github/actions/mise
+        with:
+          cache: false
+          envs: ""
+      - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+      #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
+      #      with:
+      #        packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      #        version: 1.0
 
-    - run: cargo --locked bundle --release --format deb
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: linux-${{ matrix.os }}
-        path: target/release/bundle/deb/stencil3*.deb
+      - run: cargo --locked bundle --release --format deb
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-${{ matrix.os }}
+          path: target/release/bundle/deb/stencil3*.deb
 
   build-windows:
     runs-on: ${{ matrix.os }}
@@ -163,78 +168,87 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        persist-credentials: false
-    - uses: ./.github/actions/mise
-      with:
-        cache: false
-        envs: ''
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: true
+      - uses: ./.github/actions/mise
+        with:
+          cache: false
+          envs: ""
 
-    - run: |
-        dotnet tool install --global "wix@${{ env.WIX_VERSION }}"
-        wix eula accept wix7
-        wix extension add -g "WixToolset.Util.wixext/${{ env.WIX_VERSION }}"
-        wix extension add -g "WixToolset.UI.wixext/${{ env.WIX_VERSION }}"
-    - run: cargo install --git https://github.com/volks73/cargo-wix --rev ${{ env.CARGO_WIX_REV }} --locked cargo-wix
-
-    - run: cargo --locked build --release
-    - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture --package stencil3
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: windows-${{ matrix.os }}
-        path: target/wix/stencil3-*.msi
+      - run: |
+          dotnet tool install --global "wix@${{ env.WIX_VERSION }}"
+          wix eula accept wix7
+          wix extension add -g "WixToolset.Util.wixext/${{ env.WIX_VERSION }}"
+          wix extension add -g "WixToolset.UI.wixext/${{ env.WIX_VERSION }}"
+      - run: cargo install --git https://github.com/volks73/cargo-wix --rev ${{ env.CARGO_WIX_REV }} --locked cargo-wix
+      - run: cargo --locked build --release
+      - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture --package stencil3
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-${{ matrix.os }}
+          path: target/wix/stencil3-*.msi
 
   github-release:
     runs-on: ubuntu-slim
-    needs: [ build-linux, build-macos, build-windows, version-changelog ]
+    needs: [build-linux, build-macos, build-windows, version-changelog]
     permissions:
       id-token: write
       attestations: write
       contents: write
 
     steps:
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-      with:
-        name: macos
-        path: dist
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-      with:
-        name: linux-ubuntu-latest
-        path: dist
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-      with:
-        name: linux-ubuntu-24.04-arm
-        path: dist
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-      with:
-        name: windows-windows-latest
-        path: dist
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-      with:
-        name: windows-windows-11-arm
-        path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: macos
+          path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: linux-ubuntu-latest
+          path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: linux-ubuntu-24.04-arm
+          path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: windows-windows-latest
+          path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: windows-windows-11-arm
+          path: dist
 
-    - uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
-      with:
-        subject-path: dist/*
-    - uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0  # zizmor: ignore[superfluous-actions]
-      with:
-        tag_name: v${{ needs.version-changelog.outputs.version }}
-        name: v${{ needs.version-changelog.outputs.version }}
-        body: ${{ needs.version-changelog.outputs.changelog }}
-        files: dist/*
-        prerelease: true
-        generate_release_notes: true
+      - uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: dist/*
+      - uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0  # zizmor: ignore[superfluous-actions]
+        with:
+          tag_name: v${{ needs.version-changelog.outputs.version }}
+          name: v${{ needs.version-changelog.outputs.version }}
+          body: ${{ needs.version-changelog.outputs.changelog }}
+          files: dist/*
+          prerelease: true
+          generate_release_notes: true
 
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: combined-dist
-        path: dist/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: combined-dist
+          path: dist/*
 
   delete-github-release:
     runs-on: ubuntu-slim
-    needs: [ build-macos-aarch64, build-macos-x86_64, build-macos, build-linux, build-windows, github-release, version-changelog ]
+    needs:
+      [
+        build-macos-aarch64,
+        build-macos-x86_64,
+        build-macos,
+        build-linux,
+        build-windows,
+        github-release,
+        version-changelog,
+      ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     permissions:
       contents: write
@@ -243,6 +257,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          submodules: true
       - run: gh release delete "v$TAG" --cleanup-tag -y
         env:
           TAG: ${{ needs.version-changelog.outputs.version }}
@@ -251,7 +266,7 @@ jobs:
 
   update-hash:
     runs-on: ubuntu-slim
-    needs: [ github-release, version-changelog ]
+    needs: [github-release, version-changelog]
     permissions:
       contents: write
 
@@ -260,6 +275,7 @@ jobs:
         with:
           ref: master
           persist-credentials: true
+          submodules: true
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: combined-dist
@@ -277,7 +293,7 @@ jobs:
           sed "s/sha256sums_x86_64=.*/sha256sums_x86_64=('$LINUX_SHA1')/" -i build/linux/PKGBUILD
           sed "s/sha256sums_aarch64=.*/sha256sums_aarch64=('$LINUX_SHA2')/" -i build/linux/PKGBUILD
           sed "s/pkgver=.*/pkgver=${VERSION//-/_}/" -i build/linux/PKGBUILD
-          
+
           sed "s/\"version\": .*/\"version\": \"$VERSION\",/" > build/windows/scoop.json
       - uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         with:

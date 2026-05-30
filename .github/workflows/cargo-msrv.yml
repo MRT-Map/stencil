@@ -4,10 +4,10 @@ on:
   push:
     paths: ["**/Cargo.toml", "**/Cargo.lock"]
     branches: ["**", "!v2"]
-    
+
 jobs:
   cargo-msrv:
     permissions:
       contents: write
       pull-requests: write
-    uses: iiiii7d/cargo-msrv-workflow/.github/workflows/workflow.yml@0b1dfdcd3748ba2b7d718ac41876dd277114cfb3 # main
+    uses: iiiii7d/cargo-msrv-workflow/.github/workflows/workflow.yml@5e5093933ae41a1bd23ade843043aca5350e7e17 # main

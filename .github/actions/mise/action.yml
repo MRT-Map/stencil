@@ -23,7 +23,7 @@ runs:
       uses: rui314/setup-mold@9c9c13bf4c3f1adef0cc596abc155580bcb04444
     - id: mise-env
       shell: bash
-      run: echo "MISE_ENV=$ENVS" > "$GITHUB_ENV"  # zizmor: ignore[github-env]
+      run: echo "MISE_ENV=$ENVS" > "$GITHUB_ENV" # zizmor: ignore[github-env]
       env:
         ENVS: ${{ inputs.envs }}
 
