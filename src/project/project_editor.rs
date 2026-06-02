@@ -30,7 +30,7 @@ impl DockWindow for ProjectEditorWindow {
                 };
             }
             button!(ui, "Open", Some(ShortcutAction::OpenProject), {
-                // commands.trigger(ProjectEv::Open);
+                app.open_project();
             });
             button!(ui, "Reload", Some(ShortcutAction::ReloadProject), {
                 // commands.trigger(ProjectEv::Reload);
@@ -154,7 +154,7 @@ impl DockWindow for ProjectEditorWindow {
             }
             SkinStatus::Failed(e) => {
                 ui.colored_label(egui::Color32::RED, "Skin failed to load");
-                ui.code(format!("{e:?}"));
+                ui.code(format!("{e:#}"));
             }
             SkinStatus::Loaded(_) => {
                 ui.colored_label(egui::Color32::GREEN, "Skin is loaded");

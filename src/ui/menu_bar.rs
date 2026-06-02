@@ -86,7 +86,7 @@ impl App {
                 });
                 ui.menu_button("File", |ui| {
                     button!(ui, "Open", Some(ShortcutAction::OpenProject), {
-
+                        self.open_project();
                     });
                     ui.menu_button("Import", |ui| {
                         button!(ui, "Import pla3.zip", None, {

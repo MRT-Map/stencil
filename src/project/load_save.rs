@@ -1,10 +1,12 @@
 use std::{borrow::Cow, collections::HashSet, path::PathBuf, sync::Arc};
 
-use eyre::Report;
+use eyre::{Report, eyre};
 use pla::FullId;
+use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    App,
     map::basemap::Basemap,
     notif,
     project::{Project, pla3::PlaComponent},
@@ -23,8 +25,10 @@ struct ProjectToml<'a> {
 impl Project {
     #[tracing::instrument(skip_all)]
     pub fn load(path: PathBuf) -> eyre::Result<Self> {
-        let project_toml: ProjectToml =
-            toml::from_str(&std::fs::read_to_string(path.join("project.toml"))?)?;
+        let project_toml_str = std::fs::read_to_string(path.join("project.toml"))
+            .map_err(|e| eyre!("Cannot load project.toml in {}: {e:#}", path.display()))?;
+        let project_toml: ProjectToml = toml::from_str(&project_toml_str)
+            .map_err(|e| eyre!("Cannot parse project.toml in {}: {e:#}", path.display()))?;
         let mut s = Self {
             basemap: project_toml.basemap.into_owned(),
             skin_url: project_toml.skin_url.into_owned(),
@@ -163,5 +167,22 @@ impl Project {
         }
 
         WithWarnings::new((), errors)
+    }
+}
+
+impl App {
+    #[tracing::instrument(skip_all)]
+    pub fn open_project(&mut self) {
+        let Some(folder) = FileDialog::new().set_title("Open Project").pick_folder() else {
+            return;
+        };
+        let project = match Project::load(folder) {
+            Ok(p) => p,
+            Err(e) => {
+                notif!(error "Failed to load project", error &e);
+                return;
+            }
+        };
+        self.project = project;
     }
 }

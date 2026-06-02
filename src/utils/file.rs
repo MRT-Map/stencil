@@ -95,8 +95,7 @@ pub fn safe_delete<T: AsRef<Path>>(path: T) -> Result<Option<PathBuf>> {
             Ok(Some(new_path))
         }
         Err(e) => {
-            let errors = [&e];
-            notif!(warning format!("Could not safe delete file/directory {}", path.display()), errors &errors);
+            notif!(warning format!("Could not safe delete file/directory {}", path.display()), error &e);
             Err(e.into())
         }
     }

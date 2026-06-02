@@ -71,8 +71,7 @@ pub trait LoadSave: Default {
                 vec
             }
             Err(e) => {
-                let errors = [e];
-                notif!(error format!("Couldn't open file at {}", Self::path().display()), errors &errors);
+                notif!(error format!("Couldn't open file at {}", Self::path().display()), error &e);
                 return Self::default();
             }
         };
@@ -83,8 +82,7 @@ pub trait LoadSave: Default {
                 s
             }
             Err(e) => {
-                let errors = [e];
-                notif!(error format!("Couldn't deserialise file at {}", Self::path().display()), errors &errors);
+                notif!(error format!("Couldn't deserialise file at {}", Self::path().display()), error &e);
                 Self::default()
             }
         }
@@ -96,8 +94,7 @@ pub trait LoadSave: Default {
                 vec
             }
             Err(e) => {
-                let errors = [e];
-                notif!(error format!("Couldn't serialise file for {}", Self::path().display()), errors &errors);
+                notif!(error format!("Couldn't serialise file for {}", Self::path().display()), error &e);
                 return;
             }
         };
@@ -107,8 +104,7 @@ pub trait LoadSave: Default {
                 debug!("Wrote file at {}", Self::path().display());
             }
             Err(e) => {
-                let errors = [e];
-                notif!(error format!("Couldn't write file at {}", Self::path().display()), errors &errors);
+                notif!(error format!("Couldn't write file at {}", Self::path().display()), error &e);
             }
         }
     }

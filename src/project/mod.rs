@@ -1,9 +1,8 @@
-use etcetera::AppStrategy;
 pub mod component_editor;
 pub mod component_list;
 pub mod history;
 pub mod history_viewer;
-mod load_save;
+pub mod load_save;
 pub mod namespace_event;
 pub mod pla3;
 pub mod project_editor;
@@ -13,6 +12,7 @@ use std::path::PathBuf;
 
 use async_executor::Task;
 use egui::ahash::HashMap;
+use etcetera::AppStrategy;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use history::History;
@@ -79,9 +79,9 @@ impl Project {
                 let skin_cache = self.skin_cache_path();
                 if skin_cache.exists()
                     && let Ok(s) = std::fs::read_to_string(&skin_cache)
-                        .inspect_err(|e| error!(?skin_cache, "Cannot read skin cache: {e:?}"))
+                        .inspect_err(|e| error!(?skin_cache, "Cannot read skin cache: {e:#}"))
                     && let Ok(skin) = serde_json::from_str(&s).inspect_err(|e| {
-                        error!(?skin_cache, "Cannot deserialise skin cache: {e:?}");
+                        error!(?skin_cache, "Cannot deserialise skin cache: {e:#}");
                     })
                 {
                     info!(?skin_cache, "Loaded skin cache");
@@ -106,9 +106,9 @@ impl Project {
 
                     let skin_cache = self.skin_cache_path();
                     if let Ok(s) = serde_json::to_string(&skin).inspect_err(|e| {
-                        error!(self.skin_url, "Cannot serialise skin cache: {e:?}");
+                        error!(self.skin_url, "Cannot serialise skin cache: {e:#}");
                     }) && safe_write(&skin_cache, &s)
-                        .inspect_err(|e| error!(?skin_cache, "Cannot write skin cache: {e:?}"))
+                        .inspect_err(|e| error!(?skin_cache, "Cannot write skin cache: {e:#}"))
                         .is_ok()
                     {
                         info!(?skin_cache, "Wrote skin to cache file");
@@ -117,7 +117,7 @@ impl Project {
                     self.skin_status = SkinStatus::Loaded(Box::leak(skin.into()));
                 }
                 Some(Err(e)) => {
-                    error!("Skin failed to load: {e:?}");
+                    error!("Skin failed to load: {e:#}");
                     self.skin_status = SkinStatus::Failed(e);
                 }
                 None => {

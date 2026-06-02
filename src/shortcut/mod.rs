@@ -180,9 +180,8 @@ impl App {
                 ShortcutAction::Copy => self.copy_selected_components(),
                 ShortcutAction::Cut => self.cut_selected_components(ctx),
                 ShortcutAction::Paste => self.paste_clipboard_components(ctx),
-                ShortcutAction::OpenProject
-                | ShortcutAction::ReloadProject
-                | ShortcutAction::SaveProjectAs => todo!(),
+                ShortcutAction::OpenProject => self.open_project(),
+                ShortcutAction::ReloadProject | ShortcutAction::SaveProjectAs => todo!(),
                 ShortcutAction::PanMapUp
                 | ShortcutAction::PanMapDown
                 | ShortcutAction::PanMapLeft

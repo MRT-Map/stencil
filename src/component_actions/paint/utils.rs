@@ -120,7 +120,7 @@ impl MapWindow {
             egui::TextureOptions::LINEAR,
             egui::SizeHint::Scale(2.0.into()),
         )
-        .inspect_err(|e| error!("{e:?}"))
+        .inspect_err(|e| error!("{e:#}"))
         .ok()
         .and_then(|a| a.texture_id())?;
 

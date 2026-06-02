@@ -140,7 +140,7 @@ impl Basemap {
             },
         );
         if let Err(e) = self.url.parse::<url::Url>() {
-            ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:?}"));
+            ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:#}"));
         }
 
         settings_ui_field(

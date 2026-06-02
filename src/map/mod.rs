@@ -65,7 +65,7 @@ impl MapWindow {
         );
         let mut tile_screen_top_left = min_tile_screen_top_left;
 
-        let Ok(mut tile_cache) = TILE_CACHE.lock().inspect_err(|e| error!("{e:?}")) else {
+        let Ok(mut tile_cache) = TILE_CACHE.lock().inspect_err(|e| error!("{e:#}")) else {
             return;
         };
 
