@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use pla::{FullId, PlaNodeIndex};
-use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
@@ -15,30 +14,25 @@ use crate::{
     utils::coord::{CoordInto, Nnf32, nn},
 };
 
-#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct MapState {
     pub centre_coord: geo::Coord<Nnf32>,
     pub zoom: Nnf32,
     pub cursor_world_pos: Option<geo::Coord<Nnf32>>,
 
-    #[serde(skip)]
     pub created_nodes: PlaNodeWorldVec,
-    #[serde(skip)]
     pub created_point_type: Option<Arc<SkinType>>,
-    #[serde(skip)]
     pub created_line_type: Option<Arc<SkinType>>,
-    #[serde(skip)]
     pub created_area_type: Option<Arc<SkinType>>,
 
-    #[serde(skip)]
     pub hovered_component: Option<FullId>,
-    #[serde(skip)]
     pub selected: HashMap<FullId, Vec<PlaNodeIndex>>,
-    #[serde(skip)]
     pub clipboard: Vec<PlaComponent>,
 
-    #[serde(skip)]
     pub comp_move_origin_world_pos: Option<geo::Coord<Nnf32>>,
+
+    pub shortcut_pan_delta: egui::Vec2,
+    pub shortcut_zoom_delta: Nnf32,
 }
 
 impl App {

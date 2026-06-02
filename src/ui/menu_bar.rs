@@ -103,6 +103,9 @@ impl App {
                     });
                 });
                 ui.menu_button("View", |ui| {
+                    button!(ui, "Zoom In", ShortcutAction::ZoomMapIn);
+                    button!(ui, "Zoom Out", ShortcutAction::ZoomMapOut);
+                    ui.separator();
                     ui.label("Windows");
                     button!(ui, "Component", ShortcutAction::ComponentEditorWindow);
                     button!(ui, "Project", ShortcutAction::ProjectEditorWindow);

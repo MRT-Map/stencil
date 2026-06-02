@@ -12,6 +12,7 @@ use crate::{
     settings::SettingsWindow,
     shortcut::settings::ShortcutSettings,
     ui::notif::NotifLogWindow,
+    utils::coord::nn,
 };
 
 pub mod settings;
@@ -59,19 +60,6 @@ pub enum ShortcutAction {
     Cut,
     Paste,
 }
-impl ShortcutAction {
-    pub const fn eventless(self) -> bool {
-        matches!(
-            self,
-            Self::PanMapUp
-                | Self::PanMapDown
-                | Self::PanMapLeft
-                | Self::PanMapRight
-                | Self::ZoomMapIn
-                | Self::ZoomMapOut
-        )
-    }
-}
 
 impl App {
     #[tracing::instrument(skip_all)]
@@ -79,7 +67,7 @@ impl App {
         let mut eframe_workaround_used = false;
         for shortcut in self.settings.shortcut.shortcuts_ordered() {
             let action = self.settings.shortcut.shortcut_to_action(shortcut).unwrap();
-            if action.eventless() {
+            if ctx.egui_wants_keyboard_input() {
                 continue;
             }
             if !ctx.input_mut(|i| i.consume_shortcut(&shortcut)) {
@@ -108,7 +96,6 @@ impl App {
                         }
                         _ => false,
                     })
-                    && !ctx.egui_wants_keyboard_input()
                 {
                     eframe_workaround_used = true;
                 } else {
@@ -190,12 +177,12 @@ impl App {
             ShortcutAction::Paste => self.paste_clipboard_components(ctx),
             ShortcutAction::OpenProject => self.open_project(),
             ShortcutAction::ReloadProject | ShortcutAction::SaveProjectAs => todo!(),
-            ShortcutAction::PanMapUp
-            | ShortcutAction::PanMapDown
-            | ShortcutAction::PanMapLeft
-            | ShortcutAction::PanMapRight
-            | ShortcutAction::ZoomMapIn
-            | ShortcutAction::ZoomMapOut => unreachable!(),
+            ShortcutAction::PanMapUp => self.ui.map.shortcut_pan_delta.y -= 1.0,
+            ShortcutAction::PanMapDown => self.ui.map.shortcut_pan_delta.y += 1.0,
+            ShortcutAction::PanMapLeft => self.ui.map.shortcut_pan_delta.x -= 1.0,
+            ShortcutAction::PanMapRight => self.ui.map.shortcut_pan_delta.x += 1.0,
+            ShortcutAction::ZoomMapIn => self.ui.map.shortcut_zoom_delta += nn(1.0),
+            ShortcutAction::ZoomMapOut => self.ui.map.shortcut_zoom_delta -= nn(1.0),
         }
     }
 }

@@ -7,7 +7,6 @@ use crate::{
     map::tile_coord::{TILE_CACHE, TextureIdResult, TileCoord},
     mode::EditorMode,
     project::SkinStatus,
-    shortcut::ShortcutAction,
     ui::dock::DockWindow,
     utils::{
         coord::{Nnf32, nn},
@@ -212,7 +211,7 @@ impl MapWindow {
     }
     #[tracing::instrument(skip_all)]
     fn interaction(app: &mut App, ctx: &egui::Context, response: &egui::Response) {
-        let Some(hover_pos) = response.hover_pos().or_else(|| {
+        let hover_pos = response.hover_pos().or_else(|| {
             response
                 .ctx
                 .data_mut(|a| {
@@ -220,34 +219,31 @@ impl MapWindow {
                 })
                 .then(|| ctx.pointer_latest_pos())
                 .flatten()
-        }) else {
+        });
+        if hover_pos.is_none() {
             app.ui.map.cursor_world_pos = None;
-            return;
-        };
-        let mut cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
+        }
+        let mut cursor_world_pos = hover_pos.map_or_else(
+            || app.ui.map.centre_coord,
+            |hover_pos| app.map_screen_to_world(response.rect.center(), hover_pos),
+        );
 
         let old_zoom = app.ui.map.zoom;
-        app.ui.map.zoom += nn(ctx.input(egui::InputState::zoom_delta).log2());
-
-        for (action, sign) in [
-            (ShortcutAction::ZoomMapOut, -1.0),
-            (ShortcutAction::ZoomMapIn, 1.0),
-        ] {
-            app.ui.map.zoom += if ctx.input_mut(|a| {
-                a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
-            }) {
-                app.settings.map.shortcut_zoom_amount * nn(sign)
-            } else {
-                Nnf32::zero()
-            }
+        if hover_pos.is_some() {
+            app.ui.map.zoom += nn(ctx.input(egui::InputState::zoom_delta).log2());
         }
+
+        app.ui.map.zoom += app.ui.map.shortcut_zoom_delta * app.settings.map.shortcut_zoom_amount;
+        app.ui.map.shortcut_zoom_delta = nn(0.0);
 
         app.ui.map.zoom = app.ui.map.zoom.clamp(
             Nnf32::zero(),
             Nnf32::from(app.project.basemap.max_tile_zoom) + app.settings.map.additional_zoom,
         );
 
-        if (old_zoom - app.ui.map.zoom).abs() > Nnf32::epsilon() {
+        if (old_zoom - app.ui.map.zoom).abs() > Nnf32::epsilon()
+            && let Some(hover_pos) = hover_pos
+        {
             let new_cursor_world_pos = app.map_screen_to_world(response.rect.center(), hover_pos);
             app.ui.map.centre_coord =
                 app.ui.map.centre_coord + cursor_world_pos - new_cursor_world_pos;
@@ -255,42 +251,34 @@ impl MapWindow {
         }
 
         let world_screen_ratio = app.world_screen_ratio_with_current_basemap_at_current_zoom();
+        let mut translation = egui::Vec2::ZERO;
+        if hover_pos.is_some() {
+            let invert = app.settings.map.invert_scroll;
+            translation += ctx.input(egui::InputState::translation_delta)
+                * *world_screen_ratio
+                * egui::vec2(
+                    if invert.x { -1.0 } else { 1.0 },
+                    if invert.y { -1.0 } else { 1.0 },
+                );
 
-        let invert = app.settings.map.invert_scroll;
-        let mut translation = ctx.input(egui::InputState::translation_delta)
-            * *world_screen_ratio
-            * egui::vec2(
-                if invert.x { -1.0 } else { 1.0 },
-                if invert.y { -1.0 } else { 1.0 },
-            );
-
-        for (is_x, action, sign) in [
-            (true, ShortcutAction::PanMapLeft, -1.0),
-            (true, ShortcutAction::PanMapRight, 1.0),
-            (false, ShortcutAction::PanMapDown, 1.0),
-            (false, ShortcutAction::PanMapUp, -1.0),
-        ] {
-            *(if is_x {
-                &mut translation.x
+            translation += if response.dragged_by2(egui::PointerButton::Middle) {
+                -response.drag_delta() * *world_screen_ratio
             } else {
-                &mut translation.y
-            }) += if ctx.input_mut(|a| {
-                a.consume_shortcut(&app.settings.shortcut.action_to_shortcut(action))
-            }) {
-                *app.settings.map.shortcut_pan_amount * sign * *world_screen_ratio
-            } else {
-                0.0
+                egui::Vec2::ZERO
             };
         }
-        translation += if response.dragged_by2(egui::PointerButton::Middle) {
-            -response.drag_delta() * *world_screen_ratio
-        } else {
-            egui::Vec2::ZERO
-        };
+
+        translation += app.ui.map.shortcut_pan_delta
+            * *app.settings.map.shortcut_pan_amount
+            * *world_screen_ratio;
+        app.ui.map.shortcut_pan_delta = egui::Vec2::ZERO;
+
         app.ui.map.centre_coord.x += nn(translation.x);
         app.ui.map.centre_coord.y += nn(translation.y);
 
-        app.ui.map.cursor_world_pos = Some(cursor_world_pos);
+        if hover_pos.is_some() {
+            app.ui.map.cursor_world_pos = Some(cursor_world_pos);
+        }
     }
     fn components(
         app: &mut App,
