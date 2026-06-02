@@ -78,16 +78,15 @@ impl MapWindow {
                                 egui::Stroke::new(width, colour.unwrap_or_default()),
                             );
 
-                            let approx = shape
-                                .flatten(TOLERANCE)
-                                .into_iter()
-                                .map(CoordInto::coord_into)
-                                .collect::<Vec<_>>();
                             Self::hovering(
                                 &mut is_hovered,
                                 response,
                                 width,
-                                &geo::LineString::new(approx),
+                                &shape
+                                    .flatten(TOLERANCE)
+                                    .into_iter()
+                                    .map(CoordInto::<geo::Coord<f32>>::coord_into)
+                                    .collect::<geo::LineString<f32>>(),
                             );
 
                             shapes.push(shape.into());
@@ -106,16 +105,15 @@ impl MapWindow {
                                 egui::Stroke::new(width, colour.unwrap_or_default()),
                             );
 
-                            let approx = shape
-                                .flatten(TOLERANCE)
-                                .into_iter()
-                                .map(CoordInto::coord_into)
-                                .collect::<Vec<_>>();
                             Self::hovering(
                                 &mut is_hovered,
                                 response,
                                 width,
-                                &geo::LineString::new(approx),
+                                &shape
+                                    .flatten(TOLERANCE)
+                                    .into_iter()
+                                    .map(CoordInto::<geo::Coord<f32>>::coord_into)
+                                    .collect::<geo::LineString<f32>>(),
                             );
 
                             shapes.push(shape.into());
