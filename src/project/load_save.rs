@@ -26,9 +26,13 @@ impl Project {
     #[tracing::instrument(skip_all)]
     pub fn load(path: PathBuf) -> eyre::Result<Self> {
         let project_toml_str = std::fs::read_to_string(path.join("project.toml"))
-            .map_err(|e| eyre!("Cannot load project.toml in {}: {e:#}", path.display()))?;
-        let project_toml: ProjectToml = toml::from_str(&project_toml_str)
-            .map_err(|e| eyre!("Cannot parse project.toml in {}: {e:#}", path.display()))?;
+            .map_err(|e| eyre!("Cannot load project.toml at {}: {e:#}", path.display()))?;
+        let project_toml: ProjectToml = toml::from_str(&project_toml_str).map_err(|e| {
+            eyre!(
+                "Cannot deserialise project.toml at {}: {e:#}",
+                path.display()
+            )
+        })?;
         let mut s = Self {
             basemap: project_toml.basemap.into_owned(),
             skin_url: project_toml.skin_url.into_owned(),
@@ -112,19 +116,6 @@ impl Project {
 
         Ok(WithWarnings::new((), errors))
     }
-    pub fn save_notif(&self) {
-        if self.path.is_none() {
-            return;
-        }
-        self.save().handle_warnings2(
-            |errors| {
-                notif!(warning "Errors while saving", errors &errors, "Errors while saving");
-            },
-            || {
-                notif!(success "Saved project");
-            },
-        );
-    }
     #[tracing::instrument(skip_all)]
     pub fn save(&self) -> WithWarnings<()> {
         let Some(path) = &self.path else {
@@ -137,8 +128,11 @@ impl Project {
             skin_url: Cow::Borrowed(&self.skin_url),
         };
         if let Err(e) = toml::to_string_pretty(&project_toml)
-            .map_err(Report::from)
-            .and_then(|s| safe_write(path.join("project.toml"), s).map_err(Report::from))
+            .map_err(|e| eyre!("Cannot serialise project.toml: {e:#}"))
+            .and_then(|s| {
+                safe_write(path.join("project.toml"), s)
+                    .map_err(|e| eyre!("Cannot write project.toml to {}: {e:#}", path.display()))
+            })
         {
             errors.push(e);
         }
@@ -184,5 +178,44 @@ impl App {
             }
         };
         self.project = project;
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn reload_project(&mut self) {
+        if self.project.path.is_none() {
+            return;
+        }
+        match self.project.update_namespace_list() {
+            Ok(ww) => {
+                ww.handle_warnings(|errors| {
+                    notif!(warning "Errors while reloading project", errors &errors);
+                });
+                notif!(success "Reloaded project");
+            }
+            Err(e) => {
+                notif!(error "Error while reloading project`", error &e);
+            }
+        }
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn save_project(&mut self) {
+        if self.project.path.is_none() {
+            return self.save_project_as();
+        }
+        self.project.save().handle_warnings2(
+            |errors| {
+                notif!(warning "Errors while saving", errors &errors, "Errors while saving");
+            },
+            || {
+                notif!(success "Saved project");
+            },
+        );
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn save_project_as(&mut self) {
+        let Some(folder) = FileDialog::new().set_title("Save Project As").pick_folder() else {
+            return;
+        };
+        self.project.path = Some(folder);
+        self.save_project();
     }
 }
