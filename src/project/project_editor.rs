@@ -23,21 +23,15 @@ impl DockWindow for ProjectEditorWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
-                ($ui:ident, $label:literal, $action:expr, $f:block) => {
-                    if app.menu_button_fn("project editor menu", $ui, $label, $action) {
-                        $f
+                ($ui:ident, $label:literal, $action:expr) => {
+                    if app.menu_button_fn("project editor menu", $ui, $label, Some($action)) {
+                        app.run_action($ui, $action, None)
                     }
                 };
             }
-            button!(ui, "Open", Some(ShortcutAction::OpenProject), {
-                app.open_project();
-            });
-            button!(ui, "Reload", Some(ShortcutAction::ReloadProject), {
-                // commands.trigger(ProjectEv::Reload);
-            });
-            button!(ui, "Save", Some(ShortcutAction::SaveProject), {
-                app.project.save_notif();
-            });
+            button!(ui, "Open", ShortcutAction::OpenProject);
+            button!(ui, "Reload", ShortcutAction::ReloadProject);
+            button!(ui, "Save", ShortcutAction::SaveProject);
         });
         ui.separator();
 

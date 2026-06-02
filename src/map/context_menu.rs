@@ -12,30 +12,19 @@ impl MapWindow {
             .context_menu(|ui| {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 macro_rules! button {
-                    ($ui:ident, $label:literal, $action:expr, $f:block) => {
-                        if app.menu_button_fn("context menu", $ui, $label, $action) {
-                            $f
+                    ($ui:ident, $label:literal, $action:expr) => {
+                        if app.menu_button_fn("context menu", $ui, $label, Some($action)) {
+                            app.run_action($ui, $action, None);
                         }
-                    };
-                    ($ui:ident, $label:literal, $action:expr, window $w:expr) => {
-                        app.menu_button_window("context menu", $ui, $label, $action, $w);
                     };
                 }
                 if !app.ui.map.selected.is_empty() {
-                    button!(ui, "Copy", Some(ShortcutAction::Copy), {
-                        app.copy_selected_components();
-                    });
-                    button!(ui, "Cut", Some(ShortcutAction::Cut), {
-                        app.cut_selected_components(&response.ctx);
-                    });
-                    button!(ui, "Delete", Some(ShortcutAction::Delete), {
-                        app.delete_selected_components(&response.ctx);
-                    });
+                    button!(ui, "Copy", ShortcutAction::Copy);
+                    button!(ui, "Cut", ShortcutAction::Cut);
+                    button!(ui, "Delete", ShortcutAction::Delete);
                     ui.separator();
                 }
-                button!(ui, "Paste", Some(ShortcutAction::Paste), {
-                    app.paste_clipboard_components(&response.ctx);
-                });
+                button!(ui, "Paste", ShortcutAction::Paste);
             })
             .map(|a| a.response)
         else {

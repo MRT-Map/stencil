@@ -8,13 +8,7 @@ use crate::{
         quit::QuitPopup,
     },
     map::tile_coord::TILE_CACHE,
-    project::{
-        component_editor::ComponentEditorWindow, history_viewer::HistoryViewerWindow,
-        project_editor::ProjectEditorWindow,
-    },
-    settings::SettingsWindow,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
-    ui::{dock::DockWindows, notif::NotifLogWindow},
 };
 
 impl App {
@@ -36,18 +30,6 @@ impl App {
         }
         false
     }
-    pub fn menu_button_window<W: Into<DockWindows>>(
-        &mut self,
-        location: &str,
-        ui: &mut egui::Ui,
-        label: &str,
-        action: Option<ShortcutAction>,
-        window: W,
-    ) {
-        if self.menu_button_fn(location, ui, label, action) {
-            self.ui.dock_layout.open_window(window);
-        }
-    }
 }
 
 impl App {
@@ -57,11 +39,15 @@ impl App {
         egui::Panel::top("menu").show_inside(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
-                    ($ui:ident, $label:literal, $action:expr, $f:block) => {
-                        if self.menu_button_fn("menu bar", $ui, $label, $action) {$f}
+                    ($ui:ident, $label:literal, $action:expr) => {
+                        if self.menu_button_fn("menu bar", $ui, $label, Some($action)) {
+                            self.run_action($ui, $action, None)
+                        }
                     };
-                    ($ui:ident, $label:literal, $action:expr, window $w:expr) => {
-                        self.menu_button_window("menu bar", $ui, $label, $action, $w);
+                    ($ui:ident, $label:literal, $action:expr, $f:block) => {
+                        if self.menu_button_fn("menu bar", $ui, $label, $action) {
+                            $f
+                        }
                     };
                 }
                 ui.menu_button(format!("Stencil v{}", env!("CARGO_PKG_VERSION")), |ui| {
@@ -78,71 +64,39 @@ impl App {
                         self.add_popup(LicensesPopup::default());
                     });
                     ui.separator();
-                    button!(ui, "Settings", Some(ShortcutAction::SettingsWindow), window SettingsWindow::default());
+                    button!(ui, "Settings", ShortcutAction::SettingsWindow);
                     ui.separator();
                     button!(ui, "Quit", Some(ShortcutAction::Escape), {
                         self.add_popup(QuitPopup);
                     });
                 });
                 ui.menu_button("File", |ui| {
-                    button!(ui, "Open", Some(ShortcutAction::OpenProject), {
-                        self.open_project();
-                    });
+                    button!(ui, "Open", ShortcutAction::OpenProject);
                     ui.menu_button("Import", |ui| {
-                        button!(ui, "Import pla3.zip", None, {
-
-                        });
-                        button!(ui, "Import pla2.msgpack", None, {
-
-                        });
-                        button!(ui, "Import pla2.json", None, {
-
-                        });
+                        button!(ui, "Import pla3.zip", None, {});
+                        button!(ui, "Import pla2.msgpack", None, {});
+                        button!(ui, "Import pla2.json", None, {});
                     });
                     ui.separator();
-                    button!(ui, "Reload", Some(ShortcutAction::ReloadProject), {
-
-                    });
+                    button!(ui, "Reload", ShortcutAction::ReloadProject);
                     ui.separator();
-                    button!(ui, "Save", Some(ShortcutAction::SaveProject), {
-                        self.project.save_notif();
-                    });
-                    button!(ui, "Save As", Some(ShortcutAction::SaveProjectAs), {
-
-                    });
+                    button!(ui, "Save", ShortcutAction::SaveProject);
+                    button!(ui, "Save As", ShortcutAction::SaveProjectAs);
                     ui.menu_button("Export", |ui| {
-                        button!(ui, "Export pla3.zip", None, {
-
-                        });
-                        button!(ui, "Export pla2.msgpack", None, {
-
-                        });
-                        button!(ui, "Export pla2.json", None, {
-
-                        });
+                        button!(ui, "Export pla3.zip", None, {});
+                        button!(ui, "Export pla2.msgpack", None, {});
+                        button!(ui, "Export pla2.json", None, {});
                     });
                 });
                 ui.menu_button("Edit", |ui| {
-                    button!(ui, "Undo", Some(ShortcutAction::Undo), {
-                        self.history_undo(ui);
-                    });
-                    button!(ui, "Redo", Some(ShortcutAction::Redo), {
-                        self.history_redo(ui);
-                    });
+                    button!(ui, "Undo", ShortcutAction::Undo);
+                    button!(ui, "Redo", ShortcutAction::Redo);
                     ui.separator();
-                    button!(ui, "Copy", Some(ShortcutAction::Copy), {
-                        self.copy_selected_components();
-                    });
-                    button!(ui, "Cut", Some(ShortcutAction::Cut), {
-                        self.cut_selected_components(ui);
-                    });
-                    button!(ui, "Delete", Some(ShortcutAction::Delete), {
-                        self.delete_selected_components(ui);
-                    });
+                    button!(ui, "Copy", ShortcutAction::Copy);
+                    button!(ui, "Cut", ShortcutAction::Cut);
+                    button!(ui, "Delete", ShortcutAction::Delete);
                     ui.separator();
-                    button!(ui, "Paste", Some(ShortcutAction::Paste), {
-                        self.paste_clipboard_components(ui);
-                    });
+                    button!(ui, "Paste", ShortcutAction::Paste);
                     ui.separator();
                     button!(ui, "Clear Clipboard", None, {
                         self.map_clear_clipboard();
@@ -150,15 +104,12 @@ impl App {
                 });
                 ui.menu_button("View", |ui| {
                     ui.label("Windows");
-                    // button!(ui, commands, "Component List", OpenComponentListEv);
-                    button!(ui, "Component", Some(ShortcutAction::ComponentEditorWindow), window ComponentEditorWindow);
-                    button!(ui, "Project", Some(ShortcutAction::ProjectEditorWindow), window ProjectEditorWindow);
-                    button!(ui, "History", Some(ShortcutAction::HistoryViewerWindow), window HistoryViewerWindow);
-                    button!(ui, "Notification Log", Some(ShortcutAction::NotifLogWindow), window NotifLogWindow);
+                    button!(ui, "Component", ShortcutAction::ComponentEditorWindow);
+                    button!(ui, "Project", ShortcutAction::ProjectEditorWindow);
+                    button!(ui, "History", ShortcutAction::HistoryViewerWindow);
+                    button!(ui, "Notification Log", ShortcutAction::NotifLogWindow);
                     ui.separator();
-                    button!(ui, "Reset Map View", Some(ShortcutAction::ResetMapView), {
-                        self.map_reset_view();
-                    });
+                    button!(ui, "Reset Map View", ShortcutAction::ResetMapView);
                     button!(ui, "Clear Map Cache", None, {
                         self.project.basemap.clear_cache_path();
                         let _ = TILE_CACHE.lock().map(|mut a| a.clear());
@@ -184,7 +135,10 @@ impl App {
                 ui.separator();
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::RIGHT), |ui| {
-                    ui.label(format!("ms/frame: {:.3}", self.ui.mspf.average().unwrap_or_default()));
+                    ui.label(format!(
+                        "ms/frame: {:.3}",
+                        self.ui.mspf.average().unwrap_or_default()
+                    ));
                     ui.separator();
 
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {

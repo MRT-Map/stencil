@@ -13,18 +13,14 @@ impl DockWindow for HistoryViewerWindow {
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
-                ($ui:ident, $label:literal, $action:expr, $f:block) => {
-                    if app.menu_button_fn("history viewer menu", $ui, $label, $action) {
-                        $f
+                ($ui:ident, $label:literal, $action:expr) => {
+                    if app.menu_button_fn("history viewer menu", $ui, $label, Some($action)) {
+                        app.run_action($ui, $action, None);
                     }
                 };
             }
-            button!(ui, "Undo", Some(ShortcutAction::Undo), {
-                app.history_undo(ui);
-            });
-            button!(ui, "Redo", Some(ShortcutAction::Redo), {
-                app.history_redo(ui);
-            });
+            button!(ui, "Undo", ShortcutAction::Undo);
+            button!(ui, "Redo", ShortcutAction::Redo);
         });
         ui.separator();
 

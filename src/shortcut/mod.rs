@@ -75,7 +75,6 @@ impl ShortcutAction {
 
 impl App {
     #[tracing::instrument(skip_all)]
-    #[expect(clippy::too_many_lines)]
     pub fn shortcuts(&mut self, ctx: &egui::Context) {
         let mut eframe_workaround_used = false;
         for shortcut in self.settings.shortcut.shortcuts_ordered() {
@@ -117,78 +116,86 @@ impl App {
                 }
             }
 
-            info!(
-                ?action,
-                shortcut = ctx.format_shortcut(&shortcut),
-                "Handling shortcut"
-            );
-            match action {
-                ShortcutAction::Escape => match self.mode {
-                    EditorMode::Select => self.add_popup(QuitPopup),
-                    EditorMode::Nodes | EditorMode::CreatePoint => self.mode = EditorMode::Select,
-                    EditorMode::CreateLine | EditorMode::CreateArea => {
-                        if self.ui.map.created_nodes.len() <= 1 {
-                            self.mode = EditorMode::Select;
-                        } else {
-                            self.ui.map.created_nodes.clear();
-                        }
+            self.run_action(ctx, action, Some(shortcut));
+        }
+    }
+    pub fn run_action(
+        &mut self,
+        ctx: &egui::Context,
+        action: ShortcutAction,
+        shortcut: Option<egui::KeyboardShortcut>,
+    ) {
+        info!(
+            ?action,
+            shortcut = shortcut.map(|shortcut| ctx.format_shortcut(&shortcut)),
+            "Running action"
+        );
+        match action {
+            ShortcutAction::Escape => match self.mode {
+                EditorMode::Select => self.add_popup(QuitPopup),
+                EditorMode::Nodes | EditorMode::CreatePoint => self.mode = EditorMode::Select,
+                EditorMode::CreateLine | EditorMode::CreateArea => {
+                    if self.ui.map.created_nodes.len() <= 1 {
+                        self.mode = EditorMode::Select;
+                    } else {
+                        self.ui.map.created_nodes.clear();
                     }
-                },
-                ShortcutAction::SettingsWindow => {
-                    self.ui.dock_layout.open_window(SettingsWindow::default());
                 }
-                ShortcutAction::ComponentEditorWindow => {
-                    self.ui.dock_layout.open_window(ComponentEditorWindow);
-                }
-                ShortcutAction::HistoryViewerWindow => {
-                    self.ui.dock_layout.open_window(HistoryViewerWindow);
-                }
-                ShortcutAction::NotifLogWindow => {
-                    self.ui.dock_layout.open_window(NotifLogWindow);
-                }
-                ShortcutAction::ProjectEditorWindow => {
-                    self.ui.dock_layout.open_window(ProjectEditorWindow);
-                }
-                ShortcutAction::ResetMapView => {
-                    self.map_reset_view();
-                }
-                ShortcutAction::SaveProject => {
-                    self.project.save_notif();
-                }
-                ShortcutAction::EditorModeSelect => {
-                    self.mode = EditorMode::Select;
-                }
-                ShortcutAction::EditorModeNodes => {
-                    self.mode = EditorMode::Nodes;
-                }
-                ShortcutAction::EditorModeCreatePoint => {
-                    self.mode = EditorMode::CreatePoint;
-                }
-                ShortcutAction::EditorModeCreateLine => {
-                    self.mode = EditorMode::CreateLine;
-                }
-                ShortcutAction::EditorModeCreateArea => {
-                    self.mode = EditorMode::CreateArea;
-                }
-                ShortcutAction::Undo => {
-                    self.history_undo(ctx);
-                }
-                ShortcutAction::Redo => {
-                    self.history_redo(ctx);
-                }
-                ShortcutAction::Delete => self.delete_selected_components(ctx),
-                ShortcutAction::Copy => self.copy_selected_components(),
-                ShortcutAction::Cut => self.cut_selected_components(ctx),
-                ShortcutAction::Paste => self.paste_clipboard_components(ctx),
-                ShortcutAction::OpenProject => self.open_project(),
-                ShortcutAction::ReloadProject | ShortcutAction::SaveProjectAs => todo!(),
-                ShortcutAction::PanMapUp
-                | ShortcutAction::PanMapDown
-                | ShortcutAction::PanMapLeft
-                | ShortcutAction::PanMapRight
-                | ShortcutAction::ZoomMapIn
-                | ShortcutAction::ZoomMapOut => unreachable!(),
+            },
+            ShortcutAction::SettingsWindow => {
+                self.ui.dock_layout.open_window(SettingsWindow::default());
             }
+            ShortcutAction::ComponentEditorWindow => {
+                self.ui.dock_layout.open_window(ComponentEditorWindow);
+            }
+            ShortcutAction::HistoryViewerWindow => {
+                self.ui.dock_layout.open_window(HistoryViewerWindow);
+            }
+            ShortcutAction::NotifLogWindow => {
+                self.ui.dock_layout.open_window(NotifLogWindow);
+            }
+            ShortcutAction::ProjectEditorWindow => {
+                self.ui.dock_layout.open_window(ProjectEditorWindow);
+            }
+            ShortcutAction::ResetMapView => {
+                self.map_reset_view();
+            }
+            ShortcutAction::SaveProject => {
+                self.project.save_notif();
+            }
+            ShortcutAction::EditorModeSelect => {
+                self.mode = EditorMode::Select;
+            }
+            ShortcutAction::EditorModeNodes => {
+                self.mode = EditorMode::Nodes;
+            }
+            ShortcutAction::EditorModeCreatePoint => {
+                self.mode = EditorMode::CreatePoint;
+            }
+            ShortcutAction::EditorModeCreateLine => {
+                self.mode = EditorMode::CreateLine;
+            }
+            ShortcutAction::EditorModeCreateArea => {
+                self.mode = EditorMode::CreateArea;
+            }
+            ShortcutAction::Undo => {
+                self.history_undo(ctx);
+            }
+            ShortcutAction::Redo => {
+                self.history_redo(ctx);
+            }
+            ShortcutAction::Delete => self.delete_selected_components(ctx),
+            ShortcutAction::Copy => self.copy_selected_components(),
+            ShortcutAction::Cut => self.cut_selected_components(ctx),
+            ShortcutAction::Paste => self.paste_clipboard_components(ctx),
+            ShortcutAction::OpenProject => self.open_project(),
+            ShortcutAction::ReloadProject | ShortcutAction::SaveProjectAs => todo!(),
+            ShortcutAction::PanMapUp
+            | ShortcutAction::PanMapDown
+            | ShortcutAction::PanMapLeft
+            | ShortcutAction::PanMapRight
+            | ShortcutAction::ZoomMapIn
+            | ShortcutAction::ZoomMapOut => unreachable!(),
         }
     }
 }
