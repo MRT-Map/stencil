@@ -130,17 +130,17 @@ impl App {
                 }
             },
             ShortcutAction::SettingsWindow => {
-                self.ui.dock_layout.open_window(SettingsWindow::default())
+                self.ui.dock_layout.open_window(SettingsWindow::default());
             }
             ShortcutAction::ComponentEditorWindow => {
-                self.ui.dock_layout.open_window(ComponentEditorWindow)
+                self.ui.dock_layout.open_window(ComponentEditorWindow);
             }
             ShortcutAction::HistoryViewerWindow => {
-                self.ui.dock_layout.open_window(HistoryViewerWindow)
+                self.ui.dock_layout.open_window(HistoryViewerWindow);
             }
             ShortcutAction::NotifLogWindow => self.ui.dock_layout.open_window(NotifLogWindow),
             ShortcutAction::ProjectEditorWindow => {
-                self.ui.dock_layout.open_window(ProjectEditorWindow)
+                self.ui.dock_layout.open_window(ProjectEditorWindow);
             }
             ShortcutAction::ResetMapView => self.map_reset_view(),
             ShortcutAction::OpenProject => self.open_project(),
