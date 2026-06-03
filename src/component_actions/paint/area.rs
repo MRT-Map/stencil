@@ -187,11 +187,10 @@ impl MapWindow {
                 ));
             }
         }
-        if let Ok(edge_triangles) = if let Some(polygon_edge) = polygon_edge {
-            Self::triangulate(&polygon_edge, &mut cache)
-        } else {
-            Self::triangulate(&polygon, &mut cache)
-        } {
+
+        if let Ok(edge_triangles) =
+            Self::triangulate(polygon_edge.as_ref().unwrap_or(&polygon), &mut cache)
+        {
             let edge_colour = colour.unwrap_or(egui::Color32::TRANSPARENT);
             for triangle in edge_triangles {
                 shapes.push(egui::Shape::convex_polygon(

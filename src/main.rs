@@ -10,13 +10,12 @@ mod shortcut;
 mod ui;
 mod utils;
 
-use std::{sync::LazyLock, time::Instant};
+use std::time::Instant;
 
-use async_executor::StaticExecutor;
 use etcetera::AppStrategy;
 use eyre::Result;
-use lazy_regex::{Regex, lazy_regex};
 use tracing::info;
+use utils::EXECUTOR;
 
 use crate::{
     logging::init_logger,
@@ -26,9 +25,6 @@ use crate::{
     ui::UiState,
     utils::{file::FOLDERS, load_save::LoadSave},
 };
-
-pub static EXECUTOR: StaticExecutor = StaticExecutor::new();
-pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
 
 fn main() -> Result<()> {
     // std::panic::set_hook(Box::new(panic::panic));

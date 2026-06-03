@@ -19,10 +19,12 @@ use history::History;
 use tracing::{error, info};
 
 use crate::{
-    EXECUTOR, URL_REPLACER,
     map::basemap::Basemap,
     project::{component_list::ComponentList, skin::Skin},
-    utils::file::{FOLDERS, safe_write},
+    utils::{
+        EXECUTOR, URL_REPLACER,
+        file::{FOLDERS, safe_write},
+    },
 };
 
 #[derive(Debug, Default)]

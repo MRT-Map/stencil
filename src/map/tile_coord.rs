@@ -14,9 +14,9 @@ use num_traits::real::Real;
 use tracing::error;
 
 use crate::{
-    EXECUTOR,
     map::basemap::Basemap,
     utils::{
+        EXECUTOR,
         coord::{Nnf32, nn},
         file::safe_write,
     },
