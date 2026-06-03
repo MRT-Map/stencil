@@ -1,4 +1,9 @@
-use std::{borrow::Cow, collections::HashSet, path::PathBuf, sync::Arc};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    sync::Arc,
+};
 
 use eyre::{Report, eyre};
 use pla::FullId;
@@ -37,6 +42,7 @@ impl Project {
             basemap: project_toml.basemap.into_owned(),
             skin_url: project_toml.skin_url.into_owned(),
             path: Some(path),
+            namespaces: HashMap::default(),
             ..Self::default()
         };
         let _ = s.update_namespace_list()?;
