@@ -1,7 +1,7 @@
 use std::{
     f32::consts::FRAC_PI_2,
     num::NonZeroUsize,
-    sync::{LazyLock, Mutex, MutexGuard},
+    sync::{LazyLock, Mutex},
 };
 
 use geo::{
@@ -31,7 +31,7 @@ static TRIANGULATION_CACHE: LazyLock<Mutex<TriangulationCache>> =
 impl MapWindow {
     fn triangulate<'a>(
         p: &geo::MultiPolygon<f32>,
-        cache: &'a mut MutexGuard<TriangulationCache>,
+        cache: &'a mut TriangulationCache,
     ) -> &'a TriangulationResult<Vec<[egui::Pos2; 3]>> {
         let cache_key = p.map_coords(|c| geo::coord! {x: OrderedFloat(c.x), y: OrderedFloat(c.y)});
 

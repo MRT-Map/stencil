@@ -2,7 +2,7 @@ use std::{
     fmt::{Display, Formatter},
     num::NonZeroUsize,
     path::PathBuf,
-    sync::{LazyLock, Mutex, MutexGuard},
+    sync::{LazyLock, Mutex},
 };
 
 use async_executor::Task;
@@ -65,7 +65,7 @@ impl TileCoord {
         self,
         ctx: &egui::Context,
         basemap: &Basemap,
-        tile_cache: &mut MutexGuard<LruCache<Self, TileCacheItem>>,
+        tile_cache: &mut LruCache<Self, TileCacheItem>,
     ) -> Option<TextureIdResult> {
         let url = basemap.url(self);
         let item = tile_cache.get_or_insert_mut(self, || {
