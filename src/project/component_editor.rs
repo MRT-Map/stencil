@@ -23,6 +23,7 @@ impl DockWindow for ComponentEditorWindow {
         "Component".into()
     }
     #[tracing::instrument(skip_all)]
+    #[expect(clippy::too_many_lines)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         let Some(skin) = app.project.skin() else {
             ui.heading("Waiting for skin...");
@@ -284,6 +285,7 @@ impl DockWindow for ComponentEditorWindow {
 }
 
 impl ComponentEditorWindow {
+    #[expect(clippy::too_many_lines)]
     fn field_editor(ui: &mut egui::Ui, v: &mut toml::Value, path: &str) -> Vec<String> {
         let mut changed = Vec::<String>::new();
         ui.horizontal(|ui| {

@@ -12,6 +12,7 @@ use crate::{
 
 impl MapWindow {
     #[tracing::instrument(skip_all)]
+    #[expect(clippy::too_many_lines)]
     pub fn toolbar(app: &mut App, ui: &mut egui::Ui) {
         let old_mode = app.mode;
         egui::Panel::top("toolbar").show_inside(ui, |ui| {

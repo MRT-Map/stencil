@@ -5,10 +5,10 @@ use num_traits::real::Real;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    URL_REPLACER,
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
     utils::{
+        URL_REPLACER,
         coord::{Nnf32, Nnf32UpdateExt, nn},
         file::{FOLDERS, safe_delete},
     },
@@ -140,7 +140,7 @@ impl Basemap {
             },
         );
         if let Err(e) = self.url.parse::<url::Url>() {
-            ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:?}"));
+            ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:#}"));
         }
 
         settings_ui_field(

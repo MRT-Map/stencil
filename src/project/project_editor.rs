@@ -19,24 +19,19 @@ impl DockWindow for ProjectEditorWindow {
         "Project".into()
     }
     #[tracing::instrument(skip_all)]
+    #[expect(clippy::too_many_lines)]
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
             macro_rules! button {
-                ($ui:ident, $label:literal, $action:expr, $f:block) => {
-                    if app.menu_button_fn("project editor menu", $ui, $label, $action) {
-                        $f
+                ($ui:ident, $label:literal, $action:expr) => {
+                    if app.menu_button_fn("project editor menu", $ui, $label, Some($action)) {
+                        app.run_action($ui, $action, None)
                     }
                 };
             }
-            button!(ui, "Open", Some(ShortcutAction::OpenProject), {
-                // commands.trigger(ProjectEv::Open);
-            });
-            button!(ui, "Reload", Some(ShortcutAction::ReloadProject), {
-                // commands.trigger(ProjectEv::Reload);
-            });
-            button!(ui, "Save", Some(ShortcutAction::SaveProject), {
-                app.project.save_notif();
-            });
+            button!(ui, "Open", ShortcutAction::OpenProject);
+            button!(ui, "Reload", ShortcutAction::ReloadProject);
+            button!(ui, "Save", ShortcutAction::SaveProject);
         });
         ui.separator();
 
@@ -153,7 +148,7 @@ impl DockWindow for ProjectEditorWindow {
             }
             SkinStatus::Failed(e) => {
                 ui.colored_label(egui::Color32::RED, "Skin failed to load");
-                ui.code(format!("{e:?}"));
+                ui.code(format!("{e:#}"));
             }
             SkinStatus::Loaded(_) => {
                 ui.colored_label(egui::Color32::GREEN, "Skin is loaded");

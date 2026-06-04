@@ -54,6 +54,7 @@ pub trait Popup {
     ) -> bool {
         self.choice_ui(app, ui, text, "Yes", yes_fn, "No", no_fn)
     }
+    #[expect(clippy::too_many_arguments)]
     fn choice_ui<'a>(
         &mut self,
         app: &mut App,

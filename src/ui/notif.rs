@@ -39,6 +39,10 @@ macro_rules! notif {
         ::tracing::warn!("{}", $message);
         $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Warning, $message);
     };
+    (warning $message:expr, $tracing:tt) => {
+        ::tracing::warn!($tracing);
+        $crate::notif!(warning $message);
+    };
     (warning $message:expr, errors $errors:expr) => {
         use ::itertools::Itertools;
         ::tracing::warn!(errors = ?$errors, "{}", $message);
@@ -49,13 +53,21 @@ macro_rules! notif {
         ::tracing::warn!(errors = ?$errors, $tracing);
         $crate::notif!(warning format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
     };
-    (warning $message:expr, $tracing:tt) => {
-        ::tracing::warn!($tracing);
-        $crate::notif!(warning $message);
+    (warning $message:expr, error $error:expr) => {
+        let errors = [$error];
+        $crate::notif!(warning $message, errors &errors);
+    };
+    (warning $message:expr, error $error:expr, $tracing:tt) => {
+        let errors = [$error];
+        $crate::notif!(warning $message, errors &errors, $tracing);
     };
     (error $message:expr) => {
         ::tracing::error!("{}", $message);
         $crate::ui::notif::NotifState::send(egui_notify::ToastLevel::Error, $message);
+    };
+    (error $message:expr, $tracing:tt) => {
+        ::tracing::error!($tracing);
+        $crate::notif!(error $message);
     };
     (error $message:expr, errors $errors:expr) => {
         use ::itertools::Itertools;
@@ -67,9 +79,13 @@ macro_rules! notif {
         ::tracing::error!(errors = ?$errors, $tracing);
         $crate::notif!(error format!("{}\n{}", $message, $errors.iter().map(ToString::to_string).join("\n")));
     };
-    (error $message:expr, $tracing:tt) => {
-        ::tracing::error!($tracing);
-        $crate::notif!(error $message);
+    (error $message:expr, error $error:expr) => {
+        let errors = [$error];
+        $crate::notif!(error $message, errors &errors);
+    };
+    (error $message:expr, error $error:expr, $tracing:tt) => {
+        let errors = [$error];
+        $crate::notif!(error $message, errors &errors, $tracing);
     };
 }
 
@@ -111,7 +127,7 @@ impl NotifState {
         CHANNEL
             .0
             .send(Notif::new(level, message))
-            .unwrap_or_else(|e| unreachable!("Disconnected channel: {e:#?}"));
+            .unwrap_or_else(|e| unreachable!("Disconnected channel: {e:#}"));
     }
     pub fn process_notifs(&mut self, misc_settings: &MiscSettings) {
         loop {

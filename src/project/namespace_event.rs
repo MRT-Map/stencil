@@ -24,8 +24,7 @@ impl Event for NamespaceEv {
                     true
                 }
                 Err(e) => {
-                    let errors = [e];
-                    notif!(error format!("Error while loading `{namespace}`"), errors &errors);
+                    notif!(error format!("Error while loading `{namespace}`"), error &e);
                     false
                 }
             },
@@ -51,8 +50,7 @@ impl Event for NamespaceEv {
                 if let Some(path) = &app.project.path
                     && let Err(e) = std::fs::create_dir_all(path.join(namespace))
                 {
-                    let errors = [e];
-                    notif!(warning format!("Error while creating `{namespace}`"), errors &errors);
+                    notif!(warning format!("Error while creating `{namespace}`"), error &e);
                 }
                 notif!(success format!("Created namespace `{namespace}`"));
                 app.project.namespaces.insert(namespace.clone(), true);

@@ -4,7 +4,7 @@ on:
   push:
     paths: ["**/Cargo.toml", "**/Cargo.lock"]
     branches: ["**", "!v2"]
-    
+
 jobs:
   cargo-msrv:
     permissions:
