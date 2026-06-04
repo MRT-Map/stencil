@@ -1,6 +1,6 @@
 [tools]
-"cargo:cargo-bundle" = { version = "0.11.0", os = ["linux", "macos"] }
-"dotnet:wix" = { version = "7.0.0", os = ["windows"], postinstall = """
+"cargo:cargo-bundle" = { version = "=0.11.0", os = ["linux", "macos"] }
+"dotnet:wix" = { version = "[7.0.0]", os = ["windows"], postinstall = """
     wix eula accept wix7
     wix extension add -g "WixToolset.Util.wixext/{{ tools.wix.version }}
     wix extension add -g "WixToolset.UI.wixext/{{ tools.wix.version }}
