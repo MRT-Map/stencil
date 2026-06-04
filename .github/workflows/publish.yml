@@ -57,8 +57,7 @@ jobs:
       - uses: ./.github/actions/mise
         with:
           cache: false
-          envs: ""
-      - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+          envs: "publish"
 
       - run: cargo --locked bundle --release
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -146,8 +145,7 @@ jobs:
       - uses: ./.github/actions/mise
         with:
           cache: false
-          envs: ""
-      - run: cargo binstall --force cargo-bundle@${{ env.CARGO_BUNDLE_VERSION }}
+          envs: "publish"
       #    - uses: awalsh128/cache-apt-pkgs-action@acb598e5ddbc6f68a970c5da0688d2f3a9f04d05 # v1.6.0
       #      with:
       #        packages: libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
@@ -175,14 +173,8 @@ jobs:
       - uses: ./.github/actions/mise
         with:
           cache: false
-          envs: ""
+          envs: "publish"
 
-      - run: |
-          dotnet tool install --global "wix@${{ env.WIX_VERSION }}"
-          wix eula accept wix7
-          wix extension add -g "WixToolset.Util.wixext/${{ env.WIX_VERSION }}"
-          wix extension add -g "WixToolset.UI.wixext/${{ env.WIX_VERSION }}"
-      - run: cargo install --git https://github.com/volks73/cargo-wix --rev ${{ env.CARGO_WIX_REV }} --locked cargo-wix
       - run: cargo --locked build --release
       - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture --package stencil3
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
