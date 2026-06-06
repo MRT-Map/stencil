@@ -2059,9 +2059,6 @@ name = "glam"
 version = "0.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fb167719045debebe9f532320accc7b5c993c5a3b813f5696a11d5ca7bdc57b"
-dependencies = [
- "serde_core",
-]
 
 [[package]]
 name = "glow"
@@ -3828,7 +3825,8 @@ name = "pla"
 version = "3.0.0-beta.0"
 dependencies = [
  "duplicate",
- "egui",
+ "emath",
+ "epaint",
  "geo",
  "glam",
  "itertools",
