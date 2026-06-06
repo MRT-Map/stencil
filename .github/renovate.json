@@ -4,19 +4,10 @@
     "github>mrt-map/renovate-config",
     "github>mrt-map/renovate-config:app"
   ],
-  "git-submodules": {
-    "enabled": true
-  },
   "packageRules": [
     {
       "matchPackageNames": ["/^egui/", "eframe"],
       "groupName": "egui-group"
-    },
-    {
-      "matchManagers": ["git-submodules"],
-      "automerge": true,
-      "automergeType": "branch",
-      "ignoreTests": true
     }
-  ],
+  ]
 }
