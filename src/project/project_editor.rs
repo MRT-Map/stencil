@@ -172,6 +172,9 @@ impl DockWindow for ProjectEditorWindow {
                     }
                 },
             );
+            if let Err(e) = app.project.skin_url.parse::<url::Url>() {
+                ui.colored_label(egui::Color32::RED, format!("Invalid URL: {e:#}"));
+            }
         });
         ui.collapsing("Basemap", |ui| {
             app.project.basemap.config_ui(ui);
