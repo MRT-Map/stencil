@@ -7,13 +7,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-  # renovate: datasource=crate depName=cargo-bundle versioning=loose
-  CARGO_BUNDLE_VERSION: 0.11.0
-  # renovate: cargo-wix
-  CARGO_WIX_REV: 041cc3c624abca5bcab3c3eaf785ceba9ea59394
-  # renovate: datasource=nuget depname=wix
-  WIX_VERSION: 7.0.0
-
 jobs:
   version-changelog:
     runs-on: ubuntu-latest

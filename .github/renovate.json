@@ -4,30 +4,19 @@
     "github>mrt-map/renovate-config",
     "github>mrt-map/renovate-config:app"
   ],
+  "git-submodules": {
+    "enabled": true
+  },
   "packageRules": [
     {
       "matchPackageNames": ["/^egui/", "eframe"],
       "groupName": "egui-group"
     },
     {
-      "matchFileNames": ["pla3/**"],
-      "extends": ["github>mrt-map/renovate-config:library"]
+      "matchManagers": ["git-submodules"],
+      "automerge": true,
+      "automergeType": "branch",
+      "ignoreTests": true
     }
   ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)(workflow-templates|\\.(?:github|gitea|forgejo)/(?:workflows|actions))/.+\\.ya?ml$/",
-        "/(^|/)action\\.ya?ml$/"
-      ],
-      "matchStrings": [
-        "# renovate: cargo-wix\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentDigest>.+?)[\"']?\\s"
-      ],
-      "currentValueTemplate": "main",
-      "depNameTemplate": "cargo-wix",
-      "packageNameTemplate": "https://github.com/volks73/cargo-wix",
-      "datasourceTemplate": "git-refs"
-    }
-  ]
 }
