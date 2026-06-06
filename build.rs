@@ -29,7 +29,6 @@ fn main() -> Result<()> {
     if std::env::var("PROFILE")? != "debug" {
         gather_licenses()?;
     }
-    // zip_assets()?;
     embed_resource()?;
 
     println!("cargo:rerun-if-changed=build.rs");
