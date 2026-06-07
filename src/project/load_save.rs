@@ -8,6 +8,7 @@ use std::{
 };
 
 use eyre::{Report, eyre};
+use itertools::Itertools;
 use pla::FullId;
 use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
@@ -15,9 +16,10 @@ use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::{
     App,
+    component_actions::event::ComponentEv,
     map::basemap::Basemap,
     notif,
-    project::{Project, namespace_event::NamespaceEv, pla3::PlaComponent},
+    project::{Project, history::Events, namespace_event::NamespaceEv, pla3::PlaComponent},
     ui::popup::Popup,
     utils::{
         file::safe_write,
@@ -174,8 +176,12 @@ impl Project {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn import_namespace_pla3_zip(&mut self, path: &Path) -> eyre::Result<WithWarnings<String>> {
+    pub fn import_namespace_pla3_zip(
+        &mut self,
+        path: &Path,
+    ) -> eyre::Result<WithWarnings<(String, Vec<Events>)>> {
         let mut errors = Vec::new();
+        let mut events = Vec::<Events>::new();
         let Some(namespace) = path
             .file_name()
             .and_then(|name| name.to_str())
@@ -186,11 +192,12 @@ impl Project {
         if namespace.is_empty() {
             return Err(eyre!("Namespace name must not be empty"));
         }
-        if self.namespaces.contains_key(namespace) {
-            return Err(eyre!("Namespace `{namespace}` already exists"));
+        if !self.namespaces.contains_key(namespace) {
+            events.push(NamespaceEv::Create(namespace.to_owned()).into());
         }
 
         let mut archive = ZipArchive::new(File::open(path)?)?;
+        let mut components = Vec::new();
         for i in 0..archive.len() {
             let file = archive.by_index(i)?;
             let enclosed_name = file.enclosed_name();
@@ -204,24 +211,27 @@ impl Project {
                 continue;
             };
 
-            match PlaComponent::load_from_buf(
-                BufReader::new(file),
-                FullId::new(namespace.to_owned(), id.to_owned()),
-                |a| self.skin()?.get_type(a).map(Arc::clone),
-            )
+            let full_id = FullId::new(namespace.to_owned(), id.to_owned());
+            if self.components.iter().any(|a| a.full_id == full_id) {
+                errors.push(eyre!("ID `{full_id}` already exists"));
+                continue;
+            }
+
+            match PlaComponent::load_from_buf(BufReader::new(file), full_id, |a| {
+                self.skin()?.get_type(a).map(Arc::clone)
+            })
             .map(WithWarning::from)
             {
                 Ok(ww) => {
                     let (component, _) = ww.handle_warning(|e| errors.push(e.into()));
-                    self.components.insert(self.skin().unwrap(), component);
+                    components.push(component);
                 }
                 Err(e) => errors.push(e.into()),
             }
         }
+        events.push(ComponentEv::Create(components).into());
 
-        self.namespaces.insert(namespace.to_owned(), true);
-
-        Ok(WithWarnings::new(namespace.into(), errors))
+        Ok(WithWarnings::new((namespace.into(), events), errors))
     }
 
     #[tracing::instrument(skip_all)]
@@ -313,15 +323,13 @@ impl App {
         for file in files {
             match self.project.import_namespace_pla3_zip(&file) {
                 Ok(ww) => {
-                    let (namespace, ()) = ww.handle_warnings2(
-                        |errors| {
-                            notif!(warning "Errors while importing", errors &errors);
-                        },
-                        || {
-                            notif!(success "Saved project");
-                        },
-                    );
-                    self.add_event(NamespaceEv::Create(namespace));
+                    let ((namespace, events), _) = ww.handle_warnings(|errors| {
+                        notif!(warning "Errors while importing", errors &errors);
+                    });
+                    for event in events {
+                        self.run_event(event);
+                    }
+                    notif!(success format!("Imported `{namespace}`"));
                 }
                 Err(e) => {
                     notif!(error "Errors while importing", error &e);

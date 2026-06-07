@@ -17,14 +17,14 @@ impl App {
         self.status_on_copy();
     }
     #[tracing::instrument(skip_all)]
-    pub fn cut_selected_components(&mut self, ctx: &egui::Context) {
+    pub fn cut_selected_components(&mut self) {
         self.copy_selected_components();
-        self.delete_selected_components(ctx);
+        self.delete_selected_components();
 
         self.status_on_cut();
     }
     #[tracing::instrument(skip_all)]
-    pub fn paste_clipboard_components(&mut self, ctx: &egui::Context) {
+    pub fn paste_clipboard_components(&mut self) {
         let Some(centre) = self
             .ui
             .map
@@ -73,7 +73,7 @@ impl App {
             .map(|a| (a.full_id.clone(), Vec::new()))
             .collect::<HashMap<_, _>>();
         self.status_on_paste(&components_to_add);
-        self.run_event(ComponentEv::Create(components_to_add), ctx);
+        self.run_event(ComponentEv::Create(components_to_add));
         self.ui.map.selected = ids;
     }
     #[tracing::instrument(skip_all)]

@@ -10,8 +10,8 @@ use crate::{App, component_actions::event::ComponentEv, project::namespace_event
 
 enum_dispatch! {
     pub trait Event: Debug + Sized + Display {
-        fn run(&self, ctx: &egui::Context, app: &mut App) -> bool;
-        fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool;
+        fn run(&self, app: &mut App) -> bool;
+        fn undo(&self, app: &mut App) -> bool;
     }
 
     #[derive(Clone, Debug)]
@@ -75,34 +75,34 @@ impl History {
 }
 
 impl App {
-    pub fn run_event<E: Into<Events>>(&mut self, event: E, ctx: &egui::Context) {
+    pub fn run_event<E: Into<Events>>(&mut self, event: E) {
         let event = event.into();
         debug!(?event, "Running event");
-        if event.run(ctx, self) {
+        if event.run(self) {
             self.project.history.add_event(event);
         }
     }
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
         self.project.history.add_event(event);
     }
-    pub fn history_undo(&mut self, ctx: &egui::Context) {
+    pub fn history_undo(&mut self) {
         let Some(event) = self.project.history.undo_stack.pop_back() else {
             return;
         };
         debug!(?event, "Undoing event");
-        if event.undo(ctx, self) {
+        if event.undo(self) {
             self.status_undo(&event);
             self.project.history.redo_stack.push_front(event);
         } else {
             self.project.history.undo_stack.push_back(event);
         }
     }
-    pub fn history_redo(&mut self, ctx: &egui::Context) {
+    pub fn history_redo(&mut self) {
         let Some(event) = self.project.history.redo_stack.pop_front() else {
             return;
         };
         debug!(?event, "Redoing event");
-        if event.run(ctx, self) {
+        if event.run(self) {
             self.status_redo(&event);
             self.project.history.undo_stack.push_back(event);
         } else {

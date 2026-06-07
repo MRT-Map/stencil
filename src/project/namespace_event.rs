@@ -12,7 +12,7 @@ pub enum NamespaceEv {
 
 impl Event for NamespaceEv {
     #[tracing::instrument(skip_all, fields(self))]
-    fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
+    fn run(&self, app: &mut App) -> bool {
         match self {
             Self::Load(namespace) => match app.project.load_namespace(namespace) {
                 Ok(ww) => {
@@ -77,14 +77,14 @@ impl Event for NamespaceEv {
             }
         }
     }
-    fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool {
+    fn undo(&self, app: &mut App) -> bool {
         match self {
             Self::Load(ns) => Self::Hide(ns.clone()),
             Self::Hide(ns) => Self::Load(ns.clone()),
             Self::Create(ns) => Self::Delete(ns.clone()),
             Self::Delete(ns) => Self::Create(ns.clone()),
         }
-        .run(ctx, app)
+        .run(app)
     }
 }
 

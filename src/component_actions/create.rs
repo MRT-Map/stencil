@@ -51,7 +51,7 @@ impl MapWindow {
     #[tracing::instrument(skip_all)]
     pub fn create_point(
         app: &mut App,
-        ctx: &egui::Context,
+        _ctx: &egui::Context,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
@@ -102,7 +102,7 @@ impl MapWindow {
             misc: BTreeMap::default(),
         };
         app.status_on_create("point", &component);
-        app.run_event(ComponentEv::Create(vec![component]), ctx);
+        app.run_event(ComponentEv::Create(vec![component]));
     }
     #[inline]
     #[tracing::instrument(skip_all)]
@@ -342,7 +342,7 @@ impl MapWindow {
                     misc: BTreeMap::default(),
                 };
                 app.status_on_create(if IS_LINE { "line" } else { "area" }, &component);
-                app.run_event(ComponentEv::Create(vec![component]), ctx);
+                app.run_event(ComponentEv::Create(vec![component]));
             } else {
                 app.ui.map.created_nodes.clear();
                 info!(

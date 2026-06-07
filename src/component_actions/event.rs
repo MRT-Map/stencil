@@ -20,7 +20,7 @@ pub enum ComponentEv {
 
 impl Event for ComponentEv {
     #[tracing::instrument(skip_all, fields(self))]
-    fn run(&self, _ctx: &egui::Context, app: &mut App) -> bool {
+    fn run(&self, app: &mut App) -> bool {
         match self {
             Self::Create(components) => {
                 for component in components {
@@ -43,7 +43,7 @@ impl Event for ComponentEv {
             }
         }
     }
-    fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool {
+    fn undo(&self, app: &mut App) -> bool {
         match self {
             Self::Create(component) => Self::Delete(component.clone()),
             Self::Delete(component) => Self::Create(component.clone()),
@@ -57,7 +57,7 @@ impl Event for ComponentEv {
                 label: label.clone(),
             },
         }
-        .run(ctx, app)
+        .run(app)
     }
 }
 

@@ -35,14 +35,11 @@ impl MapWindow {
 
             info!(?move_delta, "Move finished");
             app.status_on_move_finish(move_delta);
-            app.run_event(
-                ComponentEv::ChangeField {
-                    before,
-                    after,
-                    label: "move".into(),
-                },
-                &response.ctx,
-            );
+            app.run_event(ComponentEv::ChangeField {
+                before,
+                after,
+                label: "move".into(),
+            });
             app.ui.map.comp_move_origin_world_pos = None;
             return;
         }
