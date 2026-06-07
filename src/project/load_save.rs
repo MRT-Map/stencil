@@ -2,7 +2,7 @@ use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
     fs::File,
-    io::{Cursor, Read, Write},
+    io::{BufReader, Cursor, Write},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -109,7 +109,7 @@ impl Project {
             let Some(id) = path.file_prefix() else {
                 continue;
             };
-            match PlaComponent::load_from_string(
+            match PlaComponent::load(
                 &string,
                 FullId::new(namespace.to_owned(), id.to_string_lossy().into_owned()),
                 |a| self.skin()?.get_type(a).map(Arc::clone),
@@ -189,7 +189,7 @@ impl Project {
 
         let mut archive = ZipArchive::new(File::open(path)?)?;
         for i in 0..archive.len() {
-            let mut file = archive.by_index(i)?;
+            let file = archive.by_index(i)?;
             let enclosed_name = file.enclosed_name();
             let Some(id) = enclosed_name
                 .as_ref()
@@ -201,13 +201,8 @@ impl Project {
                 continue;
             };
 
-            let mut string = String::new();
-            if let Err(e) = file.read_to_string(&mut string) {
-                errors.push(e.into());
-                continue;
-            }
-            match PlaComponent::load_from_string(
-                &string,
+            match PlaComponent::load_from_buf(
+                BufReader::new(file),
                 FullId::new(namespace.to_owned(), id.to_owned()),
                 |a| self.skin()?.get_type(a).map(Arc::clone),
             )
