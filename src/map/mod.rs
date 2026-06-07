@@ -101,6 +101,7 @@ impl MapWindow {
                                 centre + egui::vec2(u, -u),
                                 centre + egui::vec2(u, -2.0 * u),
                                 centre + egui::vec2(-u, -2.0 * u),
+                                centre + egui::vec2(-u, -u),
                             ],
                             egui::epaint::PathStroke::new(
                                 tile_screen_size / 48.0,
