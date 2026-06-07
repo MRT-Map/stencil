@@ -3,29 +3,29 @@ use std::{
     fmt::{Debug, Display, Formatter},
 };
 
-use enum_dispatch::enum_dispatch;
+use declarative_enum_dispatch::enum_dispatch;
 use tracing::debug;
 
 use crate::{App, component_actions::event::ComponentEv, project::namespace_event::NamespaceEv};
 
-#[enum_dispatch]
-pub trait Event: Debug + Sized + Display {
-    fn run(&self, ctx: &egui::Context, app: &mut App) -> bool;
-    fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool;
-}
+enum_dispatch! {
+    pub trait Event: Debug + Sized + Display {
+        fn run(&self, ctx: &egui::Context, app: &mut App) -> bool;
+        fn undo(&self, ctx: &egui::Context, app: &mut App) -> bool;
+    }
 
-#[enum_dispatch(Event)]
-#[derive(Clone, Debug)]
-pub enum Events {
-    NamespaceEv,
-    ComponentEv,
+    #[derive(Clone, Debug)]
+    pub enum Events {
+        Namespace(NamespaceEv),
+        Component(ComponentEv),
+    }
 }
 
 impl Display for Events {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Self::NamespaceEv(e) => write!(f, "{e}"),
-            Self::ComponentEv(e) => write!(f, "{e}"),
+            Self::Namespace(e) => write!(f, "{e}"),
+            Self::Component(e) => write!(f, "{e}"),
         }
     }
 }
@@ -39,7 +39,7 @@ pub struct History {
 impl History {
     pub fn add_event<E: Into<Events>>(&mut self, event: E) {
         let event = event.into();
-        if let Events::ComponentEv(ComponentEv::ChangeField {
+        if let Events::Component(ComponentEv::ChangeField {
             before: before2,
             after: after2,
             label: label2,
@@ -50,7 +50,7 @@ impl History {
             }
             if !label2.is_empty()
                 && !["move", "nodes"].contains(&&**label2)
-                && let Some(Events::ComponentEv(ComponentEv::ChangeField {
+                && let Some(Events::Component(ComponentEv::ChangeField {
                     before: before1,
                     after: after1,
                     label: label1,

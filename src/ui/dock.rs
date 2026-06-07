@@ -1,4 +1,4 @@
-use enum_dispatch::enum_dispatch;
+use declarative_enum_dispatch::enum_dispatch;
 use etcetera::AppStrategy;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
@@ -15,29 +15,29 @@ use crate::{
     utils::file::FOLDERS,
 };
 
-#[enum_dispatch]
-pub trait DockWindow: Copy {
-    fn title(self) -> String;
-    fn allowed_in_windows(self) -> bool {
-        true
+enum_dispatch! {
+    pub trait DockWindow: Copy {
+        fn title(self) -> String;
+        fn allowed_in_windows(self) -> bool {
+            true
+        }
+        fn is_closeable(self) -> bool {
+            true
+        }
+        fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
     }
-    fn is_closeable(self) -> bool {
-        true
-    }
-    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
-}
 
-#[expect(clippy::enum_variant_names)]
-#[enum_dispatch(DockWindow)]
-#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
-#[serde(tag = "ty")]
-pub enum DockWindows {
-    MapWindow,
-    ComponentEditorWindow,
-    ProjectEditorWindow,
-    SettingsWindow,
-    NotifLogWindow,
-    HistoryViewerWindow,
+    #[expect(clippy::enum_variant_names)]
+    #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
+    #[serde(tag = "ty")]
+    pub enum DockWindows {
+        Map(MapWindow),
+        ComponentEditor(ComponentEditorWindow),
+        ProjectEditor(ProjectEditorWindow),
+        Settings(SettingsWindow),
+        NotifLog(NotifLogWindow),
+        HistoryViewer(HistoryViewerWindow),
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize)]

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{App, ui::popup::Popup};
+use crate::{
+    App,
+    ui::popup::{Popup, Popups},
+};
 
 #[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct QuitPopup;
@@ -15,7 +18,7 @@ impl Popup for QuitPopup {
     }
 
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool {
-        self.confirm_ui(
+        Popups::confirm_ui(
             app,
             ui,
             "You may have unsaved changes",

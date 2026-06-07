@@ -1,4 +1,4 @@
-use enum_dispatch::enum_dispatch;
+use declarative_enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -11,23 +11,38 @@ use crate::{
     project::load_save::ChooseNamespacesPopup,
 };
 
-#[enum_dispatch]
-pub trait Popup {
-    fn id(&self) -> String;
-    fn title(&self) -> String;
-    fn window(&self) -> egui::Window<'static> {
-        self.default_window()
+enum_dispatch! {
+    pub trait Popup {
+        fn id(&self) -> String;
+        fn title(&self) -> String;
+        fn window(&self) -> egui::Window<'static> {
+            self.default_window()
+        }
+        fn default_window(&self) -> egui::Window<'static> {
+            egui::Window::new(self.title())
+                .collapsible(false)
+                .resizable(false)
+                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                .id(egui::Id::new(self.id()))
+        }
+        fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool;
     }
-    fn default_window(&self) -> egui::Window<'static> {
-        egui::Window::new(self.title())
-            .collapsible(false)
-            .resizable(false)
-            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-            .id(egui::Id::new(self.id()))
+
+    #[expect(clippy::enum_variant_names)]
+    #[derive(Clone, Serialize, Deserialize)]
+    #[serde(tag = "ty")]
+    pub enum Popups {
+        Changelog(ChangelogPopup),
+        Info(InfoPopup),
+        Licenses(LicensesPopup),
+        Manual(ManualPopup),
+        Quit(QuitPopup),
+        ChooseNamespaces(ChooseNamespacesPopup),
     }
-    fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool;
-    fn alert_ui(
-        &mut self,
+}
+
+impl Popups {
+    pub fn alert_ui(
         app: &mut App,
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
@@ -45,19 +60,17 @@ pub trait Popup {
             true
         }
     }
-    fn confirm_ui(
-        &mut self,
+    pub fn confirm_ui(
         app: &mut App,
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
         yes_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
         no_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
     ) -> bool {
-        self.choice_ui(app, ui, text, "Yes", yes_fn, "No", no_fn)
+        Self::choice_ui(app, ui, text, "Yes", yes_fn, "No", no_fn)
     }
     #[expect(clippy::too_many_arguments)]
-    fn choice_ui<'a>(
-        &mut self,
+    pub fn choice_ui<'a>(
         app: &mut App,
         ui: &mut egui::Ui,
         text: impl Into<egui::WidgetText>,
@@ -86,19 +99,6 @@ pub trait Popup {
         })
         .inner
     }
-}
-
-#[expect(clippy::enum_variant_names)]
-#[enum_dispatch(Popup)]
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(tag = "ty")]
-pub enum Popups {
-    ChangelogPopup,
-    InfoPopup,
-    LicensesPopup,
-    ManualPopup,
-    QuitPopup,
-    ChooseNamespacesPopup,
 }
 
 impl App {
