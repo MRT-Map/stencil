@@ -131,11 +131,7 @@ impl Project {
     }
     pub fn namespace_component_count(&self, namespace: &str) -> Result<usize> {
         if self.namespaces.get(namespace).is_some_and(|a| *a) {
-            return Ok(self
-                .components
-                .iter()
-                .filter(|a| a.full_id.namespace == namespace)
-                .count());
+            return Ok(self.components.iter_namespace(namespace).count());
         }
         let Some(path) = &self.path else {
             return Err(eyre!("scratchpad contains unloaded namespace"));

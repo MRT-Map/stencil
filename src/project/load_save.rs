@@ -231,12 +231,8 @@ impl Project {
     pub fn export_namespace_pla3_zip(&self, namespace: &str, path: &Path) -> eyre::Result<()> {
         let mut cursor = Cursor::new(Vec::new());
         let mut archive = ZipWriter::new(&mut cursor);
-        let components = self
-            .components
-            .iter()
-            .filter(|a| a.full_id.namespace == namespace);
 
-        for component in components {
+        for component in self.components.iter_namespace(namespace) {
             let string = component.save_to_string(|ty| ty.name().as_str())?;
             archive.start_file_from_path(component.file_name(), SimpleFileOptions::default())?;
             archive.write_all(string.as_bytes())?;

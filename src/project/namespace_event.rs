@@ -30,11 +30,7 @@ impl Event for NamespaceEv {
                 true
             }
             Self::Hide(namespace) => {
-                let components = app
-                    .project
-                    .components
-                    .iter()
-                    .filter(|a| a.full_id.namespace == *namespace);
+                let components = app.project.components.iter_namespace(namespace);
                 let ww = app.project.save_components(components);
                 let has_errors = !ww.warnings.is_empty();
                 ww.notify(format!("Errors while saving `{namespace}`"));

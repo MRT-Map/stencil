@@ -201,8 +201,7 @@ impl ProjectEditorWindow {
                 for component in app
                     .project
                     .components
-                    .iter()
-                    .filter(|a| a.full_id.namespace == ns)
+                    .iter_namespace(ns)
                     .sorted_by_key(|a| &a.full_id.id)
                 {
                     body.row(20.0, |mut row| {

@@ -96,6 +96,20 @@ impl ComponentList {
     pub fn iter_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut PlaComponent> {
         self.0.iter_mut().map(|a| &mut a.value)
     }
+    pub fn iter_namespace(
+        &self,
+        namespace: &str,
+    ) -> impl DoubleEndedIterator<Item = &PlaComponent> {
+        self.iter()
+            .filter(move |a| a.full_id.namespace == namespace)
+    }
+    pub fn iter_namespace_mut(
+        &mut self,
+        namespace: &str,
+    ) -> impl DoubleEndedIterator<Item = &mut PlaComponent> {
+        self.iter_mut()
+            .filter(move |a| a.full_id.namespace == namespace)
+    }
     pub fn remove_namespace(&mut self, namespace: &str) {
         self.0.retain(|a| a.value.full_id.namespace != namespace);
     }
