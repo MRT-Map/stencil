@@ -72,8 +72,10 @@ impl App {
                 });
                 ui.menu_button("File", |ui| {
                     button!(ui, "Open", ShortcutAction::OpenProject);
-                    ui.menu_button("Import", |ui| {
-                        button!(ui, "Import pla3.zip", None, {});
+                    ui.menu_button("Import Namespaces", |ui| {
+                        button!(ui, "Import pla3.zip", None, {
+                            self.import_namespace_pla3_zip();
+                        });
                         button!(ui, "Import pla2.msgpack", None, {});
                         button!(ui, "Import pla2.json", None, {});
                     });
@@ -82,8 +84,10 @@ impl App {
                     ui.separator();
                     button!(ui, "Save", ShortcutAction::SaveProject);
                     button!(ui, "Save As", ShortcutAction::SaveProjectAs);
-                    ui.menu_button("Export", |ui| {
-                        button!(ui, "Export pla3.zip", None, {});
+                    ui.menu_button("Export Namespaces", |ui| {
+                        button!(ui, "Export pla3.zip", None, {
+                            self.export_namespaces_pla3_zip();
+                        });
                         button!(ui, "Export pla2.msgpack", None, {});
                         button!(ui, "Export pla2.json", None, {});
                     });

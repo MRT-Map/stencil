@@ -8,6 +8,7 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
+    project::load_save::ChooseNamespacesPopup,
 };
 
 #[enum_dispatch]
@@ -97,6 +98,7 @@ pub enum Popups {
     LicensesPopup,
     ManualPopup,
     QuitPopup,
+    ChooseNamespacesPopup,
 }
 
 impl App {
