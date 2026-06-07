@@ -59,6 +59,7 @@ pub enum ShortcutAction {
     Copy,
     Cut,
     Paste,
+    SelectAll,
 }
 
 impl App {
@@ -158,6 +159,7 @@ impl App {
             ShortcutAction::Copy => self.copy_selected_components(),
             ShortcutAction::Cut => self.cut_selected_components(),
             ShortcutAction::Paste => self.paste_clipboard_components(),
+            ShortcutAction::SelectAll => self.select_all(),
             ShortcutAction::PanMapUp => self.ui.map.shortcut_pan_delta.y -= 1.0,
             ShortcutAction::PanMapDown => self.ui.map.shortcut_pan_delta.y += 1.0,
             ShortcutAction::PanMapLeft => self.ui.map.shortcut_pan_delta.x -= 1.0,

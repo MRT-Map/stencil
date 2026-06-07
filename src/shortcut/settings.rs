@@ -57,6 +57,7 @@ impl Default for ShortcutSettings {
         shortcut!(Copy => COMMAND + C);
         shortcut!(Cut => COMMAND + X);
         shortcut!(Paste => COMMAND + V);
+        shortcut!(SelectAll => COMMAND + A);
         Self(map)
     }
 }

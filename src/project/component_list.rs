@@ -133,9 +133,8 @@ impl ComponentList {
     pub fn get_new_id(&self, namespace: &str) -> String {
         let id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         if self
-            .0
             .iter()
-            .any(|a| a.value.full_id.namespace == namespace && a.value.full_id.id == id)
+            .any(|a| a.full_id.namespace == namespace && a.full_id.id == id)
         {
             return self.get_new_id(namespace);
         }

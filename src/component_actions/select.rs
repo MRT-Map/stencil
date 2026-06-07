@@ -116,4 +116,15 @@ impl App {
         }
         self.status_select();
     }
+    #[tracing::instrument(skip_all)]
+    pub fn select_all(&mut self) {
+        info!("Selected all");
+        self.ui.map.selected = self
+            .project
+            .components
+            .iter()
+            .map(|a| (a.full_id.clone(), Vec::new()))
+            .collect();
+        self.status_select();
+    }
 }
