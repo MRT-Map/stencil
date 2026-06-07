@@ -49,7 +49,7 @@ pla = { path = "pla", features = ["serde", "geo", "emath", "bezier-epaint", "tra
 
 etcetera = "=0.11.0"
 zip = "=9.0.0-pre2"
-chrono = "=0.4.44"
+chrono = "=0.4.45"
 
 bimap = { version = "=0.6.3", features = ["serde"] }
 strum = { version = "=0.28.0", features = ["derive"] }
