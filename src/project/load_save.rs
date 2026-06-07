@@ -17,7 +17,7 @@ use crate::{
     App,
     map::basemap::Basemap,
     notif,
-    project::{Project, pla3::PlaComponent},
+    project::{Project, namespace_event::NamespaceEv, pla3::PlaComponent},
     ui::popup::Popup,
     utils::{
         file::safe_write,
@@ -174,17 +174,20 @@ impl Project {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn import_namespace_pla3_zip(&mut self, path: &Path) -> eyre::Result<WithWarnings<()>> {
+    pub fn import_namespace_pla3_zip(&mut self, path: &Path) -> eyre::Result<WithWarnings<String>> {
         let mut errors = Vec::new();
         let Some(namespace) = path
             .file_name()
             .and_then(|name| name.to_str())
             .and_then(|name| name.strip_suffix(".pla3.zip"))
         else {
-            return Err(eyre!("File must end with `.pla3.zip`"));
+            return Err(eyre!("File `{}` must end with `.pla3.zip`", path.display()));
         };
         if namespace.is_empty() {
-            return Err(eyre!("File name must not be empty"));
+            return Err(eyre!("Namespace name must not be empty"));
+        }
+        if self.namespaces.contains_key(namespace) {
+            return Err(eyre!("Namespace `{namespace}` already exists"));
         }
 
         let mut archive = ZipArchive::new(File::open(path)?)?;
@@ -218,7 +221,7 @@ impl Project {
 
         self.namespaces.insert(namespace.to_owned(), true);
 
-        Ok(WithWarnings::new((), errors))
+        Ok(WithWarnings::new(namespace.into(), errors))
     }
 
     #[tracing::instrument(skip_all)]
@@ -310,7 +313,7 @@ impl App {
         for file in files {
             match self.project.import_namespace_pla3_zip(&file) {
                 Ok(ww) => {
-                    ww.handle_warnings2(
+                    let (namespace, ()) = ww.handle_warnings2(
                         |errors| {
                             notif!(warning "Errors while importing", errors &errors);
                         },
@@ -318,6 +321,7 @@ impl App {
                             notif!(success "Saved project");
                         },
                     );
+                    self.add_event(NamespaceEv::Create(namespace));
                 }
                 Err(e) => {
                     notif!(error "Errors while importing", error &e);
