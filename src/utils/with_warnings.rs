@@ -1,3 +1,23 @@
+use std::fmt::{Debug, Display};
+
+use crate::notif;
+
+pub trait ErrorWarningsExt {
+    type Error;
+    type Warning;
+    type Output1;
+    type Output2;
+    fn notify<M1: Display, M2: Display>(
+        self,
+        error_message: M1,
+        warning_message: M2,
+    ) -> Self::Output1;
+    fn error_warnings_to_vec<VE: From<Self::Error> + From<Self::Warning>>(
+        self,
+        vec: &mut Vec<VE>,
+    ) -> Self::Output2;
+}
+
 #[must_use]
 pub struct WithWarnings<T, W = eyre::Report> {
     pub value: T,
@@ -20,21 +40,53 @@ impl<T, W> WithWarnings<T, W> {
             warnings: Vec::new(),
         }
     }
-    pub fn handle_warnings<R, F: FnOnce(Vec<W>) -> R>(self, f: F) -> (T, Option<R>) {
+    fn handle<R, F: FnOnce(Vec<W>) -> R>(self, f: F) -> (T, Option<R>) {
         let result = (!self.warnings.is_empty()).then(|| f(self.warnings));
         (self.value, result)
     }
-    pub fn handle_warnings2<R, F: FnOnce(Vec<W>) -> R, G: FnOnce() -> R>(
+    pub fn warnings_to_vec<VE: From<W>>(self, vec: &mut Vec<VE>) -> T {
+        self.handle(|e| vec.extend(e.into_iter().map(Into::into))).0
+    }
+}
+impl<T, W: ToString + Debug> WithWarnings<T, W> {
+    pub fn notify<M: Display>(self, message: M) -> T {
+        self.handle(|errors| {
+            notif!(warning message, errors &errors);
+        })
+        .0
+    }
+}
+impl<T, W: ToString + Debug, E: Display + Debug> ErrorWarningsExt
+    for Result<WithWarnings<T, W>, E>
+{
+    type Error = E;
+    type Warning = W;
+    type Output1 = Result<T, E>;
+    type Output2 = Option<T>;
+    fn notify<M1: Display, M2: Display>(
         self,
-        f: F,
-        g: G,
-    ) -> (T, R) {
-        let result = if self.warnings.is_empty() {
-            g()
-        } else {
-            f(self.warnings)
-        };
-        (self.value, result)
+        error_message: M1,
+        warning_message: M2,
+    ) -> Self::Output1 {
+        match self {
+            Ok(ww) => Ok(ww.notify(warning_message)),
+            Err(e) => {
+                notif!(error error_message, error &e);
+                Err(e)
+            }
+        }
+    }
+    fn error_warnings_to_vec<VE: From<Self::Error> + From<Self::Warning>>(
+        self,
+        vec: &mut Vec<VE>,
+    ) -> Self::Output2 {
+        match self {
+            Ok(ww) => Some(ww.warnings_to_vec(vec)),
+            Err(e) => {
+                vec.push(e.into());
+                None
+            }
+        }
     }
 }
 
@@ -60,12 +112,50 @@ impl<T, W> WithWarning<T, W> {
             warning: None,
         }
     }
-    pub fn handle_warning<R, F: FnOnce(W) -> R>(self, f: F) -> (T, Option<R>) {
+    fn handle<R, F: FnOnce(W) -> R>(self, f: F) -> (T, Option<R>) {
         let result = self.warning.map(f);
         (self.value, result)
     }
-    pub fn handle_warning2<R, F: FnOnce(W) -> R, G: FnOnce() -> R>(self, f: F, g: G) -> (T, R) {
-        let result = self.warning.map_or_else(g, f);
-        (self.value, result)
+    pub fn warning_to_vec<VE: From<W>>(self, vec: &mut Vec<VE>) -> T {
+        self.handle(|e| vec.push(e.into())).0
+    }
+}
+impl<T, W: Display + Debug> WithWarning<T, W> {
+    pub fn notify<M: Display>(self, message: M) -> T {
+        self.handle(|error| {
+            notif!(warning message, error &error);
+        })
+        .0
+    }
+}
+impl<T, W: Display + Debug, E: Display + Debug> ErrorWarningsExt for Result<WithWarning<T, W>, E> {
+    type Error = E;
+    type Warning = W;
+    type Output1 = Result<T, E>;
+    type Output2 = Option<T>;
+    fn notify<M1: Display, M2: Display>(
+        self,
+        error_message: M1,
+        warning_message: M2,
+    ) -> Self::Output1 {
+        match self {
+            Ok(ww) => Ok(ww.notify(warning_message)),
+            Err(e) => {
+                notif!(error error_message, error &e);
+                Err(e)
+            }
+        }
+    }
+    fn error_warnings_to_vec<VE: From<Self::Error> + From<Self::Warning>>(
+        self,
+        vec: &mut Vec<VE>,
+    ) -> Self::Output2 {
+        match self {
+            Ok(ww) => Some(ww.warning_to_vec(vec)),
+            Err(e) => {
+                vec.push(e.into());
+                None
+            }
+        }
     }
 }

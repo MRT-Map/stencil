@@ -1,6 +1,10 @@
 use std::fmt::{Display, Formatter};
 
-use crate::{App, notif, project::history::Event, utils::file::safe_delete};
+use crate::{
+    App, notif,
+    project::history::Event,
+    utils::{file::safe_delete, with_warnings::ErrorWarningsExt},
+};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum NamespaceEv {
@@ -14,30 +18,27 @@ impl Event for NamespaceEv {
     #[tracing::instrument(skip_all, fields(self))]
     fn run(&self, app: &mut App) -> bool {
         match self {
-            Self::Load(namespace) => match app.project.load_namespace(namespace) {
-                Ok(ww) => {
-                    ww.handle_warnings(|errors| {
-                        notif!(warning format!("Errors while loading `{namespace}`"), errors &errors);
-                    });
-                    notif!(success format!("Loaded namespace `{namespace}`"));
-                    app.project.namespaces.insert(namespace.clone(), true);
-                    true
-                }
-                Err(e) => {
-                    notif!(error format!("Error while loading `{namespace}`"), error &e);
-                    false
-                }
-            },
+            Self::Load(namespace) => {
+                let Ok(()) = app.project.load_namespace(namespace).notify(
+                    format!("Error while loading `{namespace}`"),
+                    format!("Errors while loading `{namespace}`"),
+                ) else {
+                    return false;
+                };
+                notif!(success format!("Loaded namespace `{namespace}`"));
+                app.project.namespaces.insert(namespace.clone(), true);
+                true
+            }
             Self::Hide(namespace) => {
                 let components = app
                     .project
                     .components
                     .iter()
                     .filter(|a| a.full_id.namespace == *namespace);
-                let ((), has_errors) = app.project.save_components(components).handle_warnings(|errors| {
-                    notif!(warning format!("Errors while saving `{namespace}`"), errors &errors);
-                });
-                if has_errors.is_some() {
+                let ww = app.project.save_components(components);
+                let has_errors = !ww.warnings.is_empty();
+                ww.notify(format!("Errors while saving `{namespace}`"));
+                if has_errors {
                     return false;
                 }
 

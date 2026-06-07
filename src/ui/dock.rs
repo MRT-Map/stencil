@@ -27,7 +27,6 @@ enum_dispatch! {
         fn ui(&mut self, app: &mut App, ui: &mut egui::Ui);
     }
 
-    #[expect(clippy::enum_variant_names)]
     #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
     #[serde(tag = "ty")]
     pub enum DockWindows {

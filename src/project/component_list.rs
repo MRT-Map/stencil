@@ -3,7 +3,10 @@ use std::cmp::Ordering;
 use itertools::Itertools;
 use rand::distr::{Alphanumeric, SampleString};
 
-use crate::project::{pla3::PlaComponent, skin::Skin};
+use crate::{
+    notif,
+    project::{pla3::PlaComponent, skin::Skin},
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct ComponentList(Vec<ComponentListItem>);
@@ -78,9 +81,14 @@ impl ComponentList {
         }
         f(&self.0, item, 0, self.0.len() - 1)
     }
-    pub fn insert(&mut self, skin: &Skin, item: PlaComponent) {
+    pub fn insert(&mut self, skin: &Skin, item: PlaComponent) -> Option<()> {
+        if self.iter().any(|a| a.full_id == item.full_id) {
+            notif!(error format!("Attempted to create component `{}` whose full ID already exists", item.full_id));
+            return None;
+        }
         let item = ComponentListItem::from_component(item, skin);
         self.0.insert(self.insert_position(&item), item);
+        Some(())
     }
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &PlaComponent> {
         self.0.iter().map(|a| &a.value)

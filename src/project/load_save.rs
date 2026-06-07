@@ -8,7 +8,6 @@ use std::{
 };
 
 use eyre::{Report, eyre};
-use itertools::Itertools;
 use pla::FullId;
 use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
@@ -23,7 +22,7 @@ use crate::{
     ui::popup::Popup,
     utils::{
         file::safe_write,
-        with_warnings::{WithWarning, WithWarnings},
+        with_warnings::{ErrorWarningsExt, WithWarning, WithWarnings},
     },
 };
 
@@ -111,19 +110,16 @@ impl Project {
             let Some(id) = path.file_prefix() else {
                 continue;
             };
-            match PlaComponent::load(
+            let Some(component) = PlaComponent::load(
                 &string,
                 FullId::new(namespace.to_owned(), id.to_string_lossy().into_owned()),
                 |a| self.skin()?.get_type(a).map(Arc::clone),
             )
             .map(WithWarning::from)
-            {
-                Ok(ww) => {
-                    let (component, _) = ww.handle_warning(|e| errors.push(e.into()));
-                    self.components.insert(self.skin().unwrap(), component);
-                }
-                Err(e) => errors.push(e.into()),
-            }
+            .error_warnings_to_vec(&mut errors) else {
+                continue;
+            };
+            self.components.insert(self.skin().unwrap(), component);
         }
 
         Ok(WithWarnings::new((), errors))
@@ -177,7 +173,7 @@ impl Project {
 
     #[tracing::instrument(skip_all)]
     pub fn import_namespace_pla3_zip(
-        &mut self,
+        &self,
         path: &Path,
     ) -> eyre::Result<WithWarnings<(String, Vec<Events>)>> {
         let mut errors = Vec::new();
@@ -217,17 +213,14 @@ impl Project {
                 continue;
             }
 
-            match PlaComponent::load_from_buf(BufReader::new(file), full_id, |a| {
+            let Some(component) = PlaComponent::load_from_buf(BufReader::new(file), full_id, |a| {
                 self.skin()?.get_type(a).map(Arc::clone)
             })
             .map(WithWarning::from)
-            {
-                Ok(ww) => {
-                    let (component, _) = ww.handle_warning(|e| errors.push(e.into()));
-                    components.push(component);
-                }
-                Err(e) => errors.push(e.into()),
-            }
+            .error_warnings_to_vec(&mut errors) else {
+                continue;
+            };
+            components.push(component);
         }
         events.push(ComponentEv::Create(components).into());
 
@@ -276,31 +269,21 @@ impl App {
         if self.project.path.is_none() {
             return;
         }
-        match self.project.update_namespace_list() {
-            Ok(ww) => {
-                ww.handle_warnings(|errors| {
-                    notif!(warning "Errors while reloading project", errors &errors);
-                });
-                notif!(success "Reloaded project");
-            }
-            Err(e) => {
-                notif!(error "Error while reloading project`", error &e);
-            }
-        }
+        let Ok(()) = self.project.update_namespace_list().notify(
+            "Error while reloading project",
+            "Errors while reloading project",
+        ) else {
+            return;
+        };
+        notif!(success "Reloaded project");
     }
     #[tracing::instrument(skip_all)]
     pub fn save_project(&mut self) {
         if self.project.path.is_none() {
             return self.save_project_as();
         }
-        self.project.save().handle_warnings2(
-            |errors| {
-                notif!(warning "Errors while saving", errors &errors);
-            },
-            || {
-                notif!(success "Saved project");
-            },
-        );
+        self.project.save().notify("Errors while saving project");
+        notif!(success "Saved project");
     }
     #[tracing::instrument(skip_all)]
     pub fn save_project_as(&mut self) {
@@ -321,20 +304,17 @@ impl App {
             return;
         };
         for file in files {
-            match self.project.import_namespace_pla3_zip(&file) {
-                Ok(ww) => {
-                    let ((namespace, events), _) = ww.handle_warnings(|errors| {
-                        notif!(warning "Errors while importing", errors &errors);
-                    });
-                    for event in events {
-                        self.run_event(event);
-                    }
-                    notif!(success format!("Imported `{namespace}`"));
-                }
-                Err(e) => {
-                    notif!(error "Errors while importing", error &e);
-                }
+            let Ok((namespace, events)) = self
+                .project
+                .import_namespace_pla3_zip(&file)
+                .notify("Error while importing", "Errors while importing")
+            else {
+                continue;
+            };
+            for event in events {
+                self.run_event(event);
             }
+            notif!(success format!("Imported `{namespace}`"));
         }
     }
     #[tracing::instrument(skip_all)]

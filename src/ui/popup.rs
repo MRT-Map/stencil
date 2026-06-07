@@ -28,7 +28,6 @@ enum_dispatch! {
         fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool;
     }
 
-    #[expect(clippy::enum_variant_names)]
     #[derive(Clone, Serialize, Deserialize)]
     #[serde(tag = "ty")]
     pub enum Popups {
@@ -42,11 +41,11 @@ enum_dispatch! {
 }
 
 impl Popups {
-    pub fn alert_ui(
+    pub fn alert_ui<T: Into<egui::WidgetText>, F: FnOnce(&egui::Context, &mut App)>(
         app: &mut App,
         ui: &mut egui::Ui,
-        text: impl Into<egui::WidgetText>,
-        close_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
+        text: T,
+        close_fn: Option<F>,
     ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label(text);
@@ -60,24 +59,34 @@ impl Popups {
             true
         }
     }
-    pub fn confirm_ui(
+    pub fn confirm_ui<
+        T: Into<egui::WidgetText>,
+        F1: FnOnce(&egui::Context, &mut App),
+        F2: FnOnce(&egui::Context, &mut App),
+    >(
         app: &mut App,
         ui: &mut egui::Ui,
-        text: impl Into<egui::WidgetText>,
-        yes_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
-        no_fn: Option<impl FnOnce(&egui::Context, &mut App)>,
+        text: T,
+        yes_fn: Option<F1>,
+        no_fn: Option<F2>,
     ) -> bool {
         Self::choice_ui(app, ui, text, "Yes", yes_fn, "No", no_fn)
     }
-    #[expect(clippy::too_many_arguments)]
-    pub fn choice_ui<'a>(
+    pub fn choice_ui<
+        'a,
+        T: Into<egui::WidgetText>,
+        T1: egui::IntoAtoms<'a>,
+        F1: FnOnce(&egui::Context, &mut App),
+        T2: egui::IntoAtoms<'a>,
+        F2: FnOnce(&egui::Context, &mut App),
+    >(
         app: &mut App,
         ui: &mut egui::Ui,
-        text: impl Into<egui::WidgetText>,
-        text1: impl egui::IntoAtoms<'a>,
-        fn1: Option<impl FnOnce(&egui::Context, &mut App)>,
-        text2: impl egui::IntoAtoms<'a>,
-        fn2: Option<impl FnOnce(&egui::Context, &mut App)>,
+        text: T,
+        text1: T1,
+        fn1: Option<F1>,
+        text2: T2,
+        fn2: Option<F2>,
     ) -> bool {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label(text);
