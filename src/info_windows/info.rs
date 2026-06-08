@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 
 use crate::{App, ui::popup::Popup};
@@ -6,11 +7,11 @@ use crate::{App, ui::popup::Popup};
 pub struct InfoPopup;
 
 impl Popup for InfoPopup {
-    fn id(&self) -> String {
+    fn id(&self) -> Cow<'static, str> {
         "info".into()
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> egui::WidgetText {
         "Info".into()
     }
 

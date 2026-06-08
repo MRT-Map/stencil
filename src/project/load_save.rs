@@ -345,11 +345,11 @@ pub struct ChooseNamespacesPopup {
 }
 
 impl Popup for ChooseNamespacesPopup {
-    fn id(&self) -> String {
+    fn id(&self) -> Cow<'static, str> {
         "choose-namespaces".into()
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> egui::WidgetText {
         "Choose Namespaces".into()
     }
 

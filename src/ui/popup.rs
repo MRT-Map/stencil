@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use declarative_enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -13,8 +14,8 @@ use crate::{
 
 enum_dispatch! {
     pub trait Popup {
-        fn id(&self) -> String;
-        fn title(&self) -> String;
+        fn id(&self) -> Cow<'static, str>;
+        fn title(&self) -> egui::WidgetText;
         fn window(&self) -> egui::Window<'static> {
             self.default_window()
         }

@@ -2,7 +2,7 @@ use std::{
     fmt::{Display, Formatter},
     sync::LazyLock,
 };
-
+use std::borrow::Cow;
 use itertools::Itertools;
 use license_retriever::LicenseRetriever;
 use serde::{Deserialize, Serialize};
@@ -45,11 +45,11 @@ impl Default for LicensesPopup {
 }
 
 impl Popup for LicensesPopup {
-    fn id(&self) -> String {
+    fn id(&self) -> Cow<'static, str> {
         "licenses".into()
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> egui::WidgetText {
         "Licenses".into()
     }
 

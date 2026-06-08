@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use serde::{Deserialize, Serialize};
 
@@ -7,11 +8,11 @@ use crate::{App, ui::popup::Popup};
 pub struct ChangelogPopup;
 
 impl Popup for ChangelogPopup {
-    fn id(&self) -> String {
+    fn id(&self) -> Cow<'static, str> {
         "changelog".into()
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> egui::WidgetText {
         "Changelog".into()
     }
 

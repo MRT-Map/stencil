@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use crate::{
@@ -16,7 +17,7 @@ pub mod status;
 pub struct UiState {
     pub status: egui::text::LayoutJob,
     pub dock_layout: DockLayout,
-    pub popups: HashMap<String, Popups>,
+    pub popups: HashMap<Cow<'static, str>, Popups>,
     pub notifs: NotifState,
     pub mspf: egui::util::History<f32>,
     pub map: MapState,

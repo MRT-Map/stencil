@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -9,11 +10,11 @@ use crate::{
 pub struct QuitPopup;
 
 impl Popup for QuitPopup {
-    fn id(&self) -> String {
+    fn id(&self) -> Cow<'static, str> {
         "confirm_quit".into()
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> egui::WidgetText {
         "Are you sure you want to exit?".into()
     }
 
