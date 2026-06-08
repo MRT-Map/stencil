@@ -189,9 +189,7 @@ impl Project {
         else {
             return Err(eyre!("File `{}` must end with `.pla3.zip`", path.display()));
         };
-        let Ok(namespace) = Namespace::new(namespace) else {
-            return Err(eyre!("Namespace name must not be empty"));
-        };
+        let namespace = Namespace::new(namespace)?;
         if !self.namespaces.contains_key(&namespace) {
             events.push(NamespaceEv::Create(namespace.clone()).into());
         }
@@ -271,14 +269,12 @@ impl Project {
         };
 
         let pla2_file = if format == "msgpack" {
-            Pla2File::<geo::Coord<i32>>::from_msgpack_bytes(&std::fs::read(path)?)?
+            Pla2File::<geo::Coord<f32>>::from_msgpack_bytes(&std::fs::read(path)?, None)?
         } else {
-            Pla2File::<geo::Coord<i32>>::from_json_bytes(&std::fs::read(path)?)?
-        };
-
-        if pla2_file.namespace.is_empty() {
-            return Err(eyre!("Namespace name must not be empty"));
+            Pla2File::<geo::Coord<f32>>::from_json_bytes(&std::fs::read(path)?, None)?
         }
+        .map_coords(geo::Coord::<i32>::coord_from);
+
         if !self.namespaces.contains_key(&pla2_file.namespace) {
             events.push(NamespaceEv::Create(pla2_file.namespace.clone()).into());
         }
