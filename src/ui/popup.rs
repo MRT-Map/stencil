@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 
 use declarative_enum_dispatch::enum_dispatch;
-use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::{
@@ -30,8 +29,7 @@ enum_dispatch! {
         fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool;
     }
 
-    #[derive(Clone, Serialize, Deserialize)]
-    #[serde(tag = "ty")]
+    #[derive(Clone)]
     pub enum Popups {
         Changelog(ChangelogPopup),
         Info(InfoPopup),

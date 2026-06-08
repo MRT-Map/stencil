@@ -8,19 +8,20 @@ use std::{
 };
 
 use eyre::{Report, eyre};
-use pla::FullId;
+use pla::{FullId, Pla2File};
 use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
 use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::{
     App,
-    component_actions::event::ComponentEv,
+    component_actions::{event::ComponentEv, paint::TOLERANCE},
     map::basemap::Basemap,
     notif,
     project::{Project, history::Events, namespace_event::NamespaceEv, pla3::PlaComponent},
     ui::popup::Popup,
     utils::{
+        coord::CoordFrom,
         file::safe_write,
         warnings::{ResultExt, ResultWithWarningsExt, WithWarning, WithWarnings},
     },
@@ -243,6 +244,91 @@ impl Project {
 
         Ok(())
     }
+
+    #[tracing::instrument(skip_all)]
+    pub fn import_namespace_pla2(
+        &self,
+        path: &Path,
+    ) -> eyre::Result<WithWarnings<(String, Vec<Events>)>> {
+        let mut errors = Vec::new();
+        let mut events = Vec::<Events>::new();
+        let Some(format) = path
+            .extension()
+            .and_then(|a| a.to_str())
+            .filter(|a| ["msgpack", "json"].contains(a))
+        else {
+            return Err(eyre!(
+                "File `{}` must end with `.pla2.msgpack` or `.pla2.json`",
+                path.display()
+            ));
+        };
+
+        let pla2_file = if format == "msgpack" {
+            Pla2File::<geo::Coord<i32>>::from_msgpack_bytes(&std::fs::read(path)?)?
+        } else {
+            Pla2File::<geo::Coord<i32>>::from_json_bytes(&std::fs::read(path)?)?
+        };
+
+        if pla2_file.namespace.is_empty() {
+            return Err(eyre!("Namespace name must not be empty"));
+        }
+        if !self.namespaces.contains_key(&pla2_file.namespace) {
+            events.push(NamespaceEv::Create(pla2_file.namespace.clone()).into());
+        }
+
+        let components = pla2_file
+            .components
+            .into_iter()
+            .filter_map(|pla2| {
+                if pla2.namespace == pla2_file.namespace {
+                    pla2.to_pla3(|a| self.skin()?.get_type(a).map(Arc::clone))
+                        .error_to_vec(&mut errors)
+                } else {
+                    errors.push(eyre!(
+                        "Component `{}-{}` in file `{}` has invalid namespace",
+                        pla2.namespace,
+                        pla2.id,
+                        path.display()
+                    ));
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        events.push(ComponentEv::Create(components).into());
+
+        Ok(WithWarnings::new((pla2_file.namespace, events), errors))
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn export_namespace_pla2(
+        &self,
+        namespace: &str,
+        path: &Path,
+        format: &str,
+    ) -> eyre::Result<()> {
+        let components = self
+            .components
+            .iter_namespace(namespace)
+            .map(|a| a.clone().map_coords(egui::Pos2::coord_from))
+            .map(|a| a.to_pla2(|ty| ty.name().clone(), TOLERANCE))
+            .collect();
+        let pla2_file = Pla2File {
+            namespace: namespace.into(),
+            components,
+        };
+
+        safe_write(
+            path,
+            if format == "msgpack" {
+                pla2_file.to_msgpack_bytes()?
+            } else {
+                pla2_file.to_json_bytes()?
+            },
+        )?;
+
+        Ok(())
+    }
 }
 
 impl App {
@@ -310,13 +396,13 @@ impl App {
             notif!(success format!("Imported `{namespace}`"));
         }
     }
-    #[tracing::instrument(skip_all)]
-    pub fn export_namespaces_pla3_zip(&mut self) {
-        self.add_popup(ChooseNamespacesPopup::default());
-    }
 
     #[tracing::instrument(skip_all)]
-    pub fn export_namespace_pla3_zip(&mut self, namespace: &str) {
+    pub fn export_namespaces_pla3_zip(&mut self) {
+        self.add_popup(ChooseNamespacesPopup::new(String::new(), "export_pla3"));
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn export_namespace_pla3_zip(&self, namespace: &str) {
         let Some(file) = FileDialog::new()
             .set_title("Export pla3.zip")
             .set_file_name(format!("{namespace}.pla3.zip"))
@@ -334,11 +420,78 @@ impl App {
         };
         notif!(success format!("Exported to {}", file.display()));
     }
+
+    #[tracing::instrument(skip_all)]
+    pub fn import_namespace_pla2(&mut self) {
+        let Some(files) = FileDialog::new()
+            .set_title("Import pla2")
+            .add_filter("pla2 file", &["pla2.json", "pla2.msgpack"])
+            .pick_files()
+        else {
+            return;
+        };
+        for file in files {
+            let Ok((namespace, events)) = self
+                .project
+                .import_namespace_pla2(&file)
+                .notify_w("Error(s) while importing")
+            else {
+                continue;
+            };
+            for event in events {
+                self.run_event(event);
+            }
+            notif!(success format!("Imported `{namespace}`"));
+        }
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn export_namespaces_pla2(&mut self, format: &str) {
+        self.add_popup(ChooseNamespacesPopup::new(
+            String::new(),
+            if format == "msgpack" {
+                "export_pla2_msgpack"
+            } else {
+                "export_pla2_json"
+            },
+        ));
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn export_namespace_pla2(&self, namespace: &str, format: &str) {
+        let Some(file) = FileDialog::new()
+            .set_title("Export pla2")
+            .set_file_name(format!("{namespace}.pla2.{format}"))
+            .add_filter("pla2 file", &[format!(".pla2.{format}")])
+            .save_file()
+        else {
+            return;
+        };
+        let Ok(()) = self
+            .project
+            .export_namespace_pla2(namespace, &file, format)
+            .notify("Error while exporting")
+        else {
+            return;
+        };
+        notif!(success format!("Exported to {}", file.display()));
+    }
 }
 
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct ChooseNamespacesPopup {
     selected: HashSet<String>,
+    description: String,
+    action: &'static str,
+}
+
+impl ChooseNamespacesPopup {
+    pub fn new(description: String, action: &'static str) -> Self {
+        Self {
+            selected: HashSet::new(),
+            description,
+            action,
+        }
+    }
 }
 
 impl Popup for ChooseNamespacesPopup {
@@ -376,7 +529,12 @@ impl Popup for ChooseNamespacesPopup {
             return false;
         }
         for namespace in &self.selected {
-            app.export_namespace_pla3_zip(namespace);
+            match self.action {
+                "export_pla3" => app.export_namespace_pla3_zip(namespace),
+                "export_pla2_msgpack" => app.export_namespace_pla2(namespace, "msgpack"),
+                "export_pla2_json" => app.export_namespace_pla2(namespace, "json"),
+                _ => unreachable!(),
+            }
         }
         false
     }
