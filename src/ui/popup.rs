@@ -7,7 +7,7 @@ use crate::{
     App,
     info_windows::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
-        quit::QuitPopup,
+        memorial::MemorialPopup, quit::QuitPopup,
     },
     logging::AckPanicPopup,
     project::load_save::ChooseNamespacesPopup,
@@ -37,6 +37,7 @@ enum_dispatch! {
         Licenses(LicensesPopup),
         Manual(ManualPopup),
         Quit(QuitPopup),
+        Memorial(MemorialPopup),
         ChooseNamespaces(ChooseNamespacesPopup),
         AckPanic(AckPanicPopup),
     }

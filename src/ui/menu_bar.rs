@@ -5,7 +5,7 @@ use crate::{
     App,
     info_windows::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
-        quit::QuitPopup,
+        memorial::MemorialPopup, quit::QuitPopup,
     },
     map::tile_coord::TILE_CACHE,
     project::load_save::Pla2Format,
@@ -67,6 +67,12 @@ impl App {
                     ui.separator();
                     button!(ui, "Settings", ShortcutAction::SettingsWindow);
                     ui.separator();
+                    if ui.input(|i| i.modifiers.alt) {
+                        button!(ui, "Stencil v1/v2 Memorial", None, {
+                            self.add_popup(MemorialPopup);
+                        });
+                        ui.separator();
+                    }
                     button!(ui, "Quit", Some(ShortcutAction::Escape), {
                         self.add_popup(QuitPopup);
                     });

@@ -72,6 +72,14 @@ impl Event for NamespaceEv {
                 }
                 app.project.components.remove_namespace(namespace);
                 app.project.namespaces.remove(namespace);
+                if app
+                    .project
+                    .new_component_ns
+                    .as_ref()
+                    .is_some_and(|n| n == namespace)
+                {
+                    app.project.new_component_ns = None;
+                }
                 notif!(success format!("Deleted namespace `{namespace}`"));
                 true
             }
