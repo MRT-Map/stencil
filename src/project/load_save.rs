@@ -10,7 +10,7 @@ use std::{
 };
 
 use eyre::{Report, eyre};
-use pla::{FullId, Pla2File};
+use pla::{FullId, Namespace, Pla2File};
 use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
 use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
@@ -71,8 +71,9 @@ impl Project {
                 .file_type()
                 .map_err(|e| errors.push(Report::from(e)))
                 && file_type.is_dir()
+                && let Ok(namespace) = Namespace::new(&dir_entry.file_name().to_string_lossy())
             {
-                folders.insert(dir_entry.file_name().to_string_lossy().into_owned());
+                folders.insert(namespace);
             }
         }
 
@@ -91,7 +92,7 @@ impl Project {
         Ok(WithWarnings::new((), errors))
     }
     #[tracing::instrument(skip_all)]
-    pub fn load_namespace(&mut self, namespace: &str) -> eyre::Result<WithWarnings<()>> {
+    pub fn load_namespace(&mut self, namespace: &Namespace) -> eyre::Result<WithWarnings<()>> {
         let Some(path) = &self.path else {
             return Ok(WithWarnings::ok(()));
         };
@@ -178,7 +179,7 @@ impl Project {
     pub fn import_namespace_pla3_zip(
         &self,
         path: &Path,
-    ) -> eyre::Result<WithWarnings<(String, Vec<Events>)>> {
+    ) -> eyre::Result<WithWarnings<(Namespace, Vec<Events>)>> {
         let mut errors = Vec::new();
         let mut events = Vec::<Events>::new();
         let Some(namespace) = path
@@ -188,11 +189,11 @@ impl Project {
         else {
             return Err(eyre!("File `{}` must end with `.pla3.zip`", path.display()));
         };
-        if namespace.is_empty() {
+        let Ok(namespace) = Namespace::new(namespace) else {
             return Err(eyre!("Namespace name must not be empty"));
-        }
-        if !self.namespaces.contains_key(namespace) {
-            events.push(NamespaceEv::Create(namespace.to_owned()).into());
+        };
+        if !self.namespaces.contains_key(&namespace) {
+            events.push(NamespaceEv::Create(namespace.clone()).into());
         }
 
         let mut archive = ZipArchive::new(File::open(path)?)?;
@@ -210,7 +211,7 @@ impl Project {
                 continue;
             };
 
-            let full_id = FullId::new(namespace.to_owned(), id.to_owned());
+            let full_id = FullId::new(namespace.clone(), id.to_owned());
             if self.components.iter().any(|a| a.full_id == full_id) {
                 errors.push(eyre!("ID `{full_id}` already exists"));
                 continue;
@@ -227,11 +228,15 @@ impl Project {
         }
         events.push(ComponentEv::Create(components).into());
 
-        Ok(WithWarnings::new((namespace.into(), events), errors))
+        Ok(WithWarnings::new((namespace, events), errors))
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn export_namespace_pla3_zip(&self, namespace: &str, path: &Path) -> eyre::Result<()> {
+    pub fn export_namespace_pla3_zip(
+        &self,
+        namespace: &Namespace,
+        path: &Path,
+    ) -> eyre::Result<()> {
         let mut cursor = Cursor::new(Vec::new());
         let mut archive = ZipWriter::new(&mut cursor);
 
@@ -251,7 +256,7 @@ impl Project {
     pub fn import_namespace_pla2(
         &self,
         path: &Path,
-    ) -> eyre::Result<WithWarnings<(String, Vec<Events>)>> {
+    ) -> eyre::Result<WithWarnings<(Namespace, Vec<Events>)>> {
         let mut errors = Vec::new();
         let mut events = Vec::<Events>::new();
         let Some(format) = path
@@ -305,18 +310,19 @@ impl Project {
     #[tracing::instrument(skip_all)]
     pub fn export_namespace_pla2(
         &self,
-        namespace: &str,
+        namespace: Namespace,
         path: &Path,
         format: Pla2Format,
     ) -> eyre::Result<()> {
         let components = self
             .components
-            .iter_namespace(namespace)
+            .iter_namespace(&namespace)
             .map(|a| a.clone().map_coords(egui::Pos2::coord_from))
             .map(|a| a.to_pla2(|ty| ty.name().clone(), TOLERANCE))
+            .map(|a| a.map_coords(geo::Coord::<i32>::coord_from))
             .collect();
         let pla2_file = Pla2File {
-            namespace: namespace.into(),
+            namespace,
             components,
         };
 
@@ -407,7 +413,7 @@ impl App {
         ));
     }
     #[tracing::instrument(skip_all)]
-    pub fn export_namespace_pla3_zip(&self, namespace: &str) {
+    pub fn export_namespace_pla3_zip(&self, namespace: &Namespace) {
         let Some(file) = FileDialog::new()
             .set_title("Export pla3.zip")
             .set_file_name(format!("{namespace}.pla3.zip"))
@@ -458,7 +464,7 @@ impl App {
         ));
     }
     #[tracing::instrument(skip_all)]
-    pub fn export_namespace_pla2(&self, namespace: &str, format: Pla2Format) {
+    pub fn export_namespace_pla2(&self, namespace: Namespace, format: Pla2Format) {
         let Some(file) = FileDialog::new()
             .set_title("Export pla2")
             .set_file_name(format!("{namespace}.pla2.{format}"))
@@ -476,12 +482,13 @@ impl App {
         };
         notif!(success format!("Exported to {}", file.display()));
     }
+    const LAST_SAVE: &str = "last save";
     #[tracing::instrument(skip_all)]
     pub fn autosave(&self, ctx: &egui::Context) {
         if self.project.path.is_none() || self.settings.misc.autosave_duration_mins == 0 {
             return;
         }
-        let id = egui::Id::new("last-save");
+        let id = egui::Id::new(Self::LAST_SAVE);
         let Some(last_save) = ctx.data(|d| d.get_temp::<SystemTime>(id)) else {
             ctx.data_mut(|d| d.insert_temp(id, SystemTime::now()));
             return;
@@ -495,6 +502,7 @@ impl App {
         self.project
             .save()
             .notify("Errors while autosaving project");
+        ctx.data_mut(|d| d.insert_temp(id, SystemTime::now()));
         notif!(success "Autosaved project");
     }
 }
@@ -520,7 +528,7 @@ pub enum ChooseNamespacesPopupAction {
 
 #[derive(Clone)]
 pub struct ChooseNamespacesPopup {
-    selected: HashSet<String>,
+    selected: HashSet<Namespace>,
     description: egui::WidgetText,
     action: ChooseNamespacesPopupAction,
 }
@@ -545,9 +553,10 @@ impl Popup for ChooseNamespacesPopup {
     }
 
     fn ui(&mut self, app: &mut App, ui: &mut egui::Ui) -> bool {
+        ui.label(self.description.clone());
         for (namespace, _) in app.project.namespaces.iter().filter(|(_, v)| **v) {
             let mut checked = self.selected.contains(namespace);
-            if ui.checkbox(&mut checked, namespace).changed() {
+            if ui.checkbox(&mut checked, namespace.as_str()).changed() {
                 if checked {
                     self.selected.insert(namespace.to_owned());
                 } else {
@@ -573,7 +582,7 @@ impl Popup for ChooseNamespacesPopup {
             match self.action {
                 ChooseNamespacesPopupAction::ExportPla3 => app.export_namespace_pla3_zip(namespace),
                 ChooseNamespacesPopupAction::ExportPla2(format) => {
-                    app.export_namespace_pla2(namespace, format);
+                    app.export_namespace_pla2(namespace.clone(), format);
                 }
             }
         }

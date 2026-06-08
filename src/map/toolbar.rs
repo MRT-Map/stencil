@@ -34,22 +34,24 @@ impl MapWindow {
 
                 let mut in_namespace = |app: &mut App| {
                     ui.label("in ns.");
-                    if !app.project.new_component_ns.is_empty()
+                    if let Some(new_component_ns) = &app.project.new_component_ns
                         && app
                             .project
                             .namespaces
-                            .get(&app.project.new_component_ns)
+                            .get(new_component_ns)
                             .is_none_or(|a| !*a)
                     {
-                        app.project.new_component_ns.clear();
+                        app.project.new_component_ns = None;
                     }
 
                     egui::ComboBox::from_id_salt("toolbar_namespace")
-                        .selected_text(if app.project.new_component_ns.is_empty() {
-                            egui::RichText::new("select...").italics()
-                        } else {
-                            (&app.project.new_component_ns).into()
-                        })
+                        .selected_text(
+                            if let Some(new_component_ns) = &app.project.new_component_ns {
+                                new_component_ns.as_str().into()
+                            } else {
+                                egui::RichText::new("select...").italics()
+                            },
+                        )
                         .show_ui(ui, |ui| {
                             if app
                                 .project
@@ -59,8 +61,8 @@ impl MapWindow {
                                 .map(|(ns, _)| {
                                     ui.selectable_value(
                                         &mut app.project.new_component_ns,
-                                        ns.to_owned(),
-                                        ns,
+                                        Some(ns.to_owned()),
+                                        ns.as_str(),
                                     );
                                 })
                                 .next()

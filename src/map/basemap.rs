@@ -8,7 +8,7 @@ use crate::{
     map::{settings::MapSettings, tile_coord::TileCoord},
     settings::settings_ui_field,
     utils::{
-        URL_REPLACER,
+        PATH_SANITISER,
         coord::{Nnf32, Nnf32UpdateExt, nn},
         file::{FOLDERS, safe_delete},
     },
@@ -88,7 +88,7 @@ impl Basemap {
     pub fn cache_path(&self) -> PathBuf {
         FOLDERS
             .in_cache_dir("tile-cache")
-            .join(URL_REPLACER.replace_all(&self.url, "").as_ref())
+            .join(PATH_SANITISER.replace_all(&self.url, "").as_ref())
     }
     pub fn clear_cache_path(&self) {
         let _ = safe_delete(self.cache_path());

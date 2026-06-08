@@ -63,7 +63,7 @@ pub fn panic(panic: &PanicHookInfo) {
     );
     error!("Span trace:\n{}", color_spantrace::colorize(&span_trace));
     let panic_file = logs_dir.join(format!(
-        "panic-{}.log",
+        "panic.{}",
         SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap_or_default()

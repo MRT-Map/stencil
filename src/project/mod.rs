@@ -16,13 +16,14 @@ use etcetera::AppStrategy;
 use eyre::{Report, Result, eyre};
 use futures_lite::future;
 use history::History;
+use pla::Namespace;
 use tracing::{error, info};
 
 use crate::{
     map::basemap::Basemap,
     project::{component_list::ComponentList, skin::Skin},
     utils::{
-        EXECUTOR, URL_REPLACER,
+        EXECUTOR, PATH_SANITISER,
         file::{FOLDERS, safe_write},
     },
 };
@@ -41,8 +42,8 @@ pub struct Project {
     pub skin_status: SkinStatus,
     pub skin_url: String,
     pub components: ComponentList,
-    pub namespaces: HashMap<String, bool>,
-    pub new_component_ns: String,
+    pub namespaces: HashMap<Namespace, bool>,
+    pub new_component_ns: Option<Namespace>,
     pub path: Option<PathBuf>,
     pub history: History,
 }
@@ -54,8 +55,8 @@ impl Default for Project {
             skin_status: SkinStatus::default(),
             skin_url: "https://github.com/MRT-Map/tile-renderer/releases/latest/download/default.nofontfiles.skin.json".into(),
             components: ComponentList::default(),
-            namespaces: HashMap::from_iter([("default".into(), true)]),
-            new_component_ns: String::new(),
+            namespaces: HashMap::from_iter([(Namespace::default(), true)]),
+            new_component_ns: None,
             path: None,
             history: History::default(),
         }
@@ -72,7 +73,7 @@ impl Project {
     pub fn skin_cache_path(&self) -> PathBuf {
         FOLDERS
             .in_cache_dir("skin")
-            .join(URL_REPLACER.replace_all(&self.skin_url, "").as_ref())
+            .join(PATH_SANITISER.replace_all(&self.skin_url, "").as_ref())
     }
     #[tracing::instrument(skip_all)]
     pub fn load_skin(&mut self, ctx: &egui::Context) {
@@ -129,7 +130,7 @@ impl Project {
             _ => {}
         }
     }
-    pub fn namespace_component_count(&self, namespace: &str) -> Result<usize> {
+    pub fn namespace_component_count(&self, namespace: &Namespace) -> Result<usize> {
         if self.namespaces.get(namespace).is_some_and(|a| *a) {
             return Ok(self.components.iter_namespace(namespace).count());
         }

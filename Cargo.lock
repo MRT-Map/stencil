@@ -2560,17 +2560,20 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex"
-version = "3.3.0"
-source = "git+https://github.com/Rastler3D/lazy-regex?branch=use-std-lazylock#65aa9280fbf2d369a00b253e99927ae4a64bc321"
+version = "3.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6bae91019476d3ec7147de9aa291cadb6d870abf2f3015d2da73a90325ac1496"
 dependencies = [
  "lazy-regex-proc_macros",
+ "once_cell",
  "regex",
 ]
 
 [[package]]
 name = "lazy-regex-proc_macros"
-version = "3.3.0"
-source = "git+https://github.com/Rastler3D/lazy-regex?branch=use-std-lazylock#65aa9280fbf2d369a00b253e99927ae4a64bc321"
+version = "3.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4de9c1e1439d8b7b3061b2d209809f447ca33241733d9a3c01eabf2dc8d94358"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3538,6 +3541,7 @@ dependencies = [
  "rmp-serde",
  "serde",
  "serde_json",
+ "smol_str",
  "thiserror 2.0.18",
  "toml",
  "tracing",

@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter};
 
+use pla::Namespace;
+
 use crate::{
     App, notif,
     project::history::Event,
@@ -8,10 +10,10 @@ use crate::{
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum NamespaceEv {
-    Load(String),
-    Hide(String),
-    Create(String),
-    Delete(String),
+    Load(Namespace),
+    Hide(Namespace),
+    Create(Namespace),
+    Delete(Namespace),
 }
 
 impl Event for NamespaceEv {
@@ -52,7 +54,7 @@ impl Event for NamespaceEv {
                 }
                 notif!(success format!("Created namespace `{namespace}`"));
                 app.project.namespaces.insert(namespace.clone(), true);
-                app.project.new_component_ns.clone_from(namespace);
+                app.project.new_component_ns = Some(namespace.clone());
                 true
             }
             Self::Delete(namespace) => {

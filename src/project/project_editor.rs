@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use pla::Namespace;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -82,7 +83,7 @@ impl DockWindow for ProjectEditorWindow {
                             }
                         });
                         row.col(|ui| {
-                            ui.collapsing(egui::RichText::new(&ns).code(), |ui| {
+                            ui.collapsing(egui::RichText::new(ns.as_str()).code(), |ui| {
                                 Self::component_list(app, ui, &ns);
                             });
                         });
@@ -116,15 +117,15 @@ impl DockWindow for ProjectEditorWindow {
                             .show(ui);
                     });
                     row.col(|ui| {
+                        let namespace = Namespace::new(&new_namespace)
+                            .ok()
+                            .and_then(|a| (!app.project.namespaces.contains_key(&a)).then_some(a));
                         if ui
-                            .add_enabled(
-                                !new_namespace.is_empty()
-                                    && !app.project.namespaces.contains_key(&new_namespace),
-                                egui::Button::new("➕"),
-                            )
+                            .add_enabled(namespace.is_some(), egui::Button::new("➕"))
                             .clicked()
                         {
-                            app.run_event(NamespaceEv::Create(std::mem::take(&mut new_namespace)));
+                            app.run_event(NamespaceEv::Create(namespace.unwrap()));
+                            new_namespace.clear();
                         }
                     });
                 });
@@ -181,7 +182,7 @@ impl DockWindow for ProjectEditorWindow {
 
 impl ProjectEditorWindow {
     #[tracing::instrument(skip_all)]
-    pub fn component_list(app: &mut App, ui: &mut egui::Ui, ns: &str) {
+    pub fn component_list(app: &mut App, ui: &mut egui::Ui, ns: &Namespace) {
         let mut component_to_delete = None;
         let mut component_to_select = None;
         egui_extras::TableBuilder::new(ui)

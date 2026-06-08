@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    App, component_actions::event::ComponentEv, project::pla3::PlaNodeWorldVec,
+    App, component_actions::event::ComponentEv, notif, project::pla3::PlaNodeWorldVec,
     utils::coord::CoordFrom,
 };
 
@@ -25,6 +25,10 @@ impl App {
     }
     #[tracing::instrument(skip_all)]
     pub fn paste_clipboard_components(&mut self) {
+        let Some(new_component_ns) = &self.project.new_component_ns else {
+            notif!(info "Create or load a namespace first");
+            return;
+        };
         let Some(centre) = self
             .ui
             .map
@@ -53,14 +57,8 @@ impl App {
             .iter()
             .cloned()
             .map(|mut component| {
-                component
-                    .full_id
-                    .namespace
-                    .clone_from(&self.project.new_component_ns);
-                component.full_id.id = self
-                    .project
-                    .components
-                    .get_new_id(&self.project.new_component_ns);
+                component.full_id.namespace.clone_from(new_component_ns);
+                component.full_id.id = self.project.components.get_new_id(new_component_ns);
                 component.nodes += delta;
                 component
             })

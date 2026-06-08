@@ -55,9 +55,9 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        if app.project.new_component_ns.is_empty() {
+        let Some(new_component_ns) = &app.project.new_component_ns else {
             return;
-        }
+        };
         let (Some(cursor_world_pos), Some(skin)) =
             (app.ui.map.cursor_world_pos, app.project.skin())
         else {
@@ -86,10 +86,8 @@ impl MapWindow {
         }
         let component = PlaComponent {
             full_id: FullId::new(
-                app.project.new_component_ns.clone(),
-                app.project
-                    .components
-                    .get_new_id(&app.project.new_component_ns),
+                new_component_ns.clone(),
+                app.project.components.get_new_id(new_component_ns),
             ),
             ty: Arc::clone(ty),
             display_name: String::new(),
@@ -131,9 +129,9 @@ impl MapWindow {
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        if app.project.new_component_ns.is_empty() {
+        let Some(new_component_ns) = &app.project.new_component_ns else {
             return;
-        }
+        };
         let (Some(cursor_world_pos), Some(skin)) =
             (app.ui.map.cursor_world_pos, app.project.skin())
         else {
@@ -317,7 +315,20 @@ impl MapWindow {
             || response.double_clicked_by2(egui::PointerButton::Middle)
         {
             app.ui.map.created_nodes.pop();
-            if app.ui.map.created_nodes.len() >= (if IS_LINE { 2 } else { 3 }) {
+            let valid = app.ui.map.created_nodes.len()
+                >= if IS_LINE
+                    || app
+                        .ui
+                        .map
+                        .created_nodes
+                        .get(1)
+                        .is_some_and(|a| !matches!(a, PlaNodeWorld::Line { .. }))
+                {
+                    2
+                } else {
+                    3
+                };
+            if valid {
                 if !IS_LINE
                     && app.ui.map.created_nodes.first().unwrap().coord()
                         != app.ui.map.created_nodes.last().unwrap().coord()
@@ -330,10 +341,8 @@ impl MapWindow {
                 }
                 let component = PlaComponent {
                     full_id: FullId::new(
-                        app.project.new_component_ns.clone(),
-                        app.project
-                            .components
-                            .get_new_id(&app.project.new_component_ns),
+                        new_component_ns.clone(),
+                        app.project.components.get_new_id(new_component_ns),
                     ),
                     ty: Arc::clone(ty),
                     display_name: String::new(),

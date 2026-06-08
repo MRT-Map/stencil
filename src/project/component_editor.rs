@@ -92,11 +92,10 @@ impl DockWindow for ComponentEditorWindow {
                 .cloned()
                 .ok();
             egui::ComboBox::from_id_salt("component namespace")
-                .selected_text(
-                    namespace
-                        .as_ref()
-                        .map_or_else(|| egui::RichText::new("mixed").italics(), Into::into),
-                )
+                .selected_text(namespace.as_ref().map_or_else(
+                    || egui::RichText::new("mixed").italics(),
+                    |a| a.as_str().into(),
+                ))
                 .width(25.0)
                 .show_ui(ui, |ui| {
                     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
@@ -105,7 +104,7 @@ impl DockWindow for ComponentEditorWindow {
                             continue;
                         }
                         if ui
-                            .selectable_label(namespace.as_ref() == Some(ns), ns)
+                            .selectable_label(namespace.as_ref() == Some(ns), ns.as_str())
                             .clicked()
                         {
                             for component in &mut selected_components {

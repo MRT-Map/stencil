@@ -149,7 +149,7 @@ impl MapWindow {
                     )
                     .show(|ui| ui.label(text));
                 };
-                if app.project.new_component_ns.is_empty() {
+                if app.project.new_component_ns.is_none() {
                     ctx.set_cursor_icon(egui::CursorIcon::NotAllowed);
                     tooltip("Set a namespace in the toolbar first");
                     return;

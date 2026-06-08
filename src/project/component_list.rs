@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use itertools::Itertools;
+use pla::Namespace;
 use rand::distr::{Alphanumeric, SampleString};
 
 use crate::{
@@ -98,20 +99,20 @@ impl ComponentList {
     }
     pub fn iter_namespace(
         &self,
-        namespace: &str,
+        namespace: &Namespace,
     ) -> impl DoubleEndedIterator<Item = &PlaComponent> {
         self.iter()
-            .filter(move |a| a.full_id.namespace == namespace)
+            .filter(move |a| a.full_id.namespace == *namespace)
     }
     pub fn iter_namespace_mut(
         &mut self,
-        namespace: &str,
+        namespace: &Namespace,
     ) -> impl DoubleEndedIterator<Item = &mut PlaComponent> {
         self.iter_mut()
-            .filter(move |a| a.full_id.namespace == namespace)
+            .filter(move |a| a.full_id.namespace == *namespace)
     }
-    pub fn remove_namespace(&mut self, namespace: &str) {
-        self.0.retain(|a| a.value.full_id.namespace != namespace);
+    pub fn remove_namespace(&mut self, namespace: &Namespace) {
+        self.0.retain(|a| a.value.full_id.namespace != *namespace);
     }
     pub fn remove_multiple(&mut self, components: &[PlaComponent]) -> bool {
         let positions = self
@@ -130,11 +131,11 @@ impl ComponentList {
             .collect();
         true
     }
-    pub fn get_new_id(&self, namespace: &str) -> String {
+    pub fn get_new_id(&self, namespace: &Namespace) -> String {
         let id = Alphanumeric.sample_string(&mut rand::rng(), 16);
         if self
             .iter()
-            .any(|a| a.full_id.namespace == namespace && a.full_id.id == id)
+            .any(|a| a.full_id.namespace == *namespace && a.full_id.id == id)
         {
             return self.get_new_id(namespace);
         }
