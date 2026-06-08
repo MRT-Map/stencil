@@ -65,7 +65,7 @@ impl MapWindow {
         let mut previous_coord = Option::<egui::Pos2>::None;
 
         let mut outline_shapes = Vec::new();
-        for node in nodes {
+        for node in nodes.into_iter().chain(nodes.first()) {
             let final_coord = match *node {
                 PlaNodeScreen::Line { coord, .. } => {
                     if let Some(previous_coord) = previous_coord {
