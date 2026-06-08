@@ -61,9 +61,7 @@ impl App {
                     .project
                     .components
                     .get_new_id(&self.project.new_component_ns);
-                for node in &mut component.nodes {
-                    *node += delta;
-                }
+                component.nodes += delta;
                 component
             })
             .collect::<Vec<_>>();

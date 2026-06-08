@@ -400,7 +400,7 @@ impl App {
     #[tracing::instrument(skip_all)]
     pub fn export_namespaces_pla3_zip(&mut self) {
         self.add_popup(ChooseNamespacesPopup::new(
-            String::new(),
+            egui::WidgetText::default(),
             ChooseNamespacesPopupAction::ExportPla3,
         ));
     }
@@ -451,7 +451,7 @@ impl App {
     #[tracing::instrument(skip_all)]
     pub fn export_namespaces_pla2(&mut self, format: Pla2Format) {
         self.add_popup(ChooseNamespacesPopup::new(
-            String::new(),
+            egui::RichText::new("NOTE: PLA2 does not support Bézier curves. Any curves will be approximated and may not show up accurately in renders.").color(egui::Color32::YELLOW).into(),
             ChooseNamespacesPopupAction::ExportPla2(format),
         ));
     }
@@ -498,12 +498,12 @@ pub enum ChooseNamespacesPopupAction {
 #[derive(Clone)]
 pub struct ChooseNamespacesPopup {
     selected: HashSet<String>,
-    description: String,
+    description: egui::WidgetText,
     action: ChooseNamespacesPopupAction,
 }
 
 impl ChooseNamespacesPopup {
-    pub fn new(description: String, action: ChooseNamespacesPopupAction) -> Self {
+    pub fn new(description: egui::WidgetText, action: ChooseNamespacesPopupAction) -> Self {
         Self {
             selected: HashSet::new(),
             description,
@@ -550,7 +550,7 @@ impl Popup for ChooseNamespacesPopup {
             match self.action {
                 ChooseNamespacesPopupAction::ExportPla3 => app.export_namespace_pla3_zip(namespace),
                 ChooseNamespacesPopupAction::ExportPla2(format) => {
-                    app.export_namespace_pla2(namespace, format)
+                    app.export_namespace_pla2(namespace, format);
                 }
             }
         }

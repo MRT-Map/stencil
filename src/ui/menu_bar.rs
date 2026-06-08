@@ -8,6 +8,7 @@ use crate::{
         quit::QuitPopup,
     },
     map::tile_coord::TILE_CACHE,
+    project::load_save::Pla2Format,
     shortcut::{ShortcutAction, UiButtonWithShortcutExt},
 };
 
@@ -76,8 +77,9 @@ impl App {
                         button!(ui, "Import pla3.zip", None, {
                             self.import_namespace_pla3_zip();
                         });
-                        button!(ui, "Import pla2.msgpack", None, {});
-                        button!(ui, "Import pla2.json", None, {});
+                        button!(ui, "Import pla2.json/msgpack", None, {
+                            self.import_namespace_pla2();
+                        });
                     });
                     ui.separator();
                     button!(ui, "Reload", ShortcutAction::ReloadProject);
@@ -88,8 +90,12 @@ impl App {
                         button!(ui, "Export pla3.zip", None, {
                             self.export_namespaces_pla3_zip();
                         });
-                        button!(ui, "Export pla2.msgpack", None, {});
-                        button!(ui, "Export pla2.json", None, {});
+                        button!(ui, "Export pla2.msgpack", None, {
+                            self.export_namespaces_pla2(Pla2Format::MessagePack);
+                        });
+                        button!(ui, "Export pla2.json", None, {
+                            self.export_namespaces_pla2(Pla2Format::Json);
+                        });
                     });
                 });
                 ui.menu_button("Edit", |ui| {
