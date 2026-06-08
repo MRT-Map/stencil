@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
+    fmt::{Display, Formatter},
     fs::File,
     io::{BufReader, Cursor, Write},
     path::{Path, PathBuf},
@@ -305,7 +306,7 @@ impl Project {
         &self,
         namespace: &str,
         path: &Path,
-        format: &str,
+        format: Pla2Format,
     ) -> eyre::Result<()> {
         let components = self
             .components
@@ -320,10 +321,9 @@ impl Project {
 
         safe_write(
             path,
-            if format == "msgpack" {
-                pla2_file.to_msgpack_bytes()?
-            } else {
-                pla2_file.to_json_bytes()?
+            match format {
+                Pla2Format::MessagePack => pla2_file.to_msgpack_bytes()?,
+                Pla2Format::Json => pla2_file.to_json_bytes()?,
             },
         )?;
 
@@ -399,7 +399,10 @@ impl App {
 
     #[tracing::instrument(skip_all)]
     pub fn export_namespaces_pla3_zip(&mut self) {
-        self.add_popup(ChooseNamespacesPopup::new(String::new(), "export_pla3"));
+        self.add_popup(ChooseNamespacesPopup::new(
+            String::new(),
+            ChooseNamespacesPopupAction::ExportPla3,
+        ));
     }
     #[tracing::instrument(skip_all)]
     pub fn export_namespace_pla3_zip(&self, namespace: &str) {
@@ -446,18 +449,14 @@ impl App {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn export_namespaces_pla2(&mut self, format: &str) {
+    pub fn export_namespaces_pla2(&mut self, format: Pla2Format) {
         self.add_popup(ChooseNamespacesPopup::new(
             String::new(),
-            if format == "msgpack" {
-                "export_pla2_msgpack"
-            } else {
-                "export_pla2_json"
-            },
+            ChooseNamespacesPopupAction::ExportPla2(format),
         ));
     }
     #[tracing::instrument(skip_all)]
-    pub fn export_namespace_pla2(&self, namespace: &str, format: &str) {
+    pub fn export_namespace_pla2(&self, namespace: &str, format: Pla2Format) {
         let Some(file) = FileDialog::new()
             .set_title("Export pla2")
             .set_file_name(format!("{namespace}.pla2.{format}"))
@@ -477,15 +476,34 @@ impl App {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Copy)]
+pub enum Pla2Format {
+    MessagePack,
+    Json,
+}
+impl Display for Pla2Format {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::MessagePack => write!(f, "msgpack"),
+            Self::Json => write!(f, "json"),
+        }
+    }
+}
+#[derive(Clone, Copy)]
+pub enum ChooseNamespacesPopupAction {
+    ExportPla3,
+    ExportPla2(Pla2Format),
+}
+
+#[derive(Clone)]
 pub struct ChooseNamespacesPopup {
     selected: HashSet<String>,
     description: String,
-    action: &'static str,
+    action: ChooseNamespacesPopupAction,
 }
 
 impl ChooseNamespacesPopup {
-    pub fn new(description: String, action: &'static str) -> Self {
+    pub fn new(description: String, action: ChooseNamespacesPopupAction) -> Self {
         Self {
             selected: HashSet::new(),
             description,
@@ -530,10 +548,10 @@ impl Popup for ChooseNamespacesPopup {
         }
         for namespace in &self.selected {
             match self.action {
-                "export_pla3" => app.export_namespace_pla3_zip(namespace),
-                "export_pla2_msgpack" => app.export_namespace_pla2(namespace, "msgpack"),
-                "export_pla2_json" => app.export_namespace_pla2(namespace, "json"),
-                _ => unreachable!(),
+                ChooseNamespacesPopupAction::ExportPla3 => app.export_namespace_pla3_zip(namespace),
+                ChooseNamespacesPopupAction::ExportPla2(format) => {
+                    app.export_namespace_pla2(namespace, format)
+                }
             }
         }
         false
