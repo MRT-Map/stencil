@@ -36,7 +36,7 @@ impl Default for MiscSettings {
     }
 }
 
-impl_load_save!(toml MiscSettings, FOLDERS.in_config_dir("misc.toml"), "# Documentation is at https://github.com/MRT-Map/stencil3/wiki/Advanced-Topics#settings.misctoml");
+impl_load_save!(toml MiscSettings, FOLDERS.in_config_dir("misc.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/Misc-Settings.html");
 
 impl Settings for MiscSettings {
     #[tracing::instrument(skip_all)]

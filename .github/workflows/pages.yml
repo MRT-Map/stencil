@@ -1,0 +1,30 @@
+name: Manual
+on:
+  push:
+    branches: ["master"]
+    paths: ["docs/**"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # To push a branch
+      pages: write  # To push to a GitHub Pages site
+      id-token: write # To update the deployment status
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: true
+      - uses: ./.github/actions/mise
+        with:
+          envs: 'docs'
+
+      - run: cd docs && mdbook build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/book
+          destination_dir: docs

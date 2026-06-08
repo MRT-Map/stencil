@@ -12,7 +12,7 @@ use crate::{impl_load_save, settings::Settings, shortcut::ShortcutAction, utils:
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ShortcutSettings(BiMap<ShortcutAction, egui::KeyboardShortcut>);
 
-impl_load_save!(toml ShortcutSettings, FOLDERS.in_config_dir("shortcut.toml"), "# Documentation is at https://github.com/MRT-Map/stencil3/wiki/Advanced-Topics#settings.shortcuttoml");
+impl_load_save!(toml ShortcutSettings, FOLDERS.in_config_dir("shortcut.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/Shortcut-Settings.html");
 
 impl Default for ShortcutSettings {
     fn default() -> Self {

@@ -98,7 +98,7 @@ impl Default for MapSettings {
     }
 }
 
-impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Documentation is at https://github.com/MRT-Map/stencil3/wiki/Advanced-Topics#settings.maptoml");
+impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/Map-Settings.html");
 
 impl Settings for MapSettings {
     #[tracing::instrument(skip_all)]
