@@ -104,6 +104,7 @@ impl ComponentList {
         self.iter()
             .filter(move |a| a.full_id.namespace == *namespace)
     }
+    #[expect(dead_code)]
     pub fn iter_namespace_mut(
         &mut self,
         namespace: &Namespace,

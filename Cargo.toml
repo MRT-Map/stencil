@@ -71,7 +71,6 @@ license-retriever = "=1.1.3"
 [build-dependencies]
 license-retriever = "=1.1.3"
 eyre = "=0.6.12"
-#zip = "=8.6.0"
 embed-resource = "=3.0.9"
 
 #[profile.dev.package."*"]
@@ -94,8 +93,6 @@ exclude = ["pla"]
 
 [lints.rust]
 future-incompatible = "deny"
-# temporary
-dead_code = "allow"
 
 [lints.clippy]
 all = "warn"

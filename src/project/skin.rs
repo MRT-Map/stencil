@@ -475,6 +475,7 @@ impl Skin {
         self.types.iter().find(|a| a.name() == ty)
     }
     #[must_use]
+    #[expect(dead_code)]
     pub fn show_type(
         &self,
         ty: &str,

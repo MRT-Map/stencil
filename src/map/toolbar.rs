@@ -45,13 +45,10 @@ impl MapWindow {
                     }
 
                     egui::ComboBox::from_id_salt("toolbar_namespace")
-                        .selected_text(
-                            if let Some(new_component_ns) = &app.project.new_component_ns {
-                                new_component_ns.as_str().into()
-                            } else {
-                                egui::RichText::new("select...").italics()
-                            },
-                        )
+                        .selected_text(app.project.new_component_ns.as_ref().map_or_else(
+                            || egui::RichText::new("select...").italics(),
+                            |a| a.as_str().into(),
+                        ))
                         .show_ui(ui, |ui| {
                             if app
                                 .project

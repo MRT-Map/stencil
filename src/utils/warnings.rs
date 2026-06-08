@@ -95,9 +95,11 @@ impl<T, W> From<(T, Option<W>)> for WithWarning<T, W> {
 }
 
 impl<T, W> WithWarning<T, W> {
+    #[expect(dead_code)]
     pub const fn new(value: T, warning: Option<W>) -> Self {
         Self { value, warning }
     }
+    #[expect(dead_code)]
     pub const fn ok(value: T) -> Self {
         Self {
             value,
