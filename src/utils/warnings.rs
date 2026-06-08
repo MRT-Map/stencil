@@ -2,16 +2,12 @@ use std::fmt::{Debug, Display};
 
 use crate::notif;
 
-pub trait ErrorWarningsExt {
+pub trait ResultWithWarningsExt {
     type Error;
     type Warning;
     type Output1;
     type Output2;
-    fn notify<M1: Display, M2: Display>(
-        self,
-        error_message: M1,
-        warning_message: M2,
-    ) -> Self::Output1;
+    fn notify_w<M: Display>(self, message: M) -> Self::Output1;
     fn error_warnings_to_vec<VE: From<Self::Error> + From<Self::Warning>>(
         self,
         vec: &mut Vec<VE>,
@@ -56,22 +52,18 @@ impl<T, W: ToString + Debug> WithWarnings<T, W> {
         .0
     }
 }
-impl<T, W: ToString + Debug, E: Display + Debug> ErrorWarningsExt
+impl<T, W: ToString + Debug, E: Display + Debug> ResultWithWarningsExt
     for Result<WithWarnings<T, W>, E>
 {
     type Error = E;
     type Warning = W;
     type Output1 = Result<T, E>;
     type Output2 = Option<T>;
-    fn notify<M1: Display, M2: Display>(
-        self,
-        error_message: M1,
-        warning_message: M2,
-    ) -> Self::Output1 {
+    fn notify_w<M: Display>(self, message: M) -> Self::Output1 {
         match self {
-            Ok(ww) => Ok(ww.notify(warning_message)),
+            Ok(ww) => Ok(ww.notify(message)),
             Err(e) => {
-                notif!(error error_message, error &e);
+                notif!(error message, error &e);
                 Err(e)
             }
         }
@@ -128,20 +120,18 @@ impl<T, W: Display + Debug> WithWarning<T, W> {
         .0
     }
 }
-impl<T, W: Display + Debug, E: Display + Debug> ErrorWarningsExt for Result<WithWarning<T, W>, E> {
+impl<T, W: Display + Debug, E: Display + Debug> ResultWithWarningsExt
+    for Result<WithWarning<T, W>, E>
+{
     type Error = E;
     type Warning = W;
     type Output1 = Result<T, E>;
     type Output2 = Option<T>;
-    fn notify<M1: Display, M2: Display>(
-        self,
-        error_message: M1,
-        warning_message: M2,
-    ) -> Self::Output1 {
+    fn notify_w<M: Display>(self, message: M) -> Self::Output1 {
         match self {
-            Ok(ww) => Ok(ww.notify(warning_message)),
+            Ok(ww) => Ok(ww.notify(message)),
             Err(e) => {
-                notif!(error error_message, error &e);
+                notif!(error message, error &e);
                 Err(e)
             }
         }
@@ -157,5 +147,26 @@ impl<T, W: Display + Debug, E: Display + Debug> ErrorWarningsExt for Result<With
                 None
             }
         }
+    }
+}
+
+pub trait ResultExt {
+    type Error;
+    type Output;
+    fn notify<M: Display>(self, message: M) -> Self;
+    fn error_to_vec<VE: From<Self::Error>>(self, vec: &mut Vec<VE>) -> Self::Output;
+}
+impl<T, E: Display + Debug> ResultExt for Result<T, E> {
+    type Error = E;
+    type Output = Option<T>;
+
+    fn notify<M: Display>(self, message: M) -> Self {
+        self.inspect_err(|e| {
+            notif!(error message, error &e);
+        })
+    }
+
+    fn error_to_vec<VE: From<Self::Error>>(self, vec: &mut Vec<VE>) -> Self::Output {
+        self.map_err(|e| vec.push(e.into())).ok()
     }
 }

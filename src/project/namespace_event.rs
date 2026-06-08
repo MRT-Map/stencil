@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use crate::{
     App, notif,
     project::history::Event,
-    utils::{file::safe_delete, with_warnings::ErrorWarningsExt},
+    utils::{file::safe_delete, warnings::ResultWithWarningsExt},
 };
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -19,10 +19,11 @@ impl Event for NamespaceEv {
     fn run(&self, app: &mut App) -> bool {
         match self {
             Self::Load(namespace) => {
-                let Ok(()) = app.project.load_namespace(namespace).notify(
-                    format!("Error while loading `{namespace}`"),
-                    format!("Errors while loading `{namespace}`"),
-                ) else {
+                let Ok(()) = app
+                    .project
+                    .load_namespace(namespace)
+                    .notify_w(format!("Error(s) while loading `{namespace}`"))
+                else {
                     return false;
                 };
                 notif!(success format!("Loaded namespace `{namespace}`"));

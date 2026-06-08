@@ -22,7 +22,7 @@ use crate::{
     ui::popup::Popup,
     utils::{
         file::safe_write,
-        with_warnings::{ErrorWarningsExt, WithWarning, WithWarnings},
+        warnings::{ResultExt, ResultWithWarningsExt, WithWarning, WithWarnings},
     },
 };
 
@@ -251,12 +251,8 @@ impl App {
         let Some(folder) = FileDialog::new().set_title("Open Project").pick_folder() else {
             return;
         };
-        let project = match Project::load(folder) {
-            Ok(p) => p,
-            Err(e) => {
-                notif!(error "Failed to load project", error &e);
-                return;
-            }
+        let Ok(project) = Project::load(folder).notify("Failed to load project") else {
+            return;
         };
         self.project = project;
     }
@@ -265,10 +261,11 @@ impl App {
         if self.project.path.is_none() {
             return;
         }
-        let Ok(()) = self.project.update_namespace_list().notify(
-            "Error while reloading project",
-            "Errors while reloading project",
-        ) else {
+        let Ok(()) = self
+            .project
+            .update_namespace_list()
+            .notify_w("Error(s) while reloading project")
+        else {
             return;
         };
         notif!(success "Reloaded project");
@@ -303,7 +300,7 @@ impl App {
             let Ok((namespace, events)) = self
                 .project
                 .import_namespace_pla3_zip(&file)
-                .notify("Error while importing", "Errors while importing")
+                .notify_w("Error(s) while importing")
             else {
                 continue;
             };
@@ -328,14 +325,14 @@ impl App {
         else {
             return;
         };
-        match self.project.export_namespace_pla3_zip(namespace, &file) {
-            Ok(()) => {
-                notif!(success format!("Exported to {}", file.display()));
-            }
-            Err(e) => {
-                notif!(error "Errors while exporting", error &e);
-            }
-        }
+        let Ok(()) = self
+            .project
+            .export_namespace_pla3_zip(namespace, &file)
+            .notify("Error while exporting")
+        else {
+            return;
+        };
+        notif!(success format!("Exported to {}", file.display()));
     }
 }
 

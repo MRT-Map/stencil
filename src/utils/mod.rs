@@ -7,7 +7,7 @@ pub mod coord;
 pub mod file;
 pub mod load_save;
 pub mod pointer;
-pub mod with_warnings;
+pub mod warnings;
 
 pub static EXECUTOR: StaticExecutor = StaticExecutor::new();
 pub static URL_REPLACER: LazyLock<Regex> = lazy_regex!("[<>:/\\|?*\"]");
