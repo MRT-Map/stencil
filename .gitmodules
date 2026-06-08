@@ -1,3 +1,6 @@
 [submodule "pla"]
 	path = pla
 	url = git@github.com:mrt-map/pla
+[submodule "docs/src"]
+	path = docs/src
+	url = git@github.com:mrt-map/stencil3.wiki

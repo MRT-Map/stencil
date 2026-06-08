@@ -1,1 +1,1 @@
-env = ["lint"]
+env = ["lint", "docs"]

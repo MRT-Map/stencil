@@ -1,0 +1,5 @@
+[book]
+title = "Stencil3 Manual"
+authors = ["MRT Mapping Services"]
+language = "en"
+src = "src"
