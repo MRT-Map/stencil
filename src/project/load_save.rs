@@ -17,7 +17,7 @@ use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 use crate::{
     App,
     component_actions::{event::ComponentEv, paint::TOLERANCE},
-    map::basemap::Basemap,
+    map::{basemap::Basemap, state::MapState},
     notif,
     project::{Project, history::Events, namespace_event::NamespaceEv, pla3::PlaComponent},
     ui::popup::Popup,
@@ -341,6 +341,7 @@ impl App {
             return;
         };
         self.project = project;
+        self.ui.map = MapState::default();
     }
     #[tracing::instrument(skip_all)]
     pub fn reload_project(&mut self) {

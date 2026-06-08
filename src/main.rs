@@ -71,6 +71,7 @@ impl App {
         if app.settings.map.clear_cache_on_startup {
             app.project.basemap.clear_cache_path();
         }
+        app.ack_panic();
         app
     }
     #[tracing::instrument(skip_all, name = "app_load_state")]

@@ -9,6 +9,7 @@ use crate::{
         changelog::ChangelogPopup, info::InfoPopup, licenses::LicensesPopup, manual::ManualPopup,
         quit::QuitPopup,
     },
+    logging::AckPanicPopup,
     project::load_save::ChooseNamespacesPopup,
 };
 
@@ -37,6 +38,7 @@ enum_dispatch! {
         Manual(ManualPopup),
         Quit(QuitPopup),
         ChooseNamespaces(ChooseNamespacesPopup),
+        AckPanic(AckPanicPopup),
     }
 }
 
