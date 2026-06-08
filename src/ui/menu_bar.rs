@@ -108,6 +108,8 @@ impl App {
                     button!(ui, "Undo", ShortcutAction::Undo);
                     button!(ui, "Redo", ShortcutAction::Redo);
                     ui.separator();
+                    button!(ui, "Select All", ShortcutAction::SelectAll);
+                    ui.separator();
                     button!(ui, "Copy", ShortcutAction::Copy);
                     button!(ui, "Cut", ShortcutAction::Cut);
                     button!(ui, "Delete", ShortcutAction::Delete);

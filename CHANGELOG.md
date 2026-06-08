@@ -5,10 +5,23 @@
 - Directly download namespace files from GitHub repositories
 - Font configuration
 
+## v3.0.0-alpha.7 (20260609)
+
+- add importing and exporting of pla3.zip, pla2.json and pla2.msgpack files
+- add select all shortcut
+- add panic handler
+- add autosaving
+- cosmetic changes
+  - add invalid URL warning to skin field
+  - fill missing edge in hourglass
+  - close outline for areas with non-closed nodes
+- add an Easter egg
+- various backend changes
+
 ## v3.0.0-alpha.6 (20260605)
 
 - move `pla` package into [separate repository](https://github.com/mrt-map/pla)
-- opening, reloading and saving of projects
+- add opening, reloading and saving of projects
 - various backend changes
 
 ## v3.0.0-alpha.5 (20260530)
