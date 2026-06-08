@@ -1,8 +1,9 @@
 use std::{
+    borrow::Cow,
     fmt::{Display, Formatter},
     sync::LazyLock,
 };
-use std::borrow::Cow;
+
 use itertools::Itertools;
 use license_retriever::LicenseRetriever;
 use serde::{Deserialize, Serialize};

@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{App, ui::popup::Popup};

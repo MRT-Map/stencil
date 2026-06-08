@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use serde::{Deserialize, Serialize};
 
