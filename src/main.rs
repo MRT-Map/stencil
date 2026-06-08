@@ -94,6 +94,7 @@ impl eframe::App for App {
         self.project.load_skin(ctx);
         self.status_init();
         self.ui.notifs.process_notifs(&self.settings.misc);
+        self.autosave(ctx);
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let start = Instant::now();

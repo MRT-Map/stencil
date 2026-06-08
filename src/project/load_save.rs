@@ -6,6 +6,7 @@ use std::{
     io::{BufReader, Cursor, Write},
     path::{Path, PathBuf},
     sync::Arc,
+    time::{Duration, SystemTime},
 };
 
 use eyre::{Report, eyre};
@@ -474,6 +475,27 @@ impl App {
             return;
         };
         notif!(success format!("Exported to {}", file.display()));
+    }
+    #[tracing::instrument(skip_all)]
+    pub fn autosave(&self, ctx: &egui::Context) {
+        if self.project.path.is_none() || self.settings.misc.autosave_duration_mins == 0 {
+            return;
+        }
+        let id = egui::Id::new("last-save");
+        let Some(last_save) = ctx.data(|d| d.get_temp::<SystemTime>(id)) else {
+            ctx.data_mut(|d| d.insert_temp(id, SystemTime::now()));
+            return;
+        };
+        if !SystemTime::now()
+            .duration_since(last_save)
+            .is_ok_and(|d| d > Duration::from_mins(self.settings.misc.autosave_duration_mins))
+        {
+            return;
+        }
+        self.project
+            .save()
+            .notify("Errors while autosaving project");
+        notif!(success "Autosaved project");
     }
 }
 

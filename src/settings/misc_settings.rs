@@ -11,17 +11,28 @@ use crate::{
 };
 
 settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
+settings_field!(
+    MiscSettings,
+    autosave_duration_mins_is_default,
+    autosave_duration_mins,
+    u64
+);
 
 #[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug)]
 #[serde(default)]
 pub struct MiscSettings {
     #[serde(skip_serializing_if = "notif_duration_is_default")]
     pub notif_duration: u64,
+    #[serde(skip_serializing_if = "autosave_duration_mins_is_default")]
+    pub autosave_duration_mins: u64,
 }
 
 impl Default for MiscSettings {
     fn default() -> Self {
-        Self { notif_duration: 2 }
+        Self {
+            notif_duration: 2,
+            autosave_duration_mins: 2,
+        }
     }
 }
 
@@ -42,6 +53,20 @@ impl Settings for MiscSettings {
                     egui::Slider::new(value, 0..=10)
                         .suffix("s")
                         .text("Notification duration"),
+                );
+            },
+        );
+
+        settings_ui_field(
+            ui,
+            &mut self.autosave_duration_mins,
+            default.autosave_duration_mins,
+            Some("Duration between autosaves. Set to 0 to disable autosaving"),
+            |ui, value| {
+                ui.add(
+                    egui::Slider::new(value, 0..=60)
+                        .suffix("min")
+                        .text("Autosave duration"),
                 );
             },
         );
