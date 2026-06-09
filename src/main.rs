@@ -27,8 +27,6 @@ use crate::{
 };
 
 fn main() -> Result<()> {
-    // std::panic::set_hook(Box::new(panic::panic));
-
     init_logger();
     info!("Logger initialised");
 
@@ -37,6 +35,8 @@ fn main() -> Result<()> {
             EXECUTOR.try_tick();
         }
     });
+
+    let app = App::new();
 
     eframe::run_native(
         "Stencil3",
@@ -48,7 +48,7 @@ fn main() -> Result<()> {
             persistence_path: Some(FOLDERS.in_data_dir("eframe.json")),
             ..Default::default()
         },
-        Box::new(|cc| Ok(Box::new(App::new(cc)))),
+        Box::new(|cc| Ok(Box::new(app.init_cc(cc)))),
     )?;
     Ok(())
 }
@@ -63,9 +63,7 @@ pub struct App {
 
 impl App {
     #[tracing::instrument(skip_all, name = "app_new")]
-    fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        egui_extras::install_image_loaders(&cc.egui_ctx);
-
+    fn new() -> Self {
         let mut app = Self::load_state();
         app.map_reset_view();
         if app.settings.map.clear_cache_on_startup {
@@ -73,6 +71,11 @@ impl App {
         }
         app.ack_panic();
         app
+    }
+    #[tracing::instrument(skip_all, name = "app_init_cc")]
+    fn init_cc(self, cc: &eframe::CreationContext<'_>) -> Self {
+        egui_extras::install_image_loaders(&cc.egui_ctx);
+        self
     }
     #[tracing::instrument(skip_all, name = "app_load_state")]
     fn load_state() -> Self {
