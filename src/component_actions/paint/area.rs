@@ -1,9 +1,6 @@
-use std::{
-    f32::consts::FRAC_PI_2,
-    num::NonZeroUsize,
-    sync::{LazyLock, Mutex},
-};
+use std::{f32::consts::FRAC_PI_2, num::NonZeroUsize, sync::LazyLock};
 
+use egui::mutex::Mutex;
 use geo::{
     Area, BooleanOps, Buffer, Contains, CoordsIter, MapCoords, SimplifyVw, TriangulateDelaunay,
     buffer::{BufferStyle, LineJoin},
@@ -172,7 +169,7 @@ impl MapWindow {
         let polygon_edge =
             polygon_edge.map(|polygon_edge| polygon_edge.intersection(&screen_boundaries));
 
-        let mut cache = TRIANGULATION_CACHE.lock().unwrap();
+        let mut cache = TRIANGULATION_CACHE.lock();
         let mut shapes = Vec::new();
 
         if polygon_edge.is_some()

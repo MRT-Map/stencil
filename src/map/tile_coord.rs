@@ -2,10 +2,11 @@ use std::{
     fmt::{Display, Formatter},
     num::NonZeroUsize,
     path::PathBuf,
-    sync::{LazyLock, Mutex},
+    sync::LazyLock,
 };
 
 use async_executor::Task;
+use egui::mutex::Mutex;
 use eyre::{Report, Result};
 use futures_lite::future;
 use itertools::Either;

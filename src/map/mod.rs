@@ -1,6 +1,5 @@
 use num_traits::{Zero, real::Real};
 use serde::{Deserialize, Serialize};
-use tracing::error;
 
 use crate::{
     App,
@@ -64,9 +63,7 @@ impl MapWindow {
         );
         let mut tile_screen_top_left = min_tile_screen_top_left;
 
-        let Ok(mut tile_cache) = TILE_CACHE.lock().inspect_err(|e| error!("{e:#}")) else {
-            return;
-        };
+        let mut tile_cache = TILE_CACHE.lock();
 
         for tx in min_tile_coord.x..=max_tile_coord.x {
             for ty in min_tile_coord.y..=max_tile_coord.y {

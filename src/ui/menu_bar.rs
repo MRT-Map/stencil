@@ -133,7 +133,7 @@ impl App {
                     button!(ui, "Reset Map View", ShortcutAction::ResetMapView);
                     button!(ui, "Clear Map Cache", None, {
                         self.project.basemap.clear_cache_path();
-                        let _ = TILE_CACHE.lock().map(|mut a| a.clear());
+                        TILE_CACHE.lock().clear();
                     });
                     button!(ui, "Reset Window Layout", None, {
                         self.ui.dock_layout.reset();

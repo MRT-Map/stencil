@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use declarative_enum_dispatch::enum_dispatch;
+use egui::mutex::Mutex;
 use etcetera::AppStrategy;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tracing::{error, info};
@@ -42,11 +43,11 @@ enum_dispatch! {
 }
 
 #[derive(Clone)]
-pub struct DockLayout(Arc<egui::mutex::Mutex<egui_dock::DockState<DockWindows>>>);
+pub struct DockLayout(Arc<Mutex<egui_dock::DockState<DockWindows>>>);
 
 impl DockLayout {
     #[inline]
-    pub fn get(&self) -> Arc<egui::mutex::Mutex<egui_dock::DockState<DockWindows>>> {
+    pub fn get(&self) -> Arc<Mutex<egui_dock::DockState<DockWindows>>> {
         Arc::clone(&self.0)
     }
 }
@@ -64,9 +65,9 @@ impl<'de> Deserialize<'de> for DockLayout {
     where
         D: Deserializer<'de>,
     {
-        Ok(Self(Arc::new(egui::mutex::Mutex::new(
-            Deserialize::deserialize(deserializer)?,
-        ))))
+        Ok(Self(Arc::new(Mutex::new(Deserialize::deserialize(
+            deserializer,
+        )?))))
     }
     fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
     where
@@ -93,7 +94,7 @@ impl Default for DockLayout {
             0.8,
             vec![ProjectEditorWindow.into(), HistoryViewerWindow.into()],
         );
-        Self(Arc::new(egui::mutex::Mutex::new(state)))
+        Self(Arc::new(Mutex::new(state)))
     }
 }
 impl DockLayout {
