@@ -91,7 +91,19 @@ pub fn safe_delete<T: AsRef<Path>>(path: T) -> Result<Option<PathBuf>> {
     ));
     match std::fs::rename(path, &new_path) {
         Ok(()) => {
-            debug!("Safe deleted {}", path.display());
+            debug!("Safe deleted via rename {}", path.display());
+            return Ok(Some(new_path));
+        }
+        Err(e) => {
+            if e.kind() != std::io::ErrorKind::CrossesDevices {
+                notif!(warning format!("Could not safe delete file/directory {}", path.display()), error &e);
+                return Err(e.into());
+            }
+        }
+    }
+    match std::fs::copy(path, &new_path).and_then(|_| std::fs::remove_file(path)) {
+        Ok(()) => {
+            debug!("Safe deleted via copy and remove {}", path.display());
             Ok(Some(new_path))
         }
         Err(e) => {

@@ -9,6 +9,6 @@ experimental = true
 [tasks.setup-wix]
 run = [
     "wix eula accept wix7",
-    "wix extension add -g WixToolset.Util.wixext/{{ tools['dotnet:wix'].version }}",
-    "wix extension add -g WixToolset.UI.wixext/{{ tools['dotnet:wix'].version }}",
+    "wix extension add -g WixToolset.Util.wixext/{{ tools['dotnet:wix'].version | replace(from='[', to='') | replace(from=']', to='') }}",
+    "wix extension add -g WixToolset.UI.wixext/{{ tools['dotnet:wix'].version | replace(from='[', to='') | replace(from=']', to='') }}",
 ]
