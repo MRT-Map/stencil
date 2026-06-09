@@ -1,6 +1,8 @@
+use std::sync::Arc;
+
 use declarative_enum_dispatch::enum_dispatch;
 use etcetera::AppStrategy;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tracing::{error, info};
 
 use crate::{
@@ -39,8 +41,41 @@ enum_dispatch! {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct DockLayout(pub egui_dock::DockState<DockWindows>);
+#[derive(Clone)]
+pub struct DockLayout(Arc<egui::mutex::Mutex<egui_dock::DockState<DockWindows>>>);
+
+impl DockLayout {
+    #[inline]
+    pub fn get(&self) -> Arc<egui::mutex::Mutex<egui_dock::DockState<DockWindows>>> {
+        Arc::clone(&self.0)
+    }
+}
+
+impl Serialize for DockLayout {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.lock().serialize(serializer)
+    }
+}
+impl<'de> Deserialize<'de> for DockLayout {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Self(Arc::new(egui::mutex::Mutex::new(
+            Deserialize::deserialize(deserializer)?,
+        ))))
+    }
+    fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        *place.0.lock() = Deserialize::deserialize(deserializer)?;
+        Ok(())
+    }
+}
 
 impl_load_save!(json DockLayout, FOLDERS.in_data_dir("dock.json"));
 
@@ -58,7 +93,7 @@ impl Default for DockLayout {
             0.8,
             vec![ProjectEditorWindow.into(), HistoryViewerWindow.into()],
         );
-        Self(state)
+        Self(Arc::new(egui::mutex::Mutex::new(state)))
     }
 }
 impl DockLayout {
@@ -93,26 +128,25 @@ impl egui_dock::TabViewer for App {
 
 impl App {
     pub fn dock(&mut self, ui: &mut egui::Ui) {
-        let mut dock_state = self.ui.dock_layout.0.clone();
-        egui_dock::DockArea::new(&mut dock_state)
+        let dock_state = self.ui.dock_layout.get();
+        egui_dock::DockArea::new(&mut dock_state.lock())
             .style(egui_dock::Style::from_egui(ui.style().as_ref()))
             .show_inside(ui, self);
-        self.ui.dock_layout.0 = dock_state;
     }
 }
 impl DockLayout {
-    pub fn open_window<W: Into<DockWindows>>(&mut self, window: W) {
+    pub fn open_window<W: Into<DockWindows>>(&self, window: W) {
+        let mut dock_state = self.0.lock();
         let window = window.into();
-        let tab_path = self.0.find_tab_from(|a| a.title() == window.title());
+        let tab_path = dock_state.find_tab_from(|a| a.title() == window.title());
         if let Some(tab_path) = tab_path {
             info!("Focusing on {}", window.title());
-            let _ = self
-                .0
+            let _ = dock_state
                 .set_active_tab(tab_path)
                 .inspect_err(|e| error!("{e:#}"));
         } else {
             info!("Creating new window {}", window.title());
-            self.0.add_window(vec![window]);
+            dock_state.add_window(vec![window]);
         }
     }
 }
