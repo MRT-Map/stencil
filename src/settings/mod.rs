@@ -40,13 +40,33 @@ impl AppSettings {
 }
 
 #[macro_export]
-macro_rules! settings_field {
-    ($s:ty, $f:ident, $i:ident, $t:ty) => {
-        #[expect(clippy::allow_attributes)]
-        #[allow(clippy::float_cmp)]
-        fn $f(v: &$t) -> bool {
-            *v == <$s>::default().$i
+macro_rules! settings {
+    ($(#[$attr2:meta])* $Ty:ident { $( $(#[$attr:meta])? $field:ident : $field_ty:ty = $default:expr,)* }) => { paste::paste! {
+        $(#[$attr2])*
+        #[derive(serde::Deserialize, serde::Serialize, Clone, PartialEq, Debug)]
+        #[serde(default)]
+        pub struct $Ty {
+            $($(#[$attr])? #[serde(skip_serializing_if = $Ty "Default::" $field)] pub $field: $field_ty),*
         }
+
+        impl Default for $Ty {
+            fn default() -> Self {
+                Self {
+                    $($field: $default),*
+                }
+            }
+        }
+
+        pub struct [<$Ty Default>];
+        impl [<$Ty Default>] {
+            $(
+                #[expect(clippy::allow_attributes)]
+                #[allow(clippy::float_cmp)]
+                fn $field(v: &$field_ty) -> bool {
+                    *v == <$Ty>::default().$field
+                }
+            )*
+        }}
     };
 }
 
@@ -79,6 +99,34 @@ pub fn settings_ui_field<
         if ui
             .add_enabled(*value != default, egui::Button::new("⟲"))
             .on_hover_text(format!("Default: {default}"))
+            .clicked()
+        {
+            *value = default;
+        }
+
+        edit_ui(ui, value);
+    });
+    if let Some(description) = description {
+        ui.label(description);
+    }
+}
+pub fn settings_ui_field_no_display<
+    T: PartialEq,
+    TD: Display,
+    D: Into<egui::WidgetText>,
+    F: FnOnce(&mut egui::Ui, &mut T),
+>(
+    ui: &mut egui::Ui,
+    value: &mut T,
+    default: T,
+    default_display: TD,
+    description: Option<D>,
+    edit_ui: F,
+) {
+    ui.horizontal(|ui| {
+        if ui
+            .add_enabled(*value != default, egui::Button::new("⟲"))
+            .on_hover_text(format!("Default: {default_display}"))
             .clicked()
         {
             *value = default;

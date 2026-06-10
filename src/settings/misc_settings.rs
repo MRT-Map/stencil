@@ -1,41 +1,19 @@
 use std::any::Any;
 
 use etcetera::AppStrategy;
-use serde::{Deserialize, Serialize};
 
 use crate::{
-    impl_load_save,
+    impl_load_save, settings,
     settings::{Settings, settings_ui_field},
-    settings_field,
     utils::file::FOLDERS,
 };
 
-settings_field!(MiscSettings, notif_duration_is_default, notif_duration, u64);
-settings_field!(
-    MiscSettings,
-    autosave_duration_mins_is_default,
-    autosave_duration_mins,
-    u64
-);
-
-#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug)]
-#[serde(default)]
-pub struct MiscSettings {
-    #[serde(skip_serializing_if = "notif_duration_is_default")]
-    pub notif_duration: u64,
-    #[serde(skip_serializing_if = "autosave_duration_mins_is_default")]
-    pub autosave_duration_mins: u64,
-}
-
-impl Default for MiscSettings {
-    fn default() -> Self {
-        Self {
-            notif_duration: 2,
-            autosave_duration_mins: 2,
-        }
+settings! {
+    #[derive(Eq)] MiscSettings {
+        notif_duration: u64 = 2,
+        autosave_duration_mins: u64 = 2,
     }
 }
-
 impl_load_save!(toml MiscSettings, FOLDERS.in_config_dir("misc.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/Misc-Settings.html");
 
 impl Settings for MiscSettings {

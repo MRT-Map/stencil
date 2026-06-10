@@ -45,8 +45,7 @@ fn main() -> eframe::Result<()> {
                     .unwrap(),
             ),
             persistence_path: Some(FOLDERS.in_data_dir("eframe.json")),
-
-            ..Default::default()
+            ..app.settings.ui.get_native_options()
         },
         Box::new(|cc| Ok(Box::new(app.init_cc(cc)))),
     )

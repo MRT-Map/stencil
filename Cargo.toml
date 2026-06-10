@@ -40,6 +40,7 @@ async-executor = { version = "=1.14.0", features = ["static"] }
 ehttp = { version = "=0.7.1", features = ["json", "native-async"] }
 url = "=2.5.8"
 serde = { version = "=1.0.228", features = ["derive"] }
+serde_with = "=3.21.0"
 serde_json = "=1.0.150"
 toml = "=1.1.2"
 pla = { path = "pla", features = ["serde", "geo", "emath", "bezier-epaint", "tracing", "pla2"] }
@@ -65,6 +66,7 @@ duplicate = "=2.0.1"
 ordered-float = { version = "=5.3.0", features = ["serde"] }
 itertools = "=0.14.0"
 num-traits = "=0.2.19"
+paste = "=1.0.15"
 
 license-retriever = "=1.1.3"
 

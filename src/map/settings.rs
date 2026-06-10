@@ -2,102 +2,32 @@ use std::any::Any;
 
 use etcetera::AppStrategy;
 use num_traits::real::Real;
-use serde::{Deserialize, Serialize};
 
 use crate::{
-    App, impl_load_save,
+    App, impl_load_save, settings,
     settings::{Settings, settings_ui_field},
-    settings_field,
     utils::{
         coord::{Nnf32, Nnf32UpdateExt, nn},
         file::FOLDERS,
     },
 };
 
-settings_field!(
-    MapSettings,
-    init_zoom_as_pc_of_max_is_default,
-    init_zoom_as_pc_of_max,
-    Nnf32
-);
-settings_field!(
-    MapSettings,
-    additional_zoom_is_default,
-    additional_zoom,
-    Nnf32
-);
-settings_field!(MapSettings, max_requests_is_default, max_requests, usize);
-settings_field!(
-    MapSettings,
-    clear_cache_on_startup_is_default,
-    clear_cache_on_startup,
-    bool
-);
-settings_field!(
-    MapSettings,
-    world_screen_ratio_is_default,
-    world_screen_ratio,
-    Nnf32
-);
-settings_field!(
-    MapSettings,
-    shortcut_pan_amount_is_default,
-    shortcut_pan_amount,
-    Nnf32
-);
-settings_field!(
-    MapSettings,
-    shortcut_zoom_amount_is_default,
-    shortcut_zoom_amount,
-    Nnf32
-);
-settings_field!(
-    MapSettings,
-    invert_scroll_is_default,
-    invert_scroll,
-    egui::Vec2b
-);
+settings! {
+    #[derive(Eq)] MapSettings {
+        init_zoom_as_pc_of_max: Nnf32 = nn(87.5),
+        additional_zoom: Nnf32 = nn(4.0),
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
-#[serde(default)]
-pub struct MapSettings {
-    #[serde(skip_serializing_if = "init_zoom_as_pc_of_max_is_default")]
-    pub init_zoom_as_pc_of_max: Nnf32,
-    #[serde(skip_serializing_if = "additional_zoom_is_default")]
-    pub additional_zoom: Nnf32,
+        max_requests: usize = 0x10000,
+        clear_cache_on_startup: bool = false,
 
-    #[serde(skip_serializing_if = "max_requests_is_default")]
-    pub max_requests: usize,
-    #[serde(skip_serializing_if = "clear_cache_on_startup_is_default")]
-    pub clear_cache_on_startup: bool,
+        world_screen_ratio: Nnf32 = nn(0.25),
 
-    #[serde(skip_serializing_if = "world_screen_ratio_is_default")]
-    pub world_screen_ratio: Nnf32,
+        shortcut_pan_amount: Nnf32 = nn(25.0),
+        shortcut_zoom_amount: Nnf32 = nn(0.2),
 
-    #[serde(skip_serializing_if = "shortcut_pan_amount_is_default")]
-    pub shortcut_pan_amount: Nnf32,
-    #[serde(skip_serializing_if = "shortcut_zoom_amount_is_default")]
-    pub shortcut_zoom_amount: Nnf32,
-
-    #[serde(skip_serializing_if = "invert_scroll_is_default")]
-    pub invert_scroll: egui::Vec2b,
-}
-
-impl Default for MapSettings {
-    fn default() -> Self {
-        Self {
-            init_zoom_as_pc_of_max: nn(87.5),
-            additional_zoom: nn(4.0),
-            max_requests: 0x10000,
-            clear_cache_on_startup: false,
-            world_screen_ratio: nn(0.25),
-            shortcut_pan_amount: nn(25.0),
-            shortcut_zoom_amount: nn(0.2),
-            invert_scroll: egui::Vec2b::default(),
-        }
+        invert_scroll: egui::Vec2b = egui::Vec2b::default(),
     }
 }
-
 impl_load_save!(toml MapSettings, FOLDERS.in_config_dir("map.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/Map-Settings.html");
 
 impl Settings for MapSettings {
