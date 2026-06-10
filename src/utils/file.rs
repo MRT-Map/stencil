@@ -5,7 +5,6 @@ use std::{
 };
 
 use etcetera::app_strategy;
-use eyre::Result;
 use tracing::debug;
 
 use crate::notif;
@@ -76,7 +75,7 @@ pub fn safe_write<P: AsRef<Path>, C: AsRef<[u8]>>(path: P, contents: C) -> std::
     }
     std::fs::write(path, contents)
 }
-pub fn safe_delete<T: AsRef<Path>>(path: T) -> Result<Option<PathBuf>> {
+pub fn safe_delete<T: AsRef<Path>>(path: T) -> eyre::Result<Option<PathBuf>> {
     let path = path.as_ref();
     if !path.exists() {
         return Ok(None);

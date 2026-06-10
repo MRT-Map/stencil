@@ -13,7 +13,6 @@ mod utils;
 use std::time::Instant;
 
 use etcetera::AppStrategy;
-use eyre::Result;
 use tracing::info;
 use utils::EXECUTOR;
 
@@ -26,7 +25,7 @@ use crate::{
     utils::{file::FOLDERS, load_save::LoadSave},
 };
 
-fn main() -> Result<()> {
+fn main() -> eframe::Result<()> {
     init_logger();
     info!("Logger initialised");
 
@@ -46,11 +45,11 @@ fn main() -> Result<()> {
                     .unwrap(),
             ),
             persistence_path: Some(FOLDERS.in_data_dir("eframe.json")),
+
             ..Default::default()
         },
         Box::new(|cc| Ok(Box::new(app.init_cc(cc)))),
-    )?;
-    Ok(())
+    )
 }
 
 #[derive(Default)]

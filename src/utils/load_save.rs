@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use eyre::Result;
 use tracing::{debug, info};
 
 use crate::{notif, utils::file::safe_write};
@@ -54,8 +53,8 @@ macro_rules! impl_load_save {
 
 pub trait LoadSave: Default {
     fn path() -> PathBuf;
-    fn ser(&self) -> Result<Vec<u8>>;
-    fn de(ser: &[u8]) -> Result<Self>;
+    fn ser(&self) -> eyre::Result<Vec<u8>>;
+    fn de(ser: &[u8]) -> eyre::Result<Self>;
 
     fn load() -> Self {
         if !Self::path().exists() {

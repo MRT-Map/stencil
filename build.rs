@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
-use eyre::Result;
 use license_retriever::{Config, LicenseRetriever};
 
-fn gather_licenses() -> Result<()> {
+fn gather_licenses() -> eyre::Result<()> {
     let config = Config {
         error_for_no_license: true,
         ..Config::default()
@@ -12,7 +11,7 @@ fn gather_licenses() -> Result<()> {
     Ok(())
 }
 
-fn embed_resource() -> Result<()> {
+fn embed_resource() -> eyre::Result<()> {
     if std::env::var("TARGET")?.contains("windows") {
         let root_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?);
         let icons_dir = root_dir.join("assets/icons");
@@ -25,7 +24,7 @@ fn embed_resource() -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
+fn main() -> eyre::Result<()> {
     if std::env::var("PROFILE")? != "debug" {
         gather_licenses()?;
     }

@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use async_executor::Task;
 use egui::ahash::HashMap;
 use etcetera::AppStrategy;
-use eyre::{Report, Result, eyre};
+use eyre::{Report, eyre};
 use futures_lite::future;
 use history::History;
 use pla::Namespace;
@@ -32,7 +32,7 @@ use crate::{
 pub enum SkinStatus {
     #[default]
     Unloaded,
-    Loading(Task<Result<Skin>>),
+    Loading(Task<eyre::Result<Skin>>),
     Failed(Report),
     Loaded(&'static Skin),
 }
@@ -130,7 +130,7 @@ impl Project {
             _ => {}
         }
     }
-    pub fn namespace_component_count(&self, namespace: &Namespace) -> Result<usize> {
+    pub fn namespace_component_count(&self, namespace: &Namespace) -> eyre::Result<usize> {
         if self.namespaces.get(namespace).is_some_and(|a| *a) {
             return Ok(self.components.iter_namespace(namespace).count());
         }

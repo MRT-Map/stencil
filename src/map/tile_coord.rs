@@ -7,7 +7,7 @@ use std::{
 
 use async_executor::Task;
 use egui::mutex::Mutex;
-use eyre::{Report, Result};
+use eyre::Report;
 use futures_lite::future;
 use itertools::Either;
 use lru::LruCache;
@@ -126,8 +126,8 @@ impl TileCoord {
 }
 
 pub enum TileCacheItem {
-    Pending(Task<Result<Vec<u8>>>),
-    Loaded(Result<Vec<u8>>),
+    Pending(Task<eyre::Result<Vec<u8>>>),
+    Loaded(eyre::Result<Vec<u8>>),
 }
 pub enum TextureIdResult {
     Success(egui::TextureId),

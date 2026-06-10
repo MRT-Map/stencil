@@ -17,7 +17,7 @@ rust-version = "1.95"
 
 [dependencies]
 egui = { version = "=0.34.3", features = ["serde", "rayon"] }
-eframe = { version = "=0.34.3", features = ["persistence"] }
+eframe = { version = "=0.34.3", features = ["persistence", "glow"] }
 egui_commonmark = "=0.23.0"
 egui_extras = { version = "=0.34.3", features = ["http", "all_loaders"] }
 egui_dock = { version = "=0.19.1" , features = ["serde"] }
