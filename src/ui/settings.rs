@@ -1,7 +1,9 @@
-use std::any::Any;
+use std::{any::Any, borrow::Cow};
 
+use eframe::{egui_glow, egui_wgpu};
 use egui::Ui;
 use etcetera::AppStrategy;
+use itertools::Itertools;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::{DeserializeAs, SerializeAs};
 
@@ -32,19 +34,16 @@ pub enum ShaderVersion {
     Es100,
     Es300,
 }
-impl SerializeAs<eframe::egui_glow::ShaderVersion> for ShaderVersion {
-    fn serialize_as<S>(
-        source: &eframe::egui_glow::ShaderVersion,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+impl SerializeAs<egui_glow::ShaderVersion> for ShaderVersion {
+    fn serialize_as<S>(source: &egui_glow::ShaderVersion, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         Self::serialize(source, serializer)
     }
 }
-impl<'de> DeserializeAs<'de, eframe::egui_glow::ShaderVersion> for ShaderVersion {
-    fn deserialize_as<D>(deserializer: D) -> Result<eframe::egui_glow::ShaderVersion, D::Error>
+impl<'de> DeserializeAs<'de, egui_glow::ShaderVersion> for ShaderVersion {
+    fn deserialize_as<D>(deserializer: D) -> Result<egui_glow::ShaderVersion, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -54,14 +53,21 @@ impl<'de> DeserializeAs<'de, eframe::egui_glow::ShaderVersion> for ShaderVersion
 
 settings! {
     #[serde_with::serde_as] #[derive(Eq)] UiSettings {
-        vsync: bool = eframe::NativeOptions::default().vsync,
         multisampling: u16 = eframe::NativeOptions::default().multisampling,
         #[serde(with = "HardwareAcceleration")] hardware_acceleration: eframe::HardwareAcceleration = eframe::NativeOptions::default().hardware_acceleration,
         #[serde(with = "Renderer")] renderer: eframe::Renderer = eframe::NativeOptions::default().renderer,
-        #[serde_as(as = "Option<ShaderVersion>")] shader_version: Option<eframe::egui_glow::ShaderVersion> = eframe::NativeOptions::default().shader_version,
         centered: bool = eframe::NativeOptions::default().centered,
         persist_window: bool = eframe::NativeOptions::default().persist_window,
         dithering: bool = eframe::NativeOptions::default().dithering,
+
+        glow_vsync: bool = eframe::NativeOptions::default().vsync,
+        #[serde_as(as = "Option<ShaderVersion>")] glow_shader_version: Option<egui_glow::ShaderVersion> = eframe::NativeOptions::default().shader_version,
+
+        wgpu_present_mode: wgpu_types::PresentMode = egui_wgpu::WgpuConfiguration::default().present_mode,
+        wgpu_desired_maximum_frame_latency: Option<u32> = egui_wgpu::WgpuConfiguration::default().desired_maximum_frame_latency,
+        wgpu_backends: wgpu_types::Backends = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.backends,
+        // wgpu_flags: wgpu_types::InstanceFlags = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.flags,
+        wgpu_power_preference: wgpu_types::PowerPreference = egui_wgpu::WgpuSetupCreateNew::without_display_handle().power_preference,
     }
 }
 impl_load_save!(toml UiSettings, FOLDERS.in_config_dir("ui.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/UI-Settings.html");
@@ -75,7 +81,7 @@ impl Settings for UiSettings {
         ui.separator();
         let default = Self::default();
         ui.heading("Eframe Settings");
-        ui.colored_label(egui::Color32::YELLOW, "Restart to see changes");
+        ui.colored_label(egui::Color32::YELLOW, "Restart to see changes. May cause crashes, please be careful! If Stencil3 is unable to startup due to any of the below settings, you will have to edit the configuration manually at the path above.");
 
         settings_ui_field_no_display(
             ui,
@@ -147,17 +153,6 @@ impl Settings for UiSettings {
             }
         }
 
-        #[expect(clippy::items_after_statements)]
-        const fn shader_string(v: Option<eframe::egui_glow::ShaderVersion>) -> &'static str {
-            match v {
-                None => "Default",
-                Some(eframe::egui_glow::ShaderVersion::Gl120) => "GL120",
-                Some(eframe::egui_glow::ShaderVersion::Gl140) => "GL140",
-                Some(eframe::egui_glow::ShaderVersion::Es100) => "ES100",
-                Some(eframe::egui_glow::ShaderVersion::Es300) => "ES300",
-            }
-        }
-
         settings_ui_field(
             ui,
             &mut self.centered,
@@ -188,39 +183,177 @@ impl Settings for UiSettings {
             },
         );
 
+        ui.separator();
+
         if self.renderer == eframe::Renderer::Glow {
+            ui.label("Glow Settings");
+            settings_ui_field(
+                ui,
+                &mut self.glow_vsync,
+                default.glow_vsync,
+                Some("Limit the FPS to the display refresh rate"),
+                |ui, value| {
+                    ui.checkbox(value, "Vsync");
+                },
+            );
+
+            #[expect(clippy::items_after_statements)]
+            const fn shader_string(v: Option<egui_glow::ShaderVersion>) -> &'static str {
+                match v {
+                    None => "Default",
+                    Some(egui_glow::ShaderVersion::Gl120) => "GL120",
+                    Some(egui_glow::ShaderVersion::Gl140) => "GL140",
+                    Some(egui_glow::ShaderVersion::Es100) => "ES100",
+                    Some(egui_glow::ShaderVersion::Es300) => "ES300",
+                }
+            }
+
             settings_ui_field_no_display(
                 ui,
-                &mut self.shader_version,
-                default.shader_version,
-                shader_string(default.shader_version),
+                &mut self.glow_shader_version,
+                default.glow_shader_version,
+                shader_string(default.glow_shader_version),
                 Option::<egui::WidgetText>::None,
                 |ui, value| {
-                    egui::ComboBox::from_label("Shader Version. Glow only")
+                    egui::ComboBox::from_label("Shader Version")
                         .selected_text(shader_string(*value))
                         .show_ui(ui, |ui| {
                             for option in [
                                 None,
-                                Some(eframe::egui_glow::ShaderVersion::Gl120),
-                                Some(eframe::egui_glow::ShaderVersion::Gl140),
-                                Some(eframe::egui_glow::ShaderVersion::Es100),
-                                Some(eframe::egui_glow::ShaderVersion::Es300),
+                                Some(egui_glow::ShaderVersion::Gl120),
+                                Some(egui_glow::ShaderVersion::Gl140),
+                                Some(egui_glow::ShaderVersion::Es100),
+                                Some(egui_glow::ShaderVersion::Es300),
                             ] {
                                 ui.selectable_value(value, option, shader_string(option));
                             }
                         });
                 },
             );
+        } else {
+            ui.label("Wgpu Settings");
+            #[expect(clippy::items_after_statements)]
+            const fn present_mode_string(v: wgpu_types::PresentMode) -> &'static str {
+                match v {
+                    wgpu_types::PresentMode::AutoVsync => "Auto Vsync",
+                    wgpu_types::PresentMode::AutoNoVsync => "Auto No Vsync",
+                    wgpu_types::PresentMode::Fifo => "Vsync On (FIFO)",
+                    wgpu_types::PresentMode::FifoRelaxed => "Adaptive Vsync (FIFO Relaxed)",
+                    wgpu_types::PresentMode::Immediate => "Vsync Off (Immediate)",
+                    wgpu_types::PresentMode::Mailbox => "Fast Vsync (Mailbox)",
+                }
+            }
 
-            settings_ui_field(
+            settings_ui_field_no_display(
                 ui,
-                &mut self.vsync,
-                default.vsync,
-                Some("Limit the FPS to the display refresh rate. Glow only"),
+                &mut self.wgpu_present_mode,
+                default.wgpu_present_mode,
+                present_mode_string(default.wgpu_present_mode),
+                Option::<egui::WidgetText>::None,
                 |ui, value| {
-                    ui.checkbox(value, "Vsync");
+                    egui::ComboBox::from_label("Present Mode")
+                        .selected_text(present_mode_string(*value))
+                        .show_ui(ui, |ui| {
+                            for option in [
+                                wgpu_types::PresentMode::AutoVsync,
+                                wgpu_types::PresentMode::AutoNoVsync,
+                                wgpu_types::PresentMode::Fifo,
+                                wgpu_types::PresentMode::FifoRelaxed,
+                                wgpu_types::PresentMode::Immediate,
+                                wgpu_types::PresentMode::Mailbox,
+                            ] {
+                                ui.selectable_value(value, option, present_mode_string(option));
+                            }
+                        });
                 },
             );
+
+            #[expect(clippy::items_after_statements)]
+            fn dmfl_string(v: Option<u32>) -> Cow<'static, str> {
+                match v {
+                    None => "Default".into(),
+                    Some(1) => "Low Latency".into(),
+                    Some(2) => "High Throughput".into(),
+                    Some(a) => a.to_string().into(),
+                }
+            }
+
+            settings_ui_field_no_display(
+                ui,
+                &mut self.wgpu_desired_maximum_frame_latency,
+                default.wgpu_desired_maximum_frame_latency,
+                dmfl_string(default.wgpu_desired_maximum_frame_latency),
+                Option::<egui::WidgetText>::None,
+                |ui, value| {
+                    egui::ComboBox::from_label("Desired Maximum Frame Latency")
+                        .selected_text(dmfl_string(*value))
+                        .show_ui(ui, |ui| {
+                            for option in [None, Some(1), Some(2)] {
+                                ui.selectable_value(value, option, dmfl_string(option));
+                            }
+                        });
+                },
+            );
+
+            settings_ui_field_no_display(
+                ui,
+                &mut self.wgpu_backends,
+                default.wgpu_backends,
+                default
+                    .wgpu_backends
+                    .iter_names()
+                    .map(|(a, _)| a)
+                    .join(", "),
+                Option::<egui::WidgetText>::None,
+                |ui, value| {
+                    for (option, string) in [
+                        (wgpu_types::Backends::VULKAN, "Vulkan"),
+                        (wgpu_types::Backends::GL, "GL"),
+                        (wgpu_types::Backends::METAL, "Metal"),
+                        (wgpu_types::Backends::DX12, "DX12"),
+                        (wgpu_types::Backends::BROWSER_WEBGPU, "Browser WebGPU"),
+                    ] {
+                        if ui
+                            .selectable_label(value.contains(option), string)
+                            .clicked()
+                        {
+                            value.toggle(option);
+                        }
+                    }
+                    ui.label("Backends");
+                },
+            );
+
+            // todo instance flags
+
+            #[expect(clippy::items_after_statements)]
+            const fn pp_string(v: wgpu_types::PowerPreference) -> &'static str {
+                match v {
+                    wgpu_types::PowerPreference::None => "None",
+                    wgpu_types::PowerPreference::LowPower => "Low Power",
+                    wgpu_types::PowerPreference::HighPerformance => "High Performance",
+                }
+            }
+
+            settings_ui_field_no_display(
+                ui,
+                &mut self.wgpu_power_preference,
+                default.wgpu_power_preference,
+                pp_string(default.wgpu_power_preference),
+                Option::<egui::WidgetText>::None,
+                |ui, value| {
+                    for option in [
+                        wgpu_types::PowerPreference::None,
+                        wgpu_types::PowerPreference::LowPower,
+                        wgpu_types::PowerPreference::HighPerformance,
+                    ] {
+                        ui.selectable_value(value, option, pp_string(option));
+                    }
+                    ui.label("Power Preference");
+                },
+            );
+
+            // todo backend-specific settings
         }
     }
 }
@@ -229,14 +362,34 @@ impl UiSettings {
     #[must_use]
     pub fn get_native_options(&self) -> eframe::NativeOptions {
         eframe::NativeOptions {
-            vsync: self.vsync,
+            vsync: self.glow_vsync,
             multisampling: self.multisampling,
             hardware_acceleration: self.hardware_acceleration,
             renderer: self.renderer,
-            shader_version: self.shader_version,
+            shader_version: self.glow_shader_version,
             centered: self.centered,
             persist_window: self.persist_window,
             dithering: self.dithering,
+            wgpu_options: egui_wgpu::WgpuConfiguration {
+                present_mode: self.wgpu_present_mode,
+                desired_maximum_frame_latency: self.wgpu_desired_maximum_frame_latency,
+                wgpu_setup: egui_wgpu::WgpuSetup::CreateNew(egui_wgpu::WgpuSetupCreateNew {
+                    instance_descriptor: wgpu_types::InstanceDescriptor {
+                        backends: self.wgpu_backends,
+                        // flags: self.wgpu_flags,
+                        backend_options: wgpu_types::BackendOptions {
+                            gl: wgpu_types::GlBackendOptions::default(),     // TODO
+                            dx12: wgpu_types::Dx12BackendOptions::default(), // TODO
+                            noop: wgpu_types::NoopBackendOptions::default(), // TODO
+                        },
+                        ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
+                            .instance_descriptor
+                    },
+                    power_preference: self.wgpu_power_preference,
+                    ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
+                }),
+                ..Default::default()
+            },
             ..Default::default()
         }
     }

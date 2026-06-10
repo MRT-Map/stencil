@@ -4725,6 +4725,7 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "url",
+ "wgpu-types",
  "zip",
 ]
 
@@ -5826,6 +5827,7 @@ dependencies = [
  "js-sys",
  "log",
  "raw-window-handle",
+ "serde",
  "web-sys",
 ]
 
