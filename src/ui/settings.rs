@@ -1,4 +1,4 @@
-use std::{any::Any, borrow::Cow, path::PathBuf};
+use std::{any::Any, borrow::Cow, path::PathBuf, sync::Arc};
 
 use eframe::{egui_glow, egui_wgpu};
 use etcetera::AppStrategy;
@@ -162,146 +162,101 @@ impl UiSettings {
         }
     }
     pub fn reload_fonts(&self, ctx: &egui::Context) {
-        ctx.set_fonts(egui::FontDefinitions::default());
+        let mut fd = egui::FontDefinitions::default();
         for font in &self.additional_fonts {
             let Ok(data) = std::fs::read(&font.path)
                 .notify(format!("Unable to read font file {}", font.path.display()))
             else {
                 continue;
             };
-            let mut families = vec![];
+            fd.font_data.insert(
+                font.name().into_owned(),
+                Arc::new(egui::FontData::from_owned(data)),
+            );
             for (family, priority) in [
                 (egui::FontFamily::Proportional, font.proportional),
                 (egui::FontFamily::Monospace, font.monospace),
             ] {
-                if let Some(priority) = priority {
-                    families.push(egui::epaint::text::InsertFontFamily {
-                        family,
-                        priority: match priority {
-                            AdditionalFontPriority::Highest => {
-                                egui::epaint::text::FontPriority::Highest
-                            }
-                            AdditionalFontPriority::Lowest => {
-                                egui::epaint::text::FontPriority::Lowest
-                            }
-                        },
-                    });
+                match priority {
+                    Some(AdditionalFontPriority::Highest) => fd
+                        .families
+                        .entry(family)
+                        .or_default()
+                        .insert(0, font.name().into_owned()),
+                    Some(AdditionalFontPriority::Lowest) => fd
+                        .families
+                        .entry(family)
+                        .or_default()
+                        .push(font.name().into_owned()),
+                    None => (),
                 }
             }
-
-            ctx.add_font(egui::epaint::text::FontInsert {
-                name: font.name().into_owned(),
-                data: egui::FontData::from_owned(data),
-                families,
-            });
         }
+        ctx.set_fonts(fd);
     }
 
     fn custom_fonts_ui(&mut self, ui: &mut egui::Ui) {
-        egui_extras::TableBuilder::new(ui)
-            .id_salt("custom fonts table")
-            .striped(true)
-            .column(egui_extras::Column::auto())
-            .column(egui_extras::Column::remainder())
-            .columns(egui_extras::Column::auto(), 3)
-            .header(20.0, |mut header| {
-                header.col(|ui| {
-                    ui.label("Name");
-                });
-                header.col(|ui| {
-                    ui.label("Path");
-                });
-                header.col(|ui| {
-                    ui.label("Prop");
-                });
-                header.col(|ui| {
-                    ui.label("Mono");
-                });
-                header.col(|_| ());
-            })
-            .body(|body| {
-                let mut to_remove = None;
-                let mut to_swap = None;
+        let mut to_remove = None;
+        let mut to_swap = None;
+        let length = self.additional_fonts.len();
 
-                body.rows(20.0, self.additional_fonts.len(), |mut row| {
-                    let i = row.index();
-                    let font = &mut self.additional_fonts[i];
-                    row.col(|ui| {
-                        ui.label(font.name());
+        for (i, font) in self.additional_fonts.iter_mut().enumerate() {
+            ui.label(font.name());
+            ui.small(font.path.to_string_lossy());
+            ui.horizontal(|ui| {
+                egui::ComboBox::new(format!("prop-{i}"), "Proportional")
+                    .selected_text(afp_string(font.proportional))
+                    .show_ui(ui, |ui| {
+                        for option in [
+                            None,
+                            Some(AdditionalFontPriority::Highest),
+                            Some(AdditionalFontPriority::Lowest),
+                        ] {
+                            ui.selectable_value(&mut font.proportional, option, afp_string(option));
+                        }
                     });
-                    row.col(|ui| {
-                        ui.small(font.path.to_string_lossy());
+                egui::ComboBox::new(format!("mono-{i}"), "Monospace")
+                    .selected_text(afp_string(font.monospace))
+                    .show_ui(ui, |ui| {
+                        for option in [
+                            None,
+                            Some(AdditionalFontPriority::Highest),
+                            Some(AdditionalFontPriority::Lowest),
+                        ] {
+                            ui.selectable_value(&mut font.monospace, option, afp_string(option));
+                        }
                     });
-                    row.col(|ui| {
-                        egui::ComboBox::from_id_salt(format!("prop-{i}"))
-                            .selected_text(afp_string(font.proportional))
-                            .show_ui(ui, |ui| {
-                                for option in [
-                                    None,
-                                    Some(AdditionalFontPriority::Highest),
-                                    Some(AdditionalFontPriority::Lowest),
-                                ] {
-                                    ui.selectable_value(
-                                        &mut font.proportional,
-                                        option,
-                                        afp_string(option),
-                                    );
-                                }
-                            });
-                    });
-                    row.col(|ui| {
-                        egui::ComboBox::from_id_salt(format!("mono-{i}"))
-                            .selected_text(afp_string(font.monospace))
-                            .show_ui(ui, |ui| {
-                                for option in [
-                                    None,
-                                    Some(AdditionalFontPriority::Highest),
-                                    Some(AdditionalFontPriority::Lowest),
-                                ] {
-                                    ui.selectable_value(
-                                        &mut font.monospace,
-                                        option,
-                                        afp_string(option),
-                                    );
-                                }
-                            });
-                    });
-                    row.col(|ui| {
-                        ui.horizontal(|ui| {
-                            if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
-                                to_swap = Some((i, i - 1));
-                            }
-                            if ui
-                                .add_enabled(
-                                    i != self.additional_fonts.len() - 1,
-                                    egui::Button::new("⬇"),
-                                )
-                                .clicked()
-                            {
-                                to_swap = Some((i, i + 1));
-                            }
-                            if ui
-                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                                .clicked()
-                            {
-                                to_remove = Some(i);
-                            }
-                        });
-                    });
-                });
-                if let Some(to_remove) = to_remove {
-                    self.additional_fonts.remove(to_remove);
+
+                if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
+                    to_swap = Some((i, i - 1));
                 }
-                if let Some((a, b)) = to_swap {
-                    self.additional_fonts.swap(a, b);
+                if ui
+                    .add_enabled(i != length - 1, egui::Button::new("⬇"))
+                    .clicked()
+                {
+                    to_swap = Some((i, i + 1));
+                }
+                if ui
+                    .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                    .clicked()
+                {
+                    to_remove = Some(i);
                 }
             });
+        }
+
+        if let Some(to_remove) = to_remove {
+            self.additional_fonts.remove(to_remove);
+        }
+        if let Some((a, b)) = to_swap {
+            self.additional_fonts.swap(a, b);
+        }
 
         ui.horizontal(|ui| {
             if ui.button("➕ Custom Font").clicked() {
                 let Some(files) = FileDialog::new()
                     .set_title("Import Custom Font")
-                    .add_filter("Font File", &[".ttf", ".otf"])
+                    .add_filter("Font File", &["ttf", "otf"])
                     .pick_files()
                 else {
                     return;
@@ -319,6 +274,8 @@ impl UiSettings {
                 self.reload_fonts(ui);
             }
         });
+
+        ui.label("Settings for each font located above under \"Font Tweaks\"");
     }
 
     #[expect(clippy::too_many_lines)]
