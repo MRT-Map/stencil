@@ -3,7 +3,12 @@
 **_Coming soon_**
 
 - Directly download namespace files from GitHub repositories
-- Font configuration
+
+## v3.0.0-alpha.8 (20260611)
+
+- fix safe-delete if temporary directory is in different device
+- add window options to ui settings
+- add font configuration
 
 ## v3.0.0-alpha.7 (20260609)
 
