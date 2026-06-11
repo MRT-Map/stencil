@@ -1,9 +1,10 @@
 use std::{any::Any, borrow::Cow};
-
+use std::path::PathBuf;
 use eframe::{egui_glow, egui_wgpu};
 use etcetera::AppStrategy;
 use eyre::eyre;
 use itertools::Itertools;
+use rfd::FileDialog;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::{DeserializeAs, SerializeAs};
 
@@ -12,6 +13,7 @@ use crate::{
     settings::{Settings, settings_ui_field, settings_ui_field_no_display},
     utils::file::FOLDERS,
 };
+use crate::utils::warnings::ResultExt;
 
 #[derive(Deserialize, Serialize)]
 #[serde(remote = "eframe::HardwareAcceleration")]
@@ -59,8 +61,35 @@ serde_with::serde_conv!(
     }
 );
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AdditionalFontPriority {
+    Highest,
+    Lowest
+}
+const fn afp_string(value: Option<AdditionalFontPriority>) -> &'static str {
+    match value {
+        None => "Off",
+        Some(AdditionalFontPriority::Highest) => "Highest",
+        Some(AdditionalFontPriority::Lowest) => "Lowest",
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AdditionalFont {
+    path: PathBuf,
+    proportional: Option<AdditionalFontPriority>,
+    monospace: Option<AdditionalFontPriority>,
+}
+impl AdditionalFont {
+    pub fn name(&self) -> Cow<'_, str> {
+        self.path.file_stem().or_else(|| self.path.file_name()).unwrap_or_default().to_string_lossy()
+    }
+}
+
 settings! {
     #[serde_with::serde_as] #[derive(Eq)] UiSettings {
+        additional_fonts: Vec<AdditionalFont> = Vec::new(),
+
         multisampling: u16 = eframe::NativeOptions::default().multisampling,
         #[serde(with = "HardwareAcceleration")] hardware_acceleration: eframe::HardwareAcceleration = eframe::NativeOptions::default().hardware_acceleration,
         #[serde(with = "Renderer")] renderer: eframe::Renderer = eframe::NativeOptions::default().renderer,
@@ -81,15 +110,190 @@ settings! {
 impl_load_save!(toml UiSettings, FOLDERS.in_config_dir("ui.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/UI-Settings.html");
 
 impl Settings for UiSettings {
-    #[expect(clippy::too_many_lines)]
     fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
         ui.heading("Egui Settings");
         ui.ctx().clone().settings_ui(ui);
 
         ui.separator();
-        let default = Self::default();
+        ui.label("Custom Fonts");
+
+        self.custom_fonts_ui(ui);
+
+        ui.separator();
+
         ui.heading("Eframe Settings");
         ui.colored_label(egui::Color32::YELLOW, "Restart to see changes. May cause crashes, please be careful! If Stencil3 is unable to startup due to any of the below settings, you will have to edit the configuration manually at the path above.");
+
+        self.eframe_settings_ui(ui);
+    }
+}
+
+impl UiSettings {
+    #[must_use]
+    pub fn get_native_options(&self) -> eframe::NativeOptions {
+        eframe::NativeOptions {
+            vsync: self.glow_vsync,
+            multisampling: self.multisampling,
+            hardware_acceleration: self.hardware_acceleration,
+            renderer: self.renderer,
+            shader_version: self.glow_shader_version,
+            centered: self.centered,
+            persist_window: self.persist_window,
+            dithering: self.dithering,
+            wgpu_options: egui_wgpu::WgpuConfiguration {
+                present_mode: self.wgpu_present_mode,
+                desired_maximum_frame_latency: self.wgpu_desired_maximum_frame_latency,
+                wgpu_setup: egui_wgpu::WgpuSetup::CreateNew(egui_wgpu::WgpuSetupCreateNew {
+                    instance_descriptor: wgpu_types::InstanceDescriptor {
+                        backends: self.wgpu_backends,
+                        flags: self.wgpu_flags,
+                        ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
+                            .instance_descriptor
+                    },
+                    power_preference: self.wgpu_power_preference,
+                    ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+    pub fn reload_fonts(&self, ctx: &egui::Context) {
+        ctx.set_fonts(egui::FontDefinitions::default());
+        for font in &self.additional_fonts {
+            let Ok(data) = std::fs::read(&font.path)
+                .notify(format!("Unable to read font file {}", font.path.display())) else {
+                continue;
+            };
+            let mut families = vec![];
+            for (family, priority) in [(egui::FontFamily::Proportional, font.proportional), (egui::FontFamily::Monospace, font.monospace)] {
+                if let Some(priority) = priority {
+                    families.push(egui::epaint::text::InsertFontFamily {
+                        family,
+                        priority: match priority {
+                            AdditionalFontPriority::Highest => egui::epaint::text::FontPriority::Highest,
+                            AdditionalFontPriority::Lowest => egui::epaint::text::FontPriority::Lowest,
+                        },
+                    });
+                }
+            }
+
+            ctx.add_font(egui::epaint::text::FontInsert {
+                name: font.name().into_owned(),
+                data: egui::FontData::from_owned(data),
+                families,
+            });
+        }
+    }
+
+    fn custom_fonts_ui(&mut self, ui: &mut egui::Ui) {
+        egui_extras::TableBuilder::new(ui)
+            .id_salt("custom fonts table")
+            .striped(true)
+            .column(egui_extras::Column::auto())
+            .column(egui_extras::Column::remainder())
+            .columns(egui_extras::Column::auto(), 3)
+            .header(20.0, |mut header| {
+                header.col(|ui| { ui.label("Name"); });
+                header.col(|ui| { ui.label("Path"); });
+                header.col(|ui| { ui.label("Prop"); });
+                header.col(|ui| { ui.label("Mono"); });
+                header.col(|_| ());
+            })
+            .body(|body| {
+                let mut to_remove = None;
+                let mut to_swap = None;
+
+                body.rows(20.0, self.additional_fonts.len(), |mut row| {
+                    let i = row.index();
+                    let font = &mut self.additional_fonts[i];
+                    row.col(|ui| {
+                        ui.label(font.name());
+                    });
+                    row.col(|ui| {
+                        ui.small(font.path.to_string_lossy());
+                    });
+                    row.col(|ui| {
+                        egui::ComboBox::from_id_salt(format!("prop-{i}"))
+                            .selected_text(afp_string(font.proportional))
+                            .show_ui(ui, |ui| {
+                                for option in [
+                                    None,
+                                    Some(AdditionalFontPriority::Highest),
+                                    Some(AdditionalFontPriority::Lowest),
+                                ] {
+                                    ui.selectable_value(&mut font.proportional, option, afp_string(option));
+                                }
+                            });
+                    });
+                    row.col(|ui| {
+                        egui::ComboBox::from_id_salt(format!("mono-{i}"))
+                            .selected_text(afp_string(font.monospace))
+                            .show_ui(ui, |ui| {
+                                for option in [
+                                    None,
+                                    Some(AdditionalFontPriority::Highest),
+                                    Some(AdditionalFontPriority::Lowest),
+                                ] {
+                                    ui.selectable_value(&mut font.monospace, option, afp_string(option));
+                                }
+                            });
+                    });
+                    row.col(|ui| {
+                        ui.horizontal(|ui| {
+                        if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
+                            to_swap = Some((i, i - 1));
+                        }
+                        if ui
+                            .add_enabled(i != self.additional_fonts.len() - 1, egui::Button::new("⬇"))
+                            .clicked()
+                        {
+                            to_swap = Some((i, i + 1));
+                        }
+                        if ui
+                            .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                            .clicked()
+                        {
+                            to_remove = Some(i);
+                        }
+                        });
+                    });
+                });
+                if let Some(to_remove) = to_remove {
+                    self.additional_fonts.remove(to_remove);
+                }
+                if let Some((a, b)) = to_swap {
+                    self.additional_fonts.swap(a, b);
+                }
+            });
+
+        ui.horizontal(|ui| {
+            if ui.button("➕ Custom Font").clicked() {
+                let Some(files) = FileDialog::new()
+                    .set_title("Import Custom Font")
+                    .add_filter("Font File", &[".ttf", ".otf"])
+                    .pick_files()
+                else {
+                    return;
+                };
+                for file in files {
+                    self.additional_fonts.push(AdditionalFont {
+                        path: file,
+                        proportional: Some(AdditionalFontPriority::Highest),
+                        monospace: None,
+                    });
+                }
+            }
+
+            if ui.button("⟳ Reload Fonts").clicked() {
+                self.reload_fonts(ui);
+            }
+        });
+    }
+
+    #[expect(clippy::too_many_lines)]
+    fn eframe_settings_ui(&mut self, ui: &mut egui::Ui) {
+        let default = Self::default();
 
         settings_ui_field_no_display(
             ui,
@@ -399,38 +603,6 @@ impl Settings for UiSettings {
                     ui.label("Power Preference");
                 },
             );
-        }
-    }
-}
-
-impl UiSettings {
-    #[must_use]
-    pub fn get_native_options(&self) -> eframe::NativeOptions {
-        eframe::NativeOptions {
-            vsync: self.glow_vsync,
-            multisampling: self.multisampling,
-            hardware_acceleration: self.hardware_acceleration,
-            renderer: self.renderer,
-            shader_version: self.glow_shader_version,
-            centered: self.centered,
-            persist_window: self.persist_window,
-            dithering: self.dithering,
-            wgpu_options: egui_wgpu::WgpuConfiguration {
-                present_mode: self.wgpu_present_mode,
-                desired_maximum_frame_latency: self.wgpu_desired_maximum_frame_latency,
-                wgpu_setup: egui_wgpu::WgpuSetup::CreateNew(egui_wgpu::WgpuSetupCreateNew {
-                    instance_descriptor: wgpu_types::InstanceDescriptor {
-                        backends: self.wgpu_backends,
-                        flags: self.wgpu_flags,
-                        ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
-                            .instance_descriptor
-                    },
-                    power_preference: self.wgpu_power_preference,
-                    ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
-                }),
-                ..Default::default()
-            },
-            ..Default::default()
         }
     }
 }

@@ -73,6 +73,7 @@ impl App {
     #[tracing::instrument(skip_all, name = "app_init_cc")]
     fn init_cc(self, cc: &eframe::CreationContext<'_>) -> Self {
         egui_extras::install_image_loaders(&cc.egui_ctx);
+        self.settings.ui.reload_fonts(&cc.egui_ctx);
         self
     }
     #[tracing::instrument(skip_all, name = "app_load_state")]
