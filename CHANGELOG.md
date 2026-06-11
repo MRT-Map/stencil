@@ -7,8 +7,9 @@
 ## v3.0.0-alpha.8 (20260611)
 
 - fix safe-delete if temporary directory is in different device
-- add window options to ui settings
+- add window options to ui settings, including option to use glow instead of wgpu
 - add font configuration
+- backend changes regarding settings
 
 ## v3.0.0-alpha.7 (20260609)
 
