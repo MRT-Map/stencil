@@ -1,5 +1,5 @@
-use std::{any::Any, borrow::Cow};
-use std::path::PathBuf;
+use std::{any::Any, borrow::Cow, path::PathBuf};
+
 use eframe::{egui_glow, egui_wgpu};
 use etcetera::AppStrategy;
 use eyre::eyre;
@@ -11,9 +11,8 @@ use serde_with::{DeserializeAs, SerializeAs};
 use crate::{
     impl_load_save, settings,
     settings::{Settings, settings_ui_field, settings_ui_field_no_display},
-    utils::file::FOLDERS,
+    utils::{file::FOLDERS, warnings::ResultExt},
 };
-use crate::utils::warnings::ResultExt;
 
 #[derive(Deserialize, Serialize)]
 #[serde(remote = "eframe::HardwareAcceleration")]
@@ -64,7 +63,7 @@ serde_with::serde_conv!(
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AdditionalFontPriority {
     Highest,
-    Lowest
+    Lowest,
 }
 const fn afp_string(value: Option<AdditionalFontPriority>) -> &'static str {
     match value {
@@ -82,7 +81,11 @@ pub struct AdditionalFont {
 }
 impl AdditionalFont {
     pub fn name(&self) -> Cow<'_, str> {
-        self.path.file_stem().or_else(|| self.path.file_name()).unwrap_or_default().to_string_lossy()
+        self.path
+            .file_stem()
+            .or_else(|| self.path.file_name())
+            .unwrap_or_default()
+            .to_string_lossy()
     }
 }
 
@@ -162,17 +165,25 @@ impl UiSettings {
         ctx.set_fonts(egui::FontDefinitions::default());
         for font in &self.additional_fonts {
             let Ok(data) = std::fs::read(&font.path)
-                .notify(format!("Unable to read font file {}", font.path.display())) else {
+                .notify(format!("Unable to read font file {}", font.path.display()))
+            else {
                 continue;
             };
             let mut families = vec![];
-            for (family, priority) in [(egui::FontFamily::Proportional, font.proportional), (egui::FontFamily::Monospace, font.monospace)] {
+            for (family, priority) in [
+                (egui::FontFamily::Proportional, font.proportional),
+                (egui::FontFamily::Monospace, font.monospace),
+            ] {
                 if let Some(priority) = priority {
                     families.push(egui::epaint::text::InsertFontFamily {
                         family,
                         priority: match priority {
-                            AdditionalFontPriority::Highest => egui::epaint::text::FontPriority::Highest,
-                            AdditionalFontPriority::Lowest => egui::epaint::text::FontPriority::Lowest,
+                            AdditionalFontPriority::Highest => {
+                                egui::epaint::text::FontPriority::Highest
+                            }
+                            AdditionalFontPriority::Lowest => {
+                                egui::epaint::text::FontPriority::Lowest
+                            }
                         },
                     });
                 }
@@ -194,10 +205,18 @@ impl UiSettings {
             .column(egui_extras::Column::remainder())
             .columns(egui_extras::Column::auto(), 3)
             .header(20.0, |mut header| {
-                header.col(|ui| { ui.label("Name"); });
-                header.col(|ui| { ui.label("Path"); });
-                header.col(|ui| { ui.label("Prop"); });
-                header.col(|ui| { ui.label("Mono"); });
+                header.col(|ui| {
+                    ui.label("Name");
+                });
+                header.col(|ui| {
+                    ui.label("Path");
+                });
+                header.col(|ui| {
+                    ui.label("Prop");
+                });
+                header.col(|ui| {
+                    ui.label("Mono");
+                });
                 header.col(|_| ());
             })
             .body(|body| {
@@ -222,7 +241,11 @@ impl UiSettings {
                                     Some(AdditionalFontPriority::Highest),
                                     Some(AdditionalFontPriority::Lowest),
                                 ] {
-                                    ui.selectable_value(&mut font.proportional, option, afp_string(option));
+                                    ui.selectable_value(
+                                        &mut font.proportional,
+                                        option,
+                                        afp_string(option),
+                                    );
                                 }
                             });
                     });
@@ -235,27 +258,34 @@ impl UiSettings {
                                     Some(AdditionalFontPriority::Highest),
                                     Some(AdditionalFontPriority::Lowest),
                                 ] {
-                                    ui.selectable_value(&mut font.monospace, option, afp_string(option));
+                                    ui.selectable_value(
+                                        &mut font.monospace,
+                                        option,
+                                        afp_string(option),
+                                    );
                                 }
                             });
                     });
                     row.col(|ui| {
                         ui.horizontal(|ui| {
-                        if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
-                            to_swap = Some((i, i - 1));
-                        }
-                        if ui
-                            .add_enabled(i != self.additional_fonts.len() - 1, egui::Button::new("⬇"))
-                            .clicked()
-                        {
-                            to_swap = Some((i, i + 1));
-                        }
-                        if ui
-                            .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
-                            .clicked()
-                        {
-                            to_remove = Some(i);
-                        }
+                            if ui.add_enabled(i != 0, egui::Button::new("⬆")).clicked() {
+                                to_swap = Some((i, i - 1));
+                            }
+                            if ui
+                                .add_enabled(
+                                    i != self.additional_fonts.len() - 1,
+                                    egui::Button::new("⬇"),
+                                )
+                                .clicked()
+                            {
+                                to_swap = Some((i, i + 1));
+                            }
+                            if ui
+                                .add(egui::Button::new("❌").fill(egui::Color32::DARK_RED))
+                                .clicked()
+                            {
+                                to_remove = Some(i);
+                            }
                         });
                     });
                 });
