@@ -1,8 +1,8 @@
 use std::{any::Any, borrow::Cow};
 
 use eframe::{egui_glow, egui_wgpu};
-use egui::Ui;
 use etcetera::AppStrategy;
+use eyre::eyre;
 use itertools::Itertools;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::{DeserializeAs, SerializeAs};
@@ -27,7 +27,7 @@ enum Renderer {
     Wgpu,
 }
 #[derive(Deserialize, Serialize)]
-#[serde(remote = "eframe::egui_glow::ShaderVersion")]
+#[serde(remote = "egui_glow::ShaderVersion")]
 pub enum ShaderVersion {
     Gl120,
     Gl140,
@@ -50,6 +50,14 @@ impl<'de> DeserializeAs<'de, egui_glow::ShaderVersion> for ShaderVersion {
         Self::deserialize(deserializer)
     }
 }
+serde_with::serde_conv!(
+    InstanceFlags,
+    wgpu_types::InstanceFlags,
+    |flags: &wgpu_types::InstanceFlags| flags.bits(),
+    |bits: u32| -> eyre::Result<_> {
+        wgpu_types::InstanceFlags::from_bits(bits).ok_or_else(|| eyre!("Unknown bits in {bits:b}"))
+    }
+);
 
 settings! {
     #[serde_with::serde_as] #[derive(Eq)] UiSettings {
@@ -66,7 +74,7 @@ settings! {
         wgpu_present_mode: wgpu_types::PresentMode = egui_wgpu::WgpuConfiguration::default().present_mode,
         wgpu_desired_maximum_frame_latency: Option<u32> = egui_wgpu::WgpuConfiguration::default().desired_maximum_frame_latency,
         wgpu_backends: wgpu_types::Backends = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.backends,
-        // wgpu_flags: wgpu_types::InstanceFlags = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.flags,
+        #[serde_as(as = "InstanceFlags")] wgpu_flags: wgpu_types::InstanceFlags = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.flags,
         wgpu_power_preference: wgpu_types::PowerPreference = egui_wgpu::WgpuSetupCreateNew::without_display_handle().power_preference,
     }
 }
@@ -74,7 +82,7 @@ impl_load_save!(toml UiSettings, FOLDERS.in_config_dir("ui.toml"), "# Documentat
 
 impl Settings for UiSettings {
     #[expect(clippy::too_many_lines)]
-    fn ui_inner(&mut self, ui: &mut Ui, _tab_state: &mut dyn Any) {
+    fn ui_inner(&mut self, ui: &mut egui::Ui, _tab_state: &mut dyn Any) {
         ui.heading("Egui Settings");
         ui.ctx().clone().settings_ui(ui);
 
@@ -306,6 +314,7 @@ impl Settings for UiSettings {
                     .join(", "),
                 Option::<egui::WidgetText>::None,
                 |ui, value| {
+                    ui.style_mut().override_text_style = Some(egui::TextStyle::Small);
                     for (option, string) in [
                         (wgpu_types::Backends::VULKAN, "Vulkan"),
                         (wgpu_types::Backends::GL, "GL"),
@@ -324,7 +333,45 @@ impl Settings for UiSettings {
                 },
             );
 
-            // todo instance flags
+            settings_ui_field_no_display(
+                ui,
+                &mut self.wgpu_flags,
+                default.wgpu_flags,
+                default.wgpu_flags.iter_names().map(|(a, _)| a).join(", "),
+                Option::<egui::WidgetText>::None,
+                |ui, value| {
+                    ui.style_mut().override_text_style = Some(egui::TextStyle::Small);
+                    for (option, string) in [
+                        (wgpu_types::InstanceFlags::DEBUG, "Debug"),
+                        (wgpu_types::InstanceFlags::VALIDATION, "Validation"),
+                        (
+                            wgpu_types::InstanceFlags::DISCARD_HAL_LABELS,
+                            "Discard HAL Labels",
+                        ),
+                        (
+                            wgpu_types::InstanceFlags::ALLOW_UNDERLYING_NONCOMPLIANT_ADAPTER,
+                            "Allow Underlying Noncompliant Adapter",
+                        ),
+                        (
+                            wgpu_types::InstanceFlags::GPU_BASED_VALIDATION,
+                            "GPU-Based Validation",
+                        ),
+                        (
+                            wgpu_types::InstanceFlags::VALIDATION_INDIRECT_CALL,
+                            "Validation Indirect Call",
+                        ),
+                        (
+                            wgpu_types::InstanceFlags::AUTOMATIC_TIMESTAMP_NORMALIZATION,
+                            "Automatic Timestamp Normalisation",
+                        ),
+                    ] {
+                        if ui.checkbox(&mut value.contains(option), string).clicked() {
+                            value.toggle(option);
+                        }
+                    }
+                    ui.label("Flags");
+                },
+            );
 
             #[expect(clippy::items_after_statements)]
             const fn pp_string(v: wgpu_types::PowerPreference) -> &'static str {
@@ -352,8 +399,6 @@ impl Settings for UiSettings {
                     ui.label("Power Preference");
                 },
             );
-
-            // todo backend-specific settings
         }
     }
 }
@@ -376,12 +421,7 @@ impl UiSettings {
                 wgpu_setup: egui_wgpu::WgpuSetup::CreateNew(egui_wgpu::WgpuSetupCreateNew {
                     instance_descriptor: wgpu_types::InstanceDescriptor {
                         backends: self.wgpu_backends,
-                        // flags: self.wgpu_flags,
-                        backend_options: wgpu_types::BackendOptions {
-                            gl: wgpu_types::GlBackendOptions::default(),     // TODO
-                            dx12: wgpu_types::Dx12BackendOptions::default(), // TODO
-                            noop: wgpu_types::NoopBackendOptions::default(), // TODO
-                        },
+                        flags: self.wgpu_flags,
                         ..egui_wgpu::WgpuSetupCreateNew::without_display_handle()
                             .instance_descriptor
                     },
