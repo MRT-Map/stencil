@@ -256,7 +256,7 @@ impl UiSettings {
             if ui.button("➕ Custom Font").clicked() {
                 let Some(files) = FileDialog::new()
                     .set_title("Import Custom Font")
-                    .add_filter("Font File", &["ttf", "otf"])
+                    .add_filter("Font File", &["ttf", "otf", "ttc"])
                     .pick_files()
                 else {
                     return;
