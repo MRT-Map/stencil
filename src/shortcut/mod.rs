@@ -120,7 +120,15 @@ impl App {
         );
         match action {
             ShortcutAction::Escape => match self.mode {
-                EditorMode::Select => self.add_popup(QuitPopup),
+                EditorMode::Select => {
+                    if self.ui.map.selected.is_empty() {
+                        self.add_popup(QuitPopup);
+                    } else {
+                        info!(ids=?self.ui.map.selected, "Deselected all");
+                        self.ui.map.selected.clear();
+                        self.status_default();
+                    }
+                }
                 EditorMode::Nodes | EditorMode::CreatePoint => self.mode = EditorMode::Select,
                 EditorMode::CreateLine | EditorMode::CreateArea => {
                     if self.ui.map.created_nodes.len() <= 1 {
