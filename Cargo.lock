@@ -1389,11 +1389,11 @@ dependencies = [
 
 [[package]]
 name = "egui_layout_job_macro"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "714009572a86d786639a0219ca594c6011599fd1efa4bc7ae6ee1052bd64c6ab"
+checksum = "534f6eb5f44aeb8649b86ab2386efbd0bfafdf3273074af88ff19745346dae96"
 dependencies = [
- "itertools",
+ "itertools 0.15.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -2508,6 +2508,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b4baf93f58d4425749ca49a51c50ebab072c5df6994d08fed93541c331481dc"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2756,7 +2765,7 @@ checksum = "c199c54ae6fbacadc13dc25e3b755b403dd3896784565f101847ea6e90743b31"
 dependencies = [
  "cargo_metadata",
  "git2",
- "itertools",
+ "itertools 0.14.0",
  "log",
  "rayon",
  "rmp-serde",
@@ -3611,7 +3620,7 @@ dependencies = [
  "epaint",
  "geo",
  "glam",
- "itertools",
+ "itertools 0.14.0",
  "ordered-float",
  "rmp-serde",
  "serde",
@@ -4705,7 +4714,7 @@ dependencies = [
  "eyre",
  "futures-lite",
  "geo",
- "itertools",
+ "itertools 0.15.0",
  "lazy-regex",
  "license-retriever",
  "lru",
