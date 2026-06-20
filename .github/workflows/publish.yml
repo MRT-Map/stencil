@@ -59,7 +59,7 @@ jobs:
           path: target/release/bundle/osx/stencil3.app
 
   build-macos-x86_64:
-    runs-on: macos-15-intel
+    runs-on: macos-26-intel
     permissions:
       contents: read
 
