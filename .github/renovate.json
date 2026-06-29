@@ -4,6 +4,7 @@
     "github>mrt-map/renovate-config",
     "github>mrt-map/renovate-config:app"
   ],
+  "cloneSubmodules": true,
   "git-submodules": {
     "enabled": true
   },
