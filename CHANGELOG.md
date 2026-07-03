@@ -4,6 +4,10 @@
 
 - Directly download namespace files from GitHub repositories
 
+## v3.0.0-alpha.9 (20260703)
+
+- fix incorrect IDs during project loading
+
 ## v3.0.0-alpha.8 (20260611)
 
 - fix safe-delete if temporary directory is in different device
