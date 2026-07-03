@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[derive(Deserialize, Serialize)]
-#[serde(remote = "eframe::HardwareAcceleration")]
+#[serde(remote = "egui_glow::HardwareAcceleration")]
 enum HardwareAcceleration {
     Required,
     Preferred,
@@ -94,17 +94,17 @@ settings! {
         additional_fonts: Vec<AdditionalFont> = Vec::new(),
 
         multisampling: u16 = eframe::NativeOptions::default().multisampling,
-        #[serde(with = "HardwareAcceleration")] hardware_acceleration: eframe::HardwareAcceleration = eframe::NativeOptions::default().hardware_acceleration,
         #[serde(with = "Renderer")] renderer: eframe::Renderer = eframe::NativeOptions::default().renderer,
         centered: bool = eframe::NativeOptions::default().centered,
         persist_window: bool = eframe::NativeOptions::default().persist_window,
         dithering: bool = eframe::NativeOptions::default().dithering,
 
-        glow_vsync: bool = eframe::NativeOptions::default().vsync,
-        #[serde_as(as = "Option<ShaderVersion>")] glow_shader_version: Option<egui_glow::ShaderVersion> = eframe::NativeOptions::default().shader_version,
+        glow_vsync: bool = egui_glow::GlowConfiguration::default().vsync,
+        #[serde(with = "HardwareAcceleration")] glow_hardware_acceleration: egui_glow::HardwareAcceleration = egui_glow::GlowConfiguration::default().hardware_acceleration,
+        #[serde_as(as = "Option<ShaderVersion>")] glow_shader_version: Option<egui_glow::ShaderVersion> = egui_glow::GlowConfiguration::default().shader_version,
 
-        wgpu_present_mode: wgpu_types::PresentMode = egui_wgpu::WgpuConfiguration::default().present_mode,
-        wgpu_desired_maximum_frame_latency: Option<u32> = egui_wgpu::WgpuConfiguration::default().desired_maximum_frame_latency,
+        wgpu_present_mode: wgpu_types::PresentMode = egui_wgpu::WgpuConfiguration::default().surface.present_mode,
+        wgpu_desired_maximum_frame_latency: Option<u32> = egui_wgpu::WgpuConfiguration::default().surface.desired_maximum_frame_latency,
         wgpu_backends: wgpu_types::Backends = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.backends,
         #[serde_as(as = "InstanceFlags")] wgpu_flags: wgpu_types::InstanceFlags = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.flags,
         wgpu_power_preference: wgpu_types::PowerPreference = egui_wgpu::WgpuSetupCreateNew::without_display_handle().power_preference,
@@ -135,17 +135,21 @@ impl UiSettings {
     #[must_use]
     pub fn get_native_options(&self) -> eframe::NativeOptions {
         eframe::NativeOptions {
-            vsync: self.glow_vsync,
             multisampling: self.multisampling,
-            hardware_acceleration: self.hardware_acceleration,
             renderer: self.renderer,
-            shader_version: self.glow_shader_version,
             centered: self.centered,
             persist_window: self.persist_window,
             dithering: self.dithering,
+            glow_options: egui_glow::GlowConfiguration {
+                vsync: self.glow_vsync,
+                hardware_acceleration: self.glow_hardware_acceleration,
+                shader_version: self.glow_shader_version,
+            },
             wgpu_options: egui_wgpu::WgpuConfiguration {
-                present_mode: self.wgpu_present_mode,
-                desired_maximum_frame_latency: self.wgpu_desired_maximum_frame_latency,
+                surface: egui_wgpu::SurfaceConfig {
+                    present_mode: self.wgpu_present_mode,
+                    desired_maximum_frame_latency: self.wgpu_desired_maximum_frame_latency,
+                },
                 wgpu_setup: egui_wgpu::WgpuSetup::CreateNew(egui_wgpu::WgpuSetupCreateNew {
                     instance_descriptor: wgpu_types::InstanceDescriptor {
                         backends: self.wgpu_backends,
@@ -318,33 +322,6 @@ impl UiSettings {
         );
 
         #[expect(clippy::items_after_statements)]
-        const fn hw_string(v: eframe::HardwareAcceleration) -> &'static str {
-            match v {
-                eframe::HardwareAcceleration::Off => "Off",
-                eframe::HardwareAcceleration::Required => "Required",
-                eframe::HardwareAcceleration::Preferred => "Preferred",
-            }
-        }
-
-        settings_ui_field_no_display(
-            ui,
-            &mut self.hardware_acceleration,
-            default.hardware_acceleration,
-            hw_string(default.hardware_acceleration),
-            Option::<egui::WidgetText>::None,
-            |ui, value| {
-                for option in [
-                    eframe::HardwareAcceleration::Preferred,
-                    eframe::HardwareAcceleration::Required,
-                    eframe::HardwareAcceleration::Off,
-                ] {
-                    ui.selectable_value(value, option, hw_string(option));
-                }
-                ui.label("Hardware Acceleration");
-            },
-        );
-
-        #[expect(clippy::items_after_statements)]
         const fn r_string(v: eframe::Renderer) -> &'static str {
             match v {
                 eframe::Renderer::Wgpu => "Wgpu",
@@ -393,6 +370,33 @@ impl UiSettings {
                 Some("Limit the FPS to the display refresh rate"),
                 |ui, value| {
                     ui.checkbox(value, "Vsync");
+                },
+            );
+
+            #[expect(clippy::items_after_statements)]
+            const fn hw_string(v: egui_glow::HardwareAcceleration) -> &'static str {
+                match v {
+                    egui_glow::HardwareAcceleration::Off => "Off",
+                    egui_glow::HardwareAcceleration::Required => "Required",
+                    egui_glow::HardwareAcceleration::Preferred => "Preferred",
+                }
+            }
+
+            settings_ui_field_no_display(
+                ui,
+                &mut self.glow_hardware_acceleration,
+                default.glow_hardware_acceleration,
+                hw_string(default.glow_hardware_acceleration),
+                Option::<egui::WidgetText>::None,
+                |ui, value| {
+                    for option in [
+                        egui_glow::HardwareAcceleration::Preferred,
+                        egui_glow::HardwareAcceleration::Required,
+                        egui_glow::HardwareAcceleration::Off,
+                    ] {
+                        ui.selectable_value(value, option, hw_string(option));
+                    }
+                    ui.label("Hardware Acceleration");
                 },
             );
 

@@ -8,10 +8,9 @@ pub mod pla3;
 pub mod project_editor;
 pub mod skin;
 
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use async_executor::Task;
-use egui::ahash::HashMap;
 use etcetera::AppStrategy;
 use eyre::{Report, eyre};
 use futures_lite::future;

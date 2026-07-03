@@ -37,7 +37,7 @@ impl App {
     #[tracing::instrument(skip_all)]
     #[expect(clippy::too_many_lines)]
     pub fn menu_bar(&mut self, ui: &mut egui::Ui) {
-        egui::Panel::top("menu").show_inside(ui, |ui| {
+        egui::Panel::top("menu").show(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 macro_rules! button {
                     ($ui:ident, $label:literal, $action:expr) => {
