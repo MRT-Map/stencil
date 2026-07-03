@@ -107,11 +107,11 @@ impl Project {
                 continue;
             }
             let Ok(string) =
-                std::fs::read_to_string(file_path).map_err(|e| errors.push(Report::from(e)))
+                std::fs::read_to_string(&file_path).map_err(|e| errors.push(Report::from(e)))
             else {
                 continue;
             };
-            let Some(id) = path.file_prefix() else {
+            let Some(id) = file_path.file_prefix() else {
                 continue;
             };
             let Some(component) = PlaComponent::load(
