@@ -4,6 +4,10 @@
 
 - Directly download namespace files from GitHub repositories
 
+## v3.0.0-alpha.10 (20260704)
+
+- fix pla2 exports serialising coordinates as dict/struct instead of array/tuple
+
 ## v3.0.0-alpha.9 (20260703)
 
 - fix incorrect IDs during project loading
