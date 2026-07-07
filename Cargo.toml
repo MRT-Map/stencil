@@ -24,7 +24,7 @@ egui_dock = { version = "=0.20.1" , features = ["serde"] }
 egui-notify = { git = "https://github.com/xangelix/egui-notify", branch = "egui-0.35" }
 egui_layout_job_macro = "=0.1.1"
 
-wgpu-types = { version = "=29.0.3", features = ["serde"] }
+wgpu-types = { version = "=29.0.4", features = ["serde"] }
 
 rfd = "=0.17.2"
 
