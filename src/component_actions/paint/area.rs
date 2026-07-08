@@ -2,7 +2,8 @@ use std::{f32::consts::FRAC_PI_2, num::NonZeroUsize, sync::LazyLock};
 
 use egui::mutex::Mutex;
 use geo::{
-    Area, BooleanOps, Buffer, Contains, CoordsIter, MapCoords, SimplifyVw, TriangulateDelaunay,
+    Area, BooleanOps, Buffer, Contains, CoordsIter, MapCoords, SimplifyVwPreserve,
+    TriangulateDelaunay,
     buffer::{BufferStyle, LineJoin},
     triangulate_delaunay::{DelaunayTriangulationConfig, TriangulationResult},
 };
@@ -21,8 +22,11 @@ use crate::{
 
 type TriangulationCache =
     LruCache<geo::MultiPolygon<OrderedFloat<f32>>, TriangulationResult<Vec<[egui::Pos2; 3]>>>;
+type SimplifyCache = LruCache<geo::Polygon<OrderedFloat<f32>>, geo::Polygon<f32>>;
 
 static TRIANGULATION_CACHE: LazyLock<Mutex<TriangulationCache>> =
+    LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(0x1_0000).unwrap())));
+static SIMPLIFY_CACHE: LazyLock<Mutex<SimplifyCache>> =
     LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(0x1_0000).unwrap())));
 
 impl MapWindow {
@@ -33,14 +37,18 @@ impl MapWindow {
         let cache_key = p.map_coords(|c| geo::coord! {x: OrderedFloat(c.x), y: OrderedFloat(c.y)});
 
         cache.get_or_insert(cache_key, || {
-            p.simplify_vw(1.0)
-                .constrained_triangulation(DelaunayTriangulationConfig::default())
+            p.constrained_triangulation(DelaunayTriangulationConfig::default())
                 .map(|a| {
                     a.iter()
                         .map(|a| a.to_array().map(CoordInto::coord_into))
                         .collect::<Vec<_>>()
                 })
         })
+    }
+    fn simplify<'a>(p: &geo::Polygon<f32>, cache: &'a mut SimplifyCache) -> &'a geo::Polygon<f32> {
+        let cache_key = p.map_coords(|c| geo::coord! {x: OrderedFloat(c.x), y: OrderedFloat(c.y)});
+
+        cache.get_or_insert(cache_key, || p.simplify_vw_preserve(50.0))
     }
 
     #[expect(clippy::too_many_lines)]
@@ -135,6 +143,9 @@ impl MapWindow {
             Vec::new(),
         );
 
+        let mut cache = SIMPLIFY_CACHE.lock();
+        let polygon = Self::simplify(&polygon, &mut cache);
+
         if polygon.coords_count() < 2 {
             return Some(PartialPaintResult {
                 shapes: outline_shapes,
@@ -142,13 +153,18 @@ impl MapWindow {
             });
         }
 
+        let screen_boundaries = geo::Polygon::from(geo::Rect::new::<geo::Coord<f32>>(
+            response.rect.max.coord_into(),
+            response.rect.min.coord_into(),
+        ));
         let buffer = polygon
             .buffer_with_style(BufferStyle::new(-100.0).line_join(LineJoin::Miter(FRAC_PI_2)));
         let polygon_edge = if buffer.signed_area() < f32::EPSILON {
             None
         } else {
-            Some(polygon.difference(&buffer))
+            Some(polygon.difference(&buffer).intersection(&screen_boundaries))
         };
+        let polygon = polygon.intersection(&screen_boundaries);
 
         let is_hovered = detect_hovered
             && response
@@ -161,14 +177,7 @@ impl MapWindow {
                     )
                 });
 
-        let screen_boundaries = geo::Polygon::from(geo::Rect::new::<geo::Coord<f32>>(
-            response.rect.max.coord_into(),
-            response.rect.min.coord_into(),
-        ));
-        let polygon = polygon.intersection(&screen_boundaries);
-        let polygon_edge =
-            polygon_edge.map(|polygon_edge| polygon_edge.intersection(&screen_boundaries));
-
+        drop(cache);
         let mut cache = TRIANGULATION_CACHE.lock();
         let mut shapes = Vec::new();
 
