@@ -29,7 +29,7 @@ impl MapWindow {
         for component in app.project.components.iter().rev() {
             let is_selected = app.ui.map.is_selected(&component.full_id);
             let Some(PaintResult {
-                is_hovered: is_hovering,
+                is_hovered,
                 screen_coords,
                 point_style,
                 shapes,
@@ -50,7 +50,7 @@ impl MapWindow {
                 continue;
             }
 
-            if is_hovering {
+            if is_hovered {
                 hovered_component = Some((
                     component.full_id.clone(),
                     Self::white_dash(
