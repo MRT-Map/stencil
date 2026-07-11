@@ -59,7 +59,7 @@ lru = "=0.18.0"
 base64-serde = "=0.8.0"
 base64 = "=0.22.1"
 rand = "=0.10.2"
-crossbeam-channel = "=0.5.15"
+crossbeam-channel = "=0.5.16"
 
 eyre = "=0.6.12"
 lazy-regex = "=3.6.0"
