@@ -54,7 +54,7 @@ chrono = "=0.4.45"
 bimap = { version = "=0.6.3", features = ["serde"] }
 strum = { version = "=0.28.0", features = ["derive"] }
 geo = { version = "=0.33.1", features = ["use-serde"] }
-lru = "=0.18.0"
+lru = "=0.18.1"
 #semver = "=1.0.28"
 base64-serde = "=0.8.0"
 base64 = "=0.22.1"
