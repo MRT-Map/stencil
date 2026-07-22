@@ -1,5 +1,5 @@
 [tools]
-"cargo:cargo-bundle" = { version = "=0.11.0", os = ["linux", "macos"] }
+"cargo:cargo-bundle" = { version = "0.11.0", os = ["linux", "macos"] }
 "dotnet:wix" = { version = "[7.0.0]", os = ["windows"], postinstall = "mise run setup-wix" }
 "cargo:https://github.com/volks73/cargo-wix" = { version = "rev:041cc3c624abca5bcab3c3eaf785ceba9ea59394", locked = true, os = ["windows"], crate = "cargo-wix", bin = "cargo-wix" }
 
