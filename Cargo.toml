@@ -21,10 +21,10 @@ eframe = { version = "=0.36.1", features = ["persistence", "glow"] }
 egui_commonmark = "=0.25.0"
 egui_extras = { version = "=0.36.1", features = ["http", "all_loaders"] }
 egui_dock = { version = "=0.21.1" , features = ["serde"] }
-egui-notify = { git = "https://github.com/xangelix/egui-notify", branch = "egui-0.35" }
+egui-notify = { git = "https://github.com/UnknownSuperficialNight/egui-notify", branch = "egui-0.36" }
 egui_layout_job_macro = "=0.1.1"
 
-wgpu-types = { version = "=29.0.4", features = ["serde"] }
+wgpu-types = { version = "=30.0.0", features = ["serde"] }
 
 rfd = "=0.17.2"
 

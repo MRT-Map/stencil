@@ -106,6 +106,10 @@ impl DockLayout {
 impl egui_dock::TabViewer for App {
     type Tab = DockWindows;
 
+    fn id(&mut self, tab: &mut Self::Tab) -> egui::Id {
+        format!("tab-{}", tab.title()).into()
+    }
+
     fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
         tab.title().into()
     }

@@ -103,11 +103,11 @@ settings! {
         #[serde(with = "HardwareAcceleration")] glow_hardware_acceleration: egui_glow::HardwareAcceleration = egui_glow::GlowConfiguration::default().hardware_acceleration,
         #[serde_as(as = "Option<ShaderVersion>")] glow_shader_version: Option<egui_glow::ShaderVersion> = egui_glow::GlowConfiguration::default().shader_version,
 
-        wgpu_present_mode: wgpu_types::PresentMode = egui_wgpu::WgpuConfiguration::default().surface.present_mode,
+        wgpu_present_mode: eframe::wgpu::PresentMode = egui_wgpu::WgpuConfiguration::default().surface.present_mode,
         wgpu_desired_maximum_frame_latency: Option<u32> = egui_wgpu::WgpuConfiguration::default().surface.desired_maximum_frame_latency,
-        wgpu_backends: wgpu_types::Backends = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.backends,
+        wgpu_backends: eframe::wgpu::Backends = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.backends,
         #[serde_as(as = "InstanceFlags")] wgpu_flags: wgpu_types::InstanceFlags = egui_wgpu::WgpuSetupCreateNew::without_display_handle().instance_descriptor.flags,
-        wgpu_power_preference: wgpu_types::PowerPreference = egui_wgpu::WgpuSetupCreateNew::without_display_handle().power_preference,
+        wgpu_power_preference: eframe::wgpu::PowerPreference = egui_wgpu::WgpuSetupCreateNew::without_display_handle().power_preference,
     }
 }
 impl_load_save!(toml UiSettings, FOLDERS.in_config_dir("ui.toml"), "# Documentation is at https://mrt-map.github.io/stencil3/doc/UI-Settings.html");
