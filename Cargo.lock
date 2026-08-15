@@ -2809,9 +2809,9 @@ dependencies = [
 
 [[package]]
 name = "lzma-rust2"
-version = "0.16.5"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca93e534d1142d1d0dcca6d25fe302508a5dfb40b302802904577725ea0b695b"
+checksum = "243cb2271683c2855cad62142cbf38199db439b1b1e1ccdd5a011342894dd7cc"
 dependencies = [
  "sha2",
 ]
@@ -6472,9 +6472,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "9.0.0-pre2"
+version = "9.0.0-pre3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb30735adb9a33cbbb12950b940e1d105389e275ba8fa7118c385d9cffc4cec1"
+checksum = "58e8082c6efe6dbccc7e8ea3ebf6afe46a04847f2e0bcf772c8aebc933dd2ccf"
 dependencies = [
  "aes",
  "bzip2",

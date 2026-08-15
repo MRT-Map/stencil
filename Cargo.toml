@@ -48,7 +48,7 @@ toml = "=1.1.4"
 pla = { path = "pla", features = ["serde", "geo", "emath", "bezier-epaint", "tracing", "pla2"] }
 
 etcetera = "=0.11.0"
-zip = "=9.0.0-pre2"
+zip = "=9.0.0-pre3"
 chrono = "=0.4.45"
 
 bimap = { version = "=0.6.3", features = ["serde"] }
