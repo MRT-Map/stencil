@@ -24,7 +24,7 @@ egui_dock = { version = "=0.21.1" , features = ["serde"] }
 egui-notify = { git = "https://github.com/UnknownSuperficialNight/egui-notify", branch = "egui-0.36" }
 egui_layout_job_macro = "=0.1.1"
 
-wgpu-types = { version = "=30.0.0", features = ["serde"] }
+wgpu-types = { version = "=30.0.1", features = ["serde"] }
 
 rfd = "=0.17.2"
 
