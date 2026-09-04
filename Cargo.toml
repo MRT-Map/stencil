@@ -96,7 +96,7 @@ icon = ["assets/icons/icon_*.png"]
 exclude = ["pla"]
 
 [lints.rust]
-future-incompatible = "deny"
+future_incompatible = "deny"
 
 [lints.clippy]
 all = "warn"
