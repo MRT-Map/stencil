@@ -47,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
         with:
           cache: false
           envs: "publish"
@@ -68,7 +68,7 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
         with:
           cache: false
           envs: ""
@@ -135,7 +135,7 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
         with:
           cache: false
           envs: "publish"
@@ -163,7 +163,7 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
         with:
           cache: false
           envs: "publish"
@@ -286,7 +286,7 @@ jobs:
           message: update sha256 for v${{ needs.version-changelog.outputs.version }}
 
   trigger-pkg-manager-updates:
-    uses: ./.github/workflows/trigger-pkg-manager-updates.yml
+    uses: $/.github/workflows/trigger-pkg-manager-updates.yml
     needs: update-hash
     permissions:
       contents: read

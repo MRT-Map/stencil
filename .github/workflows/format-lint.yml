@@ -16,7 +16,7 @@ jobs:
         with:
           persist-credentials: true
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
 
       - run: hk run format --all
 
@@ -43,7 +43,7 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: ./.github/actions/mise
+      - uses: $/.github/actions/mise
 
       - run: hk run sarif --all --no-fail-fast
       - id: matrix
