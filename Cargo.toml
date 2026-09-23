@@ -58,7 +58,7 @@ lru = "=0.18.4"
 #semver = "=1.0.28"
 base64-serde = "=0.8.0"
 base64 = "=0.23.1"
-rand = "=0.10.2"
+rand = "=0.10.3"
 crossbeam-channel = "=0.5.17"
 
 eyre = "=0.6.14"
