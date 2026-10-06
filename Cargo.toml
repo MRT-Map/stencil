@@ -62,7 +62,7 @@ rand = "=0.10.3"
 crossbeam-channel = "=0.5.17"
 
 eyre = "=0.6.14"
-lazy-regex = "=3.6.1"
+lazy-regex = "=3.6.2"
 declarative_enum_dispatch = "=0.1.3"
 duplicate = "=2.0.1"
 ordered-float = { version = "=5.5.0", features = ["serde"] }
