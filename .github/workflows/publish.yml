@@ -53,7 +53,7 @@ jobs:
           envs: "publish"
 
       - run: cargo --locked bundle --release
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos-aarch64
           path: target/release/bundle/osx/stencil3.app
@@ -74,7 +74,7 @@ jobs:
           envs: ""
 
       - run: cargo --locked build --release
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos-x86_64
           path: target/release/stencil3
@@ -117,7 +117,7 @@ jobs:
         env:
           VERSION: ${{ needs.version-changelog.outputs.version }}
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos
           path: stencil3-*.dmg
@@ -145,7 +145,7 @@ jobs:
       #        version: 1.0
 
       - run: cargo --locked bundle --release --format deb
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: linux-${{ matrix.os }}
           path: target/release/bundle/deb/stencil3*.deb
@@ -170,7 +170,7 @@ jobs:
 
       - run: cargo --locked build --release
       - run: cargo wix --toolset modern -I "./build/windows/main.wxs" -v --nocapture --package stencil3
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-${{ matrix.os }}
           path: target/wix/stencil3-*.msi
@@ -217,7 +217,7 @@ jobs:
           prerelease: true
           generate_release_notes: true
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: combined-dist
           path: dist/*
