@@ -23,7 +23,7 @@ jobs:
           submodules: true
       - run: cargo update
       - id: version
-        run: echo "version=$(cargo pkgid | cut -d '#' -f 2)" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(cargo pkgid | cut -d '@' -f 2)" >> "$GITHUB_OUTPUT"
       - id: changelog
         run: |
           {
