@@ -4,6 +4,12 @@
 
 - Directly download namespace files from GitHub repositories
 
+## v3.0.0-alpha.11 (20261022)
+
+- upgrade dependencies
+  - update for eMudhra
+- cache polygon simplification in rendering
+
 ## v3.0.0-alpha.10 (20260704)
 
 - fix pla2 exports serialising coordinates as dict/struct instead of array/tuple
