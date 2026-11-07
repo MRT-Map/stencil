@@ -4,6 +4,10 @@
 
 - Directly download namespace files from GitHub repositories
 
+## v3.0.0-alpha.12 (20261107)
+
+- upgrade dependencies
+
 ## v3.0.0-alpha.11 (20261022)
 
 - upgrade dependencies
