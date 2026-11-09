@@ -221,10 +221,7 @@ impl MapWindow {
         if hover_pos.is_none() {
             app.ui.map.cursor_world_pos = None;
         }
-        let mut cursor_world_pos = hover_pos.map_or_else(
-            || app.ui.map.centre_coord,
-            |hover_pos| app.map_screen_to_world(response.rect.center(), hover_pos),
-        );
+        let mut cursor_world_pos = hover_pos.map_or(app.ui.map.centre_coord, |hover_pos| app.map_screen_to_world(response.rect.center(), hover_pos));
 
         let old_zoom = app.ui.map.zoom;
         if hover_pos.is_some() {
