@@ -26,7 +26,7 @@ egui_layout_job_macro = "=0.1.1"
 
 wgpu-types = { version = "=30.0.1", features = ["serde"] }
 
-rfd = "=0.17.2"
+rfd = "=0.18.0"
 
 tracing = "=0.1.44"
 tracing-appender = "=0.2.5"
