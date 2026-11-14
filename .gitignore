@@ -979,6 +979,5 @@ secring.*
 
 ### Other
 .idea/
-.cargo
 .sarif
 docs/book
