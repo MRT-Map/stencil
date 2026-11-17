@@ -2,11 +2,6 @@
 
 lockfile_version = 4
 
-[[tools."cargo:clippy-sarif"]]
-version = "0.8.0"
-backend = "cargo:clippy-sarif"
-specifiers = ["0.8.0"]
-
 [[tools."github:boostsecurityio/poutine"]]
 version = "1.1.6"
 backend = "github:boostsecurityio/poutine"
