@@ -1,8 +1,9 @@
-use std::{borrow::Cow, io::ErrorKind, panic::PanicHookInfo, time::SystemTime};
+use std::{borrow::Cow, io::ErrorKind, panic::PanicHookInfo};
 
 use backtrace::Backtrace;
 use color_backtrace::BacktracePrinter;
 use etcetera::AppStrategy;
+use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 use tracing::{Level, error, warn};
 use tracing_error::{ErrorLayer, SpanTrace};
@@ -62,13 +63,7 @@ pub fn panic(panic: &PanicHookInfo) {
             .unwrap_or_default()
     );
     error!("Span trace:\n{}", color_spantrace::colorize(&span_trace));
-    let panic_file = logs_dir.join(format!(
-        "panic.{}",
-        SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs()
-    ));
+    let panic_file = logs_dir.join(format!("panic.{}", Timestamp::now()));
     let _ = safe_write(
         &panic_file,
         format!("{panic:#}\n\n{backtrace:#?}\n\n{span_trace:#?}\n\n{log_contents}"),

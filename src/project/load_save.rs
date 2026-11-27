@@ -6,10 +6,10 @@ use std::{
     io::{BufReader, Cursor, Write},
     path::{Path, PathBuf},
     sync::Arc,
-    time::{Duration, SystemTime},
 };
 
 use eyre::{Report, eyre};
+use jiff::{SignedDuration, ZonedDateTime};
 use pla::{FullId, Namespace, Pla2File};
 use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
@@ -485,20 +485,20 @@ impl App {
             return;
         }
         let id = egui::Id::new(Self::LAST_SAVE);
-        let Some(last_save) = ctx.data(|d| d.get_temp::<SystemTime>(id)) else {
-            ctx.data_mut(|d| d.insert_temp(id, SystemTime::now()));
+        let Some(last_save) = ctx.data(|d| d.get_temp::<ZonedDateTime>(id)) else {
+            ctx.data_mut(|d| d.insert_temp(id, ZonedDateTime::now()));
             return;
         };
-        if !SystemTime::now()
-            .duration_since(last_save)
-            .is_ok_and(|d| d > Duration::from_mins(self.settings.misc.autosave_duration_mins))
+        if ZonedDateTime::now().duration_since(&last_save)
+            < SignedDuration::from_mins(self.settings.misc.autosave_duration_mins as i64)
+        // TODO change type of this setting?
         {
             return;
         }
         self.project
             .save()
             .notify("Errors while autosaving project");
-        ctx.data_mut(|d| d.insert_temp(id, SystemTime::now()));
+        ctx.data_mut(|d| d.insert_temp(id, ZonedDateTime::now()));
         notif!(success "Autosaved project");
     }
 }

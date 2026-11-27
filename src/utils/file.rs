@@ -1,10 +1,10 @@
 use std::{
     path::{Path, PathBuf},
     sync::LazyLock,
-    time::SystemTime,
 };
 
 use etcetera::app_strategy;
+use jiff::Timestamp;
 use tracing::debug;
 
 use crate::notif;
@@ -81,9 +81,7 @@ pub fn safe_delete<T: AsRef<Path>>(path: T) -> eyre::Result<Option<PathBuf>> {
         return Ok(None);
     }
     let _ = std::fs::create_dir_all(&*TRASH_DIR);
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)?
-        .as_nanos();
+    let timestamp = Timestamp::now();
     let new_path = TRASH_DIR.join(format!(
         "{timestamp}-{}",
         path.file_name().unwrap_or_default().display()

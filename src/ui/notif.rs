@@ -1,12 +1,8 @@
-use std::{
-    fmt::Debug,
-    sync::LazyLock,
-    time::{Duration, SystemTime},
-};
+use std::{fmt::Debug, sync::LazyLock, time::Duration};
 
-use chrono::{DateTime, Utc};
 use crossbeam_channel::TryRecvError;
 use egui_notify::{Anchor, Toast, ToastLevel, Toasts};
+use jiff::ZonedDateTime;
 use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 
@@ -91,14 +87,14 @@ macro_rules! notif {
 
 #[derive(Clone, Debug)]
 pub struct Notif {
-    pub timestamp: SystemTime,
+    pub datetime: ZonedDateTime,
     pub level: ToastLevel,
     pub message: egui::RichText,
 }
 impl Notif {
     pub fn new<M: Into<egui::RichText>>(level: ToastLevel, message: M) -> Self {
         Self {
-            timestamp: SystemTime::now(),
+            datetime: ZonedDateTime::now(),
             level,
             message: message.into(),
         }
@@ -177,10 +173,7 @@ impl DockWindow for NotifLogWindow {
                 ui.separator();
                 ui.colored_label(
                     egui::Color32::LIGHT_GRAY,
-                    format!(
-                        "{}",
-                        DateTime::<Utc>::from(entry.timestamp).format("%d/%m/%Y %T")
-                    ),
+                    format!("{}", entry.datetime.strftime("%F %T")),
                 );
             });
             ui.colored_label(colour, entry.message.clone());
